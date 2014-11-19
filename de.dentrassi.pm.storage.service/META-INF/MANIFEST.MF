@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Storage Service
+Bundle-SymbolicName: de.dentrassi.pm.storage.service
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: de.dentrassi.pm.storage.service.internal.Activator
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: de.dentrassi.pm.common.service;version="1.0.0",
+ de.dentrassi.pm.storage.jpa;version="1.0.0",
+ javax.persistence;version="2.0.0",
+ javax.persistence.criteria;version="2.0.5",
+ org.eclipse.persistence.expressions;version="2.4.2",
+ org.osgi.framework;version="1.3.0"
+Service-Component: OSGI-INF/storage.xml
+Export-Package: de.dentrassi.pm.storage.service;version="1.0.0"
+Bundle-ActivationPolicy: lazy

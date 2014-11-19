@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Package Manager Storage JPA Unit
+Bundle-SymbolicName: de.dentrassi.pm.storage.jpa
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: javax.persistence;version="2.0.5",
+ javax.persistence.metamodel;version="2.0.5",
+ org.eclipse.persistence.annotations;version="2.4.2"
+Export-Package: de.dentrassi.pm.storage.jpa;version="1.0.0"
+Meta-Persistence: META-INF/persistence.xml
