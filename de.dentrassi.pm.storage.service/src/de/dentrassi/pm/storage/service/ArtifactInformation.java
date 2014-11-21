@@ -6,10 +6,13 @@ public class ArtifactInformation
 
     private final String name;
 
-    public ArtifactInformation ( final long size, final String name )
+    private final String channelId;
+
+    public ArtifactInformation ( final long size, final String name, final String channelId )
     {
         this.length = size;
         this.name = name;
+        this.channelId = channelId;
     }
 
     public long getLength ()
@@ -20,5 +23,10 @@ public class ArtifactInformation
     public String getName ()
     {
         return this.name;
+    }
+
+    public String getChannelId ()
+    {
+        return this.channelId;
     }
 }

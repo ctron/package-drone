@@ -183,6 +183,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
             }
 
+            final String channelId = ae.getChannel ().getId ();
+
             final Connection c = em.unwrap ( Connection.class );
             try ( PreparedStatement ps = c.prepareStatement ( "select DATA from ARTIFACTS where ID=?" ) )
             {
@@ -197,7 +199,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     final Blob blob = rs.getBlob ( 1 );
                     try ( InputStream stream = blob.getBinaryStream () )
                     {
-                        receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName () ), stream );
+                        receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName (), channelId ), stream );
                     }
                     finally
                     {
@@ -226,5 +228,29 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             return result;
         } );
+    }
+
+    @Override
+    public ArtifactInformation deleteArtifact ( final String artifactId )
+    {
+        return doWithTransaction ( em -> {
+
+            final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
+            if ( ae == null )
+            {
+                return null; // silently ignore
+            }
+
+            final ArtifactInformation info = convert ( ae );
+
+            em.remove ( ae );
+
+            return info;
+        } );
+    }
+
+    private ArtifactInformation convert ( final ArtifactEntity ae )
+    {
+        return new ArtifactInformation ( ae.getSize (), ae.getName (), ae.getChannel ().getId () );
     }
 }

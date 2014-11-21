@@ -8,9 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
 
@@ -43,6 +45,16 @@ public class ArtifactController
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
         }
+    }
 
+    @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )
+    public ModelAndView delete ( @PathVariable ( "artifactId" )
+    final String artifactId )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+
+        final ArtifactInformation info = service.deleteArtifact ( artifactId );
+
+        return new ModelAndView ( "redirect:/channel/" + info.getChannelId () + "/view" );
     }
 }

@@ -17,4 +17,6 @@ public interface StorageService
     public void deleteChannel ( String channelId );
 
     public void streamArtifact ( String artifactId, ArtifactReceiver consumer ) throws FileNotFoundException;
+
+    public ArtifactInformation deleteArtifact ( String artifactId );
 }

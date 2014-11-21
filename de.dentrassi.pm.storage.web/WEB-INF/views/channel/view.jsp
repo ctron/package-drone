@@ -12,8 +12,6 @@
 	<li><a class="pure-button" href="add">Add Artifact</a></li>
 </ul>
 
-<p>ID: ${channel.id }</p>
-
 <table>
 
 <tr>
@@ -28,6 +26,7 @@
 		<td>${artifact.name }</td>
 		<td>${artifact.size }</td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
+		<td><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></td>
 	</tr>
 </c:forEach>
 

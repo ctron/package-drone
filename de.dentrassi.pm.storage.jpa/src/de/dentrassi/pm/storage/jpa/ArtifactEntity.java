@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.Basic;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 
@@ -36,9 +36,9 @@ public class ArtifactEntity
     private long size;
 
     @ElementCollection
-    @JoinTable ( name = "ARTIFACT_PROPERTIES", joinColumns = @JoinColumn ( name = "ART_ID" ) )
     @MapKeyColumn ( name = "KEY" )
     @Column ( name = "VALUE" )
+    @CollectionTable ( name = "ARTIFACT_PROPERTIES", joinColumns = @JoinColumn ( name = "ART_ID" ) )
     private final Map<String, String> properties = new HashMap<> ();
 
     public String getId ()

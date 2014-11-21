@@ -96,6 +96,7 @@ public class ChannelController
             return "channel/uploadError";
         }
 
-        return "redirect:/channel";
+        return "redirect:/channel/" + channelId + "/view";
     }
+
 }
