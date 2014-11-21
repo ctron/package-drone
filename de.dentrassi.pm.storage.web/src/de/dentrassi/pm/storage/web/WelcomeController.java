@@ -14,7 +14,7 @@ public class WelcomeController extends AbstractDefaultController
     @Override
     protected void fillMenu ( final DefaultMenuExtender menuExtener )
     {
-        menuExtener.addEntry ( "/", "Home", 0 );
+        // main "home" entry is coded in the JSP tag "main"
     }
 
     @RequestMapping ( value = "/", method = RequestMethod.GET )

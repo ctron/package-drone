@@ -1,10 +1,9 @@
 package de.dentrassi.pm.storage.service.internal;
 
-import java.io.InputStream;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import de.dentrassi.pm.storage.service.Artifact;
+import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
 
 public class ChannelImpl implements Channel
@@ -31,8 +30,8 @@ public class ChannelImpl implements Channel
         return this.service.listArtifacts ( this.id );
     }
 
-    public void streamData ( final String artifactId, final Consumer<InputStream> consumer )
+    public void streamData ( final String artifactId, final ArtifactReceiver consumer )
     {
-        this.service.streamData ( artifactId, consumer );
+        this.service.streamArtifact ( artifactId, consumer );
     }
 }

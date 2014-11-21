@@ -9,9 +9,11 @@
 	
 	<meta charset="UTF-8">
 	
-	<link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/resources/css/default.css" />
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pure-fix.css" />
 	
-	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/pure/0.5.0/pure-min.css">
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/pure/0.5.0/pure-min.css" />
+	
 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
@@ -29,6 +31,7 @@
 <nav>
 
 <div class="pure-menu pure-menu-open pure-menu-horizontal">
+	<a href="<c:url value="/"/>" class="pure-menu-heading">Package Drone</a>
 	<ul>
 		<c:forEach items="${menuManager.entries }" var="entry">
 		<li <c:if test="${currentUrl eq entry.location}" >class="pure-menu-selected"</c:if>><a href="<c:url value="${entry.location }" />"><c:out value="${entry.label}" escapeXml="true"/></a></li>

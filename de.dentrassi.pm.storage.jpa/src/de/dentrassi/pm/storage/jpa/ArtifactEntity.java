@@ -1,6 +1,5 @@
 package de.dentrassi.pm.storage.jpa;
 
-import java.sql.Blob;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,12 +7,10 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 
@@ -32,9 +29,11 @@ public class ArtifactEntity
     @JoinColumn ( name = "CHANNEL" )
     private ChannelEntity channel;
 
-    @Lob
-    @Basic ( fetch = FetchType.LAZY )
-    private Blob data;
+    @Basic
+    private String name;
+
+    @Basic
+    private long size;
 
     @ElementCollection
     @JoinTable ( name = "ARTIFACT_PROPERTIES", joinColumns = @JoinColumn ( name = "ART_ID" ) )
@@ -62,14 +61,29 @@ public class ArtifactEntity
         this.channel = channel;
     }
 
-    public Blob getData ()
+    public void setName ( final String name )
     {
-        return this.data;
+        this.name = name;
     }
 
-    public void setData ( final Blob data )
+    public String getName ()
     {
-        this.data = data;
+        return this.name;
+    }
+
+    public Map<String, String> getProperties ()
+    {
+        return this.properties;
+    }
+
+    public long getSize ()
+    {
+        return this.size;
+    }
+
+    public void setSize ( final long size )
+    {
+        this.size = size;
     }
 
     @Override

@@ -1,24 +1,32 @@
 package de.dentrassi.pm.storage.service.internal;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.TreeSet;
 
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import com.google.common.io.ByteStreams;
+
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
-import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.service.Artifact;
+import de.dentrassi.pm.storage.service.ArtifactInformation;
+import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
@@ -50,25 +58,68 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Artifact createArtifact ( final String channelId, final InputStream stream )
+    public Artifact createArtifact ( final String channelId, final String name, final InputStream stream )
     {
-        final ArtifactEntity artifact = new ArtifactEntity ();
+        try
+        {
+            final ArtifactEntity artifact = new ArtifactEntity ();
+            artifact.setName ( name );
 
-        doWithTransactionVoid ( em -> {
+            return doWithTransaction ( em -> {
 
-            final ChannelEntity channel = em.find ( ChannelEntity.class, channelId );
+                final ChannelEntity channel = em.find ( ChannelEntity.class, channelId );
 
-            if ( channel == null )
+                if ( channel == null )
+                {
+                    throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
+                }
+
+                artifact.setChannel ( channel );
+
+                // set the blob
+
+                final Connection c = em.unwrap ( Connection.class );
+
+                long size;
+
+                final Blob blob = c.createBlob ();
+                try
+                {
+                    try ( OutputStream s = blob.setBinaryStream ( 1 ) )
+                    {
+                        size = ByteStreams.copy ( stream, s );
+                    }
+
+                    artifact.setSize ( size );
+                    em.persist ( artifact );
+                    em.flush ();
+
+                    try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=?" ) )
+                    {
+                        ps.setBlob ( 1, blob );
+                        ps.executeUpdate ();
+                    }
+                }
+                finally
+                {
+                    blob.free ();
+                }
+
+                return new ArtifactImpl ( new ChannelImpl ( channelId, StorageServiceImpl.this ), artifact.getId (), name, size );
+
+            } );
+        }
+        finally
+        {
+            try
             {
-                throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
+                stream.close ();
             }
-
-            artifact.setChannel ( channel );
-
-            em.persist ( artifact );
-        } );
-
-        return new ArtifactImpl ( new ChannelImpl ( channelId, this ), artifact.getId () );
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( e );
+            }
+        }
     }
 
     public Set<Artifact> listArtifacts ( final String channelId )
@@ -82,19 +133,17 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalArgumentException ( String.format ( "Channel %s not found", channelId ) );
             }
 
-            final ChannelImpl channel = convert ( ce );
-
-            final CriteriaBuilder builder = em.getCriteriaBuilder ();
-            final CriteriaQuery<ArtifactEntity> cq = builder.createQuery ( ArtifactEntity.class );
-
+            final CriteriaBuilder cb = em.getCriteriaBuilder ();
+            final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
             final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
-            cq.where ( builder.equal ( root.get ( ArtifactEntity_.channel ), ce ) );
+            cq.select ( root );
 
             final TypedQuery<ArtifactEntity> q = em.createQuery ( cq );
 
+            final ChannelImpl channel = convert ( ce );
             final List<ArtifactEntity> rl = q.getResultList ();
 
-            final Set<Artifact> result = new HashSet<> ( rl.size () );
+            final Set<Artifact> result = new TreeSet<> ();
             for ( final ArtifactEntity ae : rl )
             {
                 result.add ( convert ( channel, ae ) );
@@ -119,10 +168,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             return null;
         }
-        return new ArtifactImpl ( channel, ae.getId () );
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize () );
     }
 
-    public void streamData ( final String artifactId, final Consumer<InputStream> consumer )
+    @Override
+    public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
     {
         doWithTransactionVoid ( em -> {
 
@@ -133,15 +183,29 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
             }
 
-            final Blob data = ae.getData ();
-            try ( InputStream stream = data.getBinaryStream () )
+            final Connection c = em.unwrap ( Connection.class );
+            try ( PreparedStatement ps = c.prepareStatement ( "select DATA from ARTIFACTS where ID=?" ) )
             {
-                consumer.accept ( stream );
+                ps.setObject ( 1, artifactId );
+                try ( ResultSet rs = ps.executeQuery () )
+                {
+                    if ( !rs.next () )
+                    {
+                        throw new FileNotFoundException ();
+                    }
+
+                    final Blob blob = rs.getBlob ( 1 );
+                    try ( InputStream stream = blob.getBinaryStream () )
+                    {
+                        receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName () ), stream );
+                    }
+                    finally
+                    {
+                        blob.free ();
+                    }
+                }
             }
-            finally
-            {
-                data.free ();
-            }
+
         } );
     }
 

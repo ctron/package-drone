@@ -1,13 +1,14 @@
 package de.dentrassi.pm.storage.service;
 
-import java.io.InputStream;
-import java.util.function.Consumer;
-
-public interface Artifact
+public interface Artifact extends Comparable<Artifact>
 {
     public Channel getChannel ();
 
     public String getId ();
 
-    public void streamData ( Consumer<InputStream> consumer );
+    public long getSize ();
+
+    public String getName ();
+
+    public void streamData ( ArtifactReceiver receiver );
 }

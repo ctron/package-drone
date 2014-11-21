@@ -1,9 +1,13 @@
 package de.dentrassi.pm.storage.web.channel;
 
+import java.io.IOException;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import de.dentrassi.pm.storage.service.Channel;
@@ -64,5 +68,34 @@ public class ChannelController
         result.addObject ( "success", String.format ( "Deleted channel %s", channelId ) );
 
         return result;
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
+    public String add ( @PathVariable ( "channelId" )
+    final String channelId )
+    {
+        return "channel/add";
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )
+    public String addPost ( @PathVariable ( "channelId" )
+    final String channelId, @RequestParam ( required = false, value = "name" ) String name, final @RequestParam ( "file" ) MultipartFile file )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+        try
+        {
+            if ( name == null || name.isEmpty () )
+            {
+                name = file.getOriginalFilename ();
+            }
+
+            service.createArtifact ( channelId, name, file.getInputStream () );
+        }
+        catch ( final IOException e )
+        {
+            return "channel/uploadError";
+        }
+
+        return "redirect:/channel";
     }
 }

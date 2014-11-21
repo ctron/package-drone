@@ -16,6 +16,7 @@
 	<bean class="de.dentrassi.pm.storage.web.WelcomeController"/>
 	<bean class="de.dentrassi.pm.storage.web.setup.SetupController"/>
 	<bean class="de.dentrassi.pm.storage.web.channel.ChannelController"/>
+	<bean class="de.dentrassi.pm.storage.web.artifact.ArtifactController"/>
 	
 	<context:annotation-config />
 	
@@ -30,6 +31,17 @@
         class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
         <property name="basename" value="/WEB-INF/messages" />
     </bean>
+    
+	<bean id="multipartResolver"
+	        class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
+	</bean>
+	
+	<!-- 
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	    <property name="maxUploadSize" value="100000"/>
+	    <property name="maxInMemorySize" value="1048576"/>
+	</bean>
+	 -->
 
 	<bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

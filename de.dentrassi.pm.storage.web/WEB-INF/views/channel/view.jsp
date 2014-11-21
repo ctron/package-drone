@@ -12,6 +12,25 @@
 	<li><a class="pure-button" href="add">Add Artifact</a></li>
 </ul>
 
-ID: ${channel.id }
+<p>ID: ${channel.id }</p>
+
+<table>
+
+<tr>
+	<th>ID</th>
+	<th>Name</th>
+	<th>size</th>
+</tr>
+
+<c:forEach items="${channel.artifacts }" var="artifact">
+	<tr>
+		<td>${artifact.id }</td>
+		<td>${artifact.name }</td>
+		<td>${artifact.size }</td>
+		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
+	</tr>
+</c:forEach>
+
+</table>
 
 </h:main>
