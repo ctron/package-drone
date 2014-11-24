@@ -10,6 +10,7 @@
 <ul class="button-bar">
 	<li><a class="pure-button" href="delete">Delete Channel</a></li>
 	<li><a class="pure-button" href="add">Add Artifact</a></li>
+	<li><a class="pure-button" href="aspects">Configure Aspects</a></li>
 </ul>
 
 <table>

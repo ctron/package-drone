@@ -1,0 +1,67 @@
+package de.dentrassi.pm.aspect.common;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.common.hash.HashCode;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
+
+public final class HashHelper
+{
+    private HashHelper ()
+    {
+    }
+
+    public static Map<String, HashCode> createChecksums ( final Path file, final Map<String, HashFunction> functions ) throws IOException
+    {
+        if ( functions.isEmpty () )
+        {
+            return Collections.emptyMap ();
+        }
+
+        // init hashers
+
+        final Map<String, Hasher> hasherMap = new HashMap<> ();
+        final Hasher[] hashers = new Hasher[functions.size ()];
+        int i = 0;
+        for ( final Map.Entry<String, HashFunction> entry : functions.entrySet () )
+        {
+            hashers[i] = entry.getValue ().newHasher ();
+            hasherMap.put ( entry.getKey (), hashers[i] );
+            i++;
+        }
+
+        // read data
+
+        try ( BufferedInputStream is = new BufferedInputStream ( new FileInputStream ( file.toString () ) ) )
+        {
+            final byte[] buffer = new byte[4096];
+            int len;
+            while ( ( len = is.read ( buffer ) ) >= 0 )
+            {
+                for ( final Hasher hasher : hashers )
+                {
+                    hasher.putBytes ( buffer, 0, len );
+                }
+            }
+        }
+
+        // finalize hashes
+
+        final Map<String, HashCode> result = new HashMap<String, HashCode> ( hashers.length );
+        for ( final Map.Entry<String, Hasher> entry : hasherMap.entrySet () )
+        {
+            result.put ( entry.getKey (), entry.getValue ().hash () );
+        }
+
+        // return result
+
+        return result;
+    }
+}

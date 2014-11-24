@@ -1,6 +1,7 @@
 package de.dentrassi.pm.storage.web.channel;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import de.dentrassi.pm.meta.ChannelAspectInformation;
+import de.dentrassi.pm.meta.ChannelAspectProcessor;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
@@ -97,6 +100,48 @@ public class ChannelController
         }
 
         return "redirect:/channel/" + channelId + "/view";
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
+    public ModelAndView aspects ( @PathVariable ( "channelId" )
+    final String channelId )
+    {
+        final ModelAndView model = new ModelAndView ( "channel/aspects" );
+
+        final StorageService service = Activator.getTracker ().getStorageService ();
+        final ChannelAspectProcessor aspects = Activator.getAspects ();
+
+        final Channel channel = service.getChannel ( channelId );
+        final Map<String, ChannelAspectInformation> infos = aspects.getAspectInformations ();
+        for ( final ChannelAspectInformation ca : channel.getAspects () )
+        {
+            infos.remove ( ca.getFactoryId () );
+        }
+
+        model.addObject ( "channel", channel );
+        model.addObject ( "addAspects", infos.values () );
+
+        return model;
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
+    public ModelAndView addAspect ( @PathVariable ( "channelId" )
+    final String channelId, @RequestParam ( "aspect" )
+    final String aspectFactoryId )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+        service.addChannelAspect ( channelId, aspectFactoryId );
+        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/removeAspect", method = RequestMethod.POST )
+    public ModelAndView removeAspect ( @PathVariable ( "channelId" )
+    final String channelId, @RequestParam ( "aspect" )
+    final String aspectFactoryId )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+        service.removeChannelAspect ( channelId, aspectFactoryId );
+        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
 }

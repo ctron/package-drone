@@ -3,6 +3,7 @@ package de.dentrassi.pm.storage.web;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import de.dentrassi.pm.meta.ChannelAspectProcessor;
 import de.dentrassi.pm.storage.web.services.ServiceTracker;
 
 public class Activator implements BundleActivator
@@ -11,6 +12,8 @@ public class Activator implements BundleActivator
     private static Activator INSTANCE;
 
     private ServiceTracker tracker;
+
+    private ChannelAspectProcessor aspects;
 
     /*
      * (non-Javadoc)
@@ -22,6 +25,7 @@ public class Activator implements BundleActivator
         Activator.INSTANCE = this;
         this.tracker = new ServiceTracker ( bundleContext );
         this.tracker.open ();
+        this.aspects = new ChannelAspectProcessor ( bundleContext );
     }
 
     /*
@@ -32,6 +36,7 @@ public class Activator implements BundleActivator
     public void stop ( final BundleContext bundleContext ) throws Exception
     {
         this.tracker.close ();
+        this.aspects.close ();
         Activator.INSTANCE = null;
     }
 
@@ -40,4 +45,8 @@ public class Activator implements BundleActivator
         return INSTANCE.tracker;
     }
 
+    public static ChannelAspectProcessor getAspects ()
+    {
+        return INSTANCE.aspects;
+    }
 }

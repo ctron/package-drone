@@ -1,19 +1,31 @@
 package de.dentrassi.pm.storage.service.internal;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -22,12 +34,18 @@ import javax.persistence.criteria.Root;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
+import de.dentrassi.pm.meta.ChannelAspect;
+import de.dentrassi.pm.meta.ChannelAspectInformation;
+import de.dentrassi.pm.meta.ChannelAspectProcessor;
+import de.dentrassi.pm.meta.extract.Extractor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.service.MetaKey;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService
@@ -62,55 +80,46 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         try
         {
-            final ArtifactEntity artifact = new ArtifactEntity ();
-            artifact.setName ( name );
+            final Path file = Files.createTempFile ( "blob-", null );
 
-            return doWithTransaction ( em -> {
+            // copy data to temp file
+            try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
+            {
+                ByteStreams.copy ( stream, os );
+            }
 
-                final ChannelEntity channel = em.find ( ChannelEntity.class, channelId );
+            try
+            {
+                return doWithTransaction ( em -> {
 
-                if ( channel == null )
-                {
-                    throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
-                }
+                    final Map<MetaKey, String> metadata = extractMetaData ( em, channelId, file );
 
-                artifact.setChannel ( channel );
-
-                // set the blob
-
-                final Connection c = em.unwrap ( Connection.class );
-
-                long size;
-
-                final Blob blob = c.createBlob ();
+                    try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+                    {
+                        return storeBlob ( em, channelId, name, in, metadata );
+                    }
+                } );
+            }
+            finally
+            {
                 try
                 {
-                    try ( OutputStream s = blob.setBinaryStream ( 1 ) )
-                    {
-                        size = ByteStreams.copy ( stream, s );
-                    }
-
-                    artifact.setSize ( size );
-                    em.persist ( artifact );
-                    em.flush ();
-
-                    try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=?" ) )
-                    {
-                        ps.setBlob ( 1, blob );
-                        ps.executeUpdate ();
-                    }
+                    // delete the temp file, if possible
+                    Files.deleteIfExists ( file );
                 }
-                finally
+                catch ( final Exception e )
                 {
-                    blob.free ();
+                    // ignore this
                 }
-
-                return new ArtifactImpl ( new ChannelImpl ( channelId, StorageServiceImpl.this ), artifact.getId (), name, size );
-
-            } );
+            }
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
         }
         finally
         {
+            // always close the stream we got
             try
             {
                 stream.close ();
@@ -119,6 +128,107 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             {
                 throw new RuntimeException ( e );
             }
+        }
+    }
+
+    protected Map<MetaKey, String> extractMetaData ( final EntityManager em, final String channelId, final Path file )
+    {
+        final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+        final Map<MetaKey, String> metadata = new HashMap<> ();
+
+        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getExtractor, extractor -> {
+            try
+            {
+                final Map<String, String> md = new HashMap<> ();
+                extractor.extractMetaData ( file, md );
+
+                convertMetaDataFromExtractor ( metadata, extractor, md );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+        } );
+
+        return metadata;
+    }
+
+    private void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final Extractor extractor, final Map<String, String> md )
+    {
+        final String ns = extractor.getAspect ().getId ();
+        for ( final Map.Entry<String, String> mde : md.entrySet () )
+        {
+            metadata.put ( new MetaKey ( ns, mde.getKey () ), mde.getValue () );
+        }
+    }
+
+    protected ChannelEntity getCheckedChannel ( final EntityManager em, final String channelId )
+    {
+        final ChannelEntity channel = em.find ( ChannelEntity.class, channelId );
+        if ( channel == null )
+        {
+            throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
+        }
+        return channel;
+    }
+
+    protected ArtifactImpl storeBlob ( final EntityManager em, final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> metadata ) throws SQLException, IOException
+    {
+        final ArtifactEntity artifact = new ArtifactEntity ();
+        artifact.setName ( name );
+
+        final ChannelEntity channel = getCheckedChannel ( em, channelId );
+        artifact.setChannel ( channel );
+
+        final Collection<ArtifactPropertyEntity> props = artifact.getProperties ();
+        convertProperties ( metadata, artifact, props );
+
+        // set the blob
+
+        final Connection c = em.unwrap ( Connection.class );
+
+        long size;
+
+        final Blob blob = c.createBlob ();
+        try
+        {
+            try ( OutputStream s = blob.setBinaryStream ( 1 ) )
+            {
+                size = ByteStreams.copy ( stream, s );
+            }
+
+            // we can only set it now, since we only have the size
+            artifact.setSize ( size );
+            em.persist ( artifact );
+            em.flush ();
+
+            try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=?" ) )
+            {
+                ps.setBlob ( 1, blob );
+                ps.executeUpdate ();
+            }
+        }
+        finally
+        {
+            blob.free ();
+        }
+
+        return new ArtifactImpl ( new ChannelImpl ( channelId, StorageServiceImpl.this ), artifact.getId (), name, size, metadata );
+    }
+
+    private void convertProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ArtifactPropertyEntity> props )
+    {
+        for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
+        {
+            final ArtifactPropertyEntity ap = new ArtifactPropertyEntity ();
+
+            ap.setArtifact ( artifact );
+            ap.setKey ( entry.getKey ().getKey () );
+            ap.setNamespace ( entry.getKey ().getNamespace () );
+            ap.setValue ( entry.getValue () );
+
+            props.add ( ap );
         }
     }
 
@@ -168,7 +278,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             return null;
         }
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize () );
+
+        // FIXME: allow converting meta data
+
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), null );
     }
 
     @Override
@@ -183,32 +296,37 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
             }
 
-            final String channelId = ae.getChannel ().getId ();
+            internalStreamArtifact ( em, ae, receiver );
+        } );
+    }
 
-            final Connection c = em.unwrap ( Connection.class );
-            try ( PreparedStatement ps = c.prepareStatement ( "select DATA from ARTIFACTS where ID=?" ) )
+    private void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ArtifactReceiver receiver ) throws Exception
+    {
+        final String channelId = ae.getChannel ().getId ();
+        final String artifactId = ae.getId ();
+
+        final Connection c = em.unwrap ( Connection.class );
+        try ( PreparedStatement ps = c.prepareStatement ( "select DATA from ARTIFACTS where ID=?" ) )
+        {
+            ps.setObject ( 1, artifactId );
+            try ( ResultSet rs = ps.executeQuery () )
             {
-                ps.setObject ( 1, artifactId );
-                try ( ResultSet rs = ps.executeQuery () )
+                if ( !rs.next () )
                 {
-                    if ( !rs.next () )
-                    {
-                        throw new FileNotFoundException ();
-                    }
+                    throw new FileNotFoundException ();
+                }
 
-                    final Blob blob = rs.getBlob ( 1 );
-                    try ( InputStream stream = blob.getBinaryStream () )
-                    {
-                        receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName (), channelId ), stream );
-                    }
-                    finally
-                    {
-                        blob.free ();
-                    }
+                final Blob blob = rs.getBlob ( 1 );
+                try ( InputStream stream = blob.getBinaryStream () )
+                {
+                    receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName (), channelId ), stream );
+                }
+                finally
+                {
+                    blob.free ();
                 }
             }
-
-        } );
+        }
     }
 
     @Override
@@ -252,5 +370,93 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     private ArtifactInformation convert ( final ArtifactEntity ae )
     {
         return new ArtifactInformation ( ae.getSize (), ae.getName (), ae.getChannel ().getId () );
+    }
+
+    public List<ChannelAspectInformation> getChannelAspectInformations ( final String channelId )
+    {
+        return doWithTransaction ( em -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            return Activator.getChannelAspects ().resolve ( channel.getAspects () );
+        } );
+    }
+
+    @Override
+    public void addChannelAspect ( final String channelId, final String aspectFactoryId )
+    {
+        doWithTransactionVoid ( em -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            channel.getAspects ().add ( aspectFactoryId );
+            em.persist ( channel );
+
+            reprocessAspect ( em, channel, aspectFactoryId );
+        } );
+    }
+
+    protected void reprocessAspect ( final EntityManager em, final ChannelEntity channel, final String aspectFactoryId ) throws Exception
+    {
+        for ( final ArtifactEntity ae : channel.getArtifacts () )
+        {
+            internalStreamArtifact ( em, ae, ( info, stream ) -> {
+                final Path file = Files.createTempFile ( "blob-", "-reproc" );
+                try
+                {
+                    // stream blob to temp file
+
+                    try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
+                    {
+                        ByteStreams.copy ( stream, os );
+                    }
+
+                    // generate metadata for new factory
+
+                    final Map<MetaKey, String> metadata = new HashMap<> ();
+                    final ChannelAspectProcessor ca = Activator.getChannelAspects ();
+                    ca.process ( Arrays.asList ( aspectFactoryId ), ChannelAspect::getExtractor, extractor -> {
+                        try
+                        {
+                            final Map<String, String> md = new HashMap<> ();
+                            extractor.extractMetaData ( file, md );
+                            convertMetaDataFromExtractor ( metadata, extractor, md );
+                        }
+                        catch ( final Exception e )
+                        {
+                            throw new RuntimeException ( e );
+                        }
+                    } );
+
+                    // add metadata
+
+                    convertProperties ( metadata, ae, ae.getProperties () );
+                    em.persist ( ae );
+                }
+                finally
+                {
+                    try
+                    {
+                        // delete temp file, if possible
+                        Files.deleteIfExists ( file );
+                    }
+                    catch ( final Exception e )
+                    {
+                        // ignore
+                    }
+                }
+            } );
+        }
+    }
+
+    @Override
+    public void removeChannelAspect ( final String channelId, final String aspectFactoryId )
+    {
+        doWithTransactionVoid ( em -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            channel.getAspects ().remove ( aspectFactoryId );
+            em.persist ( channel );
+
+            final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ArtifactPropertyEntity.class.getSimpleName () ) );
+            q.setParameter ( "factoryId", aspectFactoryId );
+            q.setParameter ( "channelId", channelId );
+            q.executeUpdate ();
+        } );
     }
 }

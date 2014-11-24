@@ -1,5 +1,7 @@
 package de.dentrassi.pm.storage.service;
 
+import java.util.Map;
+
 public interface Artifact extends Comparable<Artifact>
 {
     public Channel getChannel ();
@@ -11,4 +13,6 @@ public interface Artifact extends Comparable<Artifact>
     public String getName ();
 
     public void streamData ( ArtifactReceiver receiver );
+
+    public Map<MetaKey, String> getMetaData ();
 }

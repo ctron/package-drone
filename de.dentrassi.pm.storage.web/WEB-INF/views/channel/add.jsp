@@ -8,7 +8,7 @@
 <h:main title="Add artifact">
 
 <ul class="button-bar">
-	<li><a class="pure-button" href=".">Cancel</a></li>
+	<li><a class="pure-button" href="view">Cancel</a></li>
 </ul>
 
 <form method="post" action="" enctype="multipart/form-data" class="pure-form pure-form-stacked">

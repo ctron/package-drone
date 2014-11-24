@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Common Channel Aspects
+Bundle-SymbolicName: de.dentrassi.pm.aspect.common
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.google.common.hash;version="18.0.0",
+ com.google.common.io;version="18.0.0",
+ de.dentrassi.pm.meta,
+ de.dentrassi.pm.meta.extract;version="1.0.0"
+Service-Component: OSGI-INF/hash.xml
+Bundle-ActivationPolicy: lazy

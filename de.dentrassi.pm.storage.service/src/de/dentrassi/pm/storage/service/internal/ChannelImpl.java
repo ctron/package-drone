@@ -1,7 +1,9 @@
 package de.dentrassi.pm.storage.service.internal;
 
+import java.util.List;
 import java.util.Set;
 
+import de.dentrassi.pm.meta.ChannelAspectInformation;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
@@ -33,5 +35,11 @@ public class ChannelImpl implements Channel
     public void streamData ( final String artifactId, final ArtifactReceiver consumer )
     {
         this.service.streamArtifact ( artifactId, consumer );
+    }
+
+    @Override
+    public List<ChannelAspectInformation> getAspects ()
+    {
+        return this.service.getChannelAspectInformations ( this.id );
     }
 }

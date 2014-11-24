@@ -19,4 +19,8 @@ public interface StorageService
     public void streamArtifact ( String artifactId, ArtifactReceiver consumer ) throws FileNotFoundException;
 
     public ArtifactInformation deleteArtifact ( String artifactId );
+
+    public void addChannelAspect ( String channelId, String aspectFactoryId );
+
+    public void removeChannelAspect ( String channelId, String aspectFactoryId );
 }

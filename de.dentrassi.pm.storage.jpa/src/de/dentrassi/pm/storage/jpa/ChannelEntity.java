@@ -1,11 +1,17 @@
 package de.dentrassi.pm.storage.jpa;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
 import org.eclipse.persistence.annotations.UuidGenerator;
@@ -20,6 +26,11 @@ public class ChannelEntity
 
     @OneToMany ( mappedBy = "channel" )
     private Set<ArtifactEntity> artifacts = new HashSet<> ();
+
+    @ElementCollection
+    @CollectionTable ( name = "CHANNEL_ASPECTS", joinColumns = @JoinColumn ( name = "CHANNEL_ID", nullable = false ) )
+    @Column ( nullable = false, unique = true, name = "ASPECT" )
+    private List<String> aspects = new ArrayList<> ();
 
     public void setId ( final String id )
     {
@@ -39,6 +50,16 @@ public class ChannelEntity
     public void setArtifacts ( final Set<ArtifactEntity> artifacts )
     {
         this.artifacts = artifacts;
+    }
+
+    public List<String> getAspects ()
+    {
+        return this.aspects;
+    }
+
+    public void setAspects ( final List<String> aspects )
+    {
+        this.aspects = aspects;
     }
 
     @Override

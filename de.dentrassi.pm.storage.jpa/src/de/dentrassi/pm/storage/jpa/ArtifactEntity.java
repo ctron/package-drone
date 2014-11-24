@@ -1,18 +1,18 @@
 package de.dentrassi.pm.storage.jpa;
 
-import java.util.HashMap;
-import java.util.Map;
+import static javax.persistence.CascadeType.ALL;
+
+import java.util.Collection;
+import java.util.LinkedList;
 
 import javax.persistence.Basic;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
 import org.eclipse.persistence.annotations.UuidGenerator;
 
@@ -26,7 +26,7 @@ public class ArtifactEntity
     private String id;
 
     @ManyToOne
-    @JoinColumn ( name = "CHANNEL" )
+    @JoinColumn ( name = "CHANNEL_ID" )
     private ChannelEntity channel;
 
     @Basic
@@ -35,11 +35,8 @@ public class ArtifactEntity
     @Basic
     private long size;
 
-    @ElementCollection
-    @MapKeyColumn ( name = "KEY" )
-    @Column ( name = "VALUE" )
-    @CollectionTable ( name = "ARTIFACT_PROPERTIES", joinColumns = @JoinColumn ( name = "ART_ID" ) )
-    private final Map<String, String> properties = new HashMap<> ();
+    @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
+    private Collection<ArtifactPropertyEntity> properties = new LinkedList<> ();
 
     public String getId ()
     {
@@ -71,9 +68,14 @@ public class ArtifactEntity
         return this.name;
     }
 
-    public Map<String, String> getProperties ()
+    public Collection<ArtifactPropertyEntity> getProperties ()
     {
         return this.properties;
+    }
+
+    public void setProperties ( final Collection<ArtifactPropertyEntity> properties )
+    {
+        this.properties = properties;
     }
 
     public long getSize ()

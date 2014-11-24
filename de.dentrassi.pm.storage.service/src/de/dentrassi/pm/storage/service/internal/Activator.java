@@ -3,15 +3,14 @@ package de.dentrassi.pm.storage.service.internal;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import de.dentrassi.pm.meta.ChannelAspectProcessor;
+
 public class Activator implements BundleActivator
 {
 
-    private static BundleContext context;
+    private static Activator INSTANCE;
 
-    static BundleContext getContext ()
-    {
-        return context;
-    }
+    private ChannelAspectProcessor channelAspects;
 
     /*
      * (non-Javadoc)
@@ -20,7 +19,9 @@ public class Activator implements BundleActivator
     @Override
     public void start ( final BundleContext bundleContext ) throws Exception
     {
-        Activator.context = bundleContext;
+        Activator.INSTANCE = this;
+
+        this.channelAspects = new ChannelAspectProcessor ( bundleContext );
     }
 
     /*
@@ -30,7 +31,17 @@ public class Activator implements BundleActivator
     @Override
     public void stop ( final BundleContext bundleContext ) throws Exception
     {
-        Activator.context = null;
+        if ( this.channelAspects != null )
+        {
+            this.channelAspects.close ();
+            this.channelAspects = null;
+        }
+
+        Activator.INSTANCE = null;
     }
 
+    public static ChannelAspectProcessor getChannelAspects ()
+    {
+        return Activator.INSTANCE.channelAspects;
+    }
 }
