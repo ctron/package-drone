@@ -279,25 +279,33 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return null;
         }
 
-        // FIXME: allow converting meta data
+        final Map<MetaKey, String> metadata = new HashMap<> ();
+        for ( final ArtifactPropertyEntity entry : ae.getProperties () )
+        {
+            metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+        }
 
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), null );
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata );
     }
 
     @Override
     public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
     {
         doWithTransactionVoid ( em -> {
-
-            final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
-
-            if ( ae == null )
-            {
-                throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
-            }
-
+            final ArtifactEntity ae = getCheckedArtifact ( em, artifactId );
             internalStreamArtifact ( em, ae, receiver );
         } );
+    }
+
+    private ArtifactEntity getCheckedArtifact ( final EntityManager em, final String artifactId )
+    {
+        final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
+
+        if ( ae == null )
+        {
+            throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
+        }
+        return ae;
     }
 
     private void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ArtifactReceiver receiver ) throws Exception
@@ -457,6 +465,22 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             q.setParameter ( "factoryId", aspectFactoryId );
             q.setParameter ( "channelId", channelId );
             q.executeUpdate ();
+        } );
+    }
+
+    @Override
+    public ArtifactInformation getArtifactInformation ( final String artifactId )
+    {
+        return doWithTransaction ( em -> convert ( getCheckedArtifact ( em, artifactId ) ) );
+    }
+
+    @Override
+    public Artifact getArtifact ( final String artifactId )
+    {
+        return doWithTransaction ( em -> {
+            final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
+            final ChannelImpl channel = convert ( artifact.getChannel () );
+            return convert ( channel, artifact );
         } );
     }
 }

@@ -23,4 +23,8 @@ public interface StorageService
     public void addChannelAspect ( String channelId, String aspectFactoryId );
 
     public void removeChannelAspect ( String channelId, String aspectFactoryId );
+
+    public ArtifactInformation getArtifactInformation ( String artifactId );
+
+    public Artifact getArtifact ( String artifactId );
 }

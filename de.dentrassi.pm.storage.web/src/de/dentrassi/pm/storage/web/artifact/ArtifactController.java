@@ -1,6 +1,8 @@
 package de.dentrassi.pm.storage.web.artifact;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
@@ -56,5 +59,19 @@ public class ArtifactController
         final ArtifactInformation info = service.deleteArtifact ( artifactId );
 
         return new ModelAndView ( "redirect:/channel/" + info.getChannelId () + "/view" );
+    }
+
+    @RequestMapping ( value = "/artifact/{artifactId}/view", method = RequestMethod.GET )
+    public ModelAndView view ( final HttpServletResponse response, @PathVariable ( "artifactId" )
+    final String artifactId )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+
+        final Artifact artifact = service.getArtifact ( artifactId );
+
+        final Map<String, Object> model = new HashMap<String, Object> ();
+        model.put ( "artifact", artifact );
+
+        return new ModelAndView ( "artifact/view", model );
     }
 }

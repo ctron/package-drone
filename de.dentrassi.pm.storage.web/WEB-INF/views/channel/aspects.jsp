@@ -18,8 +18,8 @@
 <h2>Assigned aspects</h2>
 <dl>
 <c:forEach items="${channel.aspects }" var="aspect">
-<dt>${aspect.label }</dt>
-<dd class="<c:if test="${not aspect.resolved }">unresolved</c:if>">${aspect.description } <form action="removeAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Remove" class="pure-button" /></form></dd>
+<dt>${fn:escapeXml(aspect.label) }</dt>
+<dd class="<c:if test="${not aspect.resolved }">unresolved</c:if>">${fn:escapeXml(aspect.description) } <form action="removeAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Remove" class="pure-button" /></form></dd>
 </c:forEach>
 </dl>
 </div>
@@ -29,7 +29,7 @@
 <dl>
 <c:forEach items="${addAspects }" var="aspect">
 <dt>${fn:escapeXml(aspect.factoryId ) }</dt>
-<dd>${aspect.description } <form action="addAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Add" class="pure-button" /></form></dd>
+<dd>${fn:escapeXml(aspect.description) } <form action="addAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Add" class="pure-button" /></form></dd>
 </c:forEach>
 </dl>
 </div>

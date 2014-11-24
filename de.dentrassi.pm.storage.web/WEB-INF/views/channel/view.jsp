@@ -3,7 +3,7 @@
     
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <h:main title="Channel - ${channel.id }">
 
@@ -16,18 +16,17 @@
 <table>
 
 <tr>
-	<th>ID</th>
 	<th>Name</th>
-	<th>size</th>
+	<th>Size</th>
 </tr>
 
 <c:forEach items="${channel.artifacts }" var="artifact">
 	<tr>
-		<td>${artifact.id }</td>
-		<td>${artifact.name }</td>
-		<td>${artifact.size }</td>
+		<td>${fn:escapeXml(artifact.name) }</td>
+		<td>${fn:escapeXml(artifact.size) }</td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></td>
+		<td><a href="<c:url value="/artifact/${artifact.id}/view"/>">View</a></td>
 	</tr>
 </c:forEach>
 
