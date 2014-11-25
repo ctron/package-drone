@@ -7,26 +7,25 @@
 
 <h:main title="Setup">
 
+<c:if test="${empty jdbcDrivers}">
+<div class="warning">
+	<div class="title">No JDBC drivers were found.</div>
+	<div>You need to install some OSGi compatible JDBC drivers!</div>
+</div>
+</c:if>
+
+
 <form:form action="" method="POST" cssClass="pure-form pure-form-aligned">
 
 <fieldset>
 
 	<div  class="pure-control-group">
 		<form:label path="jdbcDriver">JDBC Driver:</form:label>
-	
-		<c:if test="${empty jdbcDrivers}">
-		<div class="warning">
-			<div class="title">No JDBC drivers were found.</div>
-			<div>You need to install some OSGi compatible JDBC drivers!</div>
-		</div>
-		</c:if>
 		
-		<c:if test="${not empty jdbcDrivers}">
 		<form:select path="jdbcDriver">
 			<form:option value="" label="Choose JDBC Driver"/>
 			<form:options items="${jdbcDrivers }" itemValue="className"/>
 		</form:select>
-		</c:if>
 	
 		<div class="pure-form-message-inline"><form:errors path="jdbcDriver" cssClass="error" /></div>
 	

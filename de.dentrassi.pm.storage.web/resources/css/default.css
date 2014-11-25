@@ -13,6 +13,20 @@
 	color: red;
 }
 
+div.warning {
+	background-color: #fffce6;
+	border: 1pt solid #DDD999;
+	border-radius: 10pt;
+	padding: 1em;
+	margin: 1em;
+	display: inline-block;
+}
+
+div.warning > .title {
+	font-weight: bold;
+	padding-bottom: .5em;
+}
+
 .success {
 	background-color: #efffef;
 	border: solid 1px #99ff99;
@@ -37,10 +51,13 @@ nav {
 	border-bottom: 1px solid #AAA;
 }
 
-.title {
-	padding-left: 1em;
+.main-title {
 	background: #F3F3F3;
 	border-bottom: 1px solid #AAA;
+}
+
+.main-title header {
+	padding-left: 1em;
 }
 
 .button-bar {

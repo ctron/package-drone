@@ -51,6 +51,12 @@ public class P2Servlet extends HttpServlet
 
         final String paths[] = req.getPathInfo ().split ( "/" );
 
+        if ( paths.length < 2 )
+        {
+            showHelp ( resp );
+            return;
+        }
+
         final String channelId = paths[1];
 
         final StorageService service = this.tracker.getService ();
@@ -79,6 +85,12 @@ public class P2Servlet extends HttpServlet
             logger.warn ( "Not found for: {}", req.getPathInfo () );
             resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
         }
+    }
+
+    private void showHelp ( final HttpServletResponse resp ) throws IOException
+    {
+        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+        resp.getWriter ().println ( "This is the package drone P2 adapter.\n\nAlways know where your towel is!" );
     }
 
     private void process ( final HttpServletRequest req, final HttpServletResponse resp, final Handler handler ) throws ServletException

@@ -46,7 +46,7 @@
 </c:if>
 
 <div class="pure-g">
-    <div class="pure-u-1 title">
+    <div class="pure-u-1 main-title">
     	<header>
 			<h1><%= title %></h1>
 		</header>

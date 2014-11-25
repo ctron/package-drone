@@ -44,7 +44,14 @@ public class JdbcDriverInformation
     @Override
     public String toString ()
     {
-        return String.format ( "%s (%s)", this.name, this.version );
+        if ( this.version != null )
+        {
+            return String.format ( "%s (%s)", this.name, this.version );
+        }
+        else
+        {
+            return this.name;
+        }
     }
 
 }

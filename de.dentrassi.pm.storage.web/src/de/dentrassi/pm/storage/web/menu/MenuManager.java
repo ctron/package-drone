@@ -74,7 +74,7 @@ public class MenuManager
         final List<MenuEntry> result = new LinkedList<> ();
 
         // this should be cached
-        for ( final MenuExtender me : this.tracker.getServices ( new MenuExtender[0] ) )
+        for ( final MenuExtender me : this.tracker.getTracked ().values () )
         {
             result.addAll ( me.getEntries () );
         }
