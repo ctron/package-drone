@@ -70,6 +70,8 @@ public class SetupController extends AbstractDefaultController
                 cfg.setDatabaseSettings ( data );
             }
 
+            // now wait until the configuration was performed in the background
+
             if ( Activator.getTracker ().waitForStorageService ( 5000 ) != null )
             {
                 return new ModelAndView ( "redirect:/" );
