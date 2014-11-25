@@ -28,3 +28,7 @@ ul.button-bar {
 ul.button-bar > li {
 	display: inline;
 }
+
+.unresolved {
+	color: red;
+}
