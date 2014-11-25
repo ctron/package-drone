@@ -6,4 +6,5 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: javax.persistence;version="2.0.0"
-Export-Package: de.dentrassi.pm.common.service;version="1.0.0"
+Export-Package: de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.common.service;version="1.0.0"
