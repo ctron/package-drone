@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.common;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -74,6 +75,11 @@ public class XmlHelper
         this.xpathFactory = XPathFactory.newInstance ();
     }
 
+    public Document create ()
+    {
+        return this.db.newDocument ();
+    }
+
     public Document parse ( final InputStream stream ) throws Exception
     {
         return this.db.parse ( stream );
@@ -88,6 +94,14 @@ public class XmlHelper
         transformer.setOutputProperty ( OutputKeys.ENCODING, "UTF-8" );
         transformer.setOutputProperty ( "{http://xml.apache.org/xslt}indent-amount", "2" );
         transformer.transform ( source, result );
+    }
+
+    public byte[] toData ( final Document doc ) throws Exception
+    {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream ();
+        write ( doc, out );
+        out.close ();
+        return out.toByteArray ();
     }
 
     public String getElementValue ( final Node element, final String path ) throws Exception
