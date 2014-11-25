@@ -45,9 +45,8 @@
 <div class="success"><c:out escapeXml="true" value="${success }" /></div>
 </c:if>
 
-
 <div class="pure-g">
-    <div class="pure-u">
+    <div class="pure-u-1 title">
     	<header>
 			<h1><%= title %></h1>
 		</header>

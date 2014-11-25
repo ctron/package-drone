@@ -32,3 +32,26 @@ ul.button-bar > li {
 .unresolved {
 	color: red;
 }
+
+nav {
+	border-bottom: 1px solid #AAA;
+}
+
+.title {
+	padding-left: 1em;
+	background: #F3F3F3;
+	border-bottom: 1px solid #AAA;
+}
+
+.button-bar {
+	border-bottom: 1px solid #AAA;
+	padding-bottom: 1em;
+}
+
+.welcome {
+	text-align: center;
+	vertical-align: center;
+	padding-top: 5em;
+	color: #555;
+	font-size: x-large;
+}

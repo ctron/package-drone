@@ -6,4 +6,6 @@
 
 <h:main title="Main">
 
+<div class="welcome">Welcome to the Package Drone</div>
+
 </h:main>
