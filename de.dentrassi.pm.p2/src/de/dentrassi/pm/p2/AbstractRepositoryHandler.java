@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,15 +28,7 @@ public abstract class AbstractRepositoryHandler implements Handler
         this.channel = channel;
         this.properties.put ( "p2.timestamp", "" + System.currentTimeMillis () );
 
-        try
-        {
-            this.xml = new XmlHelper ();
-        }
-        catch ( final ParserConfigurationException e )
-        {
-            throw new RuntimeException ( e );
-        }
-
+        this.xml = new XmlHelper ();
     }
 
     protected void setData ( final Document doc ) throws Exception
@@ -79,7 +70,7 @@ public abstract class AbstractRepositoryHandler implements Handler
         element.setAttribute ( "size", "" + element.getChildNodes ().getLength () );
     }
 
-    protected Document initRepository ( String processingType  , final String type   )
+    protected Document initRepository ( final String processingType, final String type )
     {
         final Document doc = this.xml.create ();
 

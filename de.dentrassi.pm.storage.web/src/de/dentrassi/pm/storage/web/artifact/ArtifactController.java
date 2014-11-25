@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.artifact;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,74 +21,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.google.common.io.ByteStreams;
-
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactInformation;
-import de.dentrassi.pm.storage.service.MetaKey;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.Activator;
 
 @Controller
 public class ArtifactController
 {
-    private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
-
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
     public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        streamArtifact ( response, artifactId, APPLICATION_OCTET_STREAM, true );
+        DownloadHelper.streamArtifact ( response, Activator.getTracker ().getStorageService (), artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
     public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        streamArtifact ( response, artifactId, null, false );
-    }
-
-    protected void streamArtifact ( final HttpServletResponse response, final String artifactId, final String mimetype, final boolean download )
-    {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        try
-        {
-            service.streamArtifact ( artifactId, ( info, stream ) -> {
-
-                String mt = mimetype;
-                if ( mt == null )
-                {
-                    mt = getMimeType ( service.getArtifact ( artifactId ) );
-                }
-                response.setContentType ( mt );
-
-                try
-                {
-                    response.setContentLengthLong ( info.getLength () );
-                    if ( download )
-                    {
-                        response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
-                    }
-                    final long size = ByteStreams.copy ( stream, response.getOutputStream () );
-                    System.out.format ( "%s bytes copied%n", size );
-                }
-                catch ( final Exception e )
-                {
-                    throw new RuntimeException ( e );
-                }
-            } );
-        }
-        catch ( final FileNotFoundException e )
-        {
-            response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-        }
-    }
-
-    private String getMimeType ( final Artifact artifact )
-    {
-        final String mimetype = artifact.getMetaData ().get ( new MetaKey ( "mime", "type" ) );
-        return mimetype == null ? APPLICATION_OCTET_STREAM : mimetype;
+        DownloadHelper.streamArtifact ( response, Activator.getTracker ().getStorageService (), artifactId, null, false );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )

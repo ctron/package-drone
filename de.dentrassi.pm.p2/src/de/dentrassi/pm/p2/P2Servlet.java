@@ -20,12 +20,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class P2Servlet extends HttpServlet
 {
+    private static final Logger logger = LoggerFactory.getLogger ( P2Servlet.class );
+
     private static final long serialVersionUID = 1L;
 
     private ServiceTracker<StorageService, StorageService> tracker;
@@ -43,6 +47,8 @@ public class P2Servlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
+        logger.debug ( "Request: {}", req.getPathInfo () );
+
         final String paths[] = req.getPathInfo ().split ( "/" );
 
         final String channelId = paths[1];
@@ -58,8 +64,19 @@ public class P2Servlet extends HttpServlet
         {
             process ( req, resp, new ArtifactsHandler ( channel ) );
         }
+        else if ( "plugins".equals ( paths[2] ) )
+        {
+            logger.warn ( "Download plugin: {}", req.getPathInfo () );
+            process ( req, resp, new DownloadHandler ( channel, paths[3], "bundle" ) );
+        }
+        else if ( "features".equals ( paths[2] ) )
+        {
+            logger.warn ( "Download feature: {}", req.getPathInfo () );
+            process ( req, resp, new DownloadHandler ( channel, paths[3], "eclipse.feature" ) );
+        }
         else
         {
+            logger.warn ( "Not found for: {}", req.getPathInfo () );
             resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
         }
     }

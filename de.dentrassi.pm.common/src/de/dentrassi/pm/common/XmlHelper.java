@@ -65,10 +65,17 @@ public class XmlHelper
 
     private final XPathFactory xpathFactory;
 
-    public XmlHelper () throws ParserConfigurationException
+    public XmlHelper ()
     {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
-        this.db = dbf.newDocumentBuilder ();
+        try
+        {
+            this.db = dbf.newDocumentBuilder ();
+        }
+        catch ( final ParserConfigurationException e )
+        {
+            throw new RuntimeException ( e );
+        }
 
         this.transformerFactory = TransformerFactory.newInstance ();
 

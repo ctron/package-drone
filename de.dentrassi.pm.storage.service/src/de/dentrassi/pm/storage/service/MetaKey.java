@@ -10,7 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service;
 
-public class MetaKey
+public class MetaKey implements Comparable<MetaKey>
 {
     private final String namespace;
 
@@ -87,5 +87,19 @@ public class MetaKey
     public String toString ()
     {
         return "[" + this.namespace + ":" + this.key + "]";
+    }
+
+    @Override
+    public int compareTo ( final MetaKey o )
+    {
+        int rc;
+
+        rc = this.namespace.compareTo ( o.namespace );
+        if ( rc != 0 )
+        {
+            return rc;
+        }
+
+        return this.key.compareTo ( o.key );
     }
 }

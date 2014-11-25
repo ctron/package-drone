@@ -4,11 +4,14 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.osgi.framework.Constants;
 import org.w3c.dom.Document;
@@ -17,7 +20,6 @@ import org.w3c.dom.Element;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.MetaKey;
 
@@ -36,13 +38,18 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
 
         addProperties ( root );
 
+        addMappings ( root );
+
         final Element artifacts = addElement ( root, "artifacts" );
 
         for ( final Artifact artifact : this.channel.getArtifacts () )
         {
             final Map<MetaKey, String> md = artifact.getMetaData ();
 
-            if ( "jar".equals ( md.get ( new MetaKey ( "mvn", "extension" ) ) ) )
+            final String name = artifact.getName ();
+            final String mvnExtension = md.get ( new MetaKey ( "mvn", "extension" ) );
+
+            if ( "jar".equals ( mvnExtension ) || name.endsWith ( ".jar" ) )
             {
                 // need a different way to detect JARs
                 attachP2Data ( artifact, artifacts, md );
@@ -54,7 +61,31 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
         setData ( doc );
     }
 
-    private void attachP2Data ( final Artifact artifact, final Element artifacts, final Map<MetaKey, String> md ) throws IOException
+    private void addMappings ( final Element root )
+    {
+        final Element mappings = addElement ( root, "mappings" );
+
+        addMapping ( mappings, "(& (classifier=osgi.bundle))", "${repoUrl}/plugins/${id}_${version}.jar" );
+        addMapping ( mappings, "(& (classifier=binary))", "${repoUrl}/binary/${id}_${version}" );
+        addMapping ( mappings, "(& (classifier=org.eclipse.update.feature))", "${repoUrl}/features/${id}_${version}.jar" );
+
+        fixSize ( mappings );
+    }
+
+    private void addMapping ( final Element mappings, final String rule, final String output )
+    {
+        final Element m = addElement ( mappings, "rule" );
+        m.setAttribute ( "filter", rule );
+        m.setAttribute ( "output", output );
+    }
+
+    @FunctionalInterface
+    public interface ArtifactProcessor
+    {
+        public void process ( Path file ) throws Exception;
+    }
+
+    private void processArtifact ( final Artifact artifact, final ArtifactProcessor processor ) throws Exception
     {
         final Path file = Files.createTempFile ( "blob-", null );
         try
@@ -66,7 +97,7 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
                 }
                 try
                 {
-                    extractInformation ( file, artifacts, info, md );
+                    processor.process ( file );
                 }
                 catch ( final Exception e )
                 {
@@ -80,12 +111,76 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
         }
     }
 
-    private void extractInformation ( final Path file, final Element artifacts, final ArtifactInformation info, final Map<MetaKey, String> md ) throws IOException
+    private void attachP2Data ( final Artifact artifact, final Element artifacts, final Map<MetaKey, String> md ) throws Exception
+    {
+        processArtifact ( artifact, file -> {
+            extractBundleInformationFromJar ( file, artifacts, artifact, md );
+            extractFeatureInformationFromJar ( file, artifacts, artifact, md );
+        } );
+    }
+
+    private void extractFeatureInformationFromJar ( final Path file, final Element artifacts, final Artifact artifact, final Map<MetaKey, String> md ) throws Exception
+    {
+        Document fdoc;
+        try ( ZipFile zf = new ZipFile ( file.toFile () ) )
+        {
+            final ZipEntry ze = zf.getEntry ( "feature.xml" );
+            if ( ze == null )
+            {
+                return;
+            }
+            try ( InputStream stream = zf.getInputStream ( ze ) )
+            {
+                fdoc = this.xml.parse ( stream );
+            }
+        }
+
+        // process feature content
+        final Element root = fdoc.getDocumentElement ();
+        if ( !"feature".equals ( root.getNodeName () ) )
+        {
+            return;
+        }
+
+        final String id = root.getAttribute ( "id" );
+        final String version = root.getAttribute ( "version" );
+        if ( id == null || version == null )
+        {
+            return;
+        }
+
+        final Element a = addElement ( artifacts, "artifact" );
+        a.setAttribute ( "classifier", "org.eclipse.update.feature" );
+        a.setAttribute ( "id", id );
+        a.setAttribute ( "version", version );
+
+        final String md5 = md.get ( new MetaKey ( "hasher", "md5" ) );
+
+        final Element props = addElement ( a, "properties" );
+
+        if ( md5 != null )
+        {
+            addProperty ( props, "download.md5", md5 );
+        }
+
+        addProperty ( props, "download.size", "" + artifact.getSize () );
+        addProperty ( props, "artifact.size", "" + artifact.getSize () );
+        addProperty ( props, "download.contentType", "application/zip" );
+        addProperty ( props, "drone.artifact.id", artifact.getId () );
+    }
+
+    private void extractBundleInformationFromJar ( final Path file, final Element artifacts, final Artifact artifact, final Map<MetaKey, String> md ) throws IOException
     {
         final Manifest mf;
+
         try ( final JarInputStream jarStream = new JarInputStream ( new FileInputStream ( file.toFile () ) ) )
         {
             mf = jarStream.getManifest ();
+        }
+
+        if ( mf == null )
+        {
+            return;
         }
 
         final String symbolicName = mf.getMainAttributes ().getValue ( Constants.BUNDLE_SYMBOLICNAME );
@@ -110,8 +205,9 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
             addProperty ( props, "download.md5", md5 );
         }
 
-        addProperty ( props, "download.size", "" + info.getLength () );
-        addProperty ( props, "artifact.size", "" + info.getLength () );
+        addProperty ( props, "download.size", "" + artifact.getSize () );
+        addProperty ( props, "artifact.size", "" + artifact.getSize () );
+        addProperty ( props, "drone.artifact.id", artifact.getId () );
 
         fixSize ( props );
     }

@@ -11,6 +11,8 @@
 package de.dentrassi.pm.storage.service.internal;
 
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
@@ -28,7 +30,7 @@ public class ArtifactImpl implements Artifact
 
     private final String name;
 
-    private final Map<MetaKey, String> metaData;
+    private final SortedMap<MetaKey, String> metaData;
 
     public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData )
     {
@@ -36,7 +38,7 @@ public class ArtifactImpl implements Artifact
         this.channel = channel;
         this.name = name;
         this.size = size;
-        this.metaData = metaData;
+        this.metaData = new TreeMap<MetaKey, String> ( metaData );
     }
 
     @Override
@@ -70,7 +72,7 @@ public class ArtifactImpl implements Artifact
     }
 
     @Override
-    public Map<MetaKey, String> getMetaData ()
+    public SortedMap<MetaKey, String> getMetaData ()
     {
         return this.metaData;
     }

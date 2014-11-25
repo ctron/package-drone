@@ -19,7 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -48,14 +47,7 @@ public class MavenServlet extends HttpServlet
     {
         super.init ();
 
-        try
-        {
-            this.xml = new XmlHelper ();
-        }
-        catch ( final ParserConfigurationException e )
-        {
-            throw new ServletException ( e );
-        }
+        this.xml = new XmlHelper ();
 
         final BundleContext context = FrameworkUtil.getBundle ( MavenServlet.class ).getBundleContext ();
         this.tracker = new ServiceTracker<> ( context, StorageService.class, null );
