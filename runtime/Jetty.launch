@@ -28,5 +28,5 @@
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
-<stringAttribute key="workspace_bundles" value="de.dentrassi.pm.aspect.common@default:default,de.dentrassi.pm.common@default:default,de.dentrassi.pm.maven@default:default,de.dentrassi.pm.meta@default:default,de.dentrassi.pm.storage.jpa@default:default,de.dentrassi.pm.storage.service@default:default,de.dentrassi.pm.storage.web@default:default,jul.handler@1:default,logback.configuration@default:false"/>
+<stringAttribute key="workspace_bundles" value="de.dentrassi.pm.aspect.common@default:default,de.dentrassi.pm.common@default:default,de.dentrassi.pm.logging.jul@default:default,de.dentrassi.pm.maven@default:default,de.dentrassi.pm.meta@default:default,de.dentrassi.pm.storage.jpa@default:default,de.dentrassi.pm.storage.service@default:default,de.dentrassi.pm.storage.web@default:default,logback.configuration@default:false"/>
 </launchConfiguration>
