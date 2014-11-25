@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+	 Set up jetty target platform                                                          
+     ====================================================================== -->
+<project name="project" default="default">
+    <description>
+    	Set up jetty target platform
+    </description>
+    
+    <property name="eclipse.orbit.release" value="R20140525021250"/>
+
+    <!-- ================================= 
+          target: default
+         ================================= -->
+    <target name="default" depends="clean.local,download,unpack,copy">
+    </target>
+
+    <!-- ================================= 
+          target: clean
+         ================================= -->
+    <target name="clean" depends="clean.local">
+        <delete dir="download" />
+    </target>
+
+    <!-- ================================= 
+          target: clean.local
+         ================================= -->
+    <target name="clean.local">
+        <delete dir="unpack" />
+        <delete dir="lib" />
+    </target>
+
+    <!-- ================================= 
+          target: download
+         ================================= -->
+    <target name="download">
+        <mkdir dir="download" />
+        <mkdir dir="download/bundles" />
+
+        <parallel>
+
+            <get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.5.v20141112.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+            <get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM3-201410292000/equinox-SDK-MarsM3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+            <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.1/gemini-jpa-1.1.0.RELEASE.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
+            <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
+            <get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.4.2/eclipselink-plugins-2.4.2.v20130514-5956486.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
+            <get src="http://neutronium.openscada.org/download/1.3/milestone/1.3.0.M9/org.openscada-1.3.0.M9.zip" dest="download/org.openscada.zip" usetimestamp="true" />
+
+            <get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/9.2.5.v20141112/jetty-osgi-boot-9.2.5.v20141112.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.classic_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.core_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+
+            <!-- annotation stuff -->
+
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.transaction_1.1.1.v201105210645.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://central.maven.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://central.maven.org/maven2/org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.0.1/org.apache.aries.spifly.dynamic.bundle-1.0.1.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://central.maven.org/maven2/org/apache/aries/org.apache.aries.util/1.1.0/org.apache.aries.util-1.1.0.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm-tree/5.0.1/asm-tree-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm-commons/5.0.1/asm-commons-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm/5.0.1/asm-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
+
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.activation_1.1.0.v201211130549.jar" dest="download/bundles" usetimestamp="true" />
+
+            <!-- jsp stuff -->
+
+            <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/9.2.5.v20141112/jetty-osgi-boot-jsp-9.2.5.v20141112.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xalan_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xml.serializer_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
+
+            <!-- for spring -->
+
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jcl_1.7.2.v20130115-1340.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jul_1.7.2.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+
+            <!-- for hibernate validation -->
+
+            <get src="http://repo1.maven.org/maven2/com/fasterxml/classmate/1.0.0/classmate-1.0.0.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar" dest="download/bundles" usetimestamp="true" />
+            
+            <!-- jpa -->
+            
+            <!--
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
+            -->
+
+        </parallel>
+
+    </target>
+
+    <!-- ================================= 
+          target: unpack
+         ================================= -->
+    <target name="unpack">
+        <mkdir dir="unpack/jetty" />
+        <mkdir dir="unpack/equinox" />
+        <mkdir dir="unpack/gemini-dbaccess" />
+        <mkdir dir="unpack/gemini-jpa" />
+        <mkdir dir="unpack/eclipselink" />
+        <mkdir dir="unpack/openscada" />
+
+        <untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
+            <cutdirsmapper dirs="1" />
+        </untar>
+        <unzip src="download/equinox-SDK.zip" dest="unpack/equinox" />
+        <unzip src="download/gemini-dbaccess.zip" dest="unpack/gemini-dbaccess" />
+        <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
+        <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
+        <unzip src="download/org.openscada.zip" dest="unpack/openscada" />
+    </target>
+
+    <!-- ================================= 
+          target: copy
+         ================================= -->
+    <target name="copy">
+        <mkdir dir="lib" />
+        <copy todir="lib">
+            <fileset dir="unpack/jetty/lib">
+
+                <include name="jetty-util-*.jar" />
+                <include name="jetty-http-*.jar" />
+                <include name="jetty-io-*.jar" />
+                <include name="jetty-security-*.jar" />
+                <include name="jetty-server-*.jar" />
+                <include name="jetty-servlet-*.jar" />
+                <include name="jetty-webapp-*.jar" />
+                <include name="jetty-deploy-*.jar" />
+                <include name="jetty-xml-*.jar" />
+                <include name="jetty-osgi-servlet-api-*.jar" />
+
+                <include name="servlet-api-3.1.jar" />
+                <include name="jetty-schemas-3.1.jar" />
+
+                <!-- annotation -->
+
+                <include name="jetty-jndi-*.jar" />
+                <include name="jetty-plus-*.jar" />
+                <include name="jetty-annotations-*.jar" />
+
+                <!-- jsp -->
+
+                <include name="apache-jsp/*.jar" />
+                <include name="apache-jstl/*.jar" />
+
+
+            </fileset>
+
+            <fileset dir="unpack/equinox/plugins">
+
+                <include name="org.apache.felix.gogo.command_*.jar" />
+                <include name="org.apache.felix.gogo.runtime_*.jar" />
+                <include name="org.apache.felix.gogo.shell_*.jar" />
+
+                <include name="org.eclipse.equinox.cm_*.jar" />
+                <include name="org.eclipse.equinox.common_*.jar" />
+                <include name="org.eclipse.equinox.console_*.jar" />
+                <include name="org.eclipse.equinox.ds_*.jar" />
+                <include name="org.eclipse.equinox.event_*.jar" />
+                <include name="org.eclipse.equinox.supplement_*.jar" />
+                <include name="org.eclipse.equinox.util_*.jar" />
+
+                <include name="org.eclipse.osgi_*.jar" />
+                <include name="org.eclipse.osgi.services_*.jar" />
+                <include name="org.eclipse.osgi.util_*.jar" />
+                <include name="org.slf4j.api_*.jar" />
+
+            </fileset>
+
+            <fileset dir="unpack/gemini-dbaccess/plugins">
+                <include name="osgi.enterprise_*.jar"/>
+            	<include name="org.eclipse.gemini.dbaccess.mysql_*"/>
+            	<include name="org.eclipse.gemini.dbaccess.util_*"/>
+        	</fileset>
+            
+            <fileset dir="unpack/gemini-jpa">
+                <include name="org.eclipse.gemini.jpa-*.jar"/>
+        	</fileset>
+            
+            <fileset dir="unpack/eclipselink">
+                <include name="javax.persistence_2*.jar"/>
+                
+                <include name="org.eclipse.persistence.antlr_*.jar"/>
+                <include name="org.eclipse.persistence.asm_*.jar"/>
+                <include name="org.eclipse.persistence.core_*.jar"/>
+                <include name="org.eclipse.persistence.jpa_*.jar"/>
+                <include name="org.eclipse.persistence.jpa.jpql_*.jar"/>
+                <include name="org.eclipse.persistence.jpa.osgi_*.jar"/>
+                
+                <include name="org.eclipse.persistence.jpa.equinox_*.jar"/>
+                <include name="org.eclipse.persistence.jpa.equinox.weaving_*.jar"/>
+
+            </fileset>
+            
+            <fileset dir="unpack/openscada/plugins">
+                <include name="org.openscada.external.postgresql_*.jar"/>
+            </fileset>
+            
+            <fileset dir="download/bundles" />
+
+            <mapper type="flatten" />
+        </copy>
+    </target>
+
+</project>
