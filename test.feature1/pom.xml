@@ -12,7 +12,7 @@
 	</parent>
 
 	<groupId>de.dentrassi</groupId>
-	<artifactId>test.bundle1</artifactId>
-	<packaging>eclipse-plugin</packaging>
+	<artifactId>test.feature1</artifactId>
+	<packaging>eclipse-feature</packaging>
 	<version>1.0.0-SNAPSHOT</version>
 </project>
