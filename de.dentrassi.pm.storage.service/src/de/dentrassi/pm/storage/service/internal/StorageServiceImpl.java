@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -203,9 +204,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             em.persist ( artifact );
             em.flush ();
 
-            try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=?" ) )
+            try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=? where id=?" ) )
             {
                 ps.setBlob ( 1, blob );
+                ps.setString ( 2, artifact.getId () );
                 ps.executeUpdate ();
             }
         }
@@ -481,6 +483,75 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
             final ChannelImpl channel = convert ( artifact.getChannel () );
             return convert ( channel, artifact );
+        } );
+    }
+
+    public Map<MetaKey, String> applyMetaData ( final String artifactId, final Map<MetaKey, String> metadata )
+    {
+        return doWithTransaction ( em -> {
+            final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
+            final Map<MetaKey, String> result = convert ( artifact.getProperties () );
+
+            // apply
+            for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
+            {
+                if ( entry.getValue () == null )
+                {
+                    result.remove ( entry.getKey () );
+                }
+                else
+                {
+                    result.put ( entry.getKey (), entry.getValue () );
+                }
+            }
+
+            // first clear all
+            artifact.getProperties ().clear ();
+            em.persist ( artifact );
+            em.flush ();
+
+            // now add the new set
+            convertProperties ( result, artifact, artifact.getProperties () );
+
+            // store
+            em.persist ( artifact );
+
+            return result;
+        } );
+    }
+
+    private Map<MetaKey, String> convert ( final Collection<ArtifactPropertyEntity> properties )
+    {
+        final Map<MetaKey, String> result = new HashMap<MetaKey, String> ( properties.size () );
+
+        for ( final ArtifactPropertyEntity ape : properties )
+        {
+            result.put ( new MetaKey ( ape.getNamespace (), ape.getKey () ), ape.getValue () );
+        }
+
+        return result;
+    }
+
+    @Override
+    public Collection<Artifact> findByName ( final String channelId, final String artifactName )
+    {
+        return doWithTransaction ( em -> {
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            final TypedQuery<ArtifactEntity> q = em.createQuery ( String.format ( "SELECT a FROM %s AS a WHERE a.name=:artifactName and a.channel.id=:channelId", ArtifactEntity.class.getName () ), ArtifactEntity.class );
+            q.setParameter ( "artifactName", artifactName );
+            q.setParameter ( "channelId", channelId );
+
+            final ChannelImpl ci = convert ( channel );
+
+            final Collection<Artifact> result = new LinkedList<> ();
+            for ( final ArtifactEntity ae : q.getResultList () )
+            {
+                result.add ( convert ( ci, ae ) );
+            }
+
+            return result;
         } );
     }
 }

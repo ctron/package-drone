@@ -9,10 +9,15 @@
 
 <ul class="button-bar">
 	<li><a class="pure-button" href="delete">Delete</a></li>
+	<li><a class="pure-button"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<li><a href="get">Download</a></li>
 </ul>
 
 <h2>Meta Data</h2>
+
+<table>
+<tr><th>Name:</th><td>${fn:escapeXml(artifact.name) }</td></tr>
+</table>
 
 <table>
 

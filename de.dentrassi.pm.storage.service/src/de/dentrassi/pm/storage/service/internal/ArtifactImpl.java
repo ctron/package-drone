@@ -76,4 +76,10 @@ public class ArtifactImpl implements Artifact
         return this.id.compareTo ( o.getId () );
     }
 
+    @Override
+    public void applyMetaData ( final Map<MetaKey, String> metadata )
+    {
+        this.channel.getService ().applyMetaData ( this.id, metadata );
+    }
+
 }

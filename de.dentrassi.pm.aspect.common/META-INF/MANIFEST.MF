@@ -9,5 +9,5 @@ Import-Package: com.google.common.hash;version="18.0.0",
  com.google.common.io;version="18.0.0",
  de.dentrassi.pm.meta,
  de.dentrassi.pm.meta.extract;version="1.0.0"
-Service-Component: OSGI-INF/hash.xml
+Service-Component: OSGI-INF/hash.xml, OSGI-INF/mime.xml
 Bundle-ActivationPolicy: lazy

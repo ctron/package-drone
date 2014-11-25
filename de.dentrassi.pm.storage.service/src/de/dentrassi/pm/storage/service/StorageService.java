@@ -27,4 +27,6 @@ public interface StorageService
     public ArtifactInformation getArtifactInformation ( String artifactId );
 
     public Artifact getArtifact ( String artifactId );
+
+    public Collection<Artifact> findByName ( String channelId, String format );
 }

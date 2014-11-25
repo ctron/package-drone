@@ -37,6 +37,11 @@ public class ChannelImpl implements Channel
         this.service.streamArtifact ( artifactId, consumer );
     }
 
+    StorageServiceImpl getService ()
+    {
+        return this.service;
+    }
+
     @Override
     public List<ChannelAspectInformation> getAspects ()
     {

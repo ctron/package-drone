@@ -50,3 +50,4 @@ Import-Package: com.fasterxml.classmate;version="1.0.0",
  org.osgi.service.jdbc;version="1.0.0",
  org.osgi.util.tracker;version="1.5.1"
 Service-Component: OSGI-INF/menu.xml
+Export-Package: org.springframework.cglib.core

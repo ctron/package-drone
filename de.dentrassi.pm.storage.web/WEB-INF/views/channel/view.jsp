@@ -27,6 +27,7 @@
 		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/view"/>">View</a></td>
+		<td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">Dump</a></td>
 	</tr>
 </c:forEach>
 

@@ -15,4 +15,6 @@ public interface Artifact extends Comparable<Artifact>
     public void streamData ( ArtifactReceiver receiver );
 
     public Map<MetaKey, String> getMetaData ();
+
+    public void applyMetaData ( Map<MetaKey, String> metadata );
 }
