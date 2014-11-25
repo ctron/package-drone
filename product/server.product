@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Package Drone" uid="package.drone.app" version="0.1.0" useFeatures="true" includeLaunchers="true">
+
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+
+   <vm>
+   </vm>
+
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="de.dentrassi.pm" version="1.0.0.qualifier"/>
+   </features>
+
+   <configurations>
+      <plugin id="de.dentrassi.pm.logging.jul" autoStart="true" startLevel="1" />
+      <plugin id="de.dentrassi.pm.maven" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.jetty.osgi.boot" autoStart="true" startLevel="5" />
+      <property name="eclipse.ignoreApp" value="true" />
+      <property name="jetty.home.bundle" value="org.eclipse.jetty.osgi.boot" />
+      <property name="org.eclipse.jetty.osgi.tldbundles" value="org.apache.taglibs.standard-impl" />
+      <property name="osgi.noShutdown" value="true" />
+   </configurations>
+
+</product>
