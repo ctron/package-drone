@@ -30,8 +30,8 @@ import org.w3c.dom.Node;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.MetaKey;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenServlet extends HttpServlet
@@ -86,13 +86,16 @@ public class MavenServlet extends HttpServlet
                 final StorageService service = this.tracker.getService ();
                 final Artifact artifact = service.createArtifact ( channelId, artifactName, request.getInputStream () );
 
-                final Map<MetaKey, String> metadata = new HashMap<> ();
+                if ( artifact != null )
+                {
+                    final Map<MetaKey, String> metadata = new HashMap<> ();
 
-                metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
-                metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
-                metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
+                    metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
+                    metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
+                    metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
 
-                artifact.applyMetaData ( metadata );
+                    artifact.applyMetaData ( metadata );
+                }
             }
             else if ( isMetaData ( toks, artifactName ) )
             {

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -42,13 +43,18 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -56,11 +62,13 @@ import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
-import de.dentrassi.pm.storage.service.MetaKey;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( StorageServiceImpl.class );
+
     @Override
     public Channel createChannel ()
     {
@@ -89,6 +97,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream )
     {
+        final Artifact artifact;
         try
         {
             final Path file = Files.createTempFile ( "blob-", null );
@@ -101,14 +110,30 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             try
             {
-                return doWithTransaction ( em -> {
+                artifact = doWithTransaction ( em -> {
+
+                    {
+                        final PreAddContentImpl context = new PreAddContentImpl ( name, file );
+                        runChannelTriggers ( em, channelId, listener -> listener.artifactPreAdd ( context ) );
+                        if ( context.isVeto () )
+                        {
+                            logger.info ( "Veto add artifact {} to channel {}", name, channelId );
+                            return null;
+                        }
+                    }
 
                     final Map<MetaKey, String> metadata = extractMetaData ( em, channelId, file );
 
+                    Artifact a;
                     try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
                     {
-                        return storeBlob ( em, channelId, name, in, metadata );
+                        a = storeBlob ( em, channelId, name, in, metadata );
                     }
+
+                    // now run the post add trigger
+                    runChannelTriggers ( em, channelId, listener -> listener.artifactAdded ( new AddedContextImpl ( a, metadata, file ) ) );
+
+                    return a;
                 } );
             }
             finally
@@ -120,6 +145,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 }
                 catch ( final Exception e )
                 {
+                    logger.info ( "Failed to delete temp file", e );
                     // ignore this
                 }
             }
@@ -140,6 +166,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new RuntimeException ( e );
             }
         }
+
+        return artifact;
+    }
+
+    protected void runChannelTriggers ( final EntityManager em, final String channelId, final Consumer<ChannelListener> listener )
+    {
+        final ChannelEntity channel = getCheckedChannel ( em, channelId );
+        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, listener );
     }
 
     protected Map<MetaKey, String> extractMetaData ( final EntityManager em, final String channelId, final Path file )
@@ -291,13 +325,19 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return null;
         }
 
+        final Map<MetaKey, String> metadata = convertMetaData ( ae );
+
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata );
+    }
+
+    private Map<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
+    {
         final Map<MetaKey, String> metadata = new HashMap<> ();
         for ( final ArtifactPropertyEntity entry : ae.getProperties () )
         {
             metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
         }
-
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata );
+        return metadata;
     }
 
     @Override
@@ -381,7 +421,15 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             final ArtifactInformation info = convert ( ae );
 
+            final String channelId = ae.getChannel ().getId ();
+            final String name = ae.getName ();
+            final Map<MetaKey, String> metadata = convertMetaData ( ae );
+
             em.remove ( ae );
+
+            // now run the post add trigger
+
+            runChannelTriggers ( em, channelId, listener -> listener.artifactRemoved ( new RemovedContextImpl ( artifactId, name, metadata ) ) );
 
             return info;
         } );

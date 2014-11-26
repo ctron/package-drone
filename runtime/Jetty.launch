@@ -5,7 +5,7 @@
 <booleanAttribute key="automaticValidate" value="true"/>
 <stringAttribute key="bootstrap" value=""/>
 <stringAttribute key="checked" value="[NONE]"/>
-<booleanAttribute key="clearConfig" value="true"/>
+<booleanAttribute key="clearConfig" value="false"/>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/Jetty"/>
 <booleanAttribute key="default" value="true"/>
 <booleanAttribute key="default_auto_start" value="true"/>
@@ -28,5 +28,5 @@
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
-<stringAttribute key="workspace_bundles" value="de.dentrassi.pm.aspect.common@default:default,de.dentrassi.pm.common@default:default,de.dentrassi.pm.logging.jul@1:default,de.dentrassi.pm.maven@default:default,de.dentrassi.pm.meta@default:default,de.dentrassi.pm.p2@default:default,de.dentrassi.pm.storage.jpa@default:default,de.dentrassi.pm.storage.service@default:default,de.dentrassi.pm.storage.web@default:default,logback.configuration@default:false"/>
+<stringAttribute key="workspace_bundles" value="de.dentrassi.pm.aspect.common@default:default,de.dentrassi.pm.aspect@default:default,de.dentrassi.pm.common@default:default,de.dentrassi.pm.logging.jul@1:default,de.dentrassi.pm.maven@default:default,de.dentrassi.pm.p2@default:default,de.dentrassi.pm.storage.jpa@default:default,de.dentrassi.pm.storage.service@default:default,de.dentrassi.pm.storage.web@default:default,de.dentrassi.pm.storage@default:default,logback.configuration@default:false"/>
 </launchConfiguration>

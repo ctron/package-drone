@@ -8,40 +8,48 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.storage.service.internal;
 
-public class ArtifactInformation
+import java.nio.file.Path;
+
+import de.dentrassi.pm.aspect.listener.PreAddContext;
+
+public class PreAddContentImpl implements PreAddContext
 {
-    private final long size;
 
     private final String name;
 
-    private final String channelId;
+    private final Path file;
 
-    public ArtifactInformation ( final long size, final String name, final String channelId )
+    private boolean veto;
+
+    public PreAddContentImpl ( final String name, final Path file )
     {
-        this.size = size;
         this.name = name;
-        this.channelId = channelId;
+        this.file = file;
     }
 
-    public long getLength ()
-    {
-        return this.size;
-    }
-
-    public long getSize ()
-    {
-        return this.size;
-    }
-
+    @Override
     public String getName ()
     {
         return this.name;
     }
 
-    public String getChannelId ()
+    @Override
+    public Path getFile ()
     {
-        return this.channelId;
+        return this.file;
     }
+
+    @Override
+    public void vetoAdd ()
+    {
+        this.veto = true;
+    }
+
+    public boolean isVeto ()
+    {
+        return this.veto;
+    }
+
 }

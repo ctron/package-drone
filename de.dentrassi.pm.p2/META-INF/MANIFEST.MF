@@ -9,6 +9,7 @@ Web-ContextPath: /p2
 Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.aspect.common.osgi;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.storage;version="1.0.0",
  de.dentrassi.pm.storage.service;version="1.0.0",
  de.dentrassi.pm.storage.service.util;version="1.0.0",
  javax.servlet;version="3.1.0",

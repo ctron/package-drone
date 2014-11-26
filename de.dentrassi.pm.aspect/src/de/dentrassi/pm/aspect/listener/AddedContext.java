@@ -8,26 +8,20 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.aspect.listener;
 
+import java.nio.file.Path;
 import java.util.Map;
-import java.util.SortedMap;
 
 import de.dentrassi.pm.storage.MetaKey;
 
-public interface Artifact extends Comparable<Artifact>
+public interface AddedContext
 {
-    public Channel getChannel ();
+    public String getName ();
+
+    public Path getFile ();
 
     public String getId ();
 
-    public long getSize ();
-
-    public String getName ();
-
-    public void streamData ( ArtifactReceiver receiver );
-
-    public SortedMap<MetaKey, String> getMetaData ();
-
-    public void applyMetaData ( Map<MetaKey, String> metadata );
+    public Map<MetaKey, String> getMetaData ();
 }

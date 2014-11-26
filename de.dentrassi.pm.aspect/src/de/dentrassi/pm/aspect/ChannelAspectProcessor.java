@@ -64,7 +64,10 @@ public class ChannelAspectProcessor
         for ( final ChannelAspect aspect : aspects )
         {
             final T t = getter.apply ( aspect );
-            consumer.accept ( t );
+            if ( t != null )
+            {
+                consumer.accept ( t );
+            }
         }
     }
 

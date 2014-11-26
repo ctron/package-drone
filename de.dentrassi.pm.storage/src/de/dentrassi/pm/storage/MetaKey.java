@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.storage;
 
 public class MetaKey implements Comparable<MetaKey>
 {

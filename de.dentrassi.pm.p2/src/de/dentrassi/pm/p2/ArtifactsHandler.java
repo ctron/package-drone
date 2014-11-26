@@ -19,9 +19,9 @@ import org.w3c.dom.Element;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
-import de.dentrassi.pm.storage.service.MetaKey;
 
 public class ArtifactsHandler extends AbstractRepositoryHandler
 {

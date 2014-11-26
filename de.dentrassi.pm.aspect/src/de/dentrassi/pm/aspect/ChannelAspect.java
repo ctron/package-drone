@@ -10,19 +10,32 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect;
 
+import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.meta.extract.Extractor;
 
 public interface ChannelAspect
 {
-    /**
-     * @return an extractor or <code>null</code>
-     */
-    public Extractor getExtractor ();
-
     /**
      * Get the factory id
      *
      * @return the factory id
      */
     public String getId ();
+
+    /**
+     * @return an extractor or <code>null</code>
+     */
+    public default Extractor getExtractor ()
+    {
+        return null;
+    }
+
+    /**
+     * @return a channel listener or <code>nulll</code>
+     */
+    public default ChannelListener getChannelListener ()
+    {
+        return null;
+    }
+
 }
