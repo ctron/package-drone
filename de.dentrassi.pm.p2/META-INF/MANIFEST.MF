@@ -17,4 +17,5 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.osgi.framework;version="1.7.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Export-Package: de.dentrassi.pm.p2;version="1.0.0"
+Export-Package: de.dentrassi.pm.p2;version="1.0.0",
+ de.dentrassi.pm.p2.servlet;version="1.0.0"

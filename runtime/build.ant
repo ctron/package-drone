@@ -170,7 +170,6 @@
                 <include name="org.eclipse.osgi.services_*.jar" />
                 <include name="org.eclipse.osgi.util_*.jar" />
                 <include name="org.slf4j.api_*.jar" />
-
             </fileset>
 
             <fileset dir="unpack/gemini-dbaccess/plugins">

@@ -28,7 +28,7 @@
 <h2>Additional aspects</h2>
 <dl>
 <c:forEach items="${addAspects }" var="aspect">
-<dt>${fn:escapeXml(aspect.factoryId ) }</dt>
+<dt>${fn:escapeXml(aspect.label ) }</dt>
 <dd>${fn:escapeXml(aspect.description) } <form action="addAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Add" class="pure-button" /></form></dd>
 </c:forEach>
 </dl>

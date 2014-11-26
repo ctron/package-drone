@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2;
+package de.dentrassi.pm.p2.servlet;
 
 import java.io.IOException;
 

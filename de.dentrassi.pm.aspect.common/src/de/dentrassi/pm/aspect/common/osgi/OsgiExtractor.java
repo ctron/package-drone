@@ -11,8 +11,6 @@
 package de.dentrassi.pm.aspect.common.osgi;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
@@ -26,6 +24,8 @@ import org.osgi.framework.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.meta.extract.Extractor;
@@ -37,6 +37,8 @@ public class OsgiExtractor implements Extractor
     public static final String KEY_VERSION = "version";
 
     public static final String KEY_NAME = "name";
+
+    public static final String KEY_BUNDLE_INFORMATION = "bundle-information";
 
     private final ChannelAspect aspect;
 
@@ -101,7 +103,7 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_CLASSIFIER, "eclipse.feature" );
     }
 
-    private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws IOException, FileNotFoundException
+    private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws Exception
     {
         final Manifest mf;
 
@@ -126,5 +128,13 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_NAME, symbolicName );
         metadata.put ( KEY_VERSION, version );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
+
+        final BundleInformation bi = new BundleInformation ();
+
+        bi.setId ( symbolicName );
+
+        final GsonBuilder gb = new GsonBuilder ();
+
+        metadata.put ( KEY_BUNDLE_INFORMATION, gb.create ().toJson ( bi ) );
     }
 }

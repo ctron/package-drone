@@ -6,7 +6,7 @@
 	
 	<servlet>
 		<servlet-name>main</servlet-name>
-		<servlet-class>de.dentrassi.pm.p2.P2Servlet</servlet-class>
+		<servlet-class>de.dentrassi.pm.p2.servlet.P2Servlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		
 		<multipart-config>

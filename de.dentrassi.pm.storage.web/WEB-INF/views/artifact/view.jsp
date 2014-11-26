@@ -30,7 +30,7 @@
 <c:forEach items="${artifact.metaData }" var="entry">
 	<tr>
 		<td>${fn:escapeXml(entry.key.namespace) }</td>
-		<td>${fn:escapeXml(entry.key.key) }</td>
+		<td style="white-space:nowrap">${fn:escapeXml(entry.key.key) }</td>
 		<td><code>${fn:escapeXml(entry.value) }</code></td>
 	</tr>
 </c:forEach>
