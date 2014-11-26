@@ -13,7 +13,7 @@ package de.dentrassi.pm.storage.web;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import de.dentrassi.pm.meta.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.storage.web.services.ServiceTracker;
 
 public class Activator implements BundleActivator

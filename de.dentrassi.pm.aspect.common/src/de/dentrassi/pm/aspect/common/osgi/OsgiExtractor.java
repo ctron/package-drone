@@ -16,8 +16,8 @@ import org.osgi.framework.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.meta.ChannelAspect;
 import de.dentrassi.pm.meta.extract.Extractor;
 
 public class OsgiExtractor implements Extractor

@@ -44,10 +44,10 @@ import javax.persistence.criteria.Root;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.ChannelAspectInformation;
+import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
-import de.dentrassi.pm.meta.ChannelAspect;
-import de.dentrassi.pm.meta.ChannelAspectInformation;
-import de.dentrassi.pm.meta.ChannelAspectProcessor;
 import de.dentrassi.pm.meta.extract.Extractor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;

@@ -14,8 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import de.dentrassi.pm.meta.ChannelAspect;
-import de.dentrassi.pm.meta.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.meta.extract.Extractor;
 
 public class MimeTypeAspectFactory implements ChannelAspectFactory

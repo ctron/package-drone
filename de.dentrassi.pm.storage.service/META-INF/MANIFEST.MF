@@ -7,8 +7,8 @@ Bundle-Activator: de.dentrassi.pm.storage.service.internal.Activator
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.io;version="18.0.0",
+ de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
- de.dentrassi.pm.meta;version="1.0.0",
  de.dentrassi.pm.meta.extract;version="1.0.0",
  de.dentrassi.pm.storage.jpa;version="1.0.0",
  javax.persistence;version="2.0.0",

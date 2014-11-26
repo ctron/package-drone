@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import de.dentrassi.pm.meta.ChannelAspectInformation;
-import de.dentrassi.pm.meta.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.ChannelAspectInformation;
+import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;

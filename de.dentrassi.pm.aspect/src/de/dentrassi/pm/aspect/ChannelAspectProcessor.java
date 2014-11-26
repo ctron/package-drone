@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.meta;
+package de.dentrassi.pm.aspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;

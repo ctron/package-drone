@@ -13,7 +13,7 @@ package de.dentrassi.pm.storage.service.internal;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import de.dentrassi.pm.meta.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 
 public class Activator implements BundleActivator
 {

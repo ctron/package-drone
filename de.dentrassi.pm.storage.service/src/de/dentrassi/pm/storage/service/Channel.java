@@ -13,7 +13,7 @@ package de.dentrassi.pm.storage.service;
 import java.util.List;
 import java.util.Set;
 
-import de.dentrassi.pm.meta.ChannelAspectInformation;
+import de.dentrassi.pm.aspect.ChannelAspectInformation;
 
 public interface Channel
 {

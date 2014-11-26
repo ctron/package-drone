@@ -8,11 +8,21 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.meta.extract;
+package de.dentrassi.pm.aspect;
 
-import de.dentrassi.pm.meta.ChannelAspect;
+import de.dentrassi.pm.meta.extract.Extractor;
 
-public interface ChannelAspectFunction
+public interface ChannelAspect
 {
-    public ChannelAspect getAspect ();
+    /**
+     * @return an extractor or <code>null</code>
+     */
+    public Extractor getExtractor ();
+
+    /**
+     * Get the factory id
+     *
+     * @return the factory id
+     */
+    public String getId ();
 }

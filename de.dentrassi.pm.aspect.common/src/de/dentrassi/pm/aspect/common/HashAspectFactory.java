@@ -19,8 +19,8 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
-import de.dentrassi.pm.meta.ChannelAspect;
-import de.dentrassi.pm.meta.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.meta.extract.Extractor;
 
 public class HashAspectFactory implements ChannelAspectFactory

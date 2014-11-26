@@ -10,8 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.common.osgi;
 
-import de.dentrassi.pm.meta.ChannelAspect;
-import de.dentrassi.pm.meta.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.meta.extract.Extractor;
 
 public class OsgiAspectFactory implements ChannelAspectFactory
