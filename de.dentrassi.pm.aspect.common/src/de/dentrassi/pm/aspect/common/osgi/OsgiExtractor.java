@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.common.osgi;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -27,12 +28,14 @@ import org.w3c.dom.Element;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.meta.extract.Extractor;
 
 public class OsgiExtractor implements Extractor
 {
     public static final String KEY_CLASSIFIER = "classifier";
+
+    public static final String KEY_MANIFEST = "manifest";
 
     public static final String KEY_VERSION = "version";
 
@@ -117,24 +120,28 @@ public class OsgiExtractor implements Extractor
             return;
         }
 
-        final String symbolicName = mf.getMainAttributes ().getValue ( Constants.BUNDLE_SYMBOLICNAME );
-        final String version = mf.getMainAttributes ().getValue ( Constants.BUNDLE_VERSION );
-
-        if ( symbolicName == null || version == null )
+        final BundleInformation bi = new BundleInformationParser ( mf ).parse ();
+        if ( bi == null )
         {
             return;
         }
 
-        metadata.put ( KEY_NAME, symbolicName );
+        final String version = mf.getMainAttributes ().getValue ( Constants.BUNDLE_VERSION );
+
+        // store main attributes
+        metadata.put ( KEY_NAME, bi.getId () );
         metadata.put ( KEY_VERSION, version );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
 
-        final BundleInformation bi = new BundleInformation ();
+        // serialize manifest
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        mf.write ( bos );
+        bos.close ();
+        metadata.put ( KEY_MANIFEST, bos.toString ( "UTF-8" ) );
 
-        bi.setId ( symbolicName );
-
+        // store bundle information
         final GsonBuilder gb = new GsonBuilder ();
-
         metadata.put ( KEY_BUNDLE_INFORMATION, gb.create ().toJson ( bi ) );
     }
+
 }

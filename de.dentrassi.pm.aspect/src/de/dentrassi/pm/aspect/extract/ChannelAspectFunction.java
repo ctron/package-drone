@@ -8,12 +8,11 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.meta.extract;
+package de.dentrassi.pm.aspect.extract;
 
-import java.nio.file.Path;
-import java.util.Map;
+import de.dentrassi.pm.aspect.ChannelAspect;
 
-public interface Extractor extends ChannelAspectFunction
+public interface ChannelAspectFunction
 {
-    public void extractMetaData ( Path file, Map<String, String> metadata ) throws Exception;
+    public ChannelAspect getAspect ();
 }

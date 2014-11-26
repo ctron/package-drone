@@ -16,7 +16,7 @@ import java.util.Map;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.aspect.extract.Extractor;
 
 public class MimeTypeAspectFactory implements ChannelAspectFactory
 {

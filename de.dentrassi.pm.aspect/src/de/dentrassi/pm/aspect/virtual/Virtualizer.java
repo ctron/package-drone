@@ -8,11 +8,23 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.meta.extract;
+package de.dentrassi.pm.aspect.virtual;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
+import java.io.InputStream;
+import java.nio.file.Path;
 
-public interface ChannelAspectFunction
+import de.dentrassi.pm.storage.ArtifactInformation;
+
+public interface Virtualizer
 {
-    public ChannelAspect getAspect ();
+    public interface Context
+    {
+        public ArtifactInformation getArtifactInformation ();
+
+        public Path getFile ();
+
+        public void createVirtualArtifact ( String name, InputStream stream );
+    }
+
+    public void virtualize ( Context context );
 }

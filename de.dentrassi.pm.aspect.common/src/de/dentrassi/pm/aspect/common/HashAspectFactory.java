@@ -10,7 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.common;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +23,9 @@ import com.google.common.hash.Hashing;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.aspect.virtual.Virtualizer;
+import de.dentrassi.pm.storage.MetaKey;
 
 public class HashAspectFactory implements ChannelAspectFactory
 {
@@ -54,6 +58,23 @@ public class HashAspectFactory implements ChannelAspectFactory
                 public ChannelAspect getAspect ()
                 {
                     return ChannelAspectImpl.this;
+                }
+            };
+        }
+
+        @Override
+        public Virtualizer getArtifactVirtualizer ()
+        {
+            return new Virtualizer () {
+
+                @Override
+                public void virtualize ( final Context context )
+                {
+                    final String md5 = context.getArtifactInformation ().getMetaData ().get ( new MetaKey ( ID, "md5" ) );
+                    if ( md5 != null )
+                    {
+                        context.createVirtualArtifact ( context.getArtifactInformation ().getName () + ".md5", new ByteArrayInputStream ( md5.getBytes ( StandardCharsets.UTF_8 ) ) );
+                    }
                 }
             };
         }

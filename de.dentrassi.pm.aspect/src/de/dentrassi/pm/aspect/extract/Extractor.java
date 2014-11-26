@@ -8,14 +8,12 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.aspect.extract;
 
-import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Map;
 
-import de.dentrassi.pm.storage.ArtifactInformation;
-
-@FunctionalInterface
-public interface ArtifactReceiver
+public interface Extractor extends ChannelAspectFunction
 {
-    public void receive ( ArtifactInformation information, InputStream stream ) throws Exception;
+    public void extractMetaData ( Path file, Map<String, String> metadata ) throws Exception;
 }

@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -67,6 +68,19 @@ public class ChannelAspectProcessor
             if ( t != null )
             {
                 consumer.accept ( t );
+            }
+        }
+    }
+
+    public <T> void processWithAspect ( final List<String> factoryIds, final Function<ChannelAspect, T> getter, final BiConsumer<ChannelAspect, T> consumer )
+    {
+        final List<ChannelAspect> aspects = createAspects ( factoryIds );
+        for ( final ChannelAspect aspect : aspects )
+        {
+            final T t = getter.apply ( aspect );
+            if ( t != null )
+            {
+                consumer.accept ( aspect, t );
             }
         }
     }

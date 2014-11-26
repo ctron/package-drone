@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import de.dentrassi.pm.storage.ArtifactInformation;
 import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.Activator;

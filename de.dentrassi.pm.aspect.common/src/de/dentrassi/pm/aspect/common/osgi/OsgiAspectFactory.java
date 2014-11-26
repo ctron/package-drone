@@ -12,7 +12,7 @@ package de.dentrassi.pm.aspect.common.osgi;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.aspect.extract.Extractor;
 
 public class OsgiAspectFactory implements ChannelAspectFactory
 {

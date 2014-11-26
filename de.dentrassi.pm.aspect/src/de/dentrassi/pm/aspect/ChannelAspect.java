@@ -10,8 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect;
 
+import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
-import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.aspect.virtual.Virtualizer;
 
 public interface ChannelAspect
 {
@@ -34,6 +35,14 @@ public interface ChannelAspect
      * @return a channel listener or <code>nulll</code>
      */
     public default ChannelListener getChannelListener ()
+    {
+        return null;
+    }
+
+    /**
+     * @return a virtualizer or <code>nulll</code>
+     */
+    public default Virtualizer getArtifactVirtualizer ()
     {
         return null;
     }

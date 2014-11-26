@@ -14,6 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
 
+import de.dentrassi.pm.storage.ArtifactInformation;
+
 public interface StorageService
 {
     public Channel createChannel ();

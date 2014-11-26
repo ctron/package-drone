@@ -8,7 +8,10 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.storage;
+
+import java.util.Collections;
+import java.util.SortedMap;
 
 public class ArtifactInformation
 {
@@ -18,13 +21,17 @@ public class ArtifactInformation
 
     private final String channelId;
 
-    public ArtifactInformation ( final long size, final String name, final String channelId )
+    private final SortedMap<MetaKey, String> metadata;
+
+    public ArtifactInformation ( final long size, final String name, final String channelId, final SortedMap<MetaKey, String> metadata )
     {
         this.size = size;
         this.name = name;
         this.channelId = channelId;
+        this.metadata = Collections.unmodifiableSortedMap ( metadata );
     }
 
+    @Deprecated
     public long getLength ()
     {
         return this.size;
@@ -43,5 +50,10 @@ public class ArtifactInformation
     public String getChannelId ()
     {
         return this.channelId;
+    }
+
+    public SortedMap<MetaKey, String> getMetaData ()
+    {
+        return this.metadata;
     }
 }

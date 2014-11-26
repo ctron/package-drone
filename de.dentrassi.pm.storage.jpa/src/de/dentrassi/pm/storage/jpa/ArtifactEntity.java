@@ -17,9 +17,12 @@ import java.util.LinkedList;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -27,8 +30,10 @@ import javax.persistence.OneToMany;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
 @Entity ( name = "ARTIFACTS" )
+@Inheritance ( strategy = InheritanceType.SINGLE_TABLE )
+@DiscriminatorColumn ( name = "TYPE" )
 @UuidGenerator ( name = "CHAN_UUID_GEN" )
-public class ArtifactEntity
+public abstract class ArtifactEntity
 {
     @Id
     @Column ( name = "ID" )

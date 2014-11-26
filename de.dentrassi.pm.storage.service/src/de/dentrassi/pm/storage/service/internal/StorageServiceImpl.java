@@ -33,8 +33,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -51,21 +54,90 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
+import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
-import de.dentrassi.pm.meta.extract.Extractor;
+import de.dentrassi.pm.storage.ArtifactInformation;
 import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
+import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.ArtifactInformation;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService
 {
+
+    private class VirtualizerContextImpl implements Virtualizer.Context
+    {
+        private final ChannelEntity channel;
+
+        private final Path file;
+
+        private final ArtifactInformation info;
+
+        private final EntityManager em;
+
+        private final String namespace;
+
+        private final StoredArtifactEntity artifact;
+
+        private VirtualizerContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final String namespace, final StoredArtifactEntity artifact )
+        {
+            this.channel = channel;
+            this.file = file;
+            this.info = info;
+            this.em = em;
+            this.namespace = namespace;
+            this.artifact = artifact;
+        }
+
+        @Override
+        public ArtifactInformation getArtifactInformation ()
+        {
+            return this.info;
+        }
+
+        @Override
+        public Path getFile ()
+        {
+            return this.file;
+        }
+
+        @Override
+        public void createVirtualArtifact ( final String name, final InputStream stream )
+        {
+            try
+            {
+                performStoreArtifact ( this.channel, name, stream, this.em, false, ( ) -> {
+                    final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
+                    ve.setParent ( this.artifact );
+                    ve.setNamespace ( this.namespace );
+                    return ve;
+                } );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+            finally
+            {
+                try
+                {
+                    stream.close ();
+                }
+                catch ( final IOException e )
+                {
+                    // ignore this one
+                }
+            }
+        }
+    }
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageServiceImpl.class );
 
@@ -100,55 +172,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         final Artifact artifact;
         try
         {
-            final Path file = Files.createTempFile ( "blob-", null );
-
-            // copy data to temp file
-            try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
-            {
-                ByteStreams.copy ( stream, os );
-            }
-
-            try
-            {
-                artifact = doWithTransaction ( em -> {
-
-                    {
-                        final PreAddContentImpl context = new PreAddContentImpl ( name, file );
-                        runChannelTriggers ( em, channelId, listener -> listener.artifactPreAdd ( context ) );
-                        if ( context.isVeto () )
-                        {
-                            logger.info ( "Veto add artifact {} to channel {}", name, channelId );
-                            return null;
-                        }
-                    }
-
-                    final Map<MetaKey, String> metadata = extractMetaData ( em, channelId, file );
-
-                    Artifact a;
-                    try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
-                    {
-                        a = storeBlob ( em, channelId, name, in, metadata );
-                    }
-
-                    // now run the post add trigger
-                    runChannelTriggers ( em, channelId, listener -> listener.artifactAdded ( new AddedContextImpl ( a, metadata, file ) ) );
-
-                    return a;
-                } );
-            }
-            finally
-            {
-                try
-                {
-                    // delete the temp file, if possible
-                    Files.deleteIfExists ( file );
-                }
-                catch ( final Exception e )
-                {
-                    logger.info ( "Failed to delete temp file", e );
-                    // ignore this
-                }
-            }
+            artifact = doWithTransaction ( em -> {
+                final ChannelEntity channel = getCheckedChannel ( em, channelId );
+                return performStoreArtifact ( channel, name, stream, em, true, StoredArtifactEntity::new );
+            } );
         }
         catch ( final Exception e )
         {
@@ -170,16 +197,81 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return artifact;
     }
 
-    protected void runChannelTriggers ( final EntityManager em, final String channelId, final Consumer<ChannelListener> listener )
+    private Artifact performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final boolean triggerVirtual, final Supplier<ArtifactEntity> entityCreator ) throws Exception
     {
-        final ChannelEntity channel = getCheckedChannel ( em, channelId );
+        final Path file = Files.createTempFile ( "blob-", null );
+
+        try
+        {
+            // copy data to temp file
+            try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
+            {
+                ByteStreams.copy ( stream, os );
+            }
+
+            {
+                final PreAddContentImpl context = new PreAddContentImpl ( name, file );
+                runChannelTriggers ( em, channel, listener -> listener.artifactPreAdd ( context ) );
+                if ( context.isVeto () )
+                {
+                    logger.info ( "Veto add artifact {} to channel {}", name, channel.getId () );
+                    return null;
+                }
+            }
+
+            final Map<MetaKey, String> metadata = extractMetaData ( em, channel, file );
+
+            ArtifactEntity ae;
+            try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+            {
+                ae = storeBlob ( entityCreator, em, channel, name, in, metadata );
+            }
+
+            if ( ae instanceof StoredArtifactEntity )
+            {
+                createVirtualArtifacts ( em, channel, (StoredArtifactEntity)ae, file );
+            }
+
+            final Artifact a = convert ( convert ( channel ), ae );
+
+            // now run the post add trigger
+            runChannelTriggers ( em, channel, listener -> listener.artifactAdded ( new AddedContextImpl ( a, metadata, file ) ) );
+
+            return a;
+        }
+        finally
+        {
+            try
+            {
+                // delete the temp file, if possible
+                Files.deleteIfExists ( file );
+            }
+            catch ( final Exception e )
+            {
+                logger.info ( "Failed to delete temp file", e );
+                // ignore this
+            }
+        }
+    }
+
+    private void createVirtualArtifacts ( final EntityManager em, final ChannelEntity channel, final StoredArtifactEntity artifact, final Path file )
+    {
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createVirtualContext ( em, channel, artifact, file, aspect.getId () ) ) );
+    }
+
+    private VirtualizerContextImpl createVirtualContext ( final EntityManager em, final ChannelEntity channel, final StoredArtifactEntity artifact, final Path file, final String namespace )
+    {
+        final ArtifactInformation info = convert ( artifact );
+        return new VirtualizerContextImpl ( channel, file, info, em, namespace, artifact );
+    }
+
+    protected void runChannelTriggers ( final EntityManager em, final ChannelEntity channel, final Consumer<ChannelListener> listener )
+    {
         Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, listener );
     }
 
-    protected Map<MetaKey, String> extractMetaData ( final EntityManager em, final String channelId, final Path file )
+    protected Map<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final Path file )
     {
-        final ChannelEntity channel = getCheckedChannel ( em, channelId );
-
         final Map<MetaKey, String> metadata = new HashMap<> ();
 
         Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getExtractor, extractor -> {
@@ -218,12 +310,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return channel;
     }
 
-    protected ArtifactImpl storeBlob ( final EntityManager em, final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> metadata ) throws SQLException, IOException
+    protected ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> metadata ) throws SQLException, IOException
     {
-        final ArtifactEntity artifact = new ArtifactEntity ();
+        final ArtifactEntity artifact = artifactSupplier.get ();
         artifact.setName ( name );
-
-        final ChannelEntity channel = getCheckedChannel ( em, channelId );
         artifact.setChannel ( channel );
 
         final Collection<ArtifactPropertyEntity> props = artifact.getProperties ();
@@ -260,7 +350,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             blob.free ();
         }
 
-        return new ArtifactImpl ( new ChannelImpl ( channelId, StorageServiceImpl.this ), artifact.getId (), name, size, metadata );
+        return artifact;
     }
 
     private void convertProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ArtifactPropertyEntity> props )
@@ -330,9 +420,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata );
     }
 
-    private Map<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
+    private SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
     {
-        final Map<MetaKey, String> metadata = new HashMap<> ();
+        final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
         for ( final ArtifactPropertyEntity entry : ae.getProperties () )
         {
             metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
@@ -362,7 +452,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ArtifactReceiver receiver ) throws Exception
     {
-        final String channelId = ae.getChannel ().getId ();
         final String artifactId = ae.getId ();
 
         final Connection c = em.unwrap ( Connection.class );
@@ -379,7 +468,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 final Blob blob = rs.getBlob ( 1 );
                 try ( InputStream stream = blob.getBinaryStream () )
                 {
-                    receiver.receive ( new ArtifactInformation ( ae.getSize (), ae.getName (), channelId ), stream );
+                    receiver.receive ( convert ( ae ), stream );
                 }
                 finally
                 {
@@ -419,17 +508,23 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 return null; // silently ignore
             }
 
+            if ( ae instanceof VirtualArtifactEntity && ( (VirtualArtifactEntity)ae ).getParent () != null )
+            {
+                throw new IllegalStateException ( String.format ( "Unable to delete virtual artifact of %s (%s)", ae.getName (), ae.getId () ) );
+            }
+
             final ArtifactInformation info = convert ( ae );
 
-            final String channelId = ae.getChannel ().getId ();
             final String name = ae.getName ();
             final Map<MetaKey, String> metadata = convertMetaData ( ae );
+
+            final ChannelEntity channel = ae.getChannel ();
 
             em.remove ( ae );
 
             // now run the post add trigger
 
-            runChannelTriggers ( em, channelId, listener -> listener.artifactRemoved ( new RemovedContextImpl ( artifactId, name, metadata ) ) );
+            runChannelTriggers ( em, channel, listener -> listener.artifactRemoved ( new RemovedContextImpl ( artifactId, name, metadata ) ) );
 
             return info;
         } );
@@ -437,7 +532,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private ArtifactInformation convert ( final ArtifactEntity ae )
     {
-        return new ArtifactInformation ( ae.getSize (), ae.getName (), ae.getChannel ().getId () );
+        return new ArtifactInformation ( ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
     }
 
     public List<ChannelAspectInformation> getChannelAspectInformations ( final String channelId )
@@ -464,6 +559,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         for ( final ArtifactEntity ae : channel.getArtifacts () )
         {
+            if ( ! ( ae instanceof StoredArtifactEntity ) )
+            {
+                continue;
+            }
+
             internalStreamArtifact ( em, ae, ( info, stream ) -> {
                 final Path file = Files.createTempFile ( "blob-", "-reproc" );
                 try
@@ -479,7 +579,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                     final Map<MetaKey, String> metadata = new HashMap<> ();
                     final ChannelAspectProcessor ca = Activator.getChannelAspects ();
-                    ca.process ( Arrays.asList ( aspectFactoryId ), ChannelAspect::getExtractor, extractor -> {
+                    final List<String> list = Arrays.asList ( aspectFactoryId );
+                    ca.process ( list, ChannelAspect::getExtractor, extractor -> {
                         try
                         {
                             final Map<String, String> md = new HashMap<> ();
@@ -491,6 +592,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                             throw new RuntimeException ( e );
                         }
                     } );
+
+                    if ( ae instanceof StoredArtifactEntity )
+                    {
+                        // process virtual
+                        ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createVirtualContext ( em, channel, (StoredArtifactEntity)ae, file, aspectFactoryId ) ) );
+                    }
 
                     // add metadata
 
@@ -521,10 +628,20 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             channel.getAspects ().remove ( aspectFactoryId );
             em.persist ( channel );
 
-            final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ArtifactPropertyEntity.class.getSimpleName () ) );
-            q.setParameter ( "factoryId", aspectFactoryId );
-            q.setParameter ( "channelId", channelId );
-            q.executeUpdate ();
+            {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ArtifactPropertyEntity.class.getSimpleName () ) );
+                q.setParameter ( "factoryId", aspectFactoryId );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+            }
+
+            {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
+                q.setParameter ( "factoryId", aspectFactoryId );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+            }
+
         } );
     }
 
