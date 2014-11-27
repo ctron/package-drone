@@ -32,13 +32,16 @@ public class ArtifactImpl implements Artifact
 
     private final SortedMap<MetaKey, String> metaData;
 
-    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData )
+    private final boolean virtual;
+
+    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final boolean virtual )
     {
         this.id = id;
         this.channel = channel;
         this.name = name;
         this.size = size;
         this.metaData = new TreeMap<MetaKey, String> ( metaData );
+        this.virtual = virtual;
     }
 
     @Override
@@ -92,6 +95,12 @@ public class ArtifactImpl implements Artifact
     public void applyMetaData ( final Map<MetaKey, String> metadata )
     {
         this.channel.getService ().applyMetaData ( this.id, metadata );
+    }
+
+    @Override
+    public boolean isVirtual ()
+    {
+        return this.virtual;
     }
 
 }

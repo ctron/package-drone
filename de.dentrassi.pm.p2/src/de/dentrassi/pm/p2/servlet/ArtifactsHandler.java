@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.servlet;
 
+import static de.dentrassi.pm.common.XmlHelper.fixSize;
+
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,12 +25,13 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.osgi.framework.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.osgi.BundleInformation;
+import de.dentrassi.pm.osgi.BundleInformationParser;
 import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
@@ -193,18 +196,16 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
             return;
         }
 
-        final String symbolicName = mf.getMainAttributes ().getValue ( Constants.BUNDLE_SYMBOLICNAME );
-        final String version = mf.getMainAttributes ().getValue ( Constants.BUNDLE_VERSION );
-
-        if ( symbolicName == null || version == null )
+        final BundleInformation bi = new BundleInformationParser ( mf ).parse ();
+        if ( bi == null )
         {
             return;
         }
 
         final Element a = addElement ( artifacts, "artifact" );
         a.setAttribute ( "classifier", "osgi.bundle" );
-        a.setAttribute ( "id", symbolicName );
-        a.setAttribute ( "version", version );
+        a.setAttribute ( "id", bi.getId () );
+        a.setAttribute ( "version", bi.getVersion () );
 
         final String md5 = md.get ( new MetaKey ( "hasher", "md5" ) );
 

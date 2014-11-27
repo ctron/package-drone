@@ -8,11 +8,35 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.common.osgi;
+package de.dentrassi.pm.osgi;
 
 public class BundleInformation
 {
     private String id;
+
+    private String version;
+
+    private String name;
+
+    public String getName ()
+    {
+        return this.name;
+    }
+
+    public void setName ( final String name )
+    {
+        this.name = name;
+    }
+
+    public String getVersion ()
+    {
+        return this.version;
+    }
+
+    public void setVersion ( final String version )
+    {
+        this.version = version;
+    }
 
     public void setId ( final String id )
     {

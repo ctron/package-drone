@@ -72,3 +72,21 @@ nav {
 	color: #555;
 	font-size: x-large;
 }
+
+thead {
+	background: #F3F3F3;
+}
+
+thead th {
+    padding-top: .5em;
+    padding-bottom: .5em;
+}
+
+td {
+	padding-left: .5em;
+	padding-right: .5em;
+}
+
+table.full { width: 100%; }
+table.full td:first-child { width: 100%; }
+table.full th { text-align: left; padding-left: 1em; }

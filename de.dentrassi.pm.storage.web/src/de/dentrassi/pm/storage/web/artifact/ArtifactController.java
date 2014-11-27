@@ -51,6 +51,10 @@ public class ArtifactController
         final StorageService service = Activator.getTracker ().getStorageService ();
 
         final ArtifactInformation info = service.deleteArtifact ( artifactId );
+        if ( info == null )
+        {
+            return new ModelAndView ( "redirect:/" );
+        }
 
         return new ModelAndView ( "redirect:/channel/" + info.getChannelId () + "/view" );
     }

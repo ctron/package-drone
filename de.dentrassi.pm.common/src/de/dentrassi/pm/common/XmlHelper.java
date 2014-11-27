@@ -30,6 +30,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -127,7 +128,6 @@ public class XmlHelper
 
     public static Iterable<Node> iter ( final NodeList list )
     {
-
         return new Iterable<Node> () {
 
             @Override
@@ -144,4 +144,17 @@ public class XmlHelper
         final XPathExpression expression = xpath.compile ( path );
         return (NodeList)expression.evaluate ( node, XPathConstants.NODESET );
     }
+
+    public static Element addElement ( final Element parent, final String name )
+    {
+        final Element ele = parent.getOwnerDocument ().createElement ( name );
+        parent.appendChild ( ele );
+        return ele;
+    }
+
+    public static void fixSize ( final Element element )
+    {
+        element.setAttribute ( "size", "" + element.getChildNodes ().getLength () );
+    }
+
 }

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.servlet;
 
+import static de.dentrassi.pm.common.XmlHelper.fixSize;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,11 +75,6 @@ public abstract class AbstractRepositoryHandler implements Handler
         }
 
         fixSize ( props );
-    }
-
-    protected void fixSize ( final Element element )
-    {
-        element.setAttribute ( "size", "" + element.getChildNodes ().getLength () );
     }
 
     protected Document initRepository ( final String processingType, final String type )

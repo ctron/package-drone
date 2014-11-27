@@ -30,6 +30,8 @@ import com.google.gson.GsonBuilder;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.osgi.BundleInformation;
+import de.dentrassi.pm.osgi.BundleInformationParser;
 
 public class OsgiExtractor implements Extractor
 {

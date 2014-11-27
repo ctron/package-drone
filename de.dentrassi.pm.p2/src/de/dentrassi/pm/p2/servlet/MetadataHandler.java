@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.servlet;
 
+import static de.dentrassi.pm.common.XmlHelper.fixSize;
+
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -53,6 +55,10 @@ public class MetadataHandler extends AbstractRepositoryHandler
         {
             final Map<MetaKey, String> md = artifact.getMetaData ();
             if ( "p2metadata".equals ( md.get ( new MetaKey ( "mvn", "classifier" ) ) ) )
+            {
+                attachP2Metadata ( artifact, units );
+            }
+            else if ( artifact.getName ().endsWith ( "-p2metadata.xml" ) )
             {
                 attachP2Metadata ( artifact, units );
             }

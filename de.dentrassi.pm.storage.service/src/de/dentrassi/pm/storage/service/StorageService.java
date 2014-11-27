@@ -28,7 +28,7 @@ public interface StorageService
      * <em>Note:</em> This action might get vetoed by a channel aspect. In this
      * case the return value is <code>null</code>
      * </p>
-     * 
+     *
      * @param channelId
      *            the channel were to add the artifact
      * @param name
@@ -57,4 +57,6 @@ public interface StorageService
     public Artifact getArtifact ( String artifactId );
 
     public Collection<Artifact> findByName ( String channelId, String format );
+
+    public void clearChannel ( String channelId );
 }

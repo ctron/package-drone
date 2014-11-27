@@ -5,3 +5,10 @@ Bundle-SymbolicName: test.bundle1
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Copyright: EPL
+Provide-Capability: test
+Require-Bundle: ch.qos.logback.core;bundle-version="1.0.7"
+Import-Package: org.slf4j;version="1.7.2",
+ org.slf4j.bridge;version="[1.7.2,2.0.0)",
+ org.slf4j.helpers;version="1.7.2";resolution:=optional
+Export-Package: test.bundle1;version="1.0.0"

@@ -11,16 +11,23 @@ Import-Package: com.google.common.hash;version="18.0.0",
  com.google.gson.annotations;version="2.3.1",
  com.google.gson.reflect;version="2.3.1",
  com.google.gson.stream;version="2.3.1",
- de.dentrassi.pm.aspect,
+ de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.aspect.extract;version="1.0.0",
  de.dentrassi.pm.aspect.listener;version="1.0.0",
  de.dentrassi.pm.aspect.virtual;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.osgi;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
- org.osgi.framework;version="1.7.0"
+ org.osgi.framework;version="1.7.0",
+ org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/hash.xml,
  OSGI-INF/mime.xml,
  OSGI-INF/osgi.xml,
  OSGI-INF/tycho-cleaner.xml
 Bundle-ActivationPolicy: lazy
-Export-Package: de.dentrassi.pm.aspect.common.osgi;version="1.0.0"
+Export-Package: de.dentrassi.pm.aspect.common.osgi;version="1.0.0";
+  uses:="org.w3c.dom,
+   de.dentrassi.pm.aspect,
+   de.dentrassi.pm.osgi,
+   de.dentrassi.pm.aspect.extract,
+   de.dentrassi.pm.aspect.virtual"

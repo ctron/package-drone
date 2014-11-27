@@ -13,6 +13,7 @@ package de.dentrassi.pm.aspect.common.osgi;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.aspect.virtual.Virtualizer;
 
 public class OsgiAspectFactory implements ChannelAspectFactory
 {
@@ -24,6 +25,12 @@ public class OsgiAspectFactory implements ChannelAspectFactory
         public Extractor getExtractor ()
         {
             return new OsgiExtractor ( ChannelAspectImpl.this );
+        }
+
+        @Override
+        public Virtualizer getArtifactVirtualizer ()
+        {
+            return new TychoVirtualizer ();
         }
 
         @Override

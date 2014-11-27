@@ -11,6 +11,8 @@
 package de.dentrassi.pm.storage.web.channel;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
@@ -64,7 +67,11 @@ public class ChannelController
 
         final Channel channel = service.getChannel ( channelId );
 
+        final List<Artifact> sortedArtifacts = new ArrayList<> ( channel.getArtifacts () );
+        sortedArtifacts.sort ( Artifact.NAME_COMPARATOR );
+
         result.addObject ( "channel", channel );
+        result.addObject ( "sortedArtifacts", sortedArtifacts );
 
         return result;
     }
@@ -108,6 +115,16 @@ public class ChannelController
         {
             return "channel/uploadError";
         }
+
+        return "redirect:/channel/" + channelId + "/view";
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
+    public String clear ( @PathVariable ( "channelId" )
+    final String channelId )
+    {
+        final StorageService service = Activator.getTracker ().getStorageService ();
+        service.clearChannel ( channelId );
 
         return "redirect:/channel/" + channelId + "/view";
     }

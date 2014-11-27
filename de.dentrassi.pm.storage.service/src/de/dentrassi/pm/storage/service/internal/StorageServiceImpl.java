@@ -417,7 +417,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         final Map<MetaKey, String> metadata = convertMetaData ( ae );
 
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata );
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae instanceof VirtualArtifactEntity );
     }
 
     private SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
@@ -727,6 +727,16 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             }
 
             return result;
+        } );
+    }
+
+    @Override
+    public void clearChannel ( final String channelId )
+    {
+        doWithTransactionVoid ( em -> {
+            final Query q = em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
+            q.setParameter ( "channelId", channelId );
+            q.executeUpdate ();
         } );
     }
 }

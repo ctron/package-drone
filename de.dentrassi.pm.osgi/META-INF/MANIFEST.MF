@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OSGi core functionalities
+Bundle-SymbolicName: de.dentrassi.pm.osgi
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: de.dentrassi.pm.osgi;version="1.0.0"
+Import-Package: org.osgi.framework;version="1.7.0"

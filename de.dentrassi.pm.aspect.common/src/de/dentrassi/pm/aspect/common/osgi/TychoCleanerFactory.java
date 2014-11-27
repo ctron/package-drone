@@ -28,7 +28,7 @@ public class TychoCleanerFactory implements ChannelAspectFactory
 
     static
     {
-        ignoredPatterns.add ( Pattern.compile ( ".*-p2artifacts.xml$" ) );
+        ignoredPatterns.add ( Pattern.compile ( ".*-p2content.xml$" ) );
     }
 
     @Override

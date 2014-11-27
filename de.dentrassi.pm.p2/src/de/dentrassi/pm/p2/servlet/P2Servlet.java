@@ -58,11 +58,14 @@ public class P2Servlet extends HttpServlet
         }
 
         final String channelId = paths[1];
-
         final StorageService service = this.tracker.getService ();
         final Channel channel = service.getChannel ( channelId );
 
-        if ( "content.xml".equals ( paths[2] ) && paths.length == 3 )
+        if ( paths.length < 3 )
+        {
+            process ( req, resp, new IndexHandler ( channel ) );
+        }
+        else if ( "content.xml".equals ( paths[2] ) && paths.length == 3 )
         {
             process ( req, resp, new MetadataHandler ( channel ) );
         }
