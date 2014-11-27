@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.w3c.dom.Document;
@@ -196,8 +197,16 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
             return;
         }
 
-        final BundleInformation bi = new BundleInformationParser ( mf ).parse ();
-        if ( bi == null )
+        final BundleInformation bi;
+        try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
+        {
+            bi = new BundleInformationParser ( zipFile ).parse ();
+            if ( bi == null )
+            {
+                return;
+            }
+        }
+        catch ( final ZipException e )
         {
             return;
         }

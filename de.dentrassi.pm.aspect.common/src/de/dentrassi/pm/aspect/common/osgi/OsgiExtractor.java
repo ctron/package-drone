@@ -11,17 +11,14 @@
 package de.dentrassi.pm.aspect.common.osgi;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.osgi.framework.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -110,33 +107,28 @@ public class OsgiExtractor implements Extractor
 
     private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws Exception
     {
-        final Manifest mf;
-
-        try ( final JarInputStream jarStream = new JarInputStream ( new FileInputStream ( file.toFile () ) ) )
+        final BundleInformation bi;
+        try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
         {
-            mf = jarStream.getManifest ();
+            bi = new BundleInformationParser ( zipFile ).parse ();
+            if ( bi == null )
+            {
+                return;
+            }
         }
-
-        if ( mf == null )
-        {
-            return;
-        }
-
-        final BundleInformation bi = new BundleInformationParser ( mf ).parse ();
-        if ( bi == null )
+        catch ( final ZipException e )
         {
             return;
         }
-
-        final String version = mf.getMainAttributes ().getValue ( Constants.BUNDLE_VERSION );
 
         // store main attributes
         metadata.put ( KEY_NAME, bi.getId () );
-        metadata.put ( KEY_VERSION, version );
+        metadata.put ( KEY_VERSION, bi.getVersion () );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
 
         // serialize manifest
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        final Manifest mf = new Manifest ();
         mf.write ( bos );
         bos.close ();
         metadata.put ( KEY_MANIFEST, bos.toString ( "UTF-8" ) );
