@@ -43,7 +43,7 @@ public class SetupInterceptor extends HandlerInterceptorAdapter implements Initi
     public boolean preHandle ( final HttpServletRequest request, final HttpServletResponse response, final Object handler ) throws Exception
     {
         final String current = InterceptorHelper.makeCurrent ( request );
-        if ( current.startsWith ( "/setup" ) )
+        if ( current.startsWith ( "/setup" ) || current.startsWith ( "/resources" ) )
         {
             return super.preHandle ( request, response, handler );
         }
