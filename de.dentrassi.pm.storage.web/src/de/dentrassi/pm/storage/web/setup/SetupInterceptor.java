@@ -20,7 +20,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.web.InterceptorHelper;
 
 public class SetupInterceptor extends HandlerInterceptorAdapter implements InitializingBean, DisposableBean
 {
@@ -42,7 +41,8 @@ public class SetupInterceptor extends HandlerInterceptorAdapter implements Initi
     @Override
     public boolean preHandle ( final HttpServletRequest request, final HttpServletResponse response, final Object handler ) throws Exception
     {
-        final String current = InterceptorHelper.makeCurrent ( request );
+        final String current = request.getServletPath ();
+
         if ( current.startsWith ( "/setup" ) || current.startsWith ( "/resources" ) )
         {
             return super.preHandle ( request, response, handler );
