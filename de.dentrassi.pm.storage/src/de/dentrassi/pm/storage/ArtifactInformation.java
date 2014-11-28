@@ -21,14 +21,22 @@ public class ArtifactInformation
 
     private final String channelId;
 
-    private final SortedMap<MetaKey, String> metadata;
+    private final SortedMap<MetaKey, String> metaData;
 
-    public ArtifactInformation ( final long size, final String name, final String channelId, final SortedMap<MetaKey, String> metadata )
+    private final String id;
+
+    public ArtifactInformation ( final String id, final long size, final String name, final String channelId, final SortedMap<MetaKey, String> metadata )
     {
+        this.id = id;
         this.size = size;
         this.name = name;
         this.channelId = channelId;
-        this.metadata = Collections.unmodifiableSortedMap ( metadata );
+        this.metaData = Collections.unmodifiableSortedMap ( metadata );
+    }
+
+    public String getId ()
+    {
+        return this.id;
     }
 
     @Deprecated
@@ -54,6 +62,6 @@ public class ArtifactInformation
 
     public SortedMap<MetaKey, String> getMetaData ()
     {
-        return this.metadata;
+        return this.metaData;
     }
 }

@@ -12,15 +12,12 @@ package de.dentrassi.pm.p2.servlet;
 
 import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
-import java.util.Map;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
 
@@ -36,10 +33,8 @@ public class MetadataHandler extends AbstractRepositoryHandler
     {
         final Document doc = this.xml.create ();
 
-        {
-            final ProcessingInstruction pi = doc.createProcessingInstruction ( "metadataRepository", "version=\"1.1.0\"" );
-            doc.appendChild ( pi );
-        }
+        final ProcessingInstruction pi = doc.createProcessingInstruction ( "metadataRepository", "version=\"1.1.0\"" );
+        doc.appendChild ( pi );
 
         final Element root = doc.createElement ( "repository" );
         doc.appendChild ( root );
@@ -53,12 +48,7 @@ public class MetadataHandler extends AbstractRepositoryHandler
 
         for ( final Artifact artifact : this.channel.getArtifacts () )
         {
-            final Map<MetaKey, String> md = artifact.getMetaData ();
-            if ( "p2metadata".equals ( md.get ( new MetaKey ( "mvn", "classifier" ) ) ) )
-            {
-                attachP2Metadata ( artifact, units );
-            }
-            else if ( artifact.getName ().endsWith ( "-p2metadata.xml" ) )
+            if ( artifact.getName ().endsWith ( "-p2metadata.xml" ) )
             {
                 attachP2Metadata ( artifact, units );
             }

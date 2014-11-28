@@ -19,12 +19,8 @@ import de.dentrassi.pm.storage.service.Channel;
 
 public class P2IndexHandler implements Handler
 {
-
-    private final Channel channel;
-
     public P2IndexHandler ( final Channel channel )
     {
-        this.channel = channel;
     }
 
     @Override

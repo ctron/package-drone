@@ -20,13 +20,7 @@
 
    <includes
          id="test.feature2"
-         version="0.0.0"
-         name="Test Name"
-         optional="true"
-         os="linux,qnx,solaris"
-         ws="gtk,win32"
-         arch="x86,x86_64"
-         nl=""/>
+         version="0.0.0"/>
 
    <requires>
       <import plugin="org.apache.commons.io" version="0.0.0"/>
@@ -41,8 +35,8 @@
 
    <plugin
          id="test.bundle1"
-         os="linux,solaris,win32"
-         ws="gtk,win32,wpf"
+         os="linux,win32"
+         ws="gtk,win32"
          arch="x86,x86_64"
          download-size="0"
          install-size="0"

@@ -532,7 +532,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private ArtifactInformation convert ( final ArtifactEntity ae )
     {
-        return new ArtifactInformation ( ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
+        return new ArtifactInformation ( ae.getId (), ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
     }
 
     public List<ChannelAspectInformation> getChannelAspectInformations ( final String channelId )
