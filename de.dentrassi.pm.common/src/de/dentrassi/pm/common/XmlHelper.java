@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
 
 public class XmlHelper
 {
-    private static final class NodeListIterator implements Iterator<Node>
+    public static final class NodeListIterator implements Iterator<Node>
     {
         private final NodeList list;
 
@@ -57,6 +57,69 @@ public class XmlHelper
         public boolean hasNext ()
         {
             return this.index < this.list.getLength ();
+        }
+    }
+
+    /**
+     * Iterate over the direct child elements of an element
+     */
+    public static final class ElementIterator implements Iterator<Element>
+    {
+        private final Element element;
+
+        private int index;
+
+        private final String name;
+
+        public ElementIterator ( final Element element )
+        {
+            this ( element, null );
+        }
+
+        public ElementIterator ( final Element element, final String name )
+        {
+            this.element = element;
+            this.name = name;
+        }
+
+        private Element peek ()
+        {
+            Node node;
+            while ( ( node = this.element.getChildNodes ().item ( this.index ) ) != null )
+            {
+                if ( ! ( node instanceof Element ) )
+                {
+                    this.index++;
+                    continue;
+                }
+
+                final Element ele = (Element)node;
+                if ( this.name != null && !ele.getNodeName ().equals ( this.name ) )
+                {
+                    this.index++;
+                    continue;
+                }
+            }
+            // out of nodes
+            return null;
+        }
+
+        @Override
+        public Element next ()
+        {
+            final Element ele = peek ();
+            if ( ele != null )
+            {
+                this.index++;
+            }
+            return ele;
+        }
+
+        @Override
+        public boolean hasNext ()
+        {
+            // we could cache the result for quicker checking
+            return peek () != null;
         }
     }
 
@@ -126,6 +189,18 @@ public class XmlHelper
         return node.getTextContent ();
     }
 
+    public static Iterable<Element> iterElement ( final Element element, final String name )
+    {
+        return new Iterable<Element> () {
+
+            @Override
+            public Iterator<Element> iterator ()
+            {
+                return new ElementIterator ( element, name );
+            }
+        };
+    }
+
     public static Iterable<Node> iter ( final NodeList list )
     {
         return new Iterable<Node> () {
@@ -154,7 +229,16 @@ public class XmlHelper
 
     public static void fixSize ( final Element element )
     {
-        element.setAttribute ( "size", "" + element.getChildNodes ().getLength () );
+        final int len = element.getChildNodes ().getLength ();
+
+        if ( len > 0 )
+        {
+            element.setAttribute ( "size", "" + len );
+        }
+        else
+        {
+            element.getParentNode ().removeChild ( element );
+        }
     }
 
 }

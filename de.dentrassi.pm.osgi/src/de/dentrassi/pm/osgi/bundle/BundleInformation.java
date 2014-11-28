@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.osgi;
+package de.dentrassi.pm.osgi.bundle;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -244,6 +244,8 @@ public class BundleInformation
 
     private boolean singleton;
 
+    private String bundleLocalization;
+
     private Map<String, Properties> localization = new HashMap<> ();
 
     private Set<PackageImport> packageImports = new HashSet<> ();
@@ -251,6 +253,16 @@ public class BundleInformation
     private Set<PackageExport> packageExports = new HashSet<> ();
 
     private Set<BundleRequirement> bundleRequirements = new HashSet<> ();
+
+    public void setBundleLocalization ( final String bundleLocalization )
+    {
+        this.bundleLocalization = bundleLocalization;
+    }
+
+    public String getBundleLocalization ()
+    {
+        return this.bundleLocalization;
+    }
 
     public void setPackageExports ( final Set<PackageExport> packageExports )
     {

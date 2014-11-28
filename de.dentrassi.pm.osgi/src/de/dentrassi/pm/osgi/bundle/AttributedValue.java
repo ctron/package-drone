@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.osgi;
+package de.dentrassi.pm.osgi.bundle;
 
 import java.util.Collections;
 import java.util.Map;

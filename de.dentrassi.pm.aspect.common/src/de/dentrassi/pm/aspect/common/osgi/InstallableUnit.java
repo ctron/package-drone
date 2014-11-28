@@ -15,9 +15,15 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -32,10 +38,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.osgi.BundleInformation;
-import de.dentrassi.pm.osgi.BundleInformation.BundleRequirement;
-import de.dentrassi.pm.osgi.BundleInformation.PackageExport;
-import de.dentrassi.pm.osgi.BundleInformation.PackageImport;
+import de.dentrassi.pm.osgi.bundle.BundleInformation;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.BundleRequirement;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageExport;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageImport;
+import de.dentrassi.pm.osgi.feature.FeatureInformation;
+import de.dentrassi.pm.osgi.feature.FeatureInformation.FeatureInclude;
+import de.dentrassi.pm.osgi.feature.FeatureInformation.PluginInclude;
 
 public class InstallableUnit
 {
@@ -45,13 +54,48 @@ public class InstallableUnit
 
     private String version;
 
-    private String name;
-
     private boolean singleton;
 
     private Map<String, String> properties = new HashMap<> ();
 
     private Element additionalNodes;
+
+    private String filter;
+
+    private String copyright;
+
+    private String copyrightUrl;
+
+    public static class Artifact
+    {
+        private final String id;
+
+        private final String classifer;
+
+        private final String version;
+
+        public Artifact ( final String id, final String classifer, final String version )
+        {
+            this.id = id;
+            this.classifer = classifer;
+            this.version = version;
+        }
+
+        public String getId ()
+        {
+            return this.id;
+        }
+
+        public String getClassifer ()
+        {
+            return this.classifer;
+        }
+
+        public String getVersion ()
+        {
+            return this.version;
+        }
+    }
 
     public static class Key
     {
@@ -135,11 +179,19 @@ public class InstallableUnit
 
         private final Boolean greedy;
 
-        public Requirement ( final VersionRange range, final boolean optional, final Boolean greedy )
+        private final String filter;
+
+        public Requirement ( final VersionRange range, final boolean optional, final Boolean greedy, final String filter )
         {
             this.range = range;
             this.optional = optional;
             this.greedy = greedy;
+            this.filter = filter;
+        }
+
+        public String getFilter ()
+        {
+            return this.filter;
         }
 
         public VersionRange getRange ()
@@ -156,12 +208,84 @@ public class InstallableUnit
         {
             return this.greedy;
         }
-
     }
+
+    public static class License
+    {
+        private final String text;
+
+        private final String uri;
+
+        public License ( final String text, final String uri )
+        {
+            this.text = text;
+            this.uri = uri;
+        }
+
+        public String getText ()
+        {
+            return this.text;
+        }
+
+        public String getUri ()
+        {
+            return this.uri;
+        }
+    }
+
+    private List<License> licenses = new LinkedList<> ();
 
     private Map<Key, Requirement> requires = new HashMap<> ();
 
     private Map<Key, String> provides = new HashMap<> ();
+
+    private Set<Artifact> artifacts = new HashSet<> ();
+
+    public void setLicenses ( final List<License> licenses )
+    {
+        this.licenses = licenses;
+    }
+
+    public List<License> getLicenses ()
+    {
+        return this.licenses;
+    }
+
+    public void setCopyright ( final String copyright )
+    {
+        this.copyright = copyright;
+    }
+
+    public void setCopyright ( final String copyright, final String copyrightUrl )
+    {
+        this.copyright = copyright;
+        this.copyrightUrl = copyrightUrl;
+    }
+
+    public void setCopyrightUrl ( final String copyrightUrl )
+    {
+        this.copyrightUrl = copyrightUrl;
+    }
+
+    public void setArtifacts ( final Set<Artifact> artifacts )
+    {
+        this.artifacts = artifacts;
+    }
+
+    public Set<Artifact> getArtifacts ()
+    {
+        return this.artifacts;
+    }
+
+    public void setFilter ( final String filter )
+    {
+        this.filter = filter;
+    }
+
+    public String getFilter ()
+    {
+        return this.filter;
+    }
 
     public void setAdditionalNodes ( final Element additionalNodes )
     {
@@ -203,16 +327,6 @@ public class InstallableUnit
         return this.properties;
     }
 
-    public void setName ( final String name )
-    {
-        this.name = name;
-    }
-
-    public String getName ()
-    {
-        return this.name;
-    }
-
     public void setSingleton ( final boolean singleton )
     {
         this.singleton = singleton;
@@ -243,14 +357,173 @@ public class InstallableUnit
         return this.version;
     }
 
+    public static List<InstallableUnit> fromFeature ( final FeatureInformation feature )
+    {
+        final List<InstallableUnit> result = new ArrayList<> ( 2 );
+
+        result.add ( createFeatureGroup ( feature ) );
+        result.add ( createFeatureJar ( feature ) );
+
+        return result;
+    }
+
+    private static InstallableUnit createFeatureJar ( final FeatureInformation feature )
+    {
+        final InstallableUnit result = new InstallableUnit ();
+
+        // core
+
+        result.setId ( feature.getId () + ".feature.jar" );
+        result.setVersion ( feature.getVersion () );
+
+        // properties
+
+        final Map<String, String> props = result.getProperties ();
+        props.put ( "org.eclipse.equinox.p2.name", feature.getLabel () );
+        addProperty ( props, "org.eclipse.equinox.p2.provider", feature.getProvider () );
+        addProperty ( props, "org.eclipse.equinox.p2.description", feature.getDescription () );
+        addProperty ( props, "org.eclipse.equinox.p2.description.url", feature.getDescriptionUrl () );
+        addProperty ( props, "org.eclipse.update.feature.plugin", feature.getPlugin () );
+
+        // localization
+
+        addLocalization ( props, result.getProvides (), feature.getLocalization () );
+
+        // provides
+
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), feature.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.update.feature", feature.getId () ), feature.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.eclipse.type", "feature" ), "1.0.0" );
+
+        // filter
+
+        result.setFilter ( "(org.eclipse.update.install.features=true)" );
+
+        // artifacts
+
+        result.getArtifacts ().add ( new Artifact ( feature.getId (), "org.eclipse.update.feature", feature.getVersion () ) );
+
+        // legal
+
+        result.setCopyright ( feature.getCopyright (), feature.getCopyrightUrl () );
+        result.getLicenses ().add ( new License ( feature.getLicense (), feature.getLicenseUrl () ) );
+
+        // touchpoint
+
+        final XmlHelper xml = new XmlHelper ();
+        final Document doc = xml.create ();
+        final Element root = doc.createElement ( "root" );
+        final Map<String, String> td = new HashMap<> ();
+        td.put ( "zipped", "true" );
+        addTouchpoint ( root, "org.eclipse.equinox.p2.osgi", "1.0.0", td );
+        result.setAdditionalNodes ( root );
+
+        return result;
+    }
+
+    private static InstallableUnit createFeatureGroup ( final FeatureInformation feature )
+    {
+        final InstallableUnit result = new InstallableUnit ();
+
+        // core
+
+        result.setId ( feature.getId () + ".feature.group" );
+        result.setVersion ( feature.getVersion () );
+
+        // provides
+
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.group" ), feature.getVersion () );
+
+        // properties
+
+        final Map<String, String> props = result.getProperties ();
+        addProperty ( props, "org.eclipse.equinox.p2.name", feature.getLabel () );
+        props.put ( "org.eclipse.equinox.p2.type.group", "true" );
+        addProperty ( props, "org.eclipse.equinox.p2.provider", feature.getProvider () );
+        addProperty ( props, "org.eclipse.equinox.p2.description", feature.getDescription () );
+        addProperty ( props, "org.eclipse.equinox.p2.description.url", feature.getDescriptionUrl () );
+
+        // localization
+
+        addLocalization ( props, result.getProvides (), feature.getLocalization () );
+
+        // requirements
+
+        final Map<Key, Requirement> reqs = result.getRequires ();
+
+        reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), new Requirement ( new VersionRange ( String.format ( "[%1$s,%1$s]", feature.getVersion () ) ), false, null, "(org.eclipse.update.install.features=true)" ) );
+
+        for ( final FeatureInclude fi : feature.getIncludedFeatures () )
+        {
+            final String filter = fi.getQualifiers ().toFilterString ();
+            final VersionRange range = fi.makeVersionRange ();
+            reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", fi.getId () + ".feature.group" ), new Requirement ( range, fi.isOptional (), null, filter ) );
+        }
+
+        for ( final PluginInclude pi : feature.getIncludedPlugins () )
+        {
+            final String filter = pi.getQualifiers ().toFilterString ();
+            final VersionRange range = pi.makeVersionRange ();
+            reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", pi.getId () ), new Requirement ( range, false, null, filter ) );
+        }
+
+        for ( final de.dentrassi.pm.osgi.feature.FeatureInformation.Requirement ri : feature.getRequirements () )
+        {
+            final String id;
+            switch ( ri.getType () )
+            {
+                case FEATURE:
+                    id = ri.getId ();
+                    break;
+                case PLUGIN:
+                    id = ri.getId () + ".feature.group";
+                    break;
+                default:
+                    throw new IllegalStateException ( String.format ( "Feature requirement type %s is unknown", ri.getType () ) );
+            }
+            reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", id ), new Requirement ( ri.getMatchRule ().makeRange ( ri.getVersion () ), false, null, null ) );
+        }
+
+        // filter
+
+        result.setFilter ( feature.getQualifiers ().toFilterString () );
+
+        // legal
+
+        result.setCopyright ( feature.getCopyright (), feature.getCopyrightUrl () );
+        result.getLicenses ().add ( new License ( feature.getLicense (), feature.getLicenseUrl () ) );
+
+        // touchpoint
+
+        final XmlHelper xml = new XmlHelper ();
+        final Document doc = xml.create ();
+        final Element root = doc.createElement ( "root" );
+        addTouchpoint ( root, "null", "0.0.0", Collections.emptyMap () );
+        result.setAdditionalNodes ( root );
+
+        // return result
+
+        return result;
+    }
+
     public static InstallableUnit fromBundle ( final BundleInformation bundle )
     {
         final InstallableUnit result = new InstallableUnit ();
 
+        // core
+
         result.setId ( bundle.getId () );
         result.setVersion ( bundle.getVersion () );
-        result.setName ( bundle.getName () );
         result.setSingleton ( bundle.isSingleton () );
+
+        // properties
+
+        final Map<String, String> props = result.getProperties ();
+        addProperty ( props, "org.eclipse.equinox.p2.name", bundle.getName () );
+        addProperty ( props, "org.eclipse.equinox.p2.provider", bundle.getVendor () );
+        addProperty ( props, "org.eclipse.equinox.p2.bundle.localization", bundle.getBundleLocalization () );
+
+        // provides
 
         result.getProvides ().put ( new Key ( "osgi.bundle", bundle.getId () ), bundle.getVersion () );
         result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", bundle.getId () ), bundle.getVersion () );
@@ -261,33 +534,27 @@ public class InstallableUnit
             result.getProvides ().put ( new Key ( "java.package", pe.getName () ), makeVersion ( pe.getVersion () ) );
         }
 
-        for ( final String loc : bundle.getLocalization ().keySet () )
-        {
-            result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.localization", loc ), "1.0.0" );
-        }
+        // localization
 
-        final Map<String, String> props = result.getProperties ();
-        props.put ( "org.eclipse.equinox.p2.name", bundle.getName () );
-        props.put ( "org.eclipse.equinox.p2.provider", bundle.getVendor () );
+        addLocalization ( props, result.getProvides (), bundle.getLocalization () );
 
-        for ( final Map.Entry<String, Properties> le : bundle.getLocalization ().entrySet () )
-        {
-            final String locale = le.getKey ();
-            for ( final Map.Entry<Object, Object> pe : le.getValue ().entrySet () )
-            {
-                props.put ( locale + "." + pe.getKey (), "" + pe.getValue () );
-            }
-        }
+        // requirements
 
         for ( final PackageImport pi : bundle.getPackageImports () )
         {
-            result.getRequires ().put ( new Key ( "java.package", pi.getName () ), new Requirement ( pi.getVersionRange (), pi.isOptional (), pi.isOptional () ? false : null ) );
+            result.getRequires ().put ( new Key ( "java.package", pi.getName () ), new Requirement ( pi.getVersionRange (), pi.isOptional (), pi.isOptional () ? false : null, null ) );
         }
 
         for ( final BundleRequirement br : bundle.getBundleRequirements () )
         {
-            result.getRequires ().put ( new Key ( "osgi.bundle", br.getId () ), new Requirement ( br.getVersionRange (), br.isOptional (), br.isOptional () ? false : null ) );
+            result.getRequires ().put ( new Key ( "osgi.bundle", br.getId () ), new Requirement ( br.getVersionRange (), br.isOptional (), br.isOptional () ? false : null, null ) );
         }
+
+        // artifacts
+
+        result.getArtifacts ().add ( new Artifact ( bundle.getId (), "osgi.bundle", bundle.getVersion () ) );
+
+        // touchpoints
 
         final XmlHelper xml = new XmlHelper ();
         final Document doc = xml.create ();
@@ -309,6 +576,43 @@ public class InstallableUnit
         return result;
     }
 
+    /**
+     * Add property entry only of value is not null
+     *
+     * @param props
+     *            properties
+     * @param key
+     *            to add
+     * @param value
+     *            to add
+     */
+    private static void addProperty ( final Map<String, String> props, final String key, final String value )
+    {
+        if ( value == null )
+        {
+            return;
+        }
+
+        props.put ( key, value );
+    }
+
+    private static void addLocalization ( final Map<String, String> properties, final Map<Key, String> provides, final Map<String, Properties> localization )
+    {
+        for ( final String loc : localization.keySet () )
+        {
+            provides.put ( new Key ( "org.eclipse.equinox.p2.localization", loc ), "1.0.0" );
+        }
+
+        for ( final Map.Entry<String, Properties> le : localization.entrySet () )
+        {
+            final String locale = le.getKey ();
+            for ( final Map.Entry<Object, Object> pe : le.getValue ().entrySet () )
+            {
+                properties.put ( locale + "." + pe.getKey (), "" + pe.getValue () );
+            }
+        }
+    }
+
     private static String makeVersion ( final Version version )
     {
         if ( version == null )
@@ -318,15 +622,38 @@ public class InstallableUnit
         return version.toString ();
     }
 
+    public static Document toXml ( final List<InstallableUnit> ius )
+    {
+        final XmlHelper xml = new XmlHelper ();
+
+        final Document doc = xml.create ();
+        final Element units = doc.createElement ( "units" );
+        doc.appendChild ( units );
+
+        for ( final InstallableUnit iu : ius )
+        {
+            iu.writeXmlForUnit ( units );
+        }
+
+        return doc;
+    }
+
     public Document toXml ()
     {
         final XmlHelper xml = new XmlHelper ();
 
         final Document doc = xml.create ();
-        final Element root = doc.createElement ( "units" );
-        doc.appendChild ( root );
+        final Element units = doc.createElement ( "units" );
+        doc.appendChild ( units );
 
-        final Element units = addElement ( root, "units" );
+        writeXmlForUnit ( units );
+
+        return doc;
+    }
+
+    private void writeXmlForUnit ( final Element units )
+    {
+        final Document doc = units.getOwnerDocument ();
 
         final Element unit = addElement ( units, "unit" );
         unit.setAttribute ( "id", this.id );
@@ -366,13 +693,29 @@ public class InstallableUnit
             {
                 p.setAttribute ( "greedy", "" + entry.getValue ().getGreedy () );
             }
+            final String filterString = entry.getValue ().getFilter ();
+            if ( filterString != null && !filterString.isEmpty () )
+            {
+                final Element filter = addElement ( p, "filter" );
+                filter.setTextContent ( entry.getValue ().getFilter () );
+            }
+        }
+
+        if ( this.filter != null && !this.filter.isEmpty () )
+        {
+            final Element filter = addElement ( unit, "filter" );
+            filter.setTextContent ( this.filter );
         }
 
         final Element artifacts = addElement ( unit, "artifacts" );
-        final Element a = addElement ( artifacts, "artifact" );
-        a.setAttribute ( "classifier", "osgi.bundle" );
-        a.setAttribute ( "id", this.id );
-        a.setAttribute ( "version", this.version );
+
+        for ( final Artifact artifact : this.artifacts )
+        {
+            final Element a = addElement ( artifacts, "artifact" );
+            a.setAttribute ( "classifier", artifact.getClassifer () );
+            a.setAttribute ( "id", artifact.getId () );
+            a.setAttribute ( "version", artifact.getVersion () );
+        }
 
         if ( this.additionalNodes != null )
         {
@@ -380,18 +723,45 @@ public class InstallableUnit
             {
                 if ( node instanceof Element )
                 {
-                    unit.appendChild ( unit.getOwnerDocument ().adoptNode ( node.cloneNode ( true ) ) );
+                    unit.appendChild ( doc.adoptNode ( node.cloneNode ( true ) ) );
                 }
             }
         }
 
+        // add legal
+
+        final Element licenses = addElement ( unit, "licenses" );
+        for ( final License licenseEntry : this.licenses )
+        {
+            final Element license = addElement ( licenses, "license" );
+            license.setAttribute ( "url", licenseEntry.getUri () );
+            license.setAttribute ( "uri", licenseEntry.getUri () );
+            if ( licenseEntry.getText () != null )
+            {
+                license.appendChild ( doc.createTextNode ( licenseEntry.getText () ) );
+            }
+        }
+
+        if ( this.copyright != null || this.copyrightUrl != null )
+        {
+            final Element copyright = addElement ( unit, "copyright" );
+            if ( this.copyrightUrl != null )
+            {
+                copyright.setAttribute ( "url", this.copyrightUrl );
+                copyright.setAttribute ( "uri", this.copyrightUrl );
+            }
+            if ( this.copyright != null )
+            {
+                copyright.appendChild ( doc.createTextNode ( this.copyright ) );
+            }
+        }
+
+        fixSize ( licenses );
         fixSize ( requires );
         fixSize ( properties );
         fixSize ( artifacts );
         fixSize ( provides );
         fixSize ( units );
-
-        return doc;
     }
 
     private String makeString ( final VersionRange range )

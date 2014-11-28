@@ -3,7 +3,8 @@
       id="test.feature1"
       label="Test Feature 1"
       version="1.0.0.qualifier"
-      provider-name="Jens Reimann">
+      provider-name="Jens Reimann"
+      plugin="test.bundle1">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -17,11 +18,34 @@
       [Enter License Description here.]
    </license>
 
+   <includes
+         id="test.feature2"
+         version="0.0.0"
+         name="Test Name"
+         optional="true"
+         os="linux,qnx,solaris"
+         ws="gtk,win32"
+         arch="x86,x86_64"
+         nl=""/>
+
+   <requires>
+      <import plugin="org.apache.commons.io" version="0.0.0"/>
+      <import feature="test.feature3" version="1.0.0.qualifier" match="compatible"/>
+      <import plugin="com.ibm.icu" version="50.1.0" match="equivalent"/>
+      <import plugin="com.ibm.icu.base" version="50.1.0" match="equivalent"/>
+      <import plugin="javax.mail" version="1.4.0"/>
+      <import plugin="com.google.inject" version="2.0.0" match="compatible"/>
+      <import plugin="com.google.guava" version="11.0.2" match="greaterOrEqual"/>
+      <import plugin="com.jcraft.jsch" version="0.1.50.v201403120620" match="perfect"/>
+   </requires>
+
    <plugin
          id="test.bundle1"
+         os="linux,solaris,win32"
+         ws="gtk,win32,wpf"
+         arch="x86,x86_64"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>

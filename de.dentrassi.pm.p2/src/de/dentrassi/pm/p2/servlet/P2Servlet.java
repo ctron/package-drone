@@ -11,6 +11,7 @@
 package de.dentrassi.pm.p2.servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -65,6 +66,10 @@ public class P2Servlet extends HttpServlet
         {
             process ( req, resp, new IndexHandler ( channel ) );
         }
+        else if ( "p2.index".equals ( paths[2] ) && paths.length == 3 )
+        {
+            process ( req, resp, new P2IndexHandler ( channel ) );
+        }
         else if ( "content.xml".equals ( paths[2] ) && paths.length == 3 )
         {
             process ( req, resp, new MetadataHandler ( channel ) );
@@ -87,6 +92,9 @@ public class P2Servlet extends HttpServlet
         {
             logger.warn ( "Not found for: {}", req.getPathInfo () );
             resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            final PrintWriter w = resp.getWriter ();
+            resp.setContentType ( "text/plain" );
+            w.println ( "File not found: " + req.getPathInfo () );
         }
     }
 

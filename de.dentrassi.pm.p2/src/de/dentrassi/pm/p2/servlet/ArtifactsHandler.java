@@ -31,8 +31,8 @@ import org.w3c.dom.Element;
 
 import com.google.common.io.ByteStreams;
 
-import de.dentrassi.pm.osgi.BundleInformation;
-import de.dentrassi.pm.osgi.BundleInformationParser;
+import de.dentrassi.pm.osgi.bundle.BundleInformation;
+import de.dentrassi.pm.osgi.bundle.BundleInformationParser;
 import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;

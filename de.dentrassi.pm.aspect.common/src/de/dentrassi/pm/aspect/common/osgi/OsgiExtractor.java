@@ -11,24 +11,20 @@
 package de.dentrassi.pm.aspect.common.osgi;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
-import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.osgi.BundleInformation;
-import de.dentrassi.pm.osgi.BundleInformationParser;
+import de.dentrassi.pm.osgi.bundle.BundleInformation;
+import de.dentrassi.pm.osgi.bundle.BundleInformationParser;
+import de.dentrassi.pm.osgi.feature.FeatureInformation;
+import de.dentrassi.pm.osgi.feature.FeatureInformationParser;
 
 public class OsgiExtractor implements Extractor
 {
@@ -42,14 +38,13 @@ public class OsgiExtractor implements Extractor
 
     public static final String KEY_BUNDLE_INFORMATION = "bundle-information";
 
-    private final ChannelAspect aspect;
+    public static final String KEY_FEATURE_INFORMATION = "feature-information";
 
-    private final XmlHelper xml;
+    private final ChannelAspect aspect;
 
     public OsgiExtractor ( final ChannelAspect aspect )
     {
         this.aspect = aspect;
-        this.xml = new XmlHelper ();
     }
 
     @Override
@@ -67,42 +62,28 @@ public class OsgiExtractor implements Extractor
 
     private void extractFeatureInformation ( final Path file, final Map<String, String> metadata ) throws Exception
     {
-        Document fdoc;
-        try ( ZipFile zf = new ZipFile ( file.toFile () ) )
+        final FeatureInformation fi;
+        try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
         {
-            final ZipEntry ze = zf.getEntry ( "feature.xml" );
-            if ( ze == null )
+            fi = new FeatureInformationParser ( zipFile ).parse ();
+            if ( fi == null )
             {
                 return;
-            }
-            try ( InputStream stream = zf.getInputStream ( ze ) )
-            {
-                fdoc = this.xml.parse ( stream );
             }
         }
         catch ( final ZipException e )
         {
-            // silently ignore
             return;
         }
 
-        // process feature content
-        final Element root = fdoc.getDocumentElement ();
-        if ( !"feature".equals ( root.getNodeName () ) )
-        {
-            return;
-        }
-
-        final String id = root.getAttribute ( "id" );
-        final String version = root.getAttribute ( KEY_VERSION );
-        if ( id == null || version == null )
-        {
-            return;
-        }
-
-        metadata.put ( KEY_NAME, id );
-        metadata.put ( KEY_VERSION, version );
+        metadata.put ( KEY_NAME, fi.getId () );
+        metadata.put ( KEY_VERSION, fi.getVersion () );
         metadata.put ( KEY_CLASSIFIER, "eclipse.feature" );
+
+        // store feature information
+
+        final GsonBuilder gb = new GsonBuilder ();
+        metadata.put ( KEY_FEATURE_INFORMATION, gb.create ().toJson ( fi ) );
     }
 
     private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws Exception

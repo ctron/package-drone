@@ -8,18 +8,12 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.osgi;
+package de.dentrassi.pm.osgi.bundle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -27,9 +21,9 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
-import de.dentrassi.pm.osgi.BundleInformation.BundleRequirement;
-import de.dentrassi.pm.osgi.BundleInformation.PackageExport;
-import de.dentrassi.pm.osgi.BundleInformation.PackageImport;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.BundleRequirement;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageExport;
+import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageImport;
 
 public class BundleInformationParser
 {
@@ -131,43 +125,8 @@ public class BundleInformationParser
             return;
         }
 
-        final Map<String, Properties> locs = new HashMap<> ();
-
-        final Pattern pattern = Pattern.compile ( Pattern.quote ( loc ) + "(|_[a-z]{2}-[A-Z]{2})\\.properties" );
-
-        final Enumeration<? extends ZipEntry> en = this.file.entries ();
-        while ( en.hasMoreElements () )
-        {
-            final ZipEntry ze = en.nextElement ();
-            final Matcher m = pattern.matcher ( ze.getName () );
-            if ( m.matches () )
-            {
-                final String locale = makeLocale ( m.group ( 1 ) );
-                final Properties properties = loadProperties ( ze );
-                locs.put ( locale, properties );
-            }
-        }
-
-        result.setLocalization ( locs );
-    }
-
-    private Properties loadProperties ( final ZipEntry ze ) throws IOException
-    {
-        final Properties p = new Properties ();
-        p.load ( this.file.getInputStream ( ze ) );
-        return p;
-    }
-
-    private String makeLocale ( final String localeString )
-    {
-        if ( localeString.isEmpty () )
-        {
-            return "df_LT";
-        }
-        else
-        {
-            return localeString;
-        }
+        result.setBundleLocalization ( loc );
+        result.setLocalization ( ParserHelper.loadLocalization ( this.file, loc ) );
     }
 
     private Manifest getManifest () throws IOException

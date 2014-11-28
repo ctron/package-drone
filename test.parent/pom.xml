@@ -14,8 +14,18 @@
 			<id>org.openscada</id>
 			<url>http://neutronium.openscada.org/maven</url>
 		</repository>
+		<repository>
+			<id>eclipse.orbit</id>
+			<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
+			<id>eclipse.kepler</id>
+			<url>http://download.eclipse.org/releases/kepler</url>
+			<layout>p2</layout>
+		</repository>
 	</repositories>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>test</id>
@@ -111,10 +121,13 @@
 		</plugins>
 
 	</build>
-	
+
 	<modules>
 		<module>../test.bundle1</module>
+
 		<module>../test.feature1</module>
+		<module>../test.feature2</module>
+		<module>../test.feature3</module>
 	</modules>
-	
+
 </project>
