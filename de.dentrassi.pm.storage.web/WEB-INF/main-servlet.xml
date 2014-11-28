@@ -24,7 +24,8 @@
     <mvc:resources mapping="/resources/**" location="/resources/"/>
     
     <mvc:interceptors>
-    	<bean class="de.dentrassi.pm.storage.web.menu.MenuInterceptor" autowire="constructor" />
+        <bean class="de.dentrassi.pm.storage.web.setup.SetupInterceptor"/>
+    	<bean class="de.dentrassi.pm.storage.web.menu.MenuInterceptor"/>
 	</mvc:interceptors>
 	
     <bean id="messageSource"
