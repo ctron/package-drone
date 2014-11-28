@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Package Drone" uid="package.drone.app" version="0.1.0" useFeatures="true" includeLaunchers="false">
+<product name="Package Drone" uid="package.drone.app" version="0.0.2" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -31,7 +31,7 @@
    </plugins>
 
    <features>
-      <feature id="de.dentrassi.pm" version="1.0.0.qualifier"/>
+      <feature id="de.dentrassi.pm" version="0.0.2.qualifier"/>
    </features>
 
    <configurations>
