@@ -46,9 +46,15 @@ public class P2Servlet extends HttpServlet
     }
 
     @Override
+    protected void service ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
+    {
+        logger.debug ( "Request: {} / {}", req.getMethod (), req.getPathInfo () );
+        super.service ( req, resp );
+    }
+
+    @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        logger.debug ( "Request: {}", req.getPathInfo () );
 
         final String paths[] = req.getPathInfo ().split ( "/" );
 
@@ -72,11 +78,19 @@ public class P2Servlet extends HttpServlet
         }
         else if ( "content.xml".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new MetadataHandler ( channel ) );
+            process ( req, resp, new MetadataHandler ( channel, false ) );
         }
         else if ( "artifacts.xml".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new ArtifactsHandler ( channel ) );
+            process ( req, resp, new ArtifactsHandler ( channel, false ) );
+        }
+        else if ( "content.jar".equals ( paths[2] ) && paths.length == 3 )
+        {
+            process ( req, resp, new MetadataHandler ( channel, true ) );
+        }
+        else if ( "artifacts.jar".equals ( paths[2] ) && paths.length == 3 )
+        {
+            process ( req, resp, new ArtifactsHandler ( channel, true ) );
         }
         else if ( "plugins".equals ( paths[2] ) )
         {

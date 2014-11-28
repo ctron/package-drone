@@ -12,8 +12,12 @@ package de.dentrassi.pm.p2.servlet;
 
 import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,23 +39,63 @@ public abstract class AbstractRepositoryHandler implements Handler
 
     private byte[] data;
 
-    public AbstractRepositoryHandler ( final Channel channel )
+    private final boolean compress;
+
+    private final String basename;
+
+    public AbstractRepositoryHandler ( final Channel channel, final boolean compress, final String basename )
     {
         this.channel = channel;
+        this.compress = compress;
+        this.basename = basename;
+
         this.properties.put ( "p2.timestamp", "" + System.currentTimeMillis () );
+
+        if ( compress )
+        {
+            this.properties.put ( "p2.compressed", "true" );
+        }
 
         this.xml = new XmlHelper ();
     }
 
     protected void setData ( final Document doc ) throws Exception
     {
-        this.data = this.xml.toData ( doc );
+        if ( this.compress )
+        {
+            this.data = compress ( this.basename + ".xml", this.xml.toData ( doc ) );
+        }
+        else
+        {
+            this.data = this.xml.toData ( doc );
+        }
+    }
+
+    private byte[] compress ( final String name, final byte[] data ) throws IOException
+    {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        final ZipOutputStream zos = new ZipOutputStream ( bos );
+
+        final ZipEntry ze = new ZipEntry ( name );
+        ze.setSize ( data.length );
+        zos.putNextEntry ( ze );
+        zos.write ( data );
+        zos.close ();
+
+        return bos.toByteArray ();
     }
 
     @Override
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
-        resp.setContentType ( "application/xml" );
+        if ( this.compress )
+        {
+            resp.setContentType ( "application/zip" );
+        }
+        else
+        {
+            resp.setContentType ( "application/xml" );
+        }
         resp.setContentLength ( this.data.length );
         resp.getOutputStream ().write ( this.data );
     }

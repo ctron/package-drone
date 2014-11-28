@@ -22,9 +22,9 @@ import de.dentrassi.pm.storage.service.Channel;
 
 public class ArtifactsHandler extends AbstractRepositoryHandler
 {
-    public ArtifactsHandler ( final Channel channel )
+    public ArtifactsHandler ( final Channel channel, final boolean compress )
     {
-        super ( channel );
+        super ( channel, compress, "artifacts" );
     }
 
     @Override

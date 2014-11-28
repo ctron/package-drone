@@ -23,9 +23,9 @@ import de.dentrassi.pm.storage.service.Channel;
 
 public class MetadataHandler extends AbstractRepositoryHandler
 {
-    public MetadataHandler ( final Channel channel )
+    public MetadataHandler ( final Channel channel, final boolean compress )
     {
-        super ( channel );
+        super ( channel, compress, "content" );
     }
 
     @Override
