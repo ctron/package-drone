@@ -3,7 +3,7 @@
 	xmlns="http://java.sun.com/xml/ns/javaee"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	id="WebApp_ID" version="3.0">
-	
+
 	<servlet>
 		<servlet-name>main</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -12,17 +12,24 @@
 			<param-value>/WEB-INF/main-servlet.xml</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
-		
+
 		<multipart-config>
 			<max-file-size>1073741824</max-file-size><!-- 1GB -->
 			<max-request-size>1073741824</max-request-size><!-- 1GB -->
 			<file-size-threshold>1048576</file-size-threshold><!-- 1MB -->
 		</multipart-config>
 	</servlet>
-	
+
 	<servlet-mapping>
 		<servlet-name>main</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
-	
+
+	<jsp-config>
+		<taglib>
+			<taglib-uri>http://dentrass.de/pm</taglib-uri>
+			<taglib-location>/WEB-INF/tags/pm.tld</taglib-location>
+		</taglib>
+	</jsp-config>
+
 </web-app>

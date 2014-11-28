@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_1.xsd"
+    version="2.1">
+
+	<tlib-version>1.0</tlib-version>
+	<uri>http://dentrass.de/pm</uri>
+
+	<function>
+		<name>channel</name>
+		<function-class>de.dentrassi.pm.storage.web.Functions</function-class>
+		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.service.Channel)</function-signature>
+	</function>
+
+</taglib> 

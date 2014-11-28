@@ -30,6 +30,12 @@ import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
 @RequestMapping ( value = "/setup" )
 public class SetupController extends AbstractDefaultController
 {
+    @Override
+    protected void fillMenu ( final DefaultMenuExtender menuExtener )
+    {
+        menuExtener.addEntry ( "/setup", "Setup", 100 );
+    }
+
     @RequestMapping ( method = RequestMethod.GET )
     public ModelAndView main ()
     {
@@ -43,12 +49,6 @@ public class SetupController extends AbstractDefaultController
         model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
 
         return new ModelAndView ( "setup/index", model );
-    }
-
-    @Override
-    protected void fillMenu ( final DefaultMenuExtender menuExtener )
-    {
-        menuExtener.addEntry ( "/setup", "Setup", 100 );
     }
 
     @RequestMapping ( method = RequestMethod.POST )

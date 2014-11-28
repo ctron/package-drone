@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -32,10 +34,14 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
+import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenServlet extends HttpServlet
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( MavenServlet.class );
+
     private static final long serialVersionUID = 1L;
 
     private ServiceTracker<StorageService, StorageService> tracker;
@@ -72,30 +78,37 @@ public class MavenServlet extends HttpServlet
     {
         try
         {
-            System.out.println ( "PathInfo: " + request.getPathInfo () );
-            System.out.println ( "Method: " + request.getMethod () );
+            final StorageService service = this.tracker.getService ();
+
+            logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
+
             final String[] toks = request.getPathInfo ().split ( "/" );
             final String channelId = toks[1];
             final String artifactName = toks[toks.length - 1];
 
-            System.out.println ( "Channel: " + channelId );
-            System.out.println ( "Artifact: " + artifactName );
+            logger.debug ( "Channel: {}, Artifact: {}", channelId, artifactName );
+
+            final Channel channel = service.getChannelWithAlias ( channelId );
+            if ( channel == null )
+            {
+                response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+                response.getWriter ().format ( "Channel %s not found", channelId );
+                return;
+            }
 
             if ( isUpload ( toks, artifactName ) )
             {
-                final StorageService service = this.tracker.getService ();
-
                 final Map<MetaKey, String> metadata = new HashMap<> ();
 
                 metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
                 metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
                 metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
 
-                service.createArtifact ( channelId, artifactName, request.getInputStream (), metadata );
+                channel.createArtifact ( artifactName, request.getInputStream (), metadata );
             }
             else if ( isMetaData ( toks, artifactName ) )
             {
-                processMetaData ( channelId, toks, request );
+                processMetaData ( channel, toks, request );
             }
             else
             {
@@ -109,7 +122,7 @@ public class MavenServlet extends HttpServlet
         }
     }
 
-    private void processMetaData ( final String channelId, final String[] toks, final HttpServletRequest request ) throws Exception
+    private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception
     {
         final String groupId = join ( toks, 2, -3 );
         final String artifactId = toks[toks.length - 3];
@@ -162,7 +175,7 @@ public class MavenServlet extends HttpServlet
                 }
                 md.put ( new MetaKey ( "mvn", "snapshotVersion" ), value );
 
-                final Collection<Artifact> artifacts = this.tracker.getService ().findByName ( channelId, String.format ( "%s-%s%s.%s", artifactId, value, classifier != null ? "-" + classifier : "", extension ) );
+                final Collection<Artifact> artifacts = channel.findByName ( String.format ( "%s-%s%s.%s", artifactId, value, classifier != null ? "-" + classifier : "", extension ) );
                 for ( final Artifact artifact : artifacts )
                 {
                     final Map<MetaKey, String> amd = artifact.getMetaData ();

@@ -1,6 +1,7 @@
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,
-
+    NAME          VARCHAR(255) UNIQUE,
+    
     PRIMARY KEY (ID)
 );
 

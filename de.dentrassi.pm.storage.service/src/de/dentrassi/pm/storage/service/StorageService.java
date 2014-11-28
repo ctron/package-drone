@@ -24,6 +24,8 @@ public interface StorageService
 
     public Channel getChannel ( String channelId );
 
+    public Channel getChannelWithAlias ( String channelIdOrName );
+
     /**
      * Create a new artifact in the channel
      * <p>
@@ -60,7 +62,7 @@ public interface StorageService
 
     public Artifact getArtifact ( String artifactId );
 
-    public Collection<Artifact> findByName ( String channelId, String format );
+    public void clearChannel ( String id );
 
-    public void clearChannel ( String channelId );
+    public void updateChannel ( String id, String name );
 }

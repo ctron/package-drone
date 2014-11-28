@@ -170,6 +170,32 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
+    public Channel getChannelWithAlias ( final String channelIdOrName )
+    {
+        return doWithTransaction ( em -> {
+            ChannelEntity channel = em.find ( ChannelEntity.class, channelIdOrName );
+            if ( channel == null )
+            {
+                channel = findByName ( em, channelIdOrName );
+            }
+            return convert ( channel );
+        } );
+    }
+
+    protected ChannelEntity findByName ( final EntityManager em, final String channelName )
+    {
+        final TypedQuery<ChannelEntity> q = em.createQuery ( String.format ( "SELECT c FROM %s AS c WHERE c.name=:name", ChannelEntity.class.getName () ), ChannelEntity.class );
+        q.setParameter ( "name", channelName );
+
+        final List<ChannelEntity> result = q.getResultList ();
+        if ( result.isEmpty () )
+        {
+            return null;
+        }
+        return result.get ( 0 );
+    }
+
+    @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream )
     {
         return createArtifact ( channelId, name, stream, null );
@@ -425,7 +451,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             return null;
         }
-        return new ChannelImpl ( ce.getId (), this );
+        return new ChannelImpl ( ce.getId (), ce.getName (), this );
     }
 
     private Artifact convert ( final ChannelImpl channel, final ArtifactEntity ae )
@@ -744,7 +770,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return result;
     }
 
-    @Override
     public Collection<Artifact> findByName ( final String channelId, final String artifactName )
     {
         return doWithTransaction ( em -> {
@@ -776,4 +801,17 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             q.executeUpdate ();
         } );
     }
+
+    @Override
+    public void updateChannel ( final String channelId, final String name )
+    {
+        doWithTransactionVoid ( em -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            channel.setName ( name );
+
+            em.persist ( channel );
+        } );
+    }
+
 }

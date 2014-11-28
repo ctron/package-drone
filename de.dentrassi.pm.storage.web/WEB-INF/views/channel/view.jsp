@@ -11,10 +11,12 @@
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 
-<h:main title="Channel - ${channel.id }">
+<h:main title="Channel - ${pm:channel(channel) }">
 
 <ul class="button-bar">
+    <li><a class="pure-button" href="edit">Edit Channel</a></li>
 	<li><a class="pure-button" href="delete">Delete Channel</a></li>
 	<li><a class="pure-button" href="add">Add Artifact</a></li>
 	<li><a class="pure-button" href="clear">Clear Channel</a></li>

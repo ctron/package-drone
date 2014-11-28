@@ -12,10 +12,16 @@ package de.dentrassi.pm.storage.web.channel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Valid;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,12 +39,43 @@ import de.dentrassi.pm.storage.web.Activator;
 @Controller
 public class ChannelController
 {
+    private static final class ChannelNameComparator implements Comparator<Channel>
+    {
+        @Override
+        public int compare ( final Channel o1, final Channel o2 )
+        {
+            final String n1 = o1.getName () != null ? o1.getName () : "";
+            final String n2 = o2.getName () != null ? o2.getName () : "";
+
+            if ( !n1.isEmpty () && n2.isEmpty () )
+            {
+                return -1;
+            }
+            if ( n1.isEmpty () && !n2.isEmpty () )
+            {
+                return 1;
+            }
+
+            final int rc = n1.compareTo ( n2 );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+
+            return o1.getId ().compareTo ( o2.getId () );
+        }
+    }
+
+    private static final ChannelNameComparator NAME_COMPARATOR = new ChannelNameComparator ();
+
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
     public ModelAndView list ()
     {
         final ModelAndView result = new ModelAndView ( "channel/list" );
 
-        result.addObject ( "channels", Activator.getTracker ().getStorageService ().listChannels () );
+        final List<Channel> channels = new ArrayList<> ( Activator.getTracker ().getStorageService ().listChannels () );
+        channels.sort ( NAME_COMPARATOR );
+        result.addObject ( "channels", channels );
 
         return result;
     }
@@ -66,7 +103,6 @@ public class ChannelController
         final StorageService service = Activator.getTracker ().getStorageService ();
 
         final Channel channel = service.getChannel ( channelId );
-
         if ( channel == null )
         {
             return new ModelAndView ( "channel/notFound", "channelId", channelId );
@@ -174,6 +210,50 @@ public class ChannelController
         final StorageService service = Activator.getTracker ().getStorageService ();
         service.removeChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
+    public ModelAndView edit ( @PathVariable ( "channelId" )
+    final String channelId )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final StorageService service = Activator.getTracker ().getStorageService ();
+
+        final Channel channel = service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+        }
+
+        final EditChannel edit = new EditChannel ();
+        edit.setId ( channel.getId () );
+        edit.setName ( channel.getName () );
+
+        model.put ( "command", edit );
+
+        return new ModelAndView ( "channel/edit", model );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
+    public ModelAndView edit ( @PathVariable ( "channelId" )
+    final String channelId, @Valid
+    @ModelAttribute ( "command" )
+    final EditChannel data, final BindingResult result )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        if ( !result.hasErrors () )
+        {
+            final StorageService service = Activator.getTracker ().getStorageService ();
+            service.updateChannel ( channelId, data.getName () );
+            return new ModelAndView ( "redirect:/channel/" + channelId + "/view", model );
+        }
+        else
+        {
+            model.put ( "command", data );
+            return new ModelAndView ( "channel/edit", model );
+        }
     }
 
 }

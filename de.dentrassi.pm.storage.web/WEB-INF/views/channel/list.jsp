@@ -11,10 +11,11 @@
 <li><a class="pure-button" href="channel/create">Create Channel</a></li>
 </ul>
 
-<table class="full">
+<table style="width: 100%">
 
 <thead>
 	<tr>
+    	<th>Name</th>
     	<th>ID</th>
 	</tr>
 </thead>
@@ -22,6 +23,7 @@
 <tbody>
 <c:forEach items="${channels}" var="channel">
 <tr>
+    <td><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.name }</a></td>
 	<td><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.id }</a></td>
 </tr>
 </c:forEach>

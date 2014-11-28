@@ -34,6 +34,9 @@ public class ChannelEntity
     @GeneratedValue ( generator = "CHAN_UUID_GEN" )
     private String id;
 
+    @Column ( name = "NAME", nullable = true, unique = true )
+    private String name;
+
     @OneToMany ( mappedBy = "channel" )
     private Set<ArtifactEntity> artifacts = new HashSet<> ();
 
@@ -50,6 +53,16 @@ public class ChannelEntity
     public String getId ()
     {
         return this.id;
+    }
+
+    public String getName ()
+    {
+        return this.name;
+    }
+
+    public void setName ( final String name )
+    {
+        this.name = name;
     }
 
     public Set<ArtifactEntity> getArtifacts ()

@@ -64,9 +64,9 @@ public class P2Servlet extends HttpServlet
             return;
         }
 
-        final String channelId = paths[1];
+        final String channelIdOrName = paths[1];
         final StorageService service = this.tracker.getService ();
-        final Channel channel = service.getChannel ( channelId );
+        final Channel channel = service.getChannelWithAlias ( channelIdOrName );
 
         if ( paths.length < 3 )
         {

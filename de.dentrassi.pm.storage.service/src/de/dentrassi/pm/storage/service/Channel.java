@@ -10,16 +10,27 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service;
 
+import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
+import de.dentrassi.pm.storage.MetaKey;
 
 public interface Channel
 {
     public String getId ();
 
+    public String getName ();
+
     public Set<Artifact> getArtifacts ();
 
     public List<ChannelAspectInformation> getAspects ();
+
+    public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
+
+    public Collection<Artifact> findByName ( String format );
+
 }

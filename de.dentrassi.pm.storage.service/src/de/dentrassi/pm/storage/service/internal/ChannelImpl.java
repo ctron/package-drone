@@ -10,10 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.internal;
 
+import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
+import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
@@ -24,10 +28,31 @@ public class ChannelImpl implements Channel
 
     private final StorageServiceImpl service;
 
-    public ChannelImpl ( final String id, final StorageServiceImpl service )
+    private final String name;
+
+    public ChannelImpl ( final String id, final String name, final StorageServiceImpl service )
     {
         this.id = id;
+        this.name = name;
         this.service = service;
+    }
+
+    @Override
+    public Artifact createArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return this.service.createArtifact ( this.id, name, stream, providedMetaData );
+    }
+
+    @Override
+    public Collection<Artifact> findByName ( final String artifactName )
+    {
+        return this.service.findByName ( this.id, artifactName );
+    }
+
+    @Override
+    public String getName ()
+    {
+        return this.name;
     }
 
     @Override
