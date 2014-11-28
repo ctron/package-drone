@@ -67,6 +67,11 @@ public class ChannelController
 
         final Channel channel = service.getChannel ( channelId );
 
+        if ( channel == null )
+        {
+            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+        }
+
         final List<Artifact> sortedArtifacts = new ArrayList<> ( channel.getArtifacts () );
         sortedArtifacts.sort ( Artifact.NAME_COMPARATOR );
 

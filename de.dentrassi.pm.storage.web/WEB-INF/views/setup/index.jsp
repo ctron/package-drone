@@ -27,32 +27,32 @@
 			<form:options items="${jdbcDrivers }" itemValue="className"/>
 		</form:select>
 	
-		<div class="pure-form-message-inline"><form:errors path="jdbcDriver" cssClass="error" /></div>
+		<div class="pure-form-message-inline"><form:errors path="jdbcDriver" cssClass="validation-error" /></div>
 	
 	</div>
 	
 	<div  class="pure-control-group">
 		<form:label path="url">URL:</form:label>
 		<form:input path="url"/>
-		<div class="pure-form-message-inline"><form:errors path="url" cssClass="error" /></div>
+		<div class="pure-form-message-inline"><form:errors path="url" cssClass="validation-error" /></div>
 	</div>
 	
 	<div  class="pure-control-group">
 		<form:label path="user">User:</form:label>
 		<form:input path="user"/>
-		<div class="pure-form-message-inline"><form:errors path="user" cssClass="error" /></div>
+		<div class="pure-form-message-inline"><form:errors path="user" cssClass="validation-error" /></div>
 	</div>
 	
 	<div  class="pure-control-group">
 		<form:label path="password">Password:</form:label>
 		<form:input path="password"/>
-		<div class="pure-form-message-inline"><form:errors path="password" cssClass="error" /></div>
+		<div class="pure-form-message-inline"><form:errors path="password" cssClass="validation-error" /></div>
 	</div>
 	
 	<div  class="pure-control-group">
 		<form:label path="additionalProperties">Additional Properties:</form:label>
 		<form:textarea path="additionalProperties" cols="40" rows="10" />
-		<div class="pure-form-message-inline"><form:errors path="additionalProperties" cssClass="error" /></div>
+		<div class="pure-form-message-inline"><form:errors path="additionalProperties" cssClass="validation-error" /></div>
 	</div>
 
 <input type="submit" value="Submit" class="pure-button pure-button-primary">

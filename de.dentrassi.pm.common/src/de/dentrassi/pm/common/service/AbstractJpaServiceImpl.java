@@ -50,33 +50,10 @@ public class AbstractJpaServiceImpl
 
     protected void doWithTransactionVoid ( final VoidManagerFunction function )
     {
-        try
-        {
-            doWithManager ( entityManager -> {
-
-                final EntityTransaction tx = entityManager.getTransaction ();
-                tx.begin ();
-
-                try
-                {
-                    function.processVoid ( entityManager );
-                    tx.commit ();
-                    return null;
-                }
-                catch ( final Exception e )
-                {
-                    if ( tx.isActive () )
-                    {
-                        tx.rollback ();
-                    }
-                    throw new RuntimeException ( e );
-                }
-            } );
-        }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException ( e );
-        }
+        doWithTransaction ( em -> {
+            function.processVoid ( em );
+            return null;
+        } );
     }
 
     protected <T> T doWithTransaction ( final ManagerFunction<T> function )

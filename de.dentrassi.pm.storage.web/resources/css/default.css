@@ -9,23 +9,35 @@
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
  
-.error {
+.validation-error {
 	color: red;
 }
 
-div.warning {
-	background-color: #fffce6;
-	border: 1pt solid #DDD999;
-	border-radius: 10pt;
-	padding: 1em;
-	margin: 1em;
-	display: inline-block;
+/* boxes */
+
+div.box {
+	border: 1px solid;
+    border-radius: 10pt;
+    padding: 1em;
+    margin: 1em;
+    display: inline-block; 
 }
 
-div.warning > .title {
+div.warning {
+    background-color: #fffce6;
+    border-color: #DDD999;
+}
+
+div.error {
+    background-color: #FFDDDD;
+    border-color: #DD9999;
+}
+
+div.box > .title {
 	font-weight: bold;
 	padding-bottom: .5em;
 }
+
 
 .success {
 	background-color: #efffef;
@@ -35,6 +47,8 @@ div.warning > .title {
 	margin: 1em;
 	display: inline-block;
 }
+
+/* button bar */
 
 ul.button-bar {
 }
@@ -90,3 +104,4 @@ td {
 table.full { width: 100%; }
 table.full td:first-child { width: 100%; }
 table.full th { text-align: left; padding-left: 1em; }
+

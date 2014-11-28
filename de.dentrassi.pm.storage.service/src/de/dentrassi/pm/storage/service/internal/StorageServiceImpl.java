@@ -374,12 +374,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private void convertProvidedProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ProvidedArtifactPropertyEntity> props )
     {
-        metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ProvidedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+        if ( metadata != null )
+        {
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ProvidedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+        }
     }
 
     private void convertExtractedProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ExtractedArtifactPropertyEntity> props )
     {
-        metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ExtractedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+        if ( metadata != null )
+        {
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ExtractedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+        }
     }
 
     public Set<Artifact> listArtifacts ( final String channelId )
@@ -483,7 +489,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             {
                 if ( !rs.next () )
                 {
-                    throw new FileNotFoundException ();
+                    throw new FileNotFoundException ( String.format ( "Data for artifact '%s' not found", artifactId ) );
                 }
 
                 final Blob blob = rs.getBlob ( 1 );
@@ -542,6 +548,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final ChannelEntity channel = ae.getChannel ();
 
             em.remove ( ae );
+            em.flush ();
 
             // now run the post add trigger
 
@@ -623,7 +630,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     // add metadata
 
                     convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+
                     em.persist ( ae );
+                    em.flush ();
                 }
                 finally
                 {

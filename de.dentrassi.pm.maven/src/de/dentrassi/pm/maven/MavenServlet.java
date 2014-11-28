@@ -84,18 +84,14 @@ public class MavenServlet extends HttpServlet
             if ( isUpload ( toks, artifactName ) )
             {
                 final StorageService service = this.tracker.getService ();
-                final Artifact artifact = service.createArtifact ( channelId, artifactName, request.getInputStream () );
 
-                if ( artifact != null )
-                {
-                    final Map<MetaKey, String> metadata = new HashMap<> ();
+                final Map<MetaKey, String> metadata = new HashMap<> ();
 
-                    metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
-                    metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
-                    metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
+                metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
+                metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
+                metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
 
-                    artifact.applyMetaData ( metadata );
-                }
+                service.createArtifact ( channelId, artifactName, request.getInputStream (), metadata );
             }
             else if ( isMetaData ( toks, artifactName ) )
             {
