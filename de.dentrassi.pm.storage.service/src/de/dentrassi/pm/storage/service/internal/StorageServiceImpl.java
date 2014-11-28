@@ -38,6 +38,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -63,6 +64,8 @@ import de.dentrassi.pm.storage.MetaKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.Artifact;
@@ -119,7 +122,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     ve.setParent ( this.artifact );
                     ve.setNamespace ( this.namespace );
                     return ve;
-                } );
+                }, null );
             }
             catch ( final Exception e )
             {
@@ -169,12 +172,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream )
     {
+        return createArtifact ( channelId, name, stream, null );
+    }
+
+    @Override
+    public Artifact createArtifact ( final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
         final Artifact artifact;
         try
         {
             artifact = doWithTransaction ( em -> {
                 final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                return performStoreArtifact ( channel, name, stream, em, true, StoredArtifactEntity::new );
+                return performStoreArtifact ( channel, name, stream, em, true, StoredArtifactEntity::new, providedMetaData );
             } );
         }
         catch ( final Exception e )
@@ -197,7 +206,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return artifact;
     }
 
-    private Artifact performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final boolean triggerVirtual, final Supplier<ArtifactEntity> entityCreator ) throws Exception
+    private Artifact performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final boolean triggerVirtual, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData ) throws Exception
     {
         final Path file = Files.createTempFile ( "blob-", null );
 
@@ -224,7 +233,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             ArtifactEntity ae;
             try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
             {
-                ae = storeBlob ( entityCreator, em, channel, name, in, metadata );
+                ae = storeBlob ( entityCreator, em, channel, name, in, metadata, providedMetaData );
             }
 
             if ( ae instanceof StoredArtifactEntity )
@@ -310,14 +319,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return channel;
     }
 
-    protected ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> metadata ) throws SQLException, IOException
+    protected ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> extractedMetaData, final Map<MetaKey, String> providedMetaData ) throws SQLException, IOException
     {
         final ArtifactEntity artifact = artifactSupplier.get ();
         artifact.setName ( name );
         artifact.setChannel ( channel );
 
-        final Collection<ArtifactPropertyEntity> props = artifact.getProperties ();
-        convertProperties ( metadata, artifact, props );
+        convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
+        convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
 
         // set the blob
 
@@ -353,19 +362,24 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return artifact;
     }
 
-    private void convertProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ArtifactPropertyEntity> props )
+    private <T extends ArtifactPropertyEntity> T fillPropertyEntry ( final ArtifactEntity artifact, final Map.Entry<MetaKey, String> entry, final Supplier<T> supplier )
     {
-        for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
-        {
-            final ArtifactPropertyEntity ap = new ArtifactPropertyEntity ();
+        final T ap = supplier.get ();
+        ap.setArtifact ( artifact );
+        ap.setKey ( entry.getKey ().getKey () );
+        ap.setNamespace ( entry.getKey ().getNamespace () );
+        ap.setValue ( entry.getValue () );
+        return ap;
+    }
 
-            ap.setArtifact ( artifact );
-            ap.setKey ( entry.getKey ().getKey () );
-            ap.setNamespace ( entry.getKey ().getNamespace () );
-            ap.setValue ( entry.getValue () );
+    private void convertProvidedProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ProvidedArtifactPropertyEntity> props )
+    {
+        metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ProvidedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+    }
 
-            props.add ( ap );
-        }
+    private void convertExtractedProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ExtractedArtifactPropertyEntity> props )
+    {
+        metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ExtractedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
     }
 
     public Set<Artifact> listArtifacts ( final String channelId )
@@ -423,10 +437,17 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     private SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
-        for ( final ArtifactPropertyEntity entry : ae.getProperties () )
+
+        for ( final ArtifactPropertyEntity entry : ae.getExtractedProperties () )
         {
             metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
         }
+
+        for ( final ArtifactPropertyEntity entry : ae.getProvidedProperties () )
+        {
+            metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+        }
+
         return metadata;
     }
 
@@ -601,7 +622,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                     // add metadata
 
-                    convertProperties ( metadata, ae, ae.getProperties () );
+                    convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
                     em.persist ( ae );
                 }
                 finally
@@ -629,7 +650,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             em.persist ( channel );
 
             {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ArtifactPropertyEntity.class.getSimpleName () ) );
+                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
+                q.setParameter ( "factoryId", aspectFactoryId );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+            }
+
+            {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ProvidedArtifactPropertyEntity.class.getSimpleName () ) );
                 q.setParameter ( "factoryId", aspectFactoryId );
                 q.setParameter ( "channelId", channelId );
                 q.executeUpdate ();
@@ -665,7 +693,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithTransaction ( em -> {
             final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
-            final Map<MetaKey, String> result = convert ( artifact.getProperties () );
+            final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
 
             // apply
             for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
@@ -681,12 +709,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             }
 
             // first clear all
-            artifact.getProperties ().clear ();
+            artifact.getProvidedProperties ().clear ();
             em.persist ( artifact );
             em.flush ();
 
             // now add the new set
-            convertProperties ( result, artifact, artifact.getProperties () );
+            convertProvidedProperties ( result, artifact, artifact.getProvidedProperties () );
 
             // store
             em.persist ( artifact );
@@ -695,7 +723,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    private Map<MetaKey, String> convert ( final Collection<ArtifactPropertyEntity> properties )
+    private Map<MetaKey, String> convert ( final Collection<? extends ArtifactPropertyEntity> properties )
     {
         final Map<MetaKey, String> result = new HashMap<MetaKey, String> ( properties.size () );
 

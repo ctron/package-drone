@@ -3,9 +3,11 @@
 	<persistence-unit name="de.dentrassi.pm.storage.jpa" transaction-type="RESOURCE_LOCAL">
 		<class>de.dentrassi.pm.storage.jpa.ChannelEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ArtifactEntity</class>
-		<class>de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.StoredArtifactEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.VirtualArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="false"/>
 		</properties>

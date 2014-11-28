@@ -14,14 +14,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
-@Table ( name = "ARTIFACT_PROPERTIES" )
 @IdClass ( ArtifactPropertyKey.class )
-public class ArtifactPropertyEntity
+@Inheritance ( strategy = InheritanceType.TABLE_PER_CLASS )
+public abstract class ArtifactPropertyEntity
 {
     @Id
     @Column ( name = "ART_ID", insertable = false, updatable = false )

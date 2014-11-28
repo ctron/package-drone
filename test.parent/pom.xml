@@ -29,7 +29,7 @@
 	<distributionManagement>
 		<repository>
 			<id>test</id>
-			<url>http://localhost:8080/maven/2797D4EC-98F5-4EB7-BF60-2E9ABB8324AA</url>
+			<url>http://localhost:8080/maven/87489293-1284-469E-9376-99BE89724C41</url>
 		</repository>
 	</distributionManagement>
 

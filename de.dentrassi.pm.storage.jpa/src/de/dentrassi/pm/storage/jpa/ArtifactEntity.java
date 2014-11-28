@@ -51,7 +51,10 @@ public abstract class ArtifactEntity
     private long size;
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
-    private Collection<ArtifactPropertyEntity> properties = new LinkedList<> ();
+    private Collection<ExtractedArtifactPropertyEntity> extractedProperties = new LinkedList<> ();
+
+    @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
+    private Collection<ProvidedArtifactPropertyEntity> providedProperties = new LinkedList<> ();
 
     public String getId ()
     {
@@ -83,14 +86,24 @@ public abstract class ArtifactEntity
         return this.name;
     }
 
-    public Collection<ArtifactPropertyEntity> getProperties ()
+    public Collection<ExtractedArtifactPropertyEntity> getExtractedProperties ()
     {
-        return this.properties;
+        return this.extractedProperties;
     }
 
-    public void setProperties ( final Collection<ArtifactPropertyEntity> properties )
+    public void setExtractedProperties ( final Collection<ExtractedArtifactPropertyEntity> extractedProperties )
     {
-        this.properties = properties;
+        this.extractedProperties = extractedProperties;
+    }
+
+    public Collection<ProvidedArtifactPropertyEntity> getProvidedProperties ()
+    {
+        return this.providedProperties;
+    }
+
+    public void setProvidedProperties ( final Collection<ProvidedArtifactPropertyEntity> providedProperties )
+    {
+        this.providedProperties = providedProperties;
     }
 
     public long getSize ()
