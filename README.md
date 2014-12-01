@@ -22,12 +22,10 @@ Known bugs and limitation
 ----------------
 
 * The concept of P2 categories and binaries is missing
-* Channels only have cryptic UUID "names", they should have an alias
 * Automatic cleanup is missing
 * There is deadlock in Equinox/EclipseLink when updating the JPA database settings
 * There is no security AT ALL
 * PostgreSQL is not supported, since PostgreSQL does not support Blobs properly
-* At the moment the tycho generated metadata is used for features and bundles. This requires bundles and features to be deployed to the repository using Maven Tycho including the attached "p2metadata" XML file.
 
 What it currently cannot do
 ----------------
