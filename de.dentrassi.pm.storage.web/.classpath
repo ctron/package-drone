@@ -9,9 +9,8 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-expression-4.1.2.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-web-4.1.2.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-webmvc-4.1.2.RELEASE.jar" sourcepath="WEB-INF/lib/spring-webmvc-4.1.2.RELEASE-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/hibernate-validator-5.1.3.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/hibernate-validator-annotation-processor-5.1.3.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/hibernate-validator-5.1.3.Final.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
