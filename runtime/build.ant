@@ -40,10 +40,12 @@
         <parallel>
 
             <get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.5.v20141112.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
-        	<!--
+        	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM3-201410292000/equinox-SDK-MarsM3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
-        	-->
+        	<!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/R-KeplerSR2-201402211700/equinox-SDK-KeplerSR2.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+        	-->
+        	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.1/gemini-jpa-1.1.0.RELEASE.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.4.2/eclipselink-plugins-2.4.2.v20130514-5956486.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
