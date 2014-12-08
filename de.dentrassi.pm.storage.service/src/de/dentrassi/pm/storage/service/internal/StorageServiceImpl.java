@@ -45,6 +45,8 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 
+import org.eclipse.persistence.config.QueryHints;
+import org.eclipse.persistence.config.QueryType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -425,15 +427,19 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             final ChannelImpl channel = convert ( ce );
 
-            final TypedQuery<ArtifactEntity> query = em.createQuery ( String.format ( "select a from %s a where a.channel=:channel", ArtifactEntity.class.getName () ), ArtifactEntity.class );
+            final TypedQuery<ArtifactEntity> query = em.createQuery ( String.format ( "select a from %s a WHERE a.channel=:channel", ArtifactEntity.class.getName () ), ArtifactEntity.class );
             query.setParameter ( "channel", ce );
+
+            query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
+            query.setHint ( "eclipselink.batch", "a.channel" );
+
             /*
             query.setHint ( "eclipselink.join-fetch", "a.channel" );
             query.setHint ( "eclipselink.join-fetch", "a.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "a.providedProperties" );
-            */
 
-            // query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
+            query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
+            */
 
             final Set<Artifact> result = new TreeSet<> ();
             for ( final ArtifactEntity ae : query.getResultList () )

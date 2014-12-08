@@ -10,7 +10,7 @@
 		<class>de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="false"/>
-			<property name="eclipselink.logging.level" value="WARNING"/>
+			<property name="eclipselink.logging.level" value="FINE"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
 		</properties>
 	</persistence-unit>
