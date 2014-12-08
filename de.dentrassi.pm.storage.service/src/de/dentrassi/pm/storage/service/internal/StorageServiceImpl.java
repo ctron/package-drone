@@ -611,12 +611,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected void reprocessAspect ( final EntityManager em, final ChannelEntity channel, final String aspectFactoryId ) throws Exception
     {
+        logger.info ( "Reprocessing aspect - channelId: {}, aspect: {}", channel.getId (), aspectFactoryId );
+
         for ( final ArtifactEntity ae : channel.getArtifacts () )
         {
+            /*
             if ( ! ( ae instanceof StoredArtifactEntity ) )
             {
                 continue;
             }
+            */
+
+            logger.debug ( "Reprocessing artifact - {}", ae.getId () );
 
             internalStreamArtifact ( em, ae, ( info, stream ) -> {
                 final Path file = Files.createTempFile ( "blob-", "-reproc" );
@@ -647,15 +653,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                         }
                     } );
 
+                    // add metadata first, since the virtualizers might need it
+
+                    convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+
+                    // process virtual
+
                     if ( ae instanceof StoredArtifactEntity )
                     {
-                        // process virtual
                         ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createVirtualContext ( em, channel, (StoredArtifactEntity)ae, file, aspectFactoryId ) ) );
                     }
 
-                    // add metadata
-
-                    convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+                    // store
 
                     em.persist ( ae );
                     em.flush ();

@@ -58,7 +58,7 @@ public final class DownloadHelper
 
             try
             {
-                response.setContentLengthLong ( info.getLength () );
+                response.setContentLengthLong ( info.getSize () );
                 if ( download )
                 {
                     response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
