@@ -10,33 +10,19 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.ModelAndView;
-
-import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
+import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.osgi.web.ViewResolver;
 
 @Controller
-public class WelcomeController extends AbstractDefaultController
+@ViewResolver ( "/WEB-INF/views/%s.jsp" )
+public class WelcomeController
 {
-
-    @Override
-    protected void fillMenu ( final DefaultMenuExtender menuExtener )
-    {
-        // main "home" entry is coded in the JSP tag "main"
-    }
-
     @RequestMapping ( value = "/", method = RequestMethod.GET )
     public ModelAndView main ()
     {
-        if ( Activator.getTracker ().getStorageService () != null )
-        {
-            return new ModelAndView ( "index" );
-        }
-        else
-        {
-            return new ModelAndView ( "redirect:/setup" );
-        }
+        return new ModelAndView ( "index" );
     }
 }

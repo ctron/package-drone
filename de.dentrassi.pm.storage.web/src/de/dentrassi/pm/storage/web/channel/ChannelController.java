@@ -12,33 +12,38 @@ package de.dentrassi.pm.storage.web.channel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.Part;
 import javax.validation.Valid;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-
+import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
+import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
+import de.dentrassi.pm.storage.web.menu.MenuExtender;
+import de.dentrassi.pm.storage.web.menu.MenuManager.MenuEntry;
 
 @Controller
-public class ChannelController
+@ViewResolver ( "/WEB-INF/views/%s.jsp" )
+public class ChannelController implements MenuExtender
 {
+
     private static final class ChannelNameComparator implements Comparator<Channel>
     {
         @Override
@@ -66,6 +71,21 @@ public class ChannelController
         }
     }
 
+    private StorageService service;
+
+    public void setService ( final StorageService service )
+    {
+        this.service = service;
+    }
+
+    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "/channel", "Channels", 10 ) );
+
+    @Override
+    public List<MenuEntry> getEntries ()
+    {
+        return menuEntries;
+    }
+
     private static final ChannelNameComparator NAME_COMPARATOR = new ChannelNameComparator ();
 
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
@@ -73,9 +93,9 @@ public class ChannelController
     {
         final ModelAndView result = new ModelAndView ( "channel/list" );
 
-        final List<Channel> channels = new ArrayList<> ( Activator.getTracker ().getStorageService ().listChannels () );
+        final List<Channel> channels = new ArrayList<> ( this.service.listChannels () );
         channels.sort ( NAME_COMPARATOR );
-        result.addObject ( "channels", channels );
+        result.put ( "channels", channels );
 
         return result;
     }
@@ -85,11 +105,9 @@ public class ChannelController
     {
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
-        final StorageService service = Activator.getTracker ().getStorageService ();
+        final Channel channel = this.service.createChannel ();
 
-        final Channel channel = service.createChannel ();
-
-        result.addObject ( "success", String.format ( "Created channel %s", channel.getId () ) );
+        result.put ( "success", String.format ( "Created channel %s", channel.getId () ) );
 
         return result;
     }
@@ -100,9 +118,7 @@ public class ChannelController
     {
         final ModelAndView result = new ModelAndView ( "channel/view" );
 
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        final Channel channel = service.getChannel ( channelId );
+        final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
             return new ModelAndView ( "channel/notFound", "channelId", channelId );
@@ -111,8 +127,8 @@ public class ChannelController
         final List<Artifact> sortedArtifacts = new ArrayList<> ( channel.getArtifacts () );
         sortedArtifacts.sort ( Artifact.NAME_COMPARATOR );
 
-        result.addObject ( "channel", channel );
-        result.addObject ( "sortedArtifacts", sortedArtifacts );
+        result.put ( "channel", channel );
+        result.put ( "sortedArtifacts", sortedArtifacts );
 
         return result;
     }
@@ -123,10 +139,8 @@ public class ChannelController
     {
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        service.deleteChannel ( channelId );
-        result.addObject ( "success", String.format ( "Deleted channel %s", channelId ) );
+        this.service.deleteChannel ( channelId );
+        result.put ( "success", String.format ( "Deleted channel %s", channelId ) );
 
         return result;
     }
@@ -140,14 +154,14 @@ public class ChannelController
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )
     public String addPost ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParam ( required = false, value = "name" ) String name, final @RequestParam ( "file" ) MultipartFile file )
+    final String channelId, @RequestParameter ( required = false, value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
     {
         final StorageService service = Activator.getTracker ().getStorageService ();
         try
         {
             if ( name == null || name.isEmpty () )
             {
-                name = file.getOriginalFilename ();
+                name = file.getSubmittedFileName ();
             }
 
             service.createArtifact ( channelId, name, file.getInputStream () );
@@ -164,8 +178,7 @@ public class ChannelController
     public String clear ( @PathVariable ( "channelId" )
     final String channelId )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-        service.clearChannel ( channelId );
+        this.service.clearChannel ( channelId );
 
         return "redirect:/channel/" + channelId + "/view";
     }
@@ -176,39 +189,36 @@ public class ChannelController
     {
         final ModelAndView model = new ModelAndView ( "channel/aspects" );
 
-        final StorageService service = Activator.getTracker ().getStorageService ();
         final ChannelAspectProcessor aspects = Activator.getAspects ();
 
-        final Channel channel = service.getChannel ( channelId );
+        final Channel channel = this.service.getChannel ( channelId );
         final Map<String, ChannelAspectInformation> infos = aspects.getAspectInformations ();
         for ( final ChannelAspectInformation ca : channel.getAspects () )
         {
             infos.remove ( ca.getFactoryId () );
         }
 
-        model.addObject ( "channel", channel );
-        model.addObject ( "addAspects", infos.values () );
+        model.put ( "channel", channel );
+        model.put ( "addAspects", infos.values () );
 
         return model;
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
     public ModelAndView addAspect ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParam ( "aspect" )
+    final String channelId, @RequestParameter ( "aspect" )
     final String aspectFactoryId )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-        service.addChannelAspect ( channelId, aspectFactoryId );
+        this.service.addChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeAspect", method = RequestMethod.POST )
     public ModelAndView removeAspect ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParam ( "aspect" )
+    final String channelId, @RequestParameter ( "aspect" )
     final String aspectFactoryId )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-        service.removeChannelAspect ( channelId, aspectFactoryId );
+        this.service.removeChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
@@ -218,9 +228,7 @@ public class ChannelController
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        final Channel channel = service.getChannel ( channelId );
+        final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
             return new ModelAndView ( "channel/notFound", "channelId", channelId );
@@ -238,15 +246,14 @@ public class ChannelController
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
     public ModelAndView edit ( @PathVariable ( "channelId" )
     final String channelId, @Valid
-    @ModelAttribute ( "command" )
+    @FormData ( "command" )
     final EditChannel data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
 
         if ( !result.hasErrors () )
         {
-            final StorageService service = Activator.getTracker ().getStorageService ();
-            service.updateChannel ( channelId, data.getName () );
+            this.service.updateChannel ( channelId, data.getName () );
             return new ModelAndView ( "redirect:/channel/" + channelId + "/view", model );
         }
         else

@@ -43,9 +43,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -425,18 +423,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalArgumentException ( String.format ( "Channel %s not found", channelId ) );
             }
 
-            final CriteriaBuilder cb = em.getCriteriaBuilder ();
-            final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
-            final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
-            cq.select ( root );
-
-            final TypedQuery<ArtifactEntity> q = em.createQuery ( cq );
-
             final ChannelImpl channel = convert ( ce );
-            final List<ArtifactEntity> rl = q.getResultList ();
 
             final Set<Artifact> result = new TreeSet<> ();
-            for ( final ArtifactEntity ae : rl )
+            for ( final ArtifactEntity ae : ce.getArtifacts () )
             {
                 result.add ( convert ( channel, ae ) );
             }
@@ -808,7 +798,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         doWithTransactionVoid ( em -> {
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
 
-            channel.setName ( name );
+            if ( "".equals ( name ) )
+            {
+                channel.setName ( null );
+            }
+            else
+            {
+                channel.setName ( name );
+            }
 
             em.persist ( channel );
         } );

@@ -169,8 +169,12 @@
             	<include name="org.eclipse.equinox.launcher_*.jar" />
 
                 <include name="org.eclipse.osgi_*.jar" />
+                <include name="org.eclipse.osgi.source_*.jar" />
                 <include name="org.eclipse.osgi.services_*.jar" />
+            	<include name="org.eclipse.osgi.services.source_*.jar" />
                 <include name="org.eclipse.osgi.util_*.jar" />
+            	<include name="org.eclipse.osgi.util.source_*.jar" />
+            	
                 <include name="org.slf4j.api_*.jar" />
             </fileset>
 

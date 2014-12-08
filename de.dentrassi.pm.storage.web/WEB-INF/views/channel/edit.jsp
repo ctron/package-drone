@@ -3,7 +3,7 @@
     
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
 <h:main title="Edit channel - ${command.id }">
 
@@ -23,11 +23,11 @@
 	<div  class="pure-control-group">
 		<form:label path="name">Name:</form:label>
 		<form:input path="name"/>
-		<div class="pure-form-message-inline"><form:errors path="name" cssClass="validation-error" /></div>
+		<div class="pure-form-message-inline"><form:errorList path="name" cssClass="validation-error" /></div>
 	</div>
 	
-<input type="submit" value="Submit" class="pure-button pure-button-primary">
-<input type="reset" value="Reset" class="pure-button">
+    <input type="submit" value="Submit" class="pure-button pure-button-primary">
+    <input type="reset" value="Reset" class="pure-button">
 
 </fieldset>
 

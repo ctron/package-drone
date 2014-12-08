@@ -9,7 +9,11 @@
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
  
-.validation-error {
+ul.validation-error {
+     margin: 0px;
+}
+ 
+ul.validation-error li {
 	color: red;
 }
 
@@ -101,7 +105,11 @@ td {
 	padding-right: .5em;
 }
 
+table th { text-align: left; padding-left: 1em; }
+
 table.full { width: 100%; }
 table.full td:first-child { width: 100%; }
-table.full th { text-align: left; padding-left: 1em; }
+
+
+
 

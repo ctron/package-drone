@@ -7,18 +7,13 @@ Bundle-Activator: de.dentrassi.pm.storage.web.Activator
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Web-ContextPath: /server
-Bundle-ClassPath: WEB-INF/lib/spring-aop-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-beans-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-context-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-core-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-expression-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-web-4.1.2.RELEASE.jar,
- WEB-INF/lib/spring-webmvc-4.1.2.RELEASE.jar,
- WEB-INF/lib/hibernate-validator-5.1.3.Final.jar,
- WEB-INF/lib/hibernate-validator-annotation-processor-5.1.3.Final.jar,
- .
-Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1"
+X-Web-ContextPath: /server
+Web-Static-Resources: /resources;target:="/resources"
+Web-TagLib-Directory: /WEB-INF/tags
+Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
+ de.dentrassi.osgi.web;bundle-version="1.0.0",
+ de.dentrassi.osgi.web.form;bundle-version="1.0.0"
+Require-TldBundle: de.dentrassi.osgi.web.form
 Import-Package: com.fasterxml.classmate;version="1.0.0",
  com.fasterxml.classmate.members;version="1.0.0",
  com.fasterxml.classmate.types;version="1.0.0",
@@ -53,10 +48,18 @@ Import-Package: com.fasterxml.classmate;version="1.0.0",
  org.apache.commons.io.monitor;version="2.4.0",
  org.apache.commons.io.output;version="2.4.0",
  org.apache.commons.logging;version="1.1.1",
+ org.hibernate.validator.constraints;version="5.1.3",
  org.jboss.logging;version="3.1.3",
  org.osgi.framework;version="1.7.0",
  org.osgi.service.cm;version="1.4.0",
  org.osgi.service.jdbc;version="1.0.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Service-Component: OSGI-INF/menu.xml
+Service-Component: OSGI-INF/aboutMenu.xml,
+ OSGI-INF/welcome.xml,
+ OSGI-INF/menuInterceptor.xml,
+ OSGI-INF/setup.xml,
+ OSGI-INF/channel.xml,
+ OSGI-INF/artifact.xml
+Web-Export-Taglib: WEB-INF/tags/pm.tld
+Export-Package: de.dentrassi.pm.storage.web.tags;version="1.0.0"

@@ -17,7 +17,6 @@ import de.dentrassi.pm.storage.web.menu.MenuManager.MenuEntry;
 
 public class DefaultMenuExtender implements MenuExtender
 {
-
     private final List<MenuEntry> entries = new LinkedList<> ();
 
     public DefaultMenuExtender ()

@@ -10,8 +10,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.dentrassi.pm.osgi.bundle.AttributedValue;
-import de.dentrassi.pm.osgi.bundle.Headers;
+import de.dentrassi.osgi.utils.AttributedValue;
+import de.dentrassi.osgi.utils.Headers;
 
 public class HeadersTest
 {

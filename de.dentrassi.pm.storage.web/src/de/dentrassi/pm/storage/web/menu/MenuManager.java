@@ -27,11 +27,24 @@ public class MenuManager
 
         private final int order;
 
+        private final boolean newWindow;
+
         public MenuEntry ( final String location, final String label, final int order )
+        {
+            this ( location, label, order, false );
+        }
+
+        public MenuEntry ( final String location, final String label, final int order, final boolean newWindow )
         {
             this.location = location;
             this.label = label;
             this.order = order;
+            this.newWindow = newWindow;
+        }
+
+        public boolean isNewWindow ()
+        {
+            return this.newWindow;
         }
 
         public String getLocation ()

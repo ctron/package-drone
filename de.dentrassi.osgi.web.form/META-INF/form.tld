@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+	version="2.1">
+
+	<description>Web Framework JSP Form Tag Library</description>
+	<tlib-version>1.0</tlib-version>
+	<short-name>form</short-name>
+	<uri>http://dentrassi.de/osgi/web/form</uri>
+
+	<tag>
+		<name>form</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Form</tag-class>
+		<body-content>JSP</body-content>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>action</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>method</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>command</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>label</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Label</tag-class>
+		<body-content>JSP</body-content>
+
+		<attribute>
+		      <name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>input</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Input</tag-class>
+		<body-content>empty</body-content>
+
+		<attribute>
+			<name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>type</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		
+		<attribute>
+		  <name>disabled</name>
+		  <rtexprvalue>true</rtexprvalue>
+		  <type>boolean</type>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>select</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Select</tag-class>
+		<body-content>JSP</body-content>
+
+		<attribute>
+			<name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>option</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Option</tag-class>
+		<body-content>empty</body-content>
+
+		<attribute>
+			<name>value</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			
+		</attribute>
+		<attribute>
+			<name>label</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>optionList</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.OptionList</tag-class>
+		<body-content>empty</body-content>
+
+		<attribute>
+			<name>items</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>itemValue</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>textarea</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.TextArea</tag-class>
+		<body-content>empty</body-content>
+
+		<attribute>
+			<name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			
+		</attribute>
+
+		<attribute>
+			<name>cols</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>rows</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>errors</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.Errors</tag-class>
+		<body-content>JSP</body-content>
+
+		<attribute>
+			<name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			
+		</attribute>
+
+		<attribute>
+			<description>The name of the item variable</description>
+			<name>var</name>
+		</attribute>
+	</tag>
+
+	<tag>
+		<name>errorList</name>
+		<tag-class>de.dentrassi.osgi.web.form.tags.ErrorList</tag-class>
+		<body-content>empty</body-content>
+
+		<attribute>
+			<name>path</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>cssClass</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+
+		<attribute>
+			<name>skipIfEmpty</name>
+		</attribute>
+	</tag>
+
+</taglib>

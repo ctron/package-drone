@@ -15,25 +15,24 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.ModelAndView;
-
-import de.dentrassi.pm.storage.web.AbstractDefaultController;
+import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.storage.web.Activator;
 import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
 
 @Controller
 @RequestMapping ( value = "/setup" )
-public class SetupController extends AbstractDefaultController
+@ViewResolver ( "/WEB-INF/views/%s.jsp" )
+public class SetupController extends DefaultMenuExtender
 {
-    @Override
-    protected void fillMenu ( final DefaultMenuExtender menuExtener )
+    public SetupController ()
     {
-        menuExtener.addEntry ( "/setup", "Setup", 100 );
+        addEntry ( "/setup", "Setup", 100 );
     }
 
     @RequestMapping ( method = RequestMethod.GET )
@@ -43,7 +42,9 @@ public class SetupController extends AbstractDefaultController
 
         try ( Configurator cfg = Configurator.create () )
         {
-            model.put ( "command", cfg.getDatabaseSettings () );
+            final SetupData command = cfg.getDatabaseSettings ();
+
+            model.put ( "command", command );
         }
 
         model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
@@ -53,7 +54,7 @@ public class SetupController extends AbstractDefaultController
 
     @RequestMapping ( method = RequestMethod.POST )
     public ModelAndView setup ( @Valid
-    @ModelAttribute ( "command" )
+    @FormData ( "command" )
     final SetupData data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
@@ -72,10 +73,7 @@ public class SetupController extends AbstractDefaultController
 
             // now wait until the configuration was performed in the background
 
-            if ( Activator.getTracker ().waitForStorageService ( 5000 ) != null )
-            {
-                return new ModelAndView ( "redirect:/" );
-            }
+            Activator.getTracker ().waitForStorageService ( 5000 );
         }
 
         return new ModelAndView ( "setup/index", model );

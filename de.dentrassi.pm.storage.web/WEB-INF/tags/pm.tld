@@ -9,8 +9,8 @@
 
 	<function>
 		<name>channel</name>
-		<function-class>de.dentrassi.pm.storage.web.Functions</function-class>
+		<function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
 		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.service.Channel)</function-signature>
 	</function>
 
-</taglib> 
+</taglib>

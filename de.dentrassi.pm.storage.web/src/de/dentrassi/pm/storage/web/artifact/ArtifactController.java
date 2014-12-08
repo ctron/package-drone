@@ -15,42 +15,47 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.ModelAndView;
-
+import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.pm.storage.ArtifactInformation;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
-import de.dentrassi.pm.storage.web.Activator;
 
 @Controller
+@ViewResolver ( "/WEB-INF/views/%s.jsp" )
 public class ArtifactController
 {
+    private StorageService service;
+
+    public void setService ( final StorageService service )
+    {
+        this.service = service;
+    }
+
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
     public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        DownloadHelper.streamArtifact ( response, Activator.getTracker ().getStorageService (), artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
+        DownloadHelper.streamArtifact ( response, this.service, artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
     public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        DownloadHelper.streamArtifact ( response, Activator.getTracker ().getStorageService (), artifactId, null, false );
+        DownloadHelper.streamArtifact ( response, this.service, artifactId, null, false );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )
     public ModelAndView delete ( @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        final ArtifactInformation info = service.deleteArtifact ( artifactId );
+        final ArtifactInformation info = this.service.deleteArtifact ( artifactId );
         if ( info == null )
         {
             return new ModelAndView ( "redirect:/" );
@@ -60,12 +65,10 @@ public class ArtifactController
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/view", method = RequestMethod.GET )
-    public ModelAndView view ( final HttpServletResponse response, @PathVariable ( "artifactId" )
+    public ModelAndView view ( @PathVariable ( "artifactId" )
     final String artifactId )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
-
-        final Artifact artifact = service.getArtifact ( artifactId );
+        final Artifact artifact = this.service.getArtifact ( artifactId );
 
         final Map<String, Object> model = new HashMap<String, Object> ();
         model.put ( "artifact", artifact );

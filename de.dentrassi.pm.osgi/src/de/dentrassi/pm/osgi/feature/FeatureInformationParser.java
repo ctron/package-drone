@@ -22,7 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.osgi.bundle.ParserHelper;
+import de.dentrassi.pm.osgi.ParserHelper;
 import de.dentrassi.pm.osgi.feature.FeatureInformation.FeatureInclude;
 import de.dentrassi.pm.osgi.feature.FeatureInformation.PluginInclude;
 import de.dentrassi.pm.osgi.feature.FeatureInformation.Qualifiers;

@@ -34,7 +34,7 @@
 	<a href="<c:url value="/"/>" class="pure-menu-heading">Package Drone</a>
 	<ul>
 		<c:forEach items="${menuManager.entries }" var="entry">
-		<li <c:if test="${currentUrl eq entry.location}" >class="pure-menu-selected"</c:if>><a href="<c:url value="${entry.location }" />"><c:out value="${entry.label}" escapeXml="true"/></a></li>
+		<li <c:if test="${currentUrl eq entry.location}" >class="pure-menu-selected"</c:if>><a href="<c:url value="${entry.location }" />" <c:if test="${entry.newWindow }"> target="_blank"</c:if> ><c:out value="${entry.label}" escapeXml="true"/></a></li>
 		</c:forEach>
     </ul>
 </div>

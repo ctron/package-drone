@@ -15,37 +15,33 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import de.dentrassi.osgi.web.ModelAndViewInterceptorAdapter;
 import de.dentrassi.pm.storage.service.StorageService;
 
-public class SetupInterceptor extends HandlerInterceptorAdapter implements InitializingBean, DisposableBean
+public class SetupInterceptor extends ModelAndViewInterceptorAdapter
 {
     private ServiceTracker<StorageService, StorageService> tracker;
 
-    @Override
-    public void afterPropertiesSet () throws Exception
+    public void activate ()
     {
         this.tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( SetupInterceptor.class ).getBundleContext (), StorageService.class, null );
         this.tracker.open ();
     }
 
-    @Override
-    public void destroy () throws Exception
+    public void deactivate ()
     {
         this.tracker.close ();
     }
 
     @Override
-    public boolean preHandle ( final HttpServletRequest request, final HttpServletResponse response, final Object handler ) throws Exception
+    public boolean preHandle ( final HttpServletRequest request, final HttpServletResponse response ) throws Exception
     {
         final String current = request.getServletPath ();
 
         if ( current.startsWith ( "/setup" ) || current.startsWith ( "/resources" ) )
         {
-            return super.preHandle ( request, response, handler );
+            return super.preHandle ( request, response );
         }
 
         if ( this.tracker.getService () == null )
@@ -55,7 +51,7 @@ public class SetupInterceptor extends HandlerInterceptorAdapter implements Initi
         }
         else
         {
-            return super.preHandle ( request, response, handler );
+            return super.preHandle ( request, response );
         }
     }
 }

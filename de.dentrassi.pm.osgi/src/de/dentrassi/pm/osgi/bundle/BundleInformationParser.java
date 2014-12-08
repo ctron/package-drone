@@ -21,6 +21,9 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
+import de.dentrassi.osgi.utils.AttributedValue;
+import de.dentrassi.osgi.utils.Headers;
+import de.dentrassi.pm.osgi.ParserHelper;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.BundleRequirement;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageExport;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageImport;

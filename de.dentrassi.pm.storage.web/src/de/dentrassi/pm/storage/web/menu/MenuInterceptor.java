@@ -13,25 +13,36 @@ package de.dentrassi.pm.storage.web.menu;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.ModelAndViewInterceptorAdapter;
+import de.dentrassi.osgi.web.RequestHandler;
 
-import de.dentrassi.pm.storage.web.InterceptorHelper;
-
-public class MenuInterceptor extends HandlerInterceptorAdapter
+public class MenuInterceptor extends ModelAndViewInterceptorAdapter
 {
-    private final MenuManager menuManager = new MenuManager ();
+    private MenuManager menuManager;
+
+    public void activate ()
+    {
+        this.menuManager = new MenuManager ();
+    }
+
+    public void deactivate ()
+    {
+        if ( this.menuManager != null )
+        {
+            this.menuManager.close ();
+            this.menuManager = null;
+        }
+    }
 
     @Override
-    public void postHandle ( final HttpServletRequest request, final HttpServletResponse response, final Object handler, final ModelAndView modelAndView ) throws Exception
+    protected void postHandle ( final HttpServletRequest request, final HttpServletResponse response, final RequestHandler requestHandler, final ModelAndView modelAndView )
     {
-        if ( modelAndView != null && !modelAndView.getViewName ().startsWith ( "redirect:" ) )
+        if ( modelAndView != null && !modelAndView.isRedirect () )
         {
-            modelAndView.addObject ( "currentUrl", InterceptorHelper.makeCurrent ( request ) );
-            modelAndView.addObject ( "menuManager", this.menuManager );
+            modelAndView.put ( "currentUrl", request.getServletPath () );
+            modelAndView.put ( "menuManager", this.menuManager );
         }
-
-        super.postHandle ( request, response, handler, modelAndView );
     }
 
 }
