@@ -10,8 +10,12 @@
 		<class>de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="false"/>
-			<property name="eclipselink.cache.type.default" value="NONE"/>
-			<property name="eclipselink.logging.level" value="FINE"/>
+			<property name="eclipselink.logging.level" value="FINEST"/>
+			<property name="eclipselink.logging.exceptions" value="true"/>
+			<property name="eclipselink.logging.session" value="true"/>
+			<property name="eclipselink.logging.thread" value="true"/>
+			<property name="eclipselink.logging.timestamp" value="true"/>
+			<property name="eclipselink.logging.connection" value="true"/>
 		</properties>
 	</persistence-unit>
 </persistence>

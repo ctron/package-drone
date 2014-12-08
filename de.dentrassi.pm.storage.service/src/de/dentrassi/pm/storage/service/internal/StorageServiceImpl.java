@@ -425,8 +425,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             final ChannelImpl channel = convert ( ce );
 
+            final TypedQuery<ArtifactEntity> query = em.createQuery ( String.format ( "select a from %s a where a.channel=:channel", ArtifactEntity.class.getName () ), ArtifactEntity.class );
+            query.setParameter ( "channel", ce );
+            /*
+            query.setHint ( "eclipselink.join-fetch", "a.channel" );
+            query.setHint ( "eclipselink.join-fetch", "a.extractedProperties" );
+            query.setHint ( "eclipselink.join-fetch", "a.providedProperties" );
+            */
+
+            // query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
+
             final Set<Artifact> result = new TreeSet<> ();
-            for ( final ArtifactEntity ae : ce.getArtifacts () )
+            for ( final ArtifactEntity ae : query.getResultList () )
             {
                 result.add ( convert ( channel, ae ) );
             }
