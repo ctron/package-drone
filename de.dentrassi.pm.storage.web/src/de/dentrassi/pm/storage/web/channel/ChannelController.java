@@ -164,7 +164,7 @@ public class ChannelController implements MenuExtender
                 name = file.getSubmittedFileName ();
             }
 
-            service.createArtifact ( channelId, name, file.getInputStream () );
+            service.createArtifact ( channelId, name, file.getInputStream (), null );
         }
         catch ( final IOException e )
         {

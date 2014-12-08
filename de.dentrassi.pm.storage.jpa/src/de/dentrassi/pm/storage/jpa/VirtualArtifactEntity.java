@@ -26,17 +26,17 @@ public class VirtualArtifactEntity extends ArtifactEntity
 {
     @ManyToOne ( fetch = LAZY )
     @JoinColumn ( name = "PARENT", table = "VIRTUAL_ARTIFACTS" )
-    private StoredArtifactEntity parent;
+    private ArtifactEntity parent;
 
     @Column ( name = "NS", nullable = false, table = "VIRTUAL_ARTIFACTS" )
     private String namespace;
 
-    public void setParent ( final StoredArtifactEntity parent )
+    public void setParent ( final ArtifactEntity parent )
     {
         this.parent = parent;
     }
 
-    public StoredArtifactEntity getParent ()
+    public ArtifactEntity getParent ()
     {
         return this.parent;
     }

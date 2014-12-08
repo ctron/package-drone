@@ -151,7 +151,7 @@ public class TychoVirtualizer implements Virtualizer
         String name = art.getName ();
         name = name.replaceFirst ( "\\.jar$", suffix );
 
-        context.createVirtualArtifact ( name, new ByteArrayInputStream ( data ) );
+        context.createVirtualArtifact ( name, new ByteArrayInputStream ( data ), null );
     }
 
 }

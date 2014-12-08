@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
@@ -33,6 +34,8 @@ public class HashAspectFactory implements ChannelAspectFactory
 
     private static final String ID = "hasher";
 
+    private static final MetaKey KEY_FILE_TYPE = new MetaKey ( ID, "checksum-file" );
+
     static
     {
         HashAspectFactory.functions.put ( "md5", Hashing.md5 () );
@@ -43,6 +46,7 @@ public class HashAspectFactory implements ChannelAspectFactory
 
     private static class ChannelAspectImpl implements ChannelAspect
     {
+
         @Override
         public Extractor getExtractor ()
         {
@@ -65,18 +69,7 @@ public class HashAspectFactory implements ChannelAspectFactory
         @Override
         public Virtualizer getArtifactVirtualizer ()
         {
-            return new Virtualizer () {
-
-                @Override
-                public void virtualize ( final Context context )
-                {
-                    final String md5 = context.getArtifactInformation ().getMetaData ().get ( new MetaKey ( ID, "md5" ) );
-                    if ( md5 != null )
-                    {
-                        context.createVirtualArtifact ( context.getArtifactInformation ().getName () + ".md5", new ByteArrayInputStream ( md5.getBytes ( StandardCharsets.UTF_8 ) ) );
-                    }
-                }
-            };
+            return new VirtualizerImpl ();
         }
 
         @Override
@@ -98,6 +91,28 @@ public class HashAspectFactory implements ChannelAspectFactory
         for ( final Map.Entry<String, HashCode> entry : result.entrySet () )
         {
             metadata.put ( entry.getKey (), entry.getValue ().toString () );
+        }
+    }
+
+    public static class VirtualizerImpl implements Virtualizer
+    {
+        @Override
+        public void virtualize ( final Context context )
+        {
+            final SortedMap<MetaKey, String> md = context.getArtifactInformation ().getMetaData ();
+
+            if ( md.containsKey ( KEY_FILE_TYPE ) )
+            {
+                return;
+            }
+
+            final String md5 = md.get ( new MetaKey ( ID, "md5" ) );
+            if ( md5 != null )
+            {
+                final Map<MetaKey, String> metadata = new HashMap<> ();
+                metadata.put ( KEY_FILE_TYPE, "md5" );
+                context.createVirtualArtifact ( context.getArtifactInformation ().getName () + ".md5", new ByteArrayInputStream ( md5.getBytes ( StandardCharsets.UTF_8 ) ), metadata );
+            }
         }
     }
 }

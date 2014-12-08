@@ -88,9 +88,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         private final String namespace;
 
-        private final StoredArtifactEntity artifact;
+        private final ArtifactEntity artifact;
 
-        private VirtualizerContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final String namespace, final StoredArtifactEntity artifact )
+        private VirtualizerContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final String namespace, final ArtifactEntity artifact )
         {
             this.channel = channel;
             this.file = file;
@@ -113,7 +113,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         }
 
         @Override
-        public void createVirtualArtifact ( final String name, final InputStream stream )
+        public void createVirtualArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
         {
             try
             {
@@ -122,7 +122,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     ve.setParent ( this.artifact );
                     ve.setNamespace ( this.namespace );
                     return ve;
-                }, null );
+                }, providedMetaData );
             }
             catch ( final Exception e )
             {
@@ -196,12 +196,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Artifact createArtifact ( final String channelId, final String name, final InputStream stream )
-    {
-        return createArtifact ( channelId, name, stream, null );
-    }
-
-    @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         final Artifact artifact;
@@ -262,10 +256,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 ae = storeBlob ( entityCreator, em, channel, name, in, metadata, providedMetaData );
             }
 
-            if ( ae instanceof StoredArtifactEntity )
-            {
-                createVirtualArtifacts ( em, channel, (StoredArtifactEntity)ae, file );
-            }
+            createVirtualArtifacts ( em, channel, ae, file );
 
             final Artifact a = convert ( convert ( channel ), ae );
 
@@ -289,12 +280,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         }
     }
 
-    private void createVirtualArtifacts ( final EntityManager em, final ChannelEntity channel, final StoredArtifactEntity artifact, final Path file )
+    private void createVirtualArtifacts ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
     {
         Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createVirtualContext ( em, channel, artifact, file, aspect.getId () ) ) );
     }
 
-    private VirtualizerContextImpl createVirtualContext ( final EntityManager em, final ChannelEntity channel, final StoredArtifactEntity artifact, final Path file, final String namespace )
+    private VirtualizerContextImpl createVirtualContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace )
     {
         final ArtifactInformation info = convert ( artifact );
         return new VirtualizerContextImpl ( channel, file, info, em, namespace, artifact );
@@ -665,10 +656,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                     // process virtual
 
-                    if ( ae instanceof StoredArtifactEntity )
-                    {
-                        ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createVirtualContext ( em, channel, (StoredArtifactEntity)ae, file, aspectFactoryId ) ) );
-                    }
+                    ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createVirtualContext ( em, channel, ae, file, aspectFactoryId ) ) );
 
                     // store
 

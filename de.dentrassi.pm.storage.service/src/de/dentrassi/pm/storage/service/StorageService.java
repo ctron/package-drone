@@ -39,11 +39,11 @@ public interface StorageService
      *            the name of the artifact
      * @param stream
      *            the data stream
+     * @param providedMetaData
+     *            metadata that was initially provided
      * @return the newly created artifact or <code>null</code> if the creation
      *         was vetoed
      */
-    public Artifact createArtifact ( String channelId, String name, InputStream stream );
-
     public Artifact createArtifact ( String channelId, String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
     public Collection<Channel> listChannels ();
