@@ -34,6 +34,30 @@
                 </div>
             </div>
             
+            <div class="pure-control-group">
+                <form:label path="label">Label:</form:label>
+                <form:input path="label"/>
+                <div class="pure-form-message-inline">
+                    <form:errorList path="label" cssClass="validation-error" />
+                </div>
+            </div>
+
+            <div class="pure-control-group">
+                <form:label path="provider">Provider:</form:label>
+                <form:input path="provider"/>
+                <div class="pure-form-message-inline">
+                    <form:errorList path="provider" cssClass="validation-error" />
+                </div>
+            </div>
+
+             <div class="pure-control-group">
+                <form:label path="description">Description:</form:label>
+                <form:input path="description"/>
+                <div class="pure-form-message-inline">
+                    <form:errorList path="description" cssClass="validation-error" />
+                </div>
+            </div>
+            
 			<button type="submit" class="pure-button pure-button-primary">Create</button>
 		</fieldset>
 	</form:form>

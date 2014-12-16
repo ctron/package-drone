@@ -22,6 +22,12 @@ public class CreateData
             message = "Must be a valid version string: major.minor[.micro[.qualifier]]" )
     private String version;
 
+    private String description;
+
+    private String provider;
+
+    private String label;
+
     public void setId ( final String id )
     {
         this.id = id;
@@ -40,6 +46,36 @@ public class CreateData
     public String getVersion ()
     {
         return this.version;
+    }
+
+    public String getDescription ()
+    {
+        return this.description;
+    }
+
+    public void setDescription ( final String description )
+    {
+        this.description = description;
+    }
+
+    public String getProvider ()
+    {
+        return this.provider;
+    }
+
+    public void setProvider ( final String provider )
+    {
+        this.provider = provider;
+    }
+
+    public String getLabel ()
+    {
+        return this.label;
+    }
+
+    public void setLabel ( final String label )
+    {
+        this.label = label;
     }
 
 }

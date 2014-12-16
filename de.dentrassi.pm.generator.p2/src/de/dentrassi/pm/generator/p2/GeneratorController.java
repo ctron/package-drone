@@ -79,6 +79,9 @@ public class GeneratorController
         final Map<MetaKey, String> providedMetaData = new HashMap<> ();
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "id" ), data.getId () );
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "version" ), data.getVersion () );
+        providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "description" ), data.getDescription () );
+        providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "provider" ), data.getProvider () );
+        providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "label" ), data.getLabel () );
 
         final String name = String.format ( "%s-%s.jar", data.getId (), data.getVersion () );
         this.service.createGeneratorArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
