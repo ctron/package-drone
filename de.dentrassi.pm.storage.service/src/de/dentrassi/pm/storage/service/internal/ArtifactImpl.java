@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
@@ -32,16 +32,16 @@ public class ArtifactImpl implements Artifact
 
     private final SortedMap<MetaKey, String> metaData;
 
-    private final boolean virtual;
+    private final boolean derived;
 
-    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final boolean virtual )
+    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final boolean derived )
     {
         this.id = id;
         this.channel = channel;
         this.name = name;
         this.size = size;
         this.metaData = new TreeMap<MetaKey, String> ( metaData );
-        this.virtual = virtual;
+        this.derived = derived;
     }
 
     @Override
@@ -97,10 +97,16 @@ public class ArtifactImpl implements Artifact
         this.channel.getService ().applyMetaData ( this.id, metadata );
     }
 
+    @Deprecated
     @Override
     public boolean isVirtual ()
     {
-        return this.virtual;
+        return this.derived;
+    }
+
+    public boolean isDerived ()
+    {
+        return this.derived;
     }
 
 }

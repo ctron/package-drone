@@ -13,7 +13,7 @@ package de.dentrassi.pm.aspect.listener;
 import java.nio.file.Path;
 import java.util.Map;
 
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 
 public interface AddedContext
 {

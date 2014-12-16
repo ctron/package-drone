@@ -15,12 +15,18 @@ ul.validation-error {
  
 ul.validation-error li {
 	color: red;
+	display: inline-block;
+	border: 1pt solid #EE5555;
+	background: #FFEEEE;
+	padding: .4em;
+	border-radius: 3pt;
+	margin-right: 1em;
 }
 
 /* boxes */
 
 div.box {
-	border: 1px solid;
+	border: 1pt solid;
     border-radius: 10pt;
     padding: 1em;
     margin: 1em;

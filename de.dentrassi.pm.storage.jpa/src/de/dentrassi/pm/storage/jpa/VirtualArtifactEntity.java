@@ -10,36 +10,18 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.jpa;
 
-import static javax.persistence.FetchType.LAZY;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.SecondaryTable;
 
 @Entity
 @DiscriminatorValue ( "V" )
 @SecondaryTable ( name = "VIRTUAL_ARTIFACTS" )
-public class VirtualArtifactEntity extends ArtifactEntity
+public class VirtualArtifactEntity extends DerivedArtifactEntity
 {
-    @ManyToOne ( fetch = LAZY )
-    @JoinColumn ( name = "PARENT", table = "VIRTUAL_ARTIFACTS" )
-    private ArtifactEntity parent;
-
-    @Column ( name = "NS", nullable = false, table = "VIRTUAL_ARTIFACTS" )
+    @Column ( name = "NS", table = "VIRTUAL_ARTIFACTS", nullable = false )
     private String namespace;
-
-    public void setParent ( final ArtifactEntity parent )
-    {
-        this.parent = parent;
-    }
-
-    public ArtifactEntity getParent ()
-    {
-        return this.parent;
-    }
 
     public void setNamespace ( final String namespace )
     {

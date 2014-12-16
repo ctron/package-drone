@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
 package de.dentrassi.osgi.web;
 
 import java.io.IOException;
@@ -13,9 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.controller.ControllerTracker;
+import de.dentrassi.osgi.web.interceptor.Interceptor;
 import de.dentrassi.osgi.web.interceptor.InterceptorLocator;
 import de.dentrassi.osgi.web.interceptor.InterceptorTracker;
 import de.dentrassi.osgi.web.resources.ResourceTracker;
+import de.dentrassi.osgi.web.util.Responses;
 
 public class DispatcherServlet extends HttpServlet
 {
@@ -72,6 +84,11 @@ public class DispatcherServlet extends HttpServlet
             final Interceptor[] interceptors = this.interceptorLocator.getInterceptors ();
 
             runPreProcess ( interceptors, request, response );
+
+            if ( response.isCommitted () )
+            {
+                return;
+            }
 
             Exception ex = null;
 

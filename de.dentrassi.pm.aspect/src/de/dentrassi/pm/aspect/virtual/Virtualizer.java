@@ -10,22 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.virtual;
 
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.Map;
-
-import de.dentrassi.pm.storage.ArtifactInformation;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.ArtifactContext;
 
 public interface Virtualizer
 {
-    public interface Context
+    public interface Context extends ArtifactContext
     {
-        public ArtifactInformation getArtifactInformation ();
-
-        public Path getFile ();
-
-        public void createVirtualArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
     }
 
     public void virtualize ( Context context );

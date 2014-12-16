@@ -15,8 +15,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
-import de.dentrassi.pm.storage.ArtifactInformation;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 
 public interface StorageService
 {
@@ -45,6 +45,8 @@ public interface StorageService
      *         was vetoed
      */
     public Artifact createArtifact ( String channelId, String name, InputStream stream, Map<MetaKey, String> providedMetaData );
+
+    public Artifact createGeneratedArtifact ( String channelId, String name, String generatorId, InputStream stream, Map<MetaKey, String> providedMetaData );
 
     public Collection<Channel> listChannels ();
 

@@ -12,7 +12,7 @@ package de.dentrassi.pm.storage.service;
 
 import java.io.InputStream;
 
-import de.dentrassi.pm.storage.ArtifactInformation;
+import de.dentrassi.pm.common.ArtifactInformation;
 
 @FunctionalInterface
 public interface ArtifactReceiver

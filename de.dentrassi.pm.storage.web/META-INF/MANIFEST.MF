@@ -7,19 +7,17 @@ Bundle-Activator: de.dentrassi.pm.storage.web.Activator
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-X-Web-ContextPath: /server
 Web-Static-Resources: /resources;target:="/resources"
 Web-TagLib-Directory: /WEB-INF/tags
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0"
 Require-TldBundle: de.dentrassi.osgi.web.form
-Import-Package: com.fasterxml.classmate;version="1.0.0",
- com.fasterxml.classmate.members;version="1.0.0",
- com.fasterxml.classmate.types;version="1.0.0",
- com.google.common.io;version="18.0.0",
+Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
+ de.dentrassi.pm.generator;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
  de.dentrassi.pm.storage.service;version="1.0.0",
  de.dentrassi.pm.storage.service.util;version="1.0.0",
@@ -55,7 +53,8 @@ Import-Package: com.fasterxml.classmate;version="1.0.0",
  org.osgi.service.jdbc;version="1.0.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Service-Component: OSGI-INF/aboutMenu.xml,
+Service-Component: OSGI-INF/setupInterceptor.xml, 
+ OSGI-INF/aboutMenu.xml,
  OSGI-INF/welcome.xml,
  OSGI-INF/menuInterceptor.xml,
  OSGI-INF/setup.xml,

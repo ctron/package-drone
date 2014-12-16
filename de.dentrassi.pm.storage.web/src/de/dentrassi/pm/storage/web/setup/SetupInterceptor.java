@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
-import de.dentrassi.osgi.web.ModelAndViewInterceptorAdapter;
+import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class SetupInterceptor extends ModelAndViewInterceptorAdapter

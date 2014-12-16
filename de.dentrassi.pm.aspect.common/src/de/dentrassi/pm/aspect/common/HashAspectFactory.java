@@ -26,7 +26,7 @@ import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 
 public class HashAspectFactory implements ChannelAspectFactory
 {

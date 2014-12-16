@@ -14,8 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.osgi.web.ModelAndView;
-import de.dentrassi.osgi.web.ModelAndViewInterceptorAdapter;
 import de.dentrassi.osgi.web.RequestHandler;
+import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
 
 public class MenuInterceptor extends ModelAndViewInterceptorAdapter
 {

@@ -8,6 +8,9 @@
 		<class>de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.DerivedArtifactEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="false"/>
 			<property name="eclipselink.logging.level" value="FINE"/>

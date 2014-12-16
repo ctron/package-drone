@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedMap;
 
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 
 public interface Artifact extends Comparable<Artifact>
 {

@@ -39,7 +39,10 @@
 
         <parallel>
 
-            <get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.5.v20141112.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+        	<get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.6.v20141205.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+            <!--
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
+        	-->
         	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM3-201410292000/equinox-SDK-MarsM3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	<!--
@@ -95,6 +98,10 @@
             <!--
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
             -->
+        	
+        	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/S201411170907/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
 
         </parallel>
 
@@ -111,10 +118,11 @@
         <mkdir dir="unpack/eclipselink" />
         <mkdir dir="unpack/openscada" />
 
-        <untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
+    	<untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
             <cutdirsmapper dirs="1" />
         </untar>
-        <unzip src="download/equinox-SDK.zip" dest="unpack/equinox" />
+        
+    	<unzip src="download/equinox-SDK.zip" dest="unpack/equinox" />
         <unzip src="download/gemini-dbaccess.zip" dest="unpack/gemini-dbaccess" />
         <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
         <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />

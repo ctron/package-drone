@@ -23,11 +23,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
+import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
-import de.dentrassi.pm.storage.ArtifactInformation;
-import de.dentrassi.pm.storage.MetaKey;
 
 public class TychoVirtualizer implements Virtualizer
 {

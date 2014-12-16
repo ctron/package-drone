@@ -21,6 +21,8 @@ import java.util.Map;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
 
+import org.osgi.framework.FrameworkUtil;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
@@ -32,6 +34,7 @@ import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -73,9 +76,21 @@ public class ChannelController implements MenuExtender
 
     private StorageService service;
 
+    private final GeneratorProcessor generators = new GeneratorProcessor ( FrameworkUtil.getBundle ( ChannelController.class ).getBundleContext () );
+
     public void setService ( final StorageService service )
     {
         this.service = service;
+    }
+
+    public void start ()
+    {
+        this.generators.open ();
+    }
+
+    public void stop ()
+    {
+        this.generators.close ();
     }
 
     private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "/channel", "Channels", 10 ) );
@@ -146,10 +161,15 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
-    public String add ( @PathVariable ( "channelId" )
+    public ModelAndView add ( @PathVariable ( "channelId" )
     final String channelId )
     {
-        return "channel/add";
+        final ModelAndView mav = new ModelAndView ( "channel/add" );
+
+        mav.put ( "generators", this.generators.getInformations ().values () );
+        mav.put ( "channelId", channelId );
+
+        return mav;
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )

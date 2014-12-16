@@ -24,15 +24,15 @@ import javax.persistence.OneToMany;
 public class StoredArtifactEntity extends ArtifactEntity
 {
     @OneToMany ( orphanRemoval = true, mappedBy = "parent", cascade = REMOVE )
-    private Collection<VirtualArtifactEntity> virtualArtifacts = new LinkedList<> ();
+    private Collection<DerivedArtifactEntity> derivdedArtifacts = new LinkedList<> ();
 
-    public void setVirtualArtifacts ( final Collection<VirtualArtifactEntity> virtualArtifacts )
+    public void setVirtualArtifacts ( final Collection<DerivedArtifactEntity> derivdedArtifacts )
     {
-        this.virtualArtifacts = virtualArtifacts;
+        this.derivdedArtifacts = derivdedArtifacts;
     }
 
-    public Collection<VirtualArtifactEntity> getVirtualArtifacts ()
+    public Collection<DerivedArtifactEntity> getVirtualArtifacts ()
     {
-        return this.virtualArtifacts;
+        return this.derivdedArtifacts;
     }
 }

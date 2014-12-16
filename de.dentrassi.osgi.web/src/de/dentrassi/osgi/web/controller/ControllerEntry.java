@@ -1,9 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
 package de.dentrassi.osgi.web.controller;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -119,21 +129,23 @@ public class ControllerEntry
 
     protected static RequestMappingInformation parse ( final Method m )
     {
-        final RequestMapping ca = m.getDeclaringClass ().getAnnotation ( RequestMapping.class );
-        final RequestMapping ma = m.getAnnotation ( RequestMapping.class );
+        final List<RequestMapping> mappings = Controllers.getRequestMappings ( m );
 
-        final Set<String> paths = new HashSet<> ();
+        if ( mappings == null )
+        {
+            return null;
+        }
+
+        final Set<String> paths = Controllers.getPaths ( mappings );
+
         final Set<String> methods = new HashSet<> ();
 
-        if ( ma != null )
+        for ( final RequestMapping rm : mappings )
         {
-            paths.addAll ( Arrays.asList ( ma.value () ) );
-            addMethods ( methods, ma.method () );
-        }
-        if ( ca != null )
-        {
-            paths.addAll ( Arrays.asList ( ca.value () ) );
-            addMethods ( methods, ma.method () );
+            if ( rm != null )
+            {
+                addMethods ( methods, rm.method () );
+            }
         }
 
         if ( paths.isEmpty () )

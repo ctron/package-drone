@@ -14,7 +14,6 @@
 	
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/pure/0.5.0/pure-min.css" />
 	
-
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
 	<!--[if lte IE 8]>

@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;

@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import de.dentrassi.pm.aspect.listener.AddedContext;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 
 public class AddedContextImpl implements AddedContext

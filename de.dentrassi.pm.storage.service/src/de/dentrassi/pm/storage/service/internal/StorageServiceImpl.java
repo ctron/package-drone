@@ -47,6 +47,7 @@ import javax.persistence.criteria.CriteriaQuery;
 
 import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.persistence.config.QueryType;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +59,18 @@ import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
+import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
-import de.dentrassi.pm.storage.ArtifactInformation;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.generator.GenerationContext;
+import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.DerivedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
+import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
@@ -75,8 +81,7 @@ import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService
 {
-
-    private class VirtualizerContextImpl implements Virtualizer.Context
+    private class ArtifactContextImpl implements Virtualizer.Context, GenerationContext
     {
         private final ChannelEntity channel;
 
@@ -86,18 +91,15 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         private final EntityManager em;
 
-        private final String namespace;
+        private final Supplier<ArtifactEntity> entitySupplier;
 
-        private final ArtifactEntity artifact;
-
-        private VirtualizerContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final String namespace, final ArtifactEntity artifact )
+        private ArtifactContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
         {
             this.channel = channel;
             this.file = file;
             this.info = info;
             this.em = em;
-            this.namespace = namespace;
-            this.artifact = artifact;
+            this.entitySupplier = entitySupplier;
         }
 
         @Override
@@ -117,12 +119,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             try
             {
-                performStoreArtifact ( this.channel, name, stream, this.em, false, ( ) -> {
-                    final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
-                    ve.setParent ( this.artifact );
-                    ve.setNamespace ( this.namespace );
-                    return ve;
-                }, providedMetaData );
+                performStoreArtifact ( this.channel, name, stream, this.em, false, this.entitySupplier, providedMetaData );
             }
             catch ( final Exception e )
             {
@@ -143,6 +140,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageServiceImpl.class );
+
+    private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
+
+    public void start ()
+    {
+        this.generatorProcessor.open ();
+    }
+
+    public void stop ()
+    {
+        this.generatorProcessor.close ();
+    }
 
     @Override
     public Channel createChannel ()
@@ -187,23 +196,41 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         final TypedQuery<ChannelEntity> q = em.createQuery ( String.format ( "SELECT c FROM %s AS c WHERE c.name=:name", ChannelEntity.class.getName () ), ChannelEntity.class );
         q.setParameter ( "name", channelName );
 
+        // we don't use getSingleResult since it throws an exception if the entry is not found
+
         final List<ChannelEntity> result = q.getResultList ();
         if ( result.isEmpty () )
         {
             return null;
         }
+
         return result.get ( 0 );
     }
 
     @Override
+    public Artifact createGeneratedArtifact ( final String channelId, final String name, final String generatorId, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return internalCreateArtifact ( channelId, name, ( ) -> {
+            final GeneratorArtifactEntity gae = new GeneratorArtifactEntity ();
+            gae.setGeneratorId ( generatorId );
+            return gae;
+        }, stream, providedMetaData );
+    }
+
+    @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return internalCreateArtifact ( channelId, name, StoredArtifactEntity::new, stream, providedMetaData );
+    }
+
+    protected Artifact internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         final Artifact artifact;
         try
         {
             artifact = doWithTransaction ( em -> {
                 final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                return performStoreArtifact ( channel, name, stream, em, true, StoredArtifactEntity::new, providedMetaData );
+                return performStoreArtifact ( channel, name, stream, em, true, entityCreator, providedMetaData );
             } );
         }
         catch ( final Exception e )
@@ -256,6 +283,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 ae = storeBlob ( entityCreator, em, channel, name, in, metadata, providedMetaData );
             }
 
+            if ( ae instanceof GeneratorArtifactEntity )
+            {
+                generateArtifact ( em, channel, (GeneratorArtifactEntity)ae, file );
+            }
             createVirtualArtifacts ( em, channel, ae, file );
 
             final Artifact a = convert ( convert ( channel ), ae );
@@ -282,13 +313,28 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private void createVirtualArtifacts ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
     {
-        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createVirtualContext ( em, channel, artifact, file, aspect.getId () ) ) );
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( em, channel, artifact, file, aspect.getId () ) ) );
     }
 
-    private VirtualizerContextImpl createVirtualContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace )
+    private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace )
     {
         final ArtifactInformation info = convert ( artifact );
-        return new VirtualizerContextImpl ( channel, file, info, em, namespace, artifact );
+        return new ArtifactContextImpl ( channel, file, info, em, ( ) -> {
+            final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
+            ve.setParent ( artifact );
+            ve.setNamespace ( namespace );
+            return ve;
+        } );
+    }
+
+    private ArtifactContextImpl createGeneratedContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
+    {
+        final ArtifactInformation info = convert ( artifact );
+        return new ArtifactContextImpl ( channel, file, info, em, ( ) -> {
+            final GeneratedArtifactEntity ge = new GeneratedArtifactEntity ();
+            ge.setParent ( artifact );
+            return ge;
+        } );
     }
 
     protected void runChannelTriggers ( final EntityManager em, final ChannelEntity channel, final Consumer<ChannelListener> listener )
@@ -460,7 +506,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         final Map<MetaKey, String> metadata = convertMetaData ( ae );
 
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae instanceof VirtualArtifactEntity );
+        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae instanceof DerivedArtifactEntity );
     }
 
     private SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
@@ -612,12 +658,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         for ( final ArtifactEntity ae : channel.getArtifacts () )
         {
-            /*
-            if ( ! ( ae instanceof StoredArtifactEntity ) )
+            if ( ae instanceof GeneratorArtifactEntity )
             {
                 continue;
             }
-            */
 
             logger.debug ( "Reprocessing artifact - {}", ae.getId () );
 
@@ -656,7 +700,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                     // process virtual
 
-                    ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createVirtualContext ( em, channel, ae, file, aspectFactoryId ) ) );
+                    ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( em, channel, ae, file, aspectFactoryId ) ) );
 
                     // store
 
@@ -824,4 +868,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    protected void generateArtifact ( final EntityManager em, final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file ) throws Exception
+    {
+        final String generatorId = ae.getGeneratorId ();
+        final ArtifactContextImpl ctx = createGeneratedContext ( em, channel, ae, file );
+        this.generatorProcessor.process ( generatorId, ctx );
+    }
 }

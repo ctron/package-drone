@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
-import de.dentrassi.pm.storage.MetaKey;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.service.Artifact;
 import de.dentrassi.pm.storage.service.ArtifactReceiver;
 import de.dentrassi.pm.storage.service.Channel;
