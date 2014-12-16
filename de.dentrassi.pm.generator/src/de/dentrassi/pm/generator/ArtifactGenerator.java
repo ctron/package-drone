@@ -18,5 +18,7 @@ public interface ArtifactGenerator
 
     public void generate ( GenerationContext context ) throws Exception;
 
+    public boolean shouldRegenerate ( Object event );
+
     public LinkTarget getAddTarget ();
 }

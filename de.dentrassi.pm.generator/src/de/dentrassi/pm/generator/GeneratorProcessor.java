@@ -13,6 +13,7 @@ package de.dentrassi.pm.generator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.function.Consumer;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -59,14 +60,28 @@ public class GeneratorProcessor
         return result;
     }
 
-    public void process ( final String generatorId, final GenerationContext context ) throws Exception
+    public void process ( final String generatorId, final Consumer<ArtifactGenerator> consumer )
     {
         final ArtifactGenerator gen = getAllFactories ().get ( generatorId );
         if ( gen == null )
         {
             throw new IllegalStateException ( String.format ( "Artifact generator '%s' is not registered", generatorId ) );
         }
-        gen.generate ( context );
+        consumer.accept ( gen );
+    }
+
+    public void process ( final String generatorId, final GenerationContext context ) throws Exception
+    {
+        process ( generatorId, ( gen ) -> {
+            try
+            {
+                gen.generate ( context );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+        } );
     }
 
     public Map<String, GeneratorInformation> getInformations ()

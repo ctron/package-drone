@@ -25,6 +25,8 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
+import de.dentrassi.pm.common.ChannelAspectInformation;
+
 public class ChannelAspectProcessor
 {
     private final ServiceTracker<ChannelAspectFactory, ChannelAspectFactory> tracker;

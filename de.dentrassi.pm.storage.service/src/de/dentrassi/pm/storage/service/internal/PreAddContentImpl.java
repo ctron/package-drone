@@ -23,10 +23,19 @@ public class PreAddContentImpl implements PreAddContext
 
     private boolean veto;
 
-    public PreAddContentImpl ( final String name, final Path file )
+    private final String channelId;
+
+    public PreAddContentImpl ( final String name, final Path file, final String channelId )
     {
         this.name = name;
         this.file = file;
+        this.channelId = channelId;
+    }
+
+    @Override
+    public String getChannelId ()
+    {
+        return this.channelId;
     }
 
     @Override

@@ -13,7 +13,7 @@ package de.dentrassi.pm.common;
 import java.util.Collections;
 import java.util.SortedMap;
 
-public class ArtifactInformation
+public class ArtifactInformation implements Comparable<ArtifactInformation>
 {
     private final long size;
 
@@ -63,5 +63,11 @@ public class ArtifactInformation
     public SortedMap<MetaKey, String> getMetaData ()
     {
         return this.metaData;
+    }
+
+    @Override
+    public int compareTo ( final ArtifactInformation o )
+    {
+        return this.id.compareTo ( o.id );
     }
 }

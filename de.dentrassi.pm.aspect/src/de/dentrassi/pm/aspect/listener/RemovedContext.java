@@ -13,6 +13,7 @@ package de.dentrassi.pm.aspect.listener;
 import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.StorageAccessor;
 
 public interface RemovedContext
 {
@@ -21,4 +22,8 @@ public interface RemovedContext
     public String getId ();
 
     public Map<MetaKey, String> getMetaData ();
+
+    public StorageAccessor getStorage ();
+
+    public String getChannelId ();
 }

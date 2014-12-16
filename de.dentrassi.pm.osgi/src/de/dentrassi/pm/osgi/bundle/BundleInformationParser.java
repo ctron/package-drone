@@ -12,6 +12,8 @@ package de.dentrassi.pm.osgi.bundle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -74,7 +76,7 @@ public class BundleInformationParser
 
     private void processImportBundle ( final BundleInformation result, final Attributes ma )
     {
-        for ( final AttributedValue av : Headers.parseList ( ma.getValue ( Constants.REQUIRE_BUNDLE ) ) )
+        for ( final AttributedValue av : emptyNull ( Headers.parseList ( ma.getValue ( Constants.REQUIRE_BUNDLE ) ) ) )
         {
             final String name = av.getValue ();
             final String vs = av.getAttributes ().get ( "version" );
@@ -91,7 +93,7 @@ public class BundleInformationParser
 
     private void processImportPackage ( final BundleInformation result, final Attributes ma )
     {
-        for ( final AttributedValue av : Headers.parseList ( ma.getValue ( Constants.IMPORT_PACKAGE ) ) )
+        for ( final AttributedValue av : emptyNull ( Headers.parseList ( ma.getValue ( Constants.IMPORT_PACKAGE ) ) ) )
         {
             final String name = av.getValue ();
             final String vs = av.getAttributes ().get ( "version" );
@@ -107,7 +109,7 @@ public class BundleInformationParser
 
     private void processExportPackage ( final BundleInformation result, final Attributes ma )
     {
-        for ( final AttributedValue av : Headers.parseList ( ma.getValue ( Constants.EXPORT_PACKAGE ) ) )
+        for ( final AttributedValue av : emptyNull ( Headers.parseList ( ma.getValue ( Constants.EXPORT_PACKAGE ) ) ) )
         {
             final String name = av.getValue ();
             final String vs = av.getAttributes ().get ( "version" );
@@ -118,6 +120,16 @@ public class BundleInformationParser
             }
             result.getPackageExports ().add ( new PackageExport ( name, v ) );
         }
+    }
+
+    private <T> Collection<T> emptyNull ( final Collection<T> list )
+    {
+        if ( list == null )
+        {
+            return Collections.emptyList ();
+        }
+
+        return list;
     }
 
     private void attachLocalization ( final BundleInformation result, final Attributes ma ) throws IOException

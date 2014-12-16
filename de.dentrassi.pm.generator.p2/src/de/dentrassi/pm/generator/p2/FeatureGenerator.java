@@ -23,19 +23,26 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.aspect.listener.AddedContext;
+import de.dentrassi.pm.aspect.listener.RemovedContext;
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.StorageAccessor;
 
 public class FeatureGenerator implements ArtifactGenerator
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( FeatureGenerator.class );
+
     public static final String ID = "p2.feature";
 
     private final XmlHelper xml;
@@ -65,7 +72,7 @@ public class FeatureGenerator implements ArtifactGenerator
             {
                 final ZipEntry ze = new ZipEntry ( "feature.xml" );
                 jar.putNextEntry ( ze );
-                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData (), context.getChannel () );
+                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData (), context.getStorage (), context.getArtifactInformation ().getChannelId () );
             }
 
             final Map<MetaKey, String> providedMetaData = new HashMap<> ();
@@ -80,7 +87,7 @@ public class FeatureGenerator implements ArtifactGenerator
         }
     }
 
-    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final Channel channel ) throws Exception
+    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final StorageAccessor storage, final String channelid ) throws Exception
     {
         final String id = getString ( map, ID, "id" );
         final String version = getString ( map, ID, "version" );
@@ -106,7 +113,7 @@ public class FeatureGenerator implements ArtifactGenerator
             XmlHelper.addElement ( root, "description" ).setTextContent ( description );
         }
 
-        for ( final Artifact a : channel.getArtifacts () )
+        for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
         {
             processPlugin ( root, a );
         }
@@ -114,7 +121,7 @@ public class FeatureGenerator implements ArtifactGenerator
         this.xml.write ( doc, out );
     }
 
-    private void processPlugin ( final Element root, final Artifact a )
+    private void processPlugin ( final Element root, final ArtifactInformation a )
     {
         final String classifier = a.getMetaData ().get ( new MetaKey ( "osgi", "classifier" ) );
         if ( !"bundle".equals ( classifier ) )
@@ -136,4 +143,30 @@ public class FeatureGenerator implements ArtifactGenerator
         p.setAttribute ( "version", version );
         p.setAttribute ( "unpack", "false" );
     }
+
+    @Override
+    public boolean shouldRegenerate ( final Object event )
+    {
+        logger.debug ( "Check if we need to generate: {}", event );
+
+        if ( event instanceof AddedContext )
+        {
+            final AddedContext context = (AddedContext)event;
+            return isBundle ( context.getMetaData () );
+        }
+        else if ( event instanceof RemovedContext )
+        {
+            final RemovedContext context = (RemovedContext)event;
+            return isBundle ( context.getMetaData () );
+        }
+        return false;
+    }
+
+    private boolean isBundle ( final Map<MetaKey, String> metaData )
+    {
+        final String classifier = metaData.get ( new MetaKey ( "osgi", "classifier" ) );
+        logger.debug ( "Artifact OSGi classifier: {}", classifier );
+        return "bundle".equals ( classifier );
+    }
+
 }

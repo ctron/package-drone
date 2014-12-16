@@ -19,4 +19,6 @@ public interface PreAddContext
     public Path getFile ();
 
     public void vetoAdd ();
+
+    public String getChannelId ();
 }

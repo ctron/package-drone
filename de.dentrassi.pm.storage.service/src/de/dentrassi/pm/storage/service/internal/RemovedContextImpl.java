@@ -15,6 +15,7 @@ import java.util.Map;
 
 import de.dentrassi.pm.aspect.listener.RemovedContext;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.StorageAccessor;
 
 public class RemovedContextImpl implements RemovedContext
 {
@@ -24,11 +25,23 @@ public class RemovedContextImpl implements RemovedContext
 
     private final Map<MetaKey, String> metadata;
 
-    public RemovedContextImpl ( final String id, final String name, final Map<MetaKey, String> metadata )
+    private final StorageAccessor storage;
+
+    private final String channelId;
+
+    public RemovedContextImpl ( final String id, final String name, final Map<MetaKey, String> metadata, final StorageAccessor storage, final String channelId )
     {
         this.id = id;
         this.name = name;
         this.metadata = Collections.unmodifiableMap ( metadata );
+        this.storage = storage;
+        this.channelId = channelId;
+    }
+
+    @Override
+    public String getChannelId ()
+    {
+        return this.channelId;
     }
 
     @Override
@@ -49,4 +62,9 @@ public class RemovedContextImpl implements RemovedContext
         return this.metadata;
     }
 
+    @Override
+    public StorageAccessor getStorage ()
+    {
+        return this.storage;
+    }
 }

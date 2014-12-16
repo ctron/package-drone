@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.StorageAccessor;
 
 public interface AddedContext
 {
@@ -24,4 +25,8 @@ public interface AddedContext
     public String getId ();
 
     public Map<MetaKey, String> getMetaData ();
+
+    public StorageAccessor getStorage ();
+
+    public String getChannelId ();
 }
