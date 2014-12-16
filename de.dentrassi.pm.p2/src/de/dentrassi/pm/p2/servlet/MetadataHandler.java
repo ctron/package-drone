@@ -17,6 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
@@ -48,7 +49,9 @@ public class MetadataHandler extends AbstractRepositoryHandler
 
         for ( final Artifact artifact : this.channel.getArtifacts () )
         {
-            if ( artifact.getName ().endsWith ( "-p2metadata.xml" ) )
+            final String ft = artifact.getMetaData ().get ( new MetaKey ( "p2.repo", "fragment-type" ) );
+
+            if ( "metadata".equals ( ft ) )
             {
                 attachP2Metadata ( artifact, units );
             }
