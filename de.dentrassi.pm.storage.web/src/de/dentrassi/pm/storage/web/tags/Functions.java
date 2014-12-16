@@ -10,7 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.tags;
 
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Channel;
 
 public class Functions
 {

@@ -18,8 +18,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.Channel;
 
 public class MetadataHandler extends AbstractRepositoryHandler
 {

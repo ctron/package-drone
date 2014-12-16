@@ -1,10 +1,3 @@
-<%@page import="java.util.Comparator"%>
-<%@page import="java.util.Collections"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="java.util.List"%>
-<%@page import="de.dentrassi.pm.storage.service.Artifact"%>
-<%@page import="de.dentrassi.pm.storage.service.Channel"%>
-
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     

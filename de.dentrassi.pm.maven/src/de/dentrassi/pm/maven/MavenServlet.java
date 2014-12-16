@@ -33,8 +33,8 @@ import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenServlet extends HttpServlet

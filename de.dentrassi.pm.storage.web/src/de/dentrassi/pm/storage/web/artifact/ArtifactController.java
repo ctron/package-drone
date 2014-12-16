@@ -22,8 +22,8 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.GeneratorArtifact;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 

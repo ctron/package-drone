@@ -31,6 +31,8 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.Channel;
 
 public class FeatureGenerator implements ArtifactGenerator
 {
@@ -63,7 +65,7 @@ public class FeatureGenerator implements ArtifactGenerator
             {
                 final ZipEntry ze = new ZipEntry ( "feature.xml" );
                 jar.putNextEntry ( ze );
-                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData () );
+                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData (), context.getChannel () );
             }
 
             final Map<MetaKey, String> providedMetaData = new HashMap<> ();
@@ -78,10 +80,14 @@ public class FeatureGenerator implements ArtifactGenerator
         }
     }
 
-    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map ) throws Exception
+    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final Channel channel ) throws Exception
     {
         final String id = getString ( map, ID, "id" );
         final String version = getString ( map, ID, "version" );
+        final String label = getString ( map, ID, "label" );
+
+        final String description = getString ( map, ID, "description" );
+        final String provider = getString ( map, ID, "provider" );
 
         final Document doc = this.xml.create ();
         final Element root = doc.createElement ( "feature" );
@@ -89,7 +95,45 @@ public class FeatureGenerator implements ArtifactGenerator
 
         root.setAttribute ( "id", id );
         root.setAttribute ( "version", version );
+        root.setAttribute ( "label", label );
+
+        if ( provider != null )
+        {
+            root.setAttribute ( "provider-name", provider );
+        }
+        if ( description != null )
+        {
+            XmlHelper.addElement ( root, "description" ).setTextContent ( description );
+        }
+
+        for ( final Artifact a : channel.getArtifacts () )
+        {
+            processPlugin ( root, a );
+        }
 
         this.xml.write ( doc, out );
+    }
+
+    private void processPlugin ( final Element root, final Artifact a )
+    {
+        final String classifier = a.getMetaData ().get ( new MetaKey ( "osgi", "classifier" ) );
+        if ( !"bundle".equals ( classifier ) )
+        {
+            return;
+        }
+
+        final String id = a.getMetaData ().get ( new MetaKey ( "osgi", "name" ) );
+        final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
+        if ( id == null || version == null )
+        {
+            return;
+        }
+
+        final Element p = root.getOwnerDocument ().createElement ( "plugin" );
+        root.appendChild ( p );
+
+        p.setAttribute ( "id", id );
+        p.setAttribute ( "version", version );
+        p.setAttribute ( "unpack", "false" );
     }
 }

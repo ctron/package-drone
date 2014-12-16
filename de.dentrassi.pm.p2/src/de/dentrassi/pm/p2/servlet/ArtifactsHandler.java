@@ -17,8 +17,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.Channel;
 
 public class ArtifactsHandler extends AbstractRepositoryHandler
 {

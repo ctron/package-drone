@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.service.Artifact;
+import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public final class DownloadHelper

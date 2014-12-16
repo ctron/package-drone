@@ -18,9 +18,9 @@ import java.util.Set;
 
 import de.dentrassi.pm.aspect.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.ArtifactReceiver;
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.Channel;
 
 public class ChannelImpl implements Channel
 {

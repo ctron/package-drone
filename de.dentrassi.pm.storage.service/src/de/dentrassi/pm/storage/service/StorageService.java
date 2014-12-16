@@ -17,6 +17,9 @@ import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.Channel;
 
 public interface StorageService
 {

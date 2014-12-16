@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.service.GeneratorArtifact;
+import de.dentrassi.pm.storage.GeneratorArtifact;
 
 public class GeneratorArtifactImpl extends ArtifactImpl implements GeneratorArtifact
 {

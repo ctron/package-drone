@@ -65,6 +65,9 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -75,9 +78,6 @@ import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
-import de.dentrassi.pm.storage.service.Artifact;
-import de.dentrassi.pm.storage.service.ArtifactReceiver;
-import de.dentrassi.pm.storage.service.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService
@@ -137,6 +137,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     // ignore this one
                 }
             }
+        }
+
+        @Override
+        public Channel getChannel ()
+        {
+            return convert ( this.channel );
         }
     }
 
@@ -618,6 +624,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 throw new IllegalStateException ( String.format ( "Unable to delete virtual artifact of %s (%s)", ae.getName (), ae.getId () ) );
             }
 
+            if ( ae instanceof GeneratedArtifactEntity && ( (GeneratedArtifactEntity)ae ).getParent () != null )
+            {
+                throw new IllegalStateException ( String.format ( "Unable to delete generated artifact of %s (%s)", ae.getName (), ae.getId () ) );
+            }
+
             final ArtifactInformation info = convert ( ae );
 
             final String name = ae.getName ();
@@ -674,60 +685,37 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             logger.debug ( "Reprocessing artifact - {}", ae.getId () );
 
-            internalStreamArtifact ( em, ae, ( info, stream ) -> {
-                final Path file = Files.createTempFile ( "blob-", "-reproc" );
-                try
-                {
-                    // stream blob to temp file
+            doStreamed ( em, ae, ( file ) -> {
+                // generate metadata for new factory
 
-                    try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
-                    {
-                        ByteStreams.copy ( stream, os );
-                    }
-
-                    // generate metadata for new factory
-
-                    final Map<MetaKey, String> metadata = new HashMap<> ();
-                    final ChannelAspectProcessor ca = Activator.getChannelAspects ();
-                    final List<String> list = Arrays.asList ( aspectFactoryId );
-                    ca.process ( list, ChannelAspect::getExtractor, extractor -> {
-                        try
-                        {
-                            final Map<String, String> md = new HashMap<> ();
-                            extractor.extractMetaData ( file, md );
-                            convertMetaDataFromExtractor ( metadata, extractor, md );
-                        }
-                        catch ( final Exception e )
-                        {
-                            throw new RuntimeException ( e );
-                        }
-                    } );
-
-                    // add metadata first, since the virtualizers might need it
-
-                    convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
-
-                    // process virtual
-
-                    ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( em, channel, ae, file, aspectFactoryId ) ) );
-
-                    // store
-
-                    em.persist ( ae );
-                    em.flush ();
-                }
-                finally
-                {
+                final Map<MetaKey, String> metadata = new HashMap<> ();
+                final ChannelAspectProcessor ca = Activator.getChannelAspects ();
+                final List<String> list = Arrays.asList ( aspectFactoryId );
+                ca.process ( list, ChannelAspect::getExtractor, extractor -> {
                     try
                     {
-                        // delete temp file, if possible
-                        Files.deleteIfExists ( file );
+                        final Map<String, String> md = new HashMap<> ();
+                        extractor.extractMetaData ( file, md );
+                        convertMetaDataFromExtractor ( metadata, extractor, md );
                     }
                     catch ( final Exception e )
                     {
-                        // ignore
+                        throw new RuntimeException ( e );
                     }
-                }
+                } );
+
+                // add metadata first, since the virtualizers might need it
+
+                convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+
+                // process virtual
+
+                ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( em, channel, ae, file, aspectFactoryId ) ) );
+
+                // store
+
+                em.persist ( ae );
+                em.flush ();
             } );
         }
     }
@@ -809,6 +797,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             // store
             em.persist ( artifact );
+            em.flush ();
+
+            if ( artifact instanceof GeneratorArtifactEntity )
+            {
+                regenerateArtifact ( em, (GeneratorArtifactEntity)artifact );
+            }
 
             return result;
         } );
@@ -901,12 +895,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    private void regenerateArtifact ( final EntityManager em, final GeneratorArtifactEntity ae ) throws Exception
+    protected void doStreamed ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<Path> fileConsumer ) throws Exception
     {
-        final Path tmp = Files.createTempFile ( "gen-regen", null );
+        final Path tmp = Files.createTempFile ( "streamed", null );
+
         try
         {
-
             try ( OutputStream os = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
             {
                 internalStreamArtifact ( em, ae, ( ai, in ) -> {
@@ -914,18 +908,27 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 } );
             }
 
+            fileConsumer.accept ( tmp );
+        }
+        finally
+        {
+            Files.deleteIfExists ( tmp );
+        }
+    }
+
+    private void regenerateArtifact ( final EntityManager em, final GeneratorArtifactEntity ae ) throws Exception
+    {
+        doStreamed ( em, ae, ( file ) -> {
+
             // first clear old generated artifacts
             final Query q = em.createQuery ( String.format ( "DELETE from %s ga where ga.parent=:parent", GeneratedArtifactEntity.class.getSimpleName () ) );
             q.setParameter ( "parent", ae );
             q.executeUpdate ();
             em.flush ();
 
-            generateArtifact ( em, ae.getChannel (), ae, tmp );
-        }
-        finally
-        {
-            Files.deleteIfExists ( tmp );
-        }
+            generateArtifact ( em, ae.getChannel (), ae, file );
+            em.flush ();
+        } );
 
     }
 }

@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.service;
+package de.dentrassi.pm.storage;
 
 public interface GeneratorArtifact extends Artifact
 {

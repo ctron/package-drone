@@ -24,7 +24,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.dentrassi.pm.storage.service.Channel;
+import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class P2Servlet extends HttpServlet
