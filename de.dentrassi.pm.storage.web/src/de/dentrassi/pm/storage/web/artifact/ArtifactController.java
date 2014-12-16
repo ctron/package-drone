@@ -23,6 +23,7 @@ import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.storage.service.Artifact;
+import de.dentrassi.pm.storage.service.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
@@ -38,22 +39,19 @@ public class ArtifactController
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
-    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" )
-    final String artifactId )
+    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
-    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" )
-    final String artifactId )
+    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, null, false );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )
-    public ModelAndView delete ( @PathVariable ( "artifactId" )
-    final String artifactId )
+    public ModelAndView delete ( @PathVariable ( "artifactId" ) final String artifactId )
     {
         final ArtifactInformation info = this.service.deleteArtifact ( artifactId );
         if ( info == null )
@@ -65,8 +63,7 @@ public class ArtifactController
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/view", method = RequestMethod.GET )
-    public ModelAndView view ( @PathVariable ( "artifactId" )
-    final String artifactId )
+    public ModelAndView view ( @PathVariable ( "artifactId" ) final String artifactId )
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
@@ -74,5 +71,17 @@ public class ArtifactController
         model.put ( "artifact", artifact );
 
         return new ModelAndView ( "artifact/view", model );
+    }
+
+    @RequestMapping ( value = "/artifact/{artifactId}/generate", method = RequestMethod.GET )
+    public ModelAndView generate ( @PathVariable ( "artifactId" ) final String artifactId )
+    {
+        final Artifact artifact = this.service.getArtifact ( artifactId );
+        if ( artifact instanceof GeneratorArtifact )
+        {
+            ( (GeneratorArtifact)artifact ).generate ();
+        }
+
+        return new ModelAndView ( "redirect:/channel/" + artifact.getChannel ().getId () + "/view" );
     }
 }

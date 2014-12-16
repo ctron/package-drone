@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -208,7 +209,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Artifact createGeneratedArtifact ( final String channelId, final String name, final String generatorId, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    public Artifact createGeneratorArtifact ( final String channelId, final String name, final String generatorId, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         return internalCreateArtifact ( channelId, name, ( ) -> {
             final GeneratorArtifactEntity gae = new GeneratorArtifactEntity ();
@@ -387,6 +388,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         final ArtifactEntity artifact = artifactSupplier.get ();
         artifact.setName ( name );
         artifact.setChannel ( channel );
+        artifact.setCreationTimestamp ( new Date () );
 
         convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
         convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
@@ -506,7 +508,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         final Map<MetaKey, String> metadata = convertMetaData ( ae );
 
-        return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae instanceof DerivedArtifactEntity );
+        if ( ae instanceof GeneratorArtifactEntity )
+        {
+            return new GeneratorArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp () );
+        }
+        else
+        {
+            return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), ae instanceof DerivedArtifactEntity, false );
+        }
     }
 
     private SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
@@ -873,5 +882,50 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         final String generatorId = ae.getGeneratorId ();
         final ArtifactContextImpl ctx = createGeneratedContext ( em, channel, ae, file );
         this.generatorProcessor.process ( generatorId, ctx );
+    }
+
+    public void generateArtifact ( final String id )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final ArtifactEntity ae = em.find ( ArtifactEntity.class, id );
+            if ( ae == null )
+            {
+                throw new IllegalArgumentException ( String.format ( "Unable to find artifact '%s' ", id ) );
+            }
+            if ( ! ( ae instanceof GeneratorArtifactEntity ) )
+            {
+                throw new IllegalArgumentException ( String.format ( "Artifact '%s' is not a generator artifact.", id ) );
+            }
+
+            regenerateArtifact ( em, (GeneratorArtifactEntity)ae );
+        } );
+    }
+
+    private void regenerateArtifact ( final EntityManager em, final GeneratorArtifactEntity ae ) throws Exception
+    {
+        final Path tmp = Files.createTempFile ( "gen-regen", null );
+        try
+        {
+
+            try ( OutputStream os = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
+            {
+                internalStreamArtifact ( em, ae, ( ai, in ) -> {
+                    ByteStreams.copy ( in, os );
+                } );
+            }
+
+            // first clear old generated artifacts
+            final Query q = em.createQuery ( String.format ( "DELETE from %s ga where ga.parent=:parent", GeneratedArtifactEntity.class.getSimpleName () ) );
+            q.setParameter ( "parent", ae );
+            q.executeUpdate ();
+            em.flush ();
+
+            generateArtifact ( em, ae.getChannel (), ae, tmp );
+        }
+        finally
+        {
+            Files.deleteIfExists ( tmp );
+        }
+
     }
 }

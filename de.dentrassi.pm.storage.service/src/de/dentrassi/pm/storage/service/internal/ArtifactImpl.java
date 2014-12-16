@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.internal;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -21,20 +22,23 @@ import de.dentrassi.pm.storage.service.Channel;
 
 public class ArtifactImpl implements Artifact
 {
+    protected final String id;
 
-    private final String id;
+    protected final ChannelImpl channel;
 
-    private final ChannelImpl channel;
+    protected final long size;
 
-    private final long size;
+    protected final String name;
 
-    private final String name;
-
-    private final SortedMap<MetaKey, String> metaData;
+    protected final SortedMap<MetaKey, String> metaData;
 
     private final boolean derived;
 
-    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final boolean derived )
+    private final boolean generator;
+
+    private final Date creationTimestamp;
+
+    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final boolean derived, final boolean generator )
     {
         this.id = id;
         this.channel = channel;
@@ -42,6 +46,8 @@ public class ArtifactImpl implements Artifact
         this.size = size;
         this.metaData = new TreeMap<MetaKey, String> ( metaData );
         this.derived = derived;
+        this.generator = generator;
+        this.creationTimestamp = creationTimestamp;
     }
 
     @Override
@@ -97,16 +103,21 @@ public class ArtifactImpl implements Artifact
         this.channel.getService ().applyMetaData ( this.id, metadata );
     }
 
-    @Deprecated
     @Override
-    public boolean isVirtual ()
-    {
-        return this.derived;
-    }
-
     public boolean isDerived ()
     {
         return this.derived;
     }
 
+    @Override
+    public boolean isGenerator ()
+    {
+        return this.generator;
+    }
+
+    @Override
+    public Date getCreationTimestamp ()
+    {
+        return this.creationTimestamp;
+    }
 }

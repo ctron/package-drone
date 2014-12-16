@@ -13,6 +13,7 @@ package de.dentrassi.pm.storage.jpa;
 import static javax.persistence.CascadeType.ALL;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.persistence.Basic;
@@ -27,6 +28,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.eclipse.persistence.annotations.UuidGenerator;
 
@@ -50,6 +53,10 @@ public abstract class ArtifactEntity
 
     @Basic
     private long size;
+
+    @Temporal ( value = TemporalType.TIMESTAMP )
+    @Column ( name = "CREATION_TS", nullable = false, updatable = false )
+    private Date creationTimestamp;
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
     private Collection<ExtractedArtifactPropertyEntity> extractedProperties = new LinkedList<> ();
@@ -115,6 +122,16 @@ public abstract class ArtifactEntity
     public void setSize ( final long size )
     {
         this.size = size;
+    }
+
+    public Date getCreationTimestamp ()
+    {
+        return this.creationTimestamp;
+    }
+
+    public void setCreationTimestamp ( final Date creationTimestamp )
+    {
+        this.creationTimestamp = creationTimestamp;
     }
 
     @Override

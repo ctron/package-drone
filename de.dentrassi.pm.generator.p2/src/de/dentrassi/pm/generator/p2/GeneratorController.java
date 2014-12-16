@@ -81,7 +81,7 @@ public class GeneratorController
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "version" ), data.getVersion () );
 
         final String name = String.format ( "%s-%s.jar", data.getId (), data.getVersion () );
-        this.service.createGeneratedArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
+        this.service.createGeneratorArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
 
         return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
     }

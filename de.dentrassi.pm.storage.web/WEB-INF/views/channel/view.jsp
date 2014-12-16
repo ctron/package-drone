@@ -11,6 +11,7 @@
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 
 <h:main title="Channel - ${pm:channel(channel) }">
@@ -29,6 +30,7 @@
 	<tr>
 		<th>Name</th>
 		<th>Size</th>
+		<th>Created</th>
 		<th></th>
 		<th></th>
 		<th></th>
@@ -41,9 +43,10 @@
 	<tr>
 		<td>${fn:escapeXml(artifact.name) }</td>
 		<td>${fn:escapeXml(artifact.size) }</td>
+		<td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
 		<td>
-		  <c:if test="${not artifact.virtual }"><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+		  <c:if test="${not artifact.derived }"><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
 		</td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>

@@ -11,6 +11,7 @@
 package de.dentrassi.pm.storage.service;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -26,13 +27,17 @@ public interface Artifact extends Comparable<Artifact>
 
     public String getName ();
 
+    public Date getCreationTimestamp ();
+
     public void streamData ( ArtifactReceiver receiver );
 
     public SortedMap<MetaKey, String> getMetaData ();
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
 
-    public boolean isVirtual ();
+    public boolean isDerived ();
+
+    public boolean isGenerator ();
 
     public static Comparator<Artifact> NAME_COMPARATOR = new Comparator<Artifact> () {
 

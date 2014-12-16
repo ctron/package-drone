@@ -26,12 +26,12 @@ public class StoredArtifactEntity extends ArtifactEntity
     @OneToMany ( orphanRemoval = true, mappedBy = "parent", cascade = REMOVE )
     private Collection<DerivedArtifactEntity> derivdedArtifacts = new LinkedList<> ();
 
-    public void setVirtualArtifacts ( final Collection<DerivedArtifactEntity> derivdedArtifacts )
+    public void setDerivedArtifacts ( final Collection<DerivedArtifactEntity> derivdedArtifacts )
     {
         this.derivdedArtifacts = derivdedArtifacts;
     }
 
-    public Collection<DerivedArtifactEntity> getVirtualArtifacts ()
+    public Collection<DerivedArtifactEntity> getDerivedArtifacts ()
     {
         return this.derivdedArtifacts;
     }

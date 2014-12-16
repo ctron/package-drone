@@ -82,4 +82,9 @@ public class ChannelImpl implements Channel
     {
         return this.service.getChannelAspectInformations ( this.id );
     }
+
+    public void generate ( final String id )
+    {
+        this.service.generateArtifact ( id );
+    }
 }
