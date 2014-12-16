@@ -117,5 +117,16 @@ table.full { width: 100%; }
 table.full td:first-child { width: 100%; }
 
 
+dl.aspects dt {
+	margin-bottom: 1em;
+}
 
+dl.aspects dd {
+	margin-bottom: 1.5em;
+	padding: 1em;
+	background: #F9F9F9;
+}
 
+dl.aspects dd input {
+    margin-top: 1em;
+}
