@@ -77,7 +77,7 @@ public class DispatcherServlet extends HttpServlet
     @Override
     protected void service ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
-        logger.trace ( "service - {} ({})", request.getServletPath (), request );
+        logger.trace ( "service - {} - {} ({})", request.getMethod (), request.getServletPath (), request );
 
         try
         {
