@@ -25,6 +25,7 @@ Import-Package: com.google.common.hash;version="18.0.0",
 Service-Component: OSGI-INF/hash.xml,
  OSGI-INF/mime.xml,
  OSGI-INF/osgi.xml,
+ OSGI-INF/p2meta.xml,
  OSGI-INF/tycho-cleaner.xml
 Bundle-ActivationPolicy: lazy
 Export-Package: de.dentrassi.pm.aspect.common.osgi;version="1.0.0";

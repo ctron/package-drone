@@ -12,31 +12,29 @@ package de.dentrassi.pm.aspect.common.osgi;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.aspect.virtual.Virtualizer;
 
-public class OsgiAspectFactory implements ChannelAspectFactory
+public class P2MetaDataAspectFactory implements ChannelAspectFactory
 {
-    public static final String ID = "osgi";
-
-    private static class ChannelAspectImpl implements ChannelAspect
-    {
-        @Override
-        public Extractor getExtractor ()
-        {
-            return new OsgiExtractor ( ChannelAspectImpl.this );
-        }
-
-        @Override
-        public String getId ()
-        {
-            return ID;
-        }
-    }
+    public static final String ID = "p2.metadata";
 
     @Override
     public ChannelAspect createAspect ()
     {
-        return new ChannelAspectImpl ();
+        return new ChannelAspect () {
+
+            @Override
+            public String getId ()
+            {
+                return ID;
+            }
+
+            @Override
+            public Virtualizer getArtifactVirtualizer ()
+            {
+                return new P2Virtualizer ();
+            }
+        };
     }
 
 }

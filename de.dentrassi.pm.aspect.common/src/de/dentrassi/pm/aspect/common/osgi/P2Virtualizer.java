@@ -29,11 +29,11 @@ import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
 
-public class TychoVirtualizer implements Virtualizer
+public class P2Virtualizer implements Virtualizer
 {
     private final XmlHelper xml;
 
-    public TychoVirtualizer ()
+    public P2Virtualizer ()
     {
         this.xml = new XmlHelper ();
     }
