@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import de.dentrassi.osgi.converter.ConverterManager;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.controller.binding.BindTarget;
 import de.dentrassi.osgi.web.controller.binding.Binder;
@@ -25,7 +26,6 @@ import de.dentrassi.osgi.web.controller.binding.BindingManager;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.MapBinder;
 import de.dentrassi.osgi.web.controller.binding.ModelAndViewAwareBinding;
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
 import de.dentrassi.osgi.web.controller.validator.JavaValidator;
 import de.dentrassi.osgi.web.controller.validator.Validator;
 

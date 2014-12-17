@@ -12,6 +12,9 @@
 	<li><a class="pure-button"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<c:if test="${artifact.generator }">
 	<li><a class="pure-button pure-button-primary" href="<c:url value="/artifact/${artifact.id }/generate"/>">Regenerate</a></li>
+	   <c:if test="${not empty artifact.editTarget }">
+	       <li><a class="pure-button pure-button-primary" href="<c:url value="${artifact.editTarget.render(pageContext) }"/>">Edit</a></li>
+	   </c:if>
 	</c:if>
 	<li><a href="get">Download</a></li>
 </ul>

@@ -13,7 +13,7 @@ package de.dentrassi.osgi.web.controller.binding;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
+import de.dentrassi.osgi.converter.ConverterManager;
 
 public class MapBinder implements Binder
 {

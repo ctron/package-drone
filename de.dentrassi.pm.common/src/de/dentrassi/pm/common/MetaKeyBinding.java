@@ -8,11 +8,18 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.osgi.web.controller.converter;
+package de.dentrassi.pm.common;
 
-public interface Converter<T>
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention ( RetentionPolicy.RUNTIME )
+@Target ( { ElementType.FIELD } )
+public @interface MetaKeyBinding
 {
-    public T convertTo ( String value ) throws ConversionException;
+    public String namespace ();
 
-    public Class<T> getType ();
+    public String key ();
 }

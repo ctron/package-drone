@@ -8,20 +8,20 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.osgi.web.controller.converter;
+package de.dentrassi.osgi.converter;
 
 import java.util.Collection;
 import java.util.LinkedList;
 
 public class ConverterManager
 {
-    private final Collection<Converter<?>> converters = new LinkedList<> ();
+    private final Collection<Converter> converters = new LinkedList<> ();
 
     public static ConverterManager create ()
     {
         final ConverterManager result = new ConverterManager ();
 
-        result.addConverter ( IntegerConverter.INSTANCE );
+        result.addConverter ( StringToIntegerConverter.INSTANCE );
 
         return result;
     }
@@ -30,21 +30,28 @@ public class ConverterManager
     {
     }
 
-    public void addConverter ( final Converter<?> converter )
+    public void addConverter ( final Converter converter )
     {
         this.converters.add ( converter );
     }
 
-    public <T> T convertTo ( final String value, final Class<T> clazz )
+    public <T> T convertTo ( final Object value, final Class<T> clazz )
     {
-        if ( clazz.isAssignableFrom ( String.class ) )
+        if ( value == null )
+        {
+            return null;
+        }
+
+        if ( clazz.isAssignableFrom ( value.getClass () ) )
         {
             return clazz.cast ( value );
         }
 
-        for ( final Converter<?> cvt : this.converters )
+        final Class<?> from = value.getClass ();
+
+        for ( final Converter cvt : this.converters )
         {
-            if ( clazz.equals ( cvt.getType () ) )
+            if ( cvt.canConvert ( from, clazz ) )
             {
                 final Object o = cvt.convertTo ( value );
                 if ( o == null )

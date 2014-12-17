@@ -52,7 +52,7 @@
 
              <div class="pure-control-group">
                 <form:label path="description">Description:</form:label>
-                <form:input path="description"/>
+                <form:textarea path="description"/>
                 <div class="pure-form-message-inline">
                     <form:errorList path="description" cssClass="validation-error" />
                 </div>

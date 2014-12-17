@@ -10,7 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
+import de.dentrassi.osgi.converter.ConverterManager;
 import de.dentrassi.osgi.web.controller.routing.RequestMappingInformation.Match;
 
 public class PathVariableBinder implements Binder

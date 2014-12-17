@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -56,6 +57,13 @@ public class FeatureGenerator implements ArtifactGenerator
     public LinkTarget getAddTarget ()
     {
         return LinkTarget.createFromController ( GeneratorController.class, "create" );
+    }
+
+    @Override
+    public LinkTarget getEditTarget ( final String artifactId )
+    {
+        final String url = LinkTarget.createFromController ( GeneratorController.class, "edit" ).render ( Collections.singletonMap ( "artifactId", artifactId ) );
+        return new LinkTarget ( url );
     }
 
     @Override

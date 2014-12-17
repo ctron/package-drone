@@ -8,22 +8,11 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.generator;
+package de.dentrassi.osgi.converter;
 
-import de.dentrassi.osgi.web.LinkTarget;
-
-public interface ArtifactGenerator
+public interface Converter
 {
-    public static final String GENERATOR_ID_PROPERTY = "pm.generator.id";
+    public Object convertTo ( Object value ) throws ConversionException;
 
-    public void generate ( GenerationContext context ) throws Exception;
-
-    public boolean shouldRegenerate ( Object event );
-
-    public LinkTarget getAddTarget ();
-
-    public default LinkTarget getEditTarget ( final String artifactId )
-    {
-        return null;
-    }
+    public boolean canConvert ( Class<?> from, Class<?> to );
 }

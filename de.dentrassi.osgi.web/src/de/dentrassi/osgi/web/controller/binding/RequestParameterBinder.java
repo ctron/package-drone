@@ -16,7 +16,7 @@ import javax.servlet.http.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
+import de.dentrassi.osgi.converter.ConverterManager;
 
 public class RequestParameterBinder implements Binder
 {

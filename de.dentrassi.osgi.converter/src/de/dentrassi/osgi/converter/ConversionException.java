@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.osgi.web.controller.converter;
+package de.dentrassi.osgi.converter;
 
 public class ConversionException extends RuntimeException
 {

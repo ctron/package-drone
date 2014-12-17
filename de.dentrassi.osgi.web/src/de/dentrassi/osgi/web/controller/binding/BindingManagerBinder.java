@@ -12,7 +12,7 @@ package de.dentrassi.osgi.web.controller.binding;
 
 import java.util.Map;
 
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
+import de.dentrassi.osgi.converter.ConverterManager;
 
 public class BindingManagerBinder extends MapBinder
 {

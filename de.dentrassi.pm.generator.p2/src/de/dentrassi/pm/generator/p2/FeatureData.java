@@ -12,20 +12,27 @@ package de.dentrassi.pm.generator.p2;
 
 import javax.validation.constraints.Pattern;
 
-public class CreateData
+import de.dentrassi.pm.common.MetaKeyBinding;
+
+public class FeatureData
 {
 
     @Pattern ( regexp = "[a-z0-9]+(\\.[a-z0-9]+)*", message = "Must be a valid feature ID" )
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "id" )
     private String id;
 
     @Pattern ( regexp = "[0-9]+((\\.[0-9]+){1,2}(\\.[^\\.])?)",
             message = "Must be a valid version string: major.minor[.micro[.qualifier]]" )
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "version" )
     private String version;
 
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "description" )
     private String description;
 
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "provider" )
     private String provider;
 
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "label" )
     private String label;
 
     public void setId ( final String id )

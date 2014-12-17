@@ -28,6 +28,7 @@ import javax.persistence.criteria.CriteriaQuery;
 
 import org.osgi.framework.FrameworkUtil;
 
+import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -205,7 +206,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         if ( ae instanceof GeneratorArtifactEntity )
         {
-            return new GeneratorArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp () );
+            final LinkedList<LinkTarget> targets = new LinkedList<> ();
+            this.generatorProcessor.process ( ( (GeneratorArtifactEntity)ae ).getGeneratorId (), ( gen ) -> targets.add ( gen.getEditTarget ( ae.getId () ) ) );
+            final LinkTarget target = targets.isEmpty () ? null : targets.getFirst ();
+            return new GeneratorArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), target );
         }
         else
         {

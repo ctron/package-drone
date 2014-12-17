@@ -8,24 +8,28 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.osgi.web.controller.converter;
+package de.dentrassi.osgi.converter;
 
-public class IntegerConverter implements Converter<Integer>
+public class StringToIntegerConverter implements Converter
 {
-    public static final IntegerConverter INSTANCE = new IntegerConverter ();
+    public static final StringToIntegerConverter INSTANCE = new StringToIntegerConverter ();
 
     @Override
-    public Class<Integer> getType ()
+    public boolean canConvert ( final Class<?> from, final Class<?> to )
     {
-        return Integer.class;
+        if ( from.equals ( String.class ) && to.equals ( Integer.class ) )
+        {
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public Integer convertTo ( final String value )
+    public Integer convertTo ( final Object value )
     {
         try
         {
-            return Integer.parseInt ( value );
+            return Integer.parseInt ( value.toString () );
         }
         catch ( final NumberFormatException e )
         {

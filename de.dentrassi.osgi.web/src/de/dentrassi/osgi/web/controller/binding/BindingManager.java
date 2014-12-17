@@ -20,8 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import de.dentrassi.osgi.converter.ConverterManager;
 import de.dentrassi.osgi.web.ModelAndView;
-import de.dentrassi.osgi.web.controller.converter.ConverterManager;
 import de.dentrassi.osgi.web.controller.validator.Validator;
 
 public class BindingManager

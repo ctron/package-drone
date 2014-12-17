@@ -27,7 +27,9 @@ import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
 
 @Controller
@@ -53,6 +55,44 @@ public class GeneratorController
         this.service = service;
     }
 
+    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/edit", method = RequestMethod.GET )
+    public ModelAndView edit ( @PathVariable ( "artifactId" ) final String artifactId ) throws Exception
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "artifactId", artifactId );
+
+        final Artifact art = this.service.getArtifact ( artifactId );
+        if ( art == null )
+        {
+            return new ModelAndView ( "notFound", model );
+        }
+
+        final FeatureData data = new FeatureData ();
+        MetaKeys.bind ( data, art.getMetaData () );
+
+        model.put ( "command", data );
+
+        return new ModelAndView ( "edit", model );
+    }
+
+    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/edit", method = RequestMethod.POST )
+    public ModelAndView editPost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result ) throws Exception
+    {
+        if ( result.hasErrors () )
+        {
+            final ModelAndView mav = new ModelAndView ( "edit" );
+            mav.put ( "artifactId", artifactId );
+            return mav;
+        }
+
+        final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
+
+        this.service.getArtifact ( artifactId ).applyMetaData ( providedMetaData );
+
+        return new ModelAndView ( "redirect:/artifact/" + artifactId + "/view" );
+    }
+
     @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/create", method = RequestMethod.GET )
     public ModelAndView create ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -60,13 +100,13 @@ public class GeneratorController
 
         mav.put ( "generators", this.generators.getInformations ().values () );
         mav.put ( "channelId", channelId );
-        mav.put ( "command", new CreateData () );
+        mav.put ( "command", new FeatureData () );
 
         return mav;
     }
 
     @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/create", method = RequestMethod.POST )
-    public ModelAndView createPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CreateData data, final BindingResult result )
+    public ModelAndView createPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result )
     {
         if ( result.hasErrors () )
         {
