@@ -5,7 +5,7 @@
 <html>
 
 <head>
-	<title><%=title %> | OSGi EE with Spring</title>
+	<title><%=title %> | Package Drone</title>
 	
 	<meta charset="UTF-8">
 	
