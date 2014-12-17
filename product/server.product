@@ -31,7 +31,7 @@
    </plugins>
 
    <features>
-      <feature id="de.dentrassi.pm" version="0.0.2.qualifier"/>
+      <feature id="de.dentrassi.pm"/>
    </features>
 
    <configurations>
