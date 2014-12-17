@@ -9,13 +9,72 @@
 
 <h:main title="Channel - ${pm:channel(channel) }">
 
+<style type="text/css">
+.dz-progress {
+    width: 100%;
+    height: 18px;
+    background: #FAFAFA;
+}
+.dz-upload {
+    height: 18px;
+    background: #EEEEEE;
+}
+.dz-filename {
+    display: inline;
+}
+.dz-size {
+    display: inline;
+}
+
+#upload {
+    margin-bottom: 1em;
+}
+#upload-refresh {
+}
+
+#dropzone {
+    border: .15em dashed #AAA;
+    border-radius: 2pt;
+    
+    background: #FAFAFA;
+    
+    padding: 0.35em 1em;
+    
+    cursor: pointer;
+    
+     -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    color: rgba(0, 0, 0, 0.80);
+}
+
+#dropzone:HOVER, .dz-drag-hover {
+    border-color: #888;
+    background-color: #EEE;
+}
+
+</style>
+
 <ul class="button-bar">
     <li><a class="pure-button" href="edit">Edit Channel</a></li>
 	<li><a class="pure-button" href="delete">Delete Channel</a></li>
 	<li><a class="pure-button" href="add">Add Artifact</a></li>
 	<li><a class="pure-button" href="clear">Clear Channel</a></li>
 	<li><a class="pure-button" href="aspects">Configure Aspects</a></li>
+	
+	<li>
+	   <span id="dropzone">Drop Artifacts</span>
+	</li>
+	
+	<li id="upload-refresh" style="display: none;"><a class="pure-button pure-button-primary" href="">Reload</a></li>
 </ul>
+
+<div id="upload"></div>
+<div></div>
 
 <table class="full">
 
@@ -48,5 +107,24 @@
 </tbody>
 
 </table>
+
+<%-- START: drag and drop upload --%>
+<script src="<c:url value="/resources/js/dropzone.min.js"/>"></script>
+<script>
+var url = "<c:url value="/channel/${channel.id}/add"/>";
+var dz = new Dropzone ( "#dropzone", {
+	url: url,
+	paramName: "file",
+	previewsContainer: "#upload",
+	uploadMultiple: false,
+	clickable: false,
+	previewTemplate: "<div class='dz-preview'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> <div class='dz-progress'><div class='dz-upload' data-dz-uploadprogress></div></div> <div class='dz-error-message' data-dz-errormessage></div></div>"
+});
+
+dz.on ( "queuecomplete", function () {
+	document.getElementById("upload-refresh").setAttribute("style", "");
+});
+</script>
+<%-- END: drag and drop upload --%>
 
 </h:main>
