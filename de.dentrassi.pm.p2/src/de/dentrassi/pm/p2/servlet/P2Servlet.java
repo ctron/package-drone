@@ -69,6 +69,12 @@ public class P2Servlet extends HttpServlet
         final StorageService service = this.tracker.getService ();
         final Channel channel = service.getChannelWithAlias ( channelIdOrName );
 
+        if ( channel == null )
+        {
+            notFound ( req, resp, String.format ( "Channel '%s' not found.", channelIdOrName ) );
+            return;
+        }
+
         if ( paths.length < 3 )
         {
             if ( !path.endsWith ( "/" ) )
@@ -78,6 +84,7 @@ public class P2Servlet extends HttpServlet
                 return;
             }
             process ( req, resp, new IndexHandler ( channel ) );
+            return;
         }
         else if ( "p2.index".equals ( paths[2] ) && paths.length == 3 )
         {
@@ -106,17 +113,23 @@ public class P2Servlet extends HttpServlet
         }
         else if ( "features".equals ( paths[2] ) )
         {
-            logger.warn ( "Download feature: {}", req.getPathInfo () );
+            logger.warn ( "Download feature: {}", path );
             process ( req, resp, new DownloadHandler ( channel, paths[3], "eclipse.feature" ) );
         }
         else
         {
-            logger.warn ( "Not found for: {}", req.getPathInfo () );
-            resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-            final PrintWriter w = resp.getWriter ();
-            resp.setContentType ( "text/plain" );
-            w.println ( "File not found: " + req.getPathInfo () );
+            logger.warn ( "Not found for: {}", path );
+            notFound ( req, resp, "Resource not found: " + path );
         }
+    }
+
+    protected void notFound ( final HttpServletRequest req, final HttpServletResponse resp, final String message ) throws IOException
+    {
+        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+        final PrintWriter w = resp.getWriter ();
+        resp.setContentType ( "text/plain" );
+
+        w.println ( message );
     }
 
     private void showHelp ( final HttpServletResponse resp ) throws IOException

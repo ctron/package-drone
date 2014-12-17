@@ -51,6 +51,7 @@ public class IndexHandler implements Handler
         w.println ( "<ul>" );
         w.println ( "<li><a href=\"content.xml\">content.xml</a></li>" );
         w.println ( "<li><a href=\"artifacts.xml\">artifacts.xml</a></li>" );
+        w.println ( "<li><a href=\"p2.index\">p2.index</a></li>" );
         w.println ( "</ul>" );
 
         w.println ( "</body>" );
