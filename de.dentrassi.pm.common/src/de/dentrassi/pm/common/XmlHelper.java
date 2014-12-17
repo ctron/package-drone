@@ -99,6 +99,7 @@ public class XmlHelper
                     this.index++;
                     continue;
                 }
+                return ele;
             }
             // out of nodes
             return null;
