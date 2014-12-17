@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.scada.utils.str.StringHelper;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -55,8 +56,8 @@ public class P2Servlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-
-        final String paths[] = req.getPathInfo ().split ( "/" );
+        final String path = req.getPathInfo ();
+        final String paths[] = path.split ( "/" );
 
         if ( paths.length < 2 )
         {
@@ -70,6 +71,12 @@ public class P2Servlet extends HttpServlet
 
         if ( paths.length < 3 )
         {
+            if ( !path.endsWith ( "/" ) )
+            {
+                resp.setStatus ( HttpServletResponse.SC_MOVED_PERMANENTLY );
+                resp.sendRedirect ( req.getContextPath () + StringHelper.join ( paths, "/" ) + "/" );
+                return;
+            }
             process ( req, resp, new IndexHandler ( channel ) );
         }
         else if ( "p2.index".equals ( paths[2] ) && paths.length == 3 )
