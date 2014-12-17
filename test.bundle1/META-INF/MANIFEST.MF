@@ -12,7 +12,7 @@ Require-Bundle: ch.qos.logback.core;bundle-version="1.0.7",
  org.apache.commons.io
 Import-Package: com.google.common.io,
  org.slf4j;version="1.7.2",
- org.slf4j.bridge;version="[1.7.2,2.0.0)",
+ org.slf4j.spi;version="[1.7.2,2.0.0)",
  org.slf4j.helpers;version="1.7.2";resolution:=optional
 Export-Package: test.bundle1;version="1.0.0",
  test.bundle1.p2
