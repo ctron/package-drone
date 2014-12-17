@@ -35,6 +35,9 @@
    </features>
 
    <configurations>
+      <plugin id="de.dentrassi.osgi.validation.hibernate" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.osgi.web.servlet" autoStart="true" startLevel="10" />
+      <plugin id="de.dentrassi.pm.generator.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.logging.jul" autoStart="true" startLevel="1" />
       <plugin id="de.dentrassi.pm.maven" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />

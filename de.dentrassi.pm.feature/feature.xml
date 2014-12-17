@@ -638,13 +638,6 @@
          unpack="false"/>
 
    <plugin
-         id="de.dentrassi.osgi.web.test"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="de.dentrassi.pm.generator"
          download-size="0"
          install-size="0"
