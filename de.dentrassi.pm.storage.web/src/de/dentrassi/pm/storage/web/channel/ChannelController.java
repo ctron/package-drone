@@ -128,8 +128,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/view", method = RequestMethod.GET )
-    public ModelAndView view ( @PathVariable ( "channelId" )
-    final String channelId )
+    public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView result = new ModelAndView ( "channel/view" );
 
@@ -149,8 +148,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/delete", method = RequestMethod.GET )
-    public ModelAndView delete ( @PathVariable ( "channelId" )
-    final String channelId )
+    public ModelAndView delete ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
@@ -161,8 +159,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
-    public ModelAndView add ( @PathVariable ( "channelId" )
-    final String channelId )
+    public ModelAndView add ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView mav = new ModelAndView ( "channel/add" );
 
@@ -173,10 +170,9 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )
-    public String addPost ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParameter ( required = false, value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
+    public String addPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
+            value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
     {
-        final StorageService service = Activator.getTracker ().getStorageService ();
         try
         {
             if ( name == null || name.isEmpty () )
@@ -184,7 +180,7 @@ public class ChannelController implements MenuExtender
                 name = file.getSubmittedFileName ();
             }
 
-            service.createArtifact ( channelId, name, file.getInputStream (), null );
+            this.service.createArtifact ( channelId, name, file.getInputStream (), null );
         }
         catch ( final IOException e )
         {
@@ -195,8 +191,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
-    public String clear ( @PathVariable ( "channelId" )
-    final String channelId )
+    public String clear ( @PathVariable ( "channelId" ) final String channelId )
     {
         this.service.clearChannel ( channelId );
 
@@ -204,8 +199,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
-    public ModelAndView aspects ( @PathVariable ( "channelId" )
-    final String channelId )
+    public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView model = new ModelAndView ( "channel/aspects" );
 
@@ -225,26 +219,21 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
-    public ModelAndView addAspect ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParameter ( "aspect" )
-    final String aspectFactoryId )
+    public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
     {
         this.service.addChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeAspect", method = RequestMethod.POST )
-    public ModelAndView removeAspect ( @PathVariable ( "channelId" )
-    final String channelId, @RequestParameter ( "aspect" )
-    final String aspectFactoryId )
+    public ModelAndView removeAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
     {
         this.service.removeChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
-    public ModelAndView edit ( @PathVariable ( "channelId" )
-    final String channelId )
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId )
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -264,10 +253,7 @@ public class ChannelController implements MenuExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
-    public ModelAndView edit ( @PathVariable ( "channelId" )
-    final String channelId, @Valid
-    @FormData ( "command" )
-    final EditChannel data, final BindingResult result )
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final EditChannel data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
 
