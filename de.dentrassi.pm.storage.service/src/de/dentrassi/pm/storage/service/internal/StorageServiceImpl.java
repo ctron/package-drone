@@ -276,6 +276,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void addChannelAspect ( final String channelId, final String aspectFactoryId )
     {
         doWithTransactionVoid ( em -> {
+
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
             channel.getAspects ().add ( aspectFactoryId );
             em.persist ( channel );
@@ -312,6 +313,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 q.setParameter ( "channelId", channelId );
                 q.executeUpdate ();
             }
+
+            new StorageHandlerImpl ( em, this.generatorProcessor ).recreateAllVirtualArtifacts ( channel );
 
         } );
     }
@@ -354,16 +357,26 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             }
 
             // first clear all
+
             artifact.getProvidedProperties ().clear ();
+
             em.persist ( artifact );
             em.flush ();
 
             // now add the new set
+
             Helper.convertProvidedProperties ( result, artifact, artifact.getProvidedProperties () );
 
             // store
+
             em.persist ( artifact );
             em.flush ();
+
+            // recreate virtual artifacts
+
+            hi.recreateVirtualArtifacts ( artifact );
+
+            // recreate generated artifacts
 
             if ( artifact instanceof GeneratorArtifactEntity )
             {

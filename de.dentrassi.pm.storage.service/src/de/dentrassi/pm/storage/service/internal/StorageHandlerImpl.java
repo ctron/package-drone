@@ -70,6 +70,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private final GeneratorProcessor generatorProcessor;
 
+    private final ChannelAspectProcessor channelAspectProcessor = Activator.getChannelAspects ();
+
     public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor )
     {
         this.em = em;
@@ -126,15 +128,26 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         doStreamed ( this.em, ae, ( file ) -> {
 
             // first clear old generated artifacts
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s ga where ga.parent=:parent", GeneratedArtifactEntity.class.getSimpleName () ) );
-            q.setParameter ( "parent", ae );
-            q.executeUpdate ();
+            deleteGeneratedChildren ( ae );
             this.em.flush ();
 
             generateArtifact ( ae.getChannel (), ae, file );
             this.em.flush ();
         } );
+    }
 
+    protected void deleteGeneratedChildren ( final GeneratorArtifactEntity ae )
+    {
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s ga where ga.parent=:parent", GeneratedArtifactEntity.class.getSimpleName () ) );
+        q.setParameter ( "parent", ae );
+        q.executeUpdate ();
+    }
+
+    protected void deleteVirtualChildren ( final ArtifactEntity artifact )
+    {
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s va where va.parent=:parent", VirtualArtifactEntity.class.getSimpleName () ) );
+        q.setParameter ( "parent", artifact );
+        q.executeUpdate ();
     }
 
     public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file ) throws Exception
@@ -463,6 +476,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.info ( "Reprocessing aspect - channelId: {}, aspect: {}", channel.getId (), aspectFactoryId );
 
+        // first delete all virtual artifacts
+
+        deleteAllVirtualArtifacts ( channel );
+
+        // process new meta data
+
         for ( final ArtifactEntity ae : channel.getArtifacts () )
         {
             if ( ae instanceof GeneratorArtifactEntity )
@@ -476,9 +495,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 // generate metadata for new factory
 
                 final Map<MetaKey, String> metadata = new HashMap<> ();
-                final ChannelAspectProcessor ca = Activator.getChannelAspects ();
                 final List<String> list = Arrays.asList ( aspectFactoryId );
-                ca.process ( list, ChannelAspect::getExtractor, extractor -> {
+                this.channelAspectProcessor.process ( list, ChannelAspect::getExtractor, extractor -> {
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
@@ -497,7 +515,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
                 // process virtual
 
-                ca.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, ae, file, aspectFactoryId ) ) );
+                // we don't process the virtual aspect here, since we have to re-created the whole virtual artifacts, in case they depend on the metadata
+
+                // this.channelAspectProcessor.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, ae, file, aspectFactoryId ) ) );
 
                 // store
 
@@ -505,9 +525,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 this.em.flush ();
             } );
         }
+
+        // re-create virtual artifacts
+
+        createAllVirtualArtifacts ( channel );
     }
 
-    public void scanArtifacts ( final String channelId, final Consumer<ArtifactEntity> consumer )
+    public void scanArtifacts ( final String channelId, final ThrowingConsumer<ArtifactEntity> consumer )
     {
         final ChannelEntity ce = this.em.find ( ChannelEntity.class, channelId );
 
@@ -519,7 +543,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         scanArtifacts ( ce, consumer );
     }
 
-    protected void scanArtifacts ( final ChannelEntity ce, final Consumer<ArtifactEntity> consumer )
+    protected void scanArtifacts ( final ChannelEntity ce, final ThrowingConsumer<ArtifactEntity> consumer )
     {
         final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a WHERE a.channel=:channel", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         query.setParameter ( "channel", ce );
@@ -537,7 +561,14 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         for ( final ArtifactEntity ae : query.getResultList () )
         {
-            consumer.accept ( ae );
+            try
+            {
+                consumer.accept ( ae );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
         }
     }
 
@@ -558,5 +589,49 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     public Set<ArtifactInformation> getArtifacts ( final String channelId )
     {
         return listArtifacts ( channelId, ( ae ) -> convert ( ae ) );
+    }
+
+    public void recreateVirtualArtifacts ( final ArtifactEntity artifact )
+    {
+        // delete virtual artifacts
+
+        deleteVirtualChildren ( artifact );
+
+        // recreate
+
+        final ChannelEntity channel = artifact.getChannel ();
+
+        try
+        {
+            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file ) );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
+
+        this.em.flush ();
+    }
+
+    public void recreateAllVirtualArtifacts ( final ChannelEntity channel )
+    {
+        deleteAllVirtualArtifacts ( channel );
+        createAllVirtualArtifacts ( channel );
+    }
+
+    private void createAllVirtualArtifacts ( final ChannelEntity channel )
+    {
+        scanArtifacts ( channel, ( artifact ) -> doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file ) ) );
+    }
+
+    private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
+    {
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s va where va.channel=:channel", VirtualArtifactEntity.class.getSimpleName () ) );
+        q.setParameter ( "channel", channel );
+        final int result = q.executeUpdate ();
+
+        logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
+
+        this.em.flush ();
     }
 }

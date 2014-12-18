@@ -123,7 +123,7 @@ public class GeneratorController
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "provider" ), data.getProvider () );
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "label" ), data.getLabel () );
 
-        final String name = String.format ( "%s-%s.jar", data.getId (), data.getVersion () );
+        final String name = String.format ( "%s-%s.feature", data.getId (), data.getVersion () );
         this.service.createGeneratorArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
 
         return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
