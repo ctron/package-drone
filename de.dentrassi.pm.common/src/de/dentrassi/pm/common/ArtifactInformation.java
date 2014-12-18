@@ -25,13 +25,21 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>
 
     private final String id;
 
-    public ArtifactInformation ( final String id, final long size, final String name, final String channelId, final SortedMap<MetaKey, String> metadata )
+    private final String parentId;
+
+    public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final SortedMap<MetaKey, String> metadata )
     {
         this.id = id;
         this.size = size;
         this.name = name;
         this.channelId = channelId;
         this.metaData = Collections.unmodifiableSortedMap ( metadata );
+        this.parentId = parentId;
+    }
+
+    public String getParentId ()
+    {
+        return this.parentId;
     }
 
     public String getId ()

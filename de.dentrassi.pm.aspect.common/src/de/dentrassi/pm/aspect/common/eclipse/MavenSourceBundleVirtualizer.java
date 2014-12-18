@@ -11,14 +11,26 @@
 package de.dentrassi.pm.aspect.common.eclipse;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
+import org.osgi.framework.Constants;
+
+import com.google.common.io.ByteStreams;
+import com.google.gson.GsonBuilder;
+
+import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -36,7 +48,7 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
             return;
         }
 
-        final BundleInformation bi = findBundleInformation ();
+        final BundleInformation bi = findBundleInformation ( context );
         if ( bi == null )
         {
             return;
@@ -46,25 +58,26 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
         {
             createSourceBundle ( context, bi );
         }
-        catch ( final IOException e )
+        catch ( final Exception e )
         {
-
+            throw new RuntimeException ( "Failed to create virtual source bundle", e );
         }
     }
 
-    protected void createSourceBundle ( final Context context, final BundleInformation bi ) throws IOException, FileNotFoundException
+    protected void createSourceBundle ( final Context context, final BundleInformation bi ) throws Exception
     {
         final Map<MetaKey, String> providedMetaData = new HashMap<> ();
 
         final Path tmp = Files.createTempFile ( "src-", null );
         try
         {
-            final String name = String.format ( "%s.source_%s.jar", bi.getName (), bi.getVersion () );
+            final String name = String.format ( "%s.source_%s.jar", bi.getId (), bi.getVersion () );
 
-            // createSourceBundle ( tmp, context );
+            createSourceBundle ( tmp, context, bi );
+
             try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( tmp.toFile () ) ) )
             {
-                context.createVirtualArtifact ( "", in, providedMetaData );
+                context.createVirtualArtifact ( name, in, providedMetaData );
             }
         }
         finally
@@ -73,9 +86,91 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
         }
     }
 
-    private BundleInformation findBundleInformation ()
+    private void createSourceBundle ( final Path tmp, final Context context, final BundleInformation bi ) throws Exception
     {
-        // TODO Auto-generated method stub
-        return null;
+        try ( ZipInputStream zis = new ZipInputStream ( new BufferedInputStream ( new FileInputStream ( context.getFile ().toFile () ) ) );
+              ZipOutputStream zos = new ZipOutputStream ( new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) ) )
+        {
+            ZipEntry entry;
+            while ( ( entry = zis.getNextEntry () ) != null )
+            {
+                if ( entry.getName ().equals ( "META-INF/MANIFEST.MF" ) )
+                {
+                    continue;
+                }
+
+                zos.putNextEntry ( entry );
+                ByteStreams.copy ( zis, zos );
+
+            }
+
+            entry = new ZipEntry ( "META-INF/MANIFEST.MF" );
+            zos.putNextEntry ( entry );
+            final Manifest mf = new Manifest ();
+            fillManifest ( mf, bi );
+            mf.write ( zos );
+
+            if ( bi.getLocalization () != null && !bi.getLocalization ().isEmpty () )
+            {
+                for ( final Map.Entry<String, Properties> le : bi.getLocalization ().entrySet () )
+                {
+                    final String locale = le.getKey ();
+                    final String suffix = locale != null && !locale.isEmpty () ? "_" + locale : "";
+                    entry = new ZipEntry ( bi.getLocalization () + suffix );
+                    zos.putNextEntry ( entry );
+                    le.getValue ().store ( zos, null );
+                }
+            }
+        }
+    }
+
+    private void fillManifest ( final Manifest mf, final BundleInformation bi )
+    {
+        final Attributes attr = mf.getMainAttributes ();
+
+        attr.put ( Attributes.Name.MANIFEST_VERSION, "1.0" );
+
+        attr.putValue ( Constants.BUNDLE_SYMBOLICNAME, bi.getId () + ".source" );
+        attr.putValue ( Constants.BUNDLE_VERSION, bi.getVersion () );
+        attr.putValue ( Constants.BUNDLE_MANIFESTVERSION, "2" );
+        attr.putValue ( Constants.BUNDLE_VENDOR, bi.getVendor () );
+        attr.putValue ( Constants.BUNDLE_NAME, String.format ( "Source bundle for '%s'", bi.getId () ) );
+
+        attr.putValue ( "Created-By", "Package Drone" );
+
+        attr.putValue ( "Eclipse-SourceBundle", makeSourceString ( bi ) );
+
+        if ( bi.getBundleLocalization () != null )
+        {
+            attr.putValue ( Constants.BUNDLE_LOCALIZATION, bi.getBundleLocalization () );
+        }
+    }
+
+    private String makeSourceString ( final BundleInformation bi )
+    {
+        final StringBuilder sb = new StringBuilder ();
+
+        sb.append ( bi.getId () );
+        sb.append ( ';' );
+        sb.append ( "version=\"" ).append ( bi.getVersion () ).append ( "\"" );
+        sb.append ( ';' );
+        sb.append ( "roots:=" );
+        sb.append ( "\".\"" );
+
+        return sb.toString ();
+    }
+
+    private BundleInformation findBundleInformation ( final Context context )
+    {
+        final ArtifactInformation parent = context.getOtherArtifactInformation ( context.getArtifactInformation ().getParentId () );
+        if ( parent == null )
+        {
+            return null;
+        }
+
+        final String biString = parent.getMetaData ().get ( new MetaKey ( OsgiExtractor.NAMESPACE, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
+
+        final GsonBuilder gb = new GsonBuilder ();
+        return gb.create ().fromJson ( biString, BundleInformation.class );
     }
 }

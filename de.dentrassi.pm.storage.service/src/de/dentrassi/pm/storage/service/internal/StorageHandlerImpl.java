@@ -191,6 +191,17 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
 
         @Override
+        public ArtifactInformation getOtherArtifactInformation ( final String artifactId )
+        {
+            if ( artifactId == null )
+            {
+                return null;
+            }
+
+            return convert ( this.em.find ( ArtifactEntity.class, artifactId ) );
+        }
+
+        @Override
         public ArtifactInformation getArtifactInformation ()
         {
             return this.info;

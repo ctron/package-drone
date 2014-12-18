@@ -33,6 +33,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 
 public interface StreamServiceHelper
 {
@@ -105,7 +106,21 @@ public interface StreamServiceHelper
 
     default ArtifactInformation convert ( final ArtifactEntity ae )
     {
-        return new ArtifactInformation ( ae.getId (), ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
+        if ( ae == null )
+        {
+            return null;
+        }
+
+        String parentId = null;
+        if ( ae instanceof ChildArtifactEntity )
+        {
+            final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
+            if ( parent != null )
+            {
+                parentId = parent.getId ();
+            }
+        }
+        return new ArtifactInformation ( ae.getId (), parentId, ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
     }
 
 }

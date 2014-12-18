@@ -21,4 +21,6 @@ public interface ArtifactContext
     public Path getFile ();
 
     public void createVirtualArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
+
+    public ArtifactInformation getOtherArtifactInformation ( String artifactId );
 }

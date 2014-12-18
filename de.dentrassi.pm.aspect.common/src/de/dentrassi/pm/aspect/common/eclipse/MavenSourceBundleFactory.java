@@ -32,8 +32,7 @@ public class MavenSourceBundleFactory implements ChannelAspectFactory
             @Override
             public Virtualizer getArtifactVirtualizer ()
             {
-                //   return new MavenSourceBundleVirtualizer ();
-                return null; // FIXME: for now
+                return new MavenSourceBundleVirtualizer ();
             }
         };
     }

@@ -40,6 +40,8 @@ public class OsgiExtractor implements Extractor
 
     public static final String KEY_FEATURE_INFORMATION = "feature-information";
 
+    public static final String NAMESPACE = OsgiAspectFactory.ID;
+
     private final ChannelAspect aspect;
 
     public OsgiExtractor ( final ChannelAspect aspect )
@@ -117,6 +119,7 @@ public class OsgiExtractor implements Extractor
         // store bundle information
         final GsonBuilder gb = new GsonBuilder ();
         metadata.put ( KEY_BUNDLE_INFORMATION, gb.create ().toJson ( bi ) );
+
     }
 
 }
