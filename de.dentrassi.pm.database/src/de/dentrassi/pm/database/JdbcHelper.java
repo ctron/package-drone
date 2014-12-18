@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.setup;
+package de.dentrassi.pm.database;
 
 import java.util.ArrayList;
 import java.util.Collection;

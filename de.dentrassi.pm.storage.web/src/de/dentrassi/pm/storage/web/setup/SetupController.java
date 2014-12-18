@@ -22,6 +22,9 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.database.DatabaseConnectionData;
+import de.dentrassi.pm.database.DatabaseSetup;
+import de.dentrassi.pm.database.JdbcHelper;
 import de.dentrassi.pm.storage.web.Activator;
 import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
 
@@ -42,20 +45,37 @@ public class SetupController extends DefaultMenuExtender
 
         try ( Configurator cfg = Configurator.create () )
         {
-            final SetupData command = cfg.getDatabaseSettings ();
+            final DatabaseConnectionData command = cfg.getDatabaseSettings ();
+
+            fillData ( command, model );
 
             model.put ( "command", command );
         }
 
-        model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
+        return new ModelAndView ( "/setup/index", model );
+    }
 
-        return new ModelAndView ( "setup/index", model );
+    private void fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
+    {
+
+        try
+        {
+            try ( DatabaseSetup setup = new DatabaseSetup ( command ) )
+            {
+                model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
+                model.put ( "currentVersion", setup.getCurrentVersion () );
+            }
+        }
+        catch ( final Exception e )
+        {
+        }
+
+        model.put ( "servicePresent", Activator.getTracker ().getStorageService () != null );
+        model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
     }
 
     @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView setup ( @Valid
-    @FormData ( "command" )
-    final SetupData data, final BindingResult result )
+    public ModelAndView setup ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
         model.put ( "command", data );
@@ -76,6 +96,35 @@ public class SetupController extends DefaultMenuExtender
             Activator.getTracker ().waitForStorageService ( 5000 );
         }
 
-        return new ModelAndView ( "setup/index", model );
+        fillData ( data, model );
+
+        return new ModelAndView ( "/setup/index", model );
+    }
+
+    @RequestMapping ( value = "/setup/databaseUpgrade", method = RequestMethod.POST )
+    public ModelAndView upgrade ()
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        try
+        {
+            try ( Configurator cfg = Configurator.create () )
+            {
+                final DatabaseConnectionData data = cfg.getDatabaseSettings ();
+                try ( DatabaseSetup setup = new DatabaseSetup ( data ) )
+                {
+                    setup.performUpgrade ();
+                }
+                fillData ( data, model );
+            }
+
+            return new ModelAndView ( "/setup/upgrade", model );
+        }
+        catch ( final Throwable e )
+        {
+            model.clear ();
+            model.put ( "error", e );
+            return new ModelAndView ( "/setup/upgradeFailed", model );
+        }
     }
 }

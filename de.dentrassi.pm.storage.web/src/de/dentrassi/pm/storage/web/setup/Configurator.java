@@ -26,6 +26,8 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
+import de.dentrassi.pm.database.DatabaseConnectionData;
+
 public class Configurator implements AutoCloseable
 {
     private static final String GEMINI_FACTORY_PID = "gemini.jpa.punit";
@@ -51,7 +53,7 @@ public class Configurator implements AutoCloseable
         this.tracker.close ();
     }
 
-    public void setDatabaseSettings ( final SetupData data )
+    public void setDatabaseSettings ( final DatabaseConnectionData data )
     {
         final ConfigurationAdmin cm = this.tracker.getService ();
         if ( cm == null )
@@ -98,7 +100,7 @@ public class Configurator implements AutoCloseable
         }
     }
 
-    public SetupData getDatabaseSettings ()
+    public DatabaseConnectionData getDatabaseSettings ()
     {
         final ConfigurationAdmin cm = this.tracker.getService ();
         if ( cm == null )
@@ -111,10 +113,10 @@ public class Configurator implements AutoCloseable
             final Configuration[] cfgs = cm.listConfigurations ( String.format ( "(%s=%s)", "service.factoryPid", GEMINI_FACTORY_PID ) );
             if ( cfgs == null || cfgs.length <= 0 )
             {
-                return new SetupData ();
+                return new DatabaseConnectionData ();
             }
 
-            final SetupData result = new SetupData ();
+            final DatabaseConnectionData result = new DatabaseConnectionData ();
 
             final Dictionary<String, Object> props = cfgs[0].getProperties ();
 

@@ -8,6 +8,10 @@
 
 <h:main title="Setup">
 
+<div class="pure-g">
+
+<div class="pure-u-1 pure-u-md-1-2">
+
 <c:if test="${empty jdbcDrivers}">
 <div class="warning">
 	<div class="title">No JDBC drivers were found.</div>
@@ -61,5 +65,34 @@
 </fieldset>
 
 </form:form>
+
+</div>
+
+<div class="pure-u-1 pure-u-md-1-2">
+
+<h2>Database Information</h2>
+
+<table>
+
+<tr><th>Database Schema Version</th><td>${databaseSchemaVersion }</td></tr>
+<tr><th>Current Schema Version</th><td>${currentVersion }</td></tr>
+<tr><th>Service Present</th><td>${servicePresent }</td></tr>
+
+</table>
+
+
+<c:if test="${ currentVersion != databaseSchemaVersion }">
+<div>
+	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
+	   <input type="submit" value="Upgrade Schema" class="pure-button pure-button-primary" />
+    </form>
+</div>
+</c:if>
+
+
+</div>
+
+</div>
+
 
 </h:main>

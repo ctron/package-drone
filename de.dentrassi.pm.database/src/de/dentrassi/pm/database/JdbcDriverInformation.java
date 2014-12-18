@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.setup;
+package de.dentrassi.pm.database;
 
 public class JdbcDriverInformation
 {
@@ -20,7 +20,6 @@ public class JdbcDriverInformation
 
     public JdbcDriverInformation ( final String className, final String name, final String version )
     {
-        super ();
         this.className = className;
         this.name = name;
         this.version = version;

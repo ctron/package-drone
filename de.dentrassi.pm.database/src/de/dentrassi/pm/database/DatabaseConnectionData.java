@@ -8,11 +8,11 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.setup;
+package de.dentrassi.pm.database;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class SetupData
+public class DatabaseConnectionData
 {
     @NotEmpty
     private String jdbcDriver;
