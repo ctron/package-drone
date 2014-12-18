@@ -161,7 +161,7 @@ public class ChannelController implements MenuExtender
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
     public ModelAndView add ( @PathVariable ( "channelId" ) final String channelId )
     {
-        final ModelAndView mav = new ModelAndView ( "channel/add" );
+        final ModelAndView mav = new ModelAndView ( "/channel/add" );
 
         mav.put ( "generators", this.generators.getInformations ().values () );
         mav.put ( "channelId", channelId );
@@ -184,7 +184,7 @@ public class ChannelController implements MenuExtender
         }
         catch ( final IOException e )
         {
-            return "channel/uploadError";
+            return "/error/upload";
         }
 
         return "redirect:/channel/" + channelId + "/view";

@@ -39,6 +39,12 @@ public interface Artifact extends Comparable<Artifact>
 
     public boolean isGenerator ();
 
+    public boolean isStored ();
+
+    public Artifact getParent ();
+
+    public String getParentId ();
+
     public static Comparator<Artifact> NAME_COMPARATOR = new Comparator<Artifact> () {
 
         @Override
@@ -52,4 +58,5 @@ public interface Artifact extends Comparable<Artifact>
             return o1.getId ().compareTo ( o2.getId () );
         }
     };
+
 }

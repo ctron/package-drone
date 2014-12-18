@@ -26,7 +26,8 @@ Service-Component: OSGI-INF/hash.xml,
  OSGI-INF/mime.xml,
  OSGI-INF/osgi.xml,
  OSGI-INF/p2meta.xml,
- OSGI-INF/tycho-cleaner.xml
+ OSGI-INF/tycho-cleaner.xml,
+ OSGI-INF/eclipseSourceBundle.xml
 Bundle-ActivationPolicy: lazy
 Export-Package: de.dentrassi.pm.aspect.common.osgi;version="1.0.0";
   uses:="org.w3c.dom,

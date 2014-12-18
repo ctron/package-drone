@@ -51,6 +51,8 @@ public interface StorageService
 
     public Artifact createGeneratorArtifact ( String channelId, String name, String generatorId, InputStream stream, Map<MetaKey, String> providedMetaData );
 
+    public Artifact createAttachedArtifact ( String parentArtifactId, String name, InputStream stream, Map<MetaKey, String> providedMetaData );
+
     public Collection<Channel> listChannels ();
 
     public void deleteChannel ( String channelId );

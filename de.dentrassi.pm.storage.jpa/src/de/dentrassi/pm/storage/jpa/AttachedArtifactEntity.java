@@ -4,7 +4,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue ( "G" )
-public class GeneratedArtifactEntity extends ChildArtifactEntity
+@DiscriminatorValue ( "A" )
+public class AttachedArtifactEntity extends ChildArtifactEntity
 {
 }

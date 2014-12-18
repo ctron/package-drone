@@ -11,6 +11,7 @@
 package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.REMOVE;
 
 import java.util.Collection;
 import java.util.Date;
@@ -63,6 +64,19 @@ public abstract class ArtifactEntity
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
     private Collection<ProvidedArtifactPropertyEntity> providedProperties = new LinkedList<> ();
+
+    @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent" )
+    private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
+
+    public void setChildArtifacts ( final Collection<ChildArtifactEntity> derivdedArtifacts )
+    {
+        this.childArtifacts = derivdedArtifacts;
+    }
+
+    public Collection<ChildArtifactEntity> getChildArtifacts ()
+    {
+        return this.childArtifacts;
+    }
 
     public String getId ()
     {

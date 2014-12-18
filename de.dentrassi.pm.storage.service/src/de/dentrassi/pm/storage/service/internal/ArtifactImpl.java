@@ -38,7 +38,11 @@ public class ArtifactImpl implements Artifact
 
     private final Date creationTimestamp;
 
-    public ArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final boolean derived, final boolean generator )
+    private final boolean stored;
+
+    private final String parentId;
+
+    public ArtifactImpl ( final ChannelImpl channel, final String id, final String parentId, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final boolean derived, final boolean generator, final boolean stored )
     {
         this.id = id;
         this.channel = channel;
@@ -47,7 +51,34 @@ public class ArtifactImpl implements Artifact
         this.metaData = new TreeMap<MetaKey, String> ( metaData );
         this.derived = derived;
         this.generator = generator;
+        this.stored = stored;
         this.creationTimestamp = creationTimestamp;
+        this.parentId = parentId;
+    }
+
+    @Override
+    public String getParentId ()
+    {
+        return this.parentId;
+    }
+
+    @Override
+    public Artifact getParent ()
+    {
+        if ( this.parentId == null )
+        {
+            return null;
+        }
+        else
+        {
+            return this.channel.getService ().getArtifact ( this.parentId );
+        }
+    }
+
+    @Override
+    public boolean isStored ()
+    {
+        return this.stored;
     }
 
     @Override

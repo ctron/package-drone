@@ -9,6 +9,11 @@
 
 <ul class="button-bar">
 	<li><a class="pure-button" href="delete">Delete</a></li>
+	
+	<c:if test="${artifact.stored }">
+	<li><a class="pure-button pure-button-primary" href="attach">Attach Artifact</a></li>
+	</c:if>
+	
 	<li><a class="pure-button"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<c:if test="${artifact.generator }">
 	<li><a class="pure-button pure-button-primary" href="<c:url value="/artifact/${artifact.id }/generate"/>">Regenerate</a></li>
@@ -17,6 +22,13 @@
 	   </c:if>
 	</c:if>
 	<li><a href="get">Download</a></li>
+</ul>
+
+<h2>Relations</h2>
+<ul>
+<c:if test="${not empty artifact.parentId }">
+<li><a href="<c:url value="/artifact/${artifact.parentId }/view"/>">Parent</a></li>
+</c:if>
 </ul>
 
 <h2>Meta Data</h2>

@@ -10,29 +10,11 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.jpa;
 
-import static javax.persistence.CascadeType.REMOVE;
-
-import java.util.Collection;
-import java.util.LinkedList;
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
 
 @Entity
 @DiscriminatorValue ( "S" )
 public class StoredArtifactEntity extends ArtifactEntity
 {
-    @OneToMany ( orphanRemoval = true, mappedBy = "parent", cascade = REMOVE )
-    private Collection<DerivedArtifactEntity> derivdedArtifacts = new LinkedList<> ();
-
-    public void setDerivedArtifacts ( final Collection<DerivedArtifactEntity> derivdedArtifacts )
-    {
-        this.derivdedArtifacts = derivdedArtifacts;
-    }
-
-    public Collection<DerivedArtifactEntity> getDerivedArtifacts ()
-    {
-        return this.derivdedArtifacts;
-    }
 }

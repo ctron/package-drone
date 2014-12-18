@@ -10,10 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.artifact;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -21,6 +23,7 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.GeneratorArtifact;
@@ -80,6 +83,36 @@ public class ArtifactController
         if ( artifact instanceof GeneratorArtifact )
         {
             ( (GeneratorArtifact)artifact ).generate ();
+        }
+
+        return new ModelAndView ( "redirect:/channel/" + artifact.getChannel ().getId () + "/view" );
+    }
+
+    @RequestMapping ( value = "/artifact/{artifactId}/attach", method = RequestMethod.GET )
+    public ModelAndView attach ( @PathVariable ( "artifactId" ) final String artifactId )
+    {
+        final Artifact artifact = this.service.getArtifact ( artifactId );
+
+        return new ModelAndView ( "/artifact/attach", "artifact", artifact );
+    }
+
+    @RequestMapping ( value = "/artifact/{artifactId}/attach", method = RequestMethod.POST )
+    public ModelAndView attachPost ( @PathVariable ( "artifactId" ) final String artifactId, @RequestParameter ( required = false,
+            value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
+    {
+        Artifact artifact;
+        try
+        {
+            if ( name == null || name.isEmpty () )
+            {
+                name = file.getSubmittedFileName ();
+            }
+
+            artifact = this.service.createAttachedArtifact ( artifactId, name, file.getInputStream (), null );
+        }
+        catch ( final IOException e )
+        {
+            return new ModelAndView ( "/error/upload" );
         }
 
         return new ModelAndView ( "redirect:/channel/" + artifact.getChannel ().getId () + "/view" );

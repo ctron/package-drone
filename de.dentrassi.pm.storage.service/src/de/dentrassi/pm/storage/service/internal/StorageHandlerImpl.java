@@ -56,9 +56,11 @@ import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
+import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
+import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 
 public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
@@ -86,6 +88,16 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
         }
         return channel;
+    }
+
+    protected ArtifactEntity getCheckedArtifact ( final String artifactId )
+    {
+        final ArtifactEntity artifact = this.em.find ( ArtifactEntity.class, artifactId );
+        if ( artifact == null )
+        {
+            throw new IllegalArgumentException ( String.format ( "Artifact %s unknown", artifactId ) );
+        }
+        return artifact;
     }
 
     @Override
@@ -633,5 +645,49 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
 
         this.em.flush ();
+    }
+
+    public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        try
+        {
+            final ChannelEntity channel = getCheckedChannel ( channelId );
+            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData );
+            return ae;
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
+        finally
+        {
+            // always close the stream we got
+            try
+            {
+                stream.close ();
+            }
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( e );
+            }
+        }
+    }
+
+    public ArtifactEntity createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
+
+        if ( ! ( parentArtifact instanceof StoredArtifactEntity ) )
+        {
+            throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is not a normal stored artifact", parentArtifact ) );
+        }
+
+        final ArtifactEntity newArtifact = internalCreateArtifact ( parentArtifact.getChannel ().getId (), name, ( ) -> {
+            final AttachedArtifactEntity a = new AttachedArtifactEntity ();
+            a.setParent ( parentArtifact );
+            return a;
+        }, stream, providedMetaData );
+
+        return newArtifact;
     }
 }

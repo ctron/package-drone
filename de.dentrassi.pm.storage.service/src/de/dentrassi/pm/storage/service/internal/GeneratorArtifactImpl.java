@@ -23,7 +23,7 @@ public class GeneratorArtifactImpl extends ArtifactImpl implements GeneratorArti
 
     public GeneratorArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final LinkTarget editTarget )
     {
-        super ( channel, id, name, size, metaData, creationTimestamp, false, true );
+        super ( channel, id, null, name, size, metaData, creationTimestamp, false, true, false );
         this.editTarget = editTarget;
     }
 

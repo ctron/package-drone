@@ -7,7 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity
-public abstract class DerivedArtifactEntity extends ArtifactEntity
+public abstract class ChildArtifactEntity extends ArtifactEntity
 {
     @ManyToOne ( fetch = LAZY )
     @JoinColumn ( name = "PARENT" )

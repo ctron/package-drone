@@ -18,7 +18,7 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue ( "V" )
 @SecondaryTable ( name = "VIRTUAL_ARTIFACTS" )
-public class VirtualArtifactEntity extends DerivedArtifactEntity
+public class VirtualArtifactEntity extends ChildArtifactEntity
 {
     @Column ( name = "NS", table = "VIRTUAL_ARTIFACTS", nullable = false )
     private String namespace;

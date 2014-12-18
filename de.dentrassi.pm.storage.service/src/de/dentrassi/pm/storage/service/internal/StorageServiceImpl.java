@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.internal;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,8 +39,9 @@ import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
-import de.dentrassi.pm.storage.jpa.DerivedArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
@@ -124,45 +124,23 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final GeneratorArtifactEntity gae = new GeneratorArtifactEntity ();
             gae.setGeneratorId ( generatorId );
             return gae;
-        }, stream, providedMetaData, true );
+        }, stream, providedMetaData );
     }
 
     @Override
     public Artifact createArtifact ( final String channelId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        return internalCreateArtifact ( channelId, name, StoredArtifactEntity::new, stream, providedMetaData, true );
+        return internalCreateArtifact ( channelId, name, StoredArtifactEntity::new, stream, providedMetaData );
     }
 
-    protected Artifact internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean runChannelListeners )
+    private Artifact internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        final Artifact artifact;
-        try
-        {
-            artifact = doWithTransaction ( em -> {
-                final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
-                final ArtifactEntity ae = hi.performStoreArtifact ( channel, name, stream, em, entityCreator, providedMetaData );
-                return convert ( convert ( ae.getChannel () ), ae );
-            } );
-        }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException ( e );
-        }
-        finally
-        {
-            // always close the stream we got
-            try
-            {
-                stream.close ();
-            }
-            catch ( final IOException e )
-            {
-                throw new RuntimeException ( e );
-            }
-        }
+        return doWithTransaction ( ( em ) -> {
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData );
 
-        return artifact;
+            return convert ( convert ( artifact.getChannel () ), artifact );
+        } );
     }
 
     protected ChannelEntity getCheckedChannel ( final EntityManager em, final String channelId )
@@ -213,7 +191,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         }
         else
         {
-            return new ArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), ae instanceof DerivedArtifactEntity, false );
+            final boolean stored = ae instanceof StoredArtifactEntity;
+            final boolean derived = ae instanceof VirtualArtifactEntity || ae instanceof GeneratedArtifactEntity;
+            String parentId = null;
+            if ( ae instanceof ChildArtifactEntity )
+            {
+                final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
+                if ( parent != null )
+                {
+                    parentId = parent.getId ();
+                }
+            }
+            return new ArtifactImpl ( channel, ae.getId (), parentId, ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), derived, false, stored );
         }
     }
 
@@ -446,4 +435,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    @Override
+    public Artifact createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final ArtifactEntity artifact = new StorageHandlerImpl ( em, this.generatorProcessor ).createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
+            return convert ( convert ( artifact.getChannel () ), artifact );
+        } );
+    }
 }

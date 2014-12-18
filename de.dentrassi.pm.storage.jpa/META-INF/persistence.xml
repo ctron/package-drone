@@ -10,7 +10,8 @@
 		<class>de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity</class>
-		<class>de.dentrassi.pm.storage.jpa.DerivedArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ChildArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.AttachedArtifactEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="false"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
