@@ -34,8 +34,8 @@ import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.generator.GeneratorProcessor;
-import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Activator;
@@ -138,8 +138,8 @@ public class ChannelController implements MenuExtender
             return new ModelAndView ( "channel/notFound", "channelId", channelId );
         }
 
-        final List<Artifact> sortedArtifacts = new ArrayList<> ( channel.getArtifacts () );
-        sortedArtifacts.sort ( Artifact.NAME_COMPARATOR );
+        final List<SimpleArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getSimpleArtifacts () );
+        sortedArtifacts.sort ( SimpleArtifactInformation.NAME_COMPARATOR );
 
         result.put ( "channel", channel );
         result.put ( "sortedArtifacts", sortedArtifacts );

@@ -37,9 +37,11 @@ import java.util.function.Supplier;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
-import org.eclipse.persistence.config.QueryHints;
-import org.eclipse.persistence.config.QueryType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +54,12 @@ import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
@@ -290,7 +294,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             }
             createVirtualArtifacts ( channel, ae, file );
 
-            final ArtifactInformation a = convert ( ae );
+            final SimpleArtifactInformation a = convert ( ae );
 
             // now run the post add trigger
             final AddedContextImpl ctx = new AddedContextImpl ( a, metadata, file, this );
@@ -434,7 +438,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    public ArtifactInformation deleteArtifact ( final String artifactId )
+    public SimpleArtifactInformation deleteArtifact ( final String artifactId )
     {
         final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
         if ( ae == null )
@@ -452,7 +456,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             throw new IllegalStateException ( String.format ( "Unable to delete generated artifact of %s (%s)", ae.getName (), ae.getId () ) );
         }
 
-        final ArtifactInformation info = convert ( ae );
+        final SimpleArtifactInformation info = convert ( ae );
 
         final String name = ae.getName ();
         final Map<MetaKey, String> metadata = convertMetaData ( ae );
@@ -568,21 +572,35 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     protected void scanArtifacts ( final ChannelEntity ce, final ThrowingConsumer<ArtifactEntity> consumer )
     {
-        final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a WHERE a.channel=:channel", ArtifactEntity.class.getName () ), ArtifactEntity.class );
-        query.setParameter ( "channel", ce );
+        final CriteriaBuilder cb = this.em.getCriteriaBuilder ();
+        final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
 
-        query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
-        query.setHint ( "eclipselink.batch", "a.channel" );
+        // query
 
-        /*
-        query.setHint ( "eclipselink.join-fetch", "a.channel" );
-        query.setHint ( "eclipselink.join-fetch", "a.extractedProperties" );
-        query.setHint ( "eclipselink.join-fetch", "a.providedProperties" );
+        final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
+        final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
 
-        query.setHint ( QueryHints.QUERY_TYPE, QueryType.ReadAll );
-        */
+        // fetch
+        // root.fetch ( ArtifactEntity_.channel );
+        // root.fetch ( ArtifactEntity_.providedProperties, JoinType.LEFT );
+        // root.fetch ( ArtifactEntity_.extractedProperties, JoinType.LEFT );
 
-        for ( final ArtifactEntity ae : query.getResultList () )
+        // select
+
+        cq.select ( root ).where ( where );
+
+        // convert
+
+        final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
+
+        // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
+        // query.setParameter ( "channel", ce );
+
+        final List<ArtifactEntity> list = query.getResultList ();
+
+        logger.trace ( "Got result" );
+
+        for ( final ArtifactEntity ae : list )
         {
             try
             {
@@ -593,9 +611,11 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 throw new RuntimeException ( e );
             }
         }
+
+        logger.trace ( "Scan complete" );
     }
 
-    public <T extends Comparable<T>> Set<T> listArtifacts ( final String channelId, final Function<ArtifactEntity, T> mapper )
+    public <T extends Comparable<? super T>> Set<T> listArtifacts ( final String channelId, final Function<ArtifactEntity, T> mapper )
     {
         final Set<T> result = new TreeSet<> ();
         scanArtifacts ( channelId, ( ae ) -> {

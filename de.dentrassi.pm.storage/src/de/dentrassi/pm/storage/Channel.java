@@ -18,6 +18,7 @@ import java.util.Set;
 
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 
 public interface Channel
 {
@@ -32,5 +33,7 @@ public interface Channel
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
     public Collection<Artifact> findByName ( String format );
+
+    public Set<SimpleArtifactInformation> getSimpleArtifacts ();
 
 }

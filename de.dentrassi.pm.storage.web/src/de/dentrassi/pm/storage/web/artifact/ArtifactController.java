@@ -24,7 +24,7 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -56,7 +56,7 @@ public class ArtifactController
     @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )
     public ModelAndView delete ( @PathVariable ( "artifactId" ) final String artifactId )
     {
-        final ArtifactInformation info = this.service.deleteArtifact ( artifactId );
+        final SimpleArtifactInformation info = this.service.deleteArtifact ( artifactId );
         if ( info == null )
         {
             return new ModelAndView ( "redirect:/" );

@@ -15,14 +15,14 @@ import java.util.Collections;
 import java.util.Map;
 
 import de.dentrassi.pm.aspect.listener.AddedContext;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.StorageAccessor;
 
 public class AddedContextImpl implements AddedContext
 {
 
-    private final ArtifactInformation artifact;
+    private final SimpleArtifactInformation artifact;
 
     private final Map<MetaKey, String> metadata;
 
@@ -30,7 +30,7 @@ public class AddedContextImpl implements AddedContext
 
     private final StorageAccessor storage;
 
-    public AddedContextImpl ( final ArtifactInformation artifact, final Map<MetaKey, String> metadata, final Path file, final StorageAccessor storage )
+    public AddedContextImpl ( final SimpleArtifactInformation artifact, final Map<MetaKey, String> metadata, final Path file, final StorageAccessor storage )
     {
         this.artifact = artifact;
         this.metadata = Collections.unmodifiableMap ( metadata );

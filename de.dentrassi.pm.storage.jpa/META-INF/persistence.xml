@@ -13,8 +13,9 @@
 		<class>de.dentrassi.pm.storage.jpa.ChildArtifactEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.AttachedArtifactEntity</class>
 		<properties>
-			<property name="eclipselink.weaving" value="false"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
+			<property name="eclipselink.logging.level" value="FINER"/>
+			<property name="eclipselink.weaving" value="true"/>
 		</properties>
 	</persistence-unit>
 </persistence>

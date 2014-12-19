@@ -25,6 +25,7 @@ import com.google.gson.GsonBuilder;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
@@ -132,18 +133,18 @@ public class P2Virtualizer implements Virtualizer
         p.setAttribute ( "value", value );
     }
 
-    private void createFeatureP2MetaData ( final Context context, final ArtifactInformation art, final FeatureInformation fi ) throws Exception
+    private void createFeatureP2MetaData ( final Context context, final SimpleArtifactInformation art, final FeatureInformation fi ) throws Exception
     {
         final List<InstallableUnit> ius = InstallableUnit.fromFeature ( fi );
         createXmlVirtualArtifact ( context, art, InstallableUnit.toXml ( ius ), "-p2metadata.xml" );
     }
 
-    private void createBundleP2MetaData ( final Context context, final ArtifactInformation art, final BundleInformation bi ) throws Exception
+    private void createBundleP2MetaData ( final Context context, final SimpleArtifactInformation art, final BundleInformation bi ) throws Exception
     {
         createXmlVirtualArtifact ( context, art, InstallableUnit.fromBundle ( bi ).toXml (), "-p2metadata.xml" );
     }
 
-    private void createXmlVirtualArtifact ( final Context context, final ArtifactInformation art, final Document doc, final String suffix ) throws Exception
+    private void createXmlVirtualArtifact ( final Context context, final SimpleArtifactInformation art, final Document doc, final String suffix ) throws Exception
     {
         final XmlHelper xml = new XmlHelper ();
         final byte[] data = xml.toData ( doc );

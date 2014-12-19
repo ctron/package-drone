@@ -23,25 +23,31 @@ import java.util.function.Supplier;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
-import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
@@ -50,6 +56,7 @@ import de.dentrassi.pm.storage.service.StorageService;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService, StreamServiceHelper
 {
+    private final static Logger logger = LoggerFactory.getLogger ( StorageServiceImpl.class );
 
     private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
 
@@ -164,6 +171,27 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    public Set<SimpleArtifactInformation> listSimpleArtifacts ( final String channelId )
+    {
+        return doWithTransaction ( em -> {
+
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            return hi.<SimpleArtifactInformation> listArtifacts ( channelId, ( ae ) -> convertSimple ( ae ) );
+        } );
+    }
+
+    private SimpleArtifactInformation convertSimple ( final ArtifactEntity ae )
+    {
+        if ( ae == null )
+        {
+            return null;
+        }
+
+        logger.trace ( "Convert to simple: {}", ae.getId () );
+
+        return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), isDerived ( ae ) );
+    }
+
     private ChannelImpl convert ( final ChannelEntity ce )
     {
         if ( ce == null )
@@ -180,7 +208,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return null;
         }
 
+        logger.trace ( "Loading meta data" );
         final Map<MetaKey, String> metadata = convertMetaData ( ae );
+
+        if ( logger.isTraceEnabled () )
+        {
+            logger.trace ( "Converting entity: {}", ae.getClass () );
+            final Class<?>[] clsArray = ae.getClass ().getInterfaces ();
+            for ( final Class<?> cls : clsArray )
+            {
+                logger.trace ( "interface: {}", cls );
+            }
+        }
 
         if ( ae instanceof GeneratorArtifactEntity )
         {
@@ -192,7 +231,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         else
         {
             final boolean stored = ae instanceof StoredArtifactEntity;
-            final boolean derived = ae instanceof VirtualArtifactEntity || ae instanceof GeneratedArtifactEntity;
+            final boolean derived = isDerived ( ae );
             String parentId = null;
             if ( ae instanceof ChildArtifactEntity )
             {
@@ -246,7 +285,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public ArtifactInformation deleteArtifact ( final String artifactId )
+    public SimpleArtifactInformation deleteArtifact ( final String artifactId )
     {
         return doWithTransaction ( em -> {
             return new StorageHandlerImpl ( em, this.generatorProcessor ).deleteArtifact ( artifactId );
@@ -308,19 +347,58 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    @Override
-    public ArtifactInformation getArtifactInformation ( final String artifactId )
+    private ArtifactEntity getArtifact ( final EntityManager em, final String artifactId )
     {
-        return doWithTransaction ( em -> convert ( getCheckedArtifact ( em, artifactId ) ) );
+        final CriteriaBuilder cb = em.getCriteriaBuilder ();
+        final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
+
+        // query
+
+        final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
+        final Predicate where = cb.equal ( root.get ( ArtifactEntity_.id ), artifactId );
+
+        // fetch
+        root.fetch ( ArtifactEntity_.channel );
+        root.fetch ( ArtifactEntity_.providedProperties, JoinType.LEFT );
+        root.fetch ( ArtifactEntity_.extractedProperties, JoinType.LEFT );
+
+        // select
+
+        cq.select ( root ).where ( where );
+
+        // convert
+
+        final TypedQuery<ArtifactEntity> q = em.createQuery ( cq );
+
+        // q.setMaxResults ( 1 );
+        final List<ArtifactEntity> rl = q.getResultList ();
+        if ( rl.isEmpty () )
+        {
+            return null;
+        }
+        else
+        {
+            return rl.get ( 0 );
+            // return em.find ( ArtifactEntity.class, artifactId );
+        }
+    }
+
+    @Override
+    public SimpleArtifactInformation getArtifactInformation ( final String artifactId )
+    {
+        return doWithTransaction ( em -> convert ( getArtifact ( em, artifactId ) ) );
     }
 
     @Override
     public Artifact getArtifact ( final String artifactId )
     {
         return doWithTransaction ( em -> {
-            final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
-            final ChannelImpl channel = convert ( artifact.getChannel () );
-            return convert ( channel, artifact );
+            final ArtifactEntity artifact = getArtifact ( em, artifactId );
+            if ( artifact == null )
+            {
+                return null;
+            }
+            return convert ( convert ( artifact.getChannel () ), artifact );
         } );
     }
 
@@ -443,4 +521,5 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return convert ( convert ( artifact.getChannel () ), artifact );
         } );
     }
+
 }

@@ -15,8 +15,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
@@ -59,13 +59,13 @@ public interface StorageService
 
     public void streamArtifact ( String artifactId, ArtifactReceiver consumer ) throws FileNotFoundException;
 
-    public ArtifactInformation deleteArtifact ( String artifactId );
+    public SimpleArtifactInformation deleteArtifact ( String artifactId );
 
     public void addChannelAspect ( String channelId, String aspectFactoryId );
 
     public void removeChannelAspect ( String channelId, String aspectFactoryId );
 
-    public ArtifactInformation getArtifactInformation ( String artifactId );
+    public SimpleArtifactInformation getArtifactInformation ( String artifactId );
 
     public Artifact getArtifact ( String artifactId );
 

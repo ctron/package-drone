@@ -12,10 +12,10 @@ package de.dentrassi.pm.storage;
 
 import java.io.InputStream;
 
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 
 @FunctionalInterface
 public interface ArtifactReceiver
 {
-    public void receive ( ArtifactInformation information, InputStream stream ) throws Exception;
+    public void receive ( SimpleArtifactInformation information, InputStream stream ) throws Exception;
 }

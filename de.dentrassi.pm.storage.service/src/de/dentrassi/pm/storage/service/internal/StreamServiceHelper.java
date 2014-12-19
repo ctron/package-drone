@@ -34,10 +34,11 @@ import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
+import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
+import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 
 public interface StreamServiceHelper
 {
-
     default void doStreamed ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<Path> fileConsumer ) throws Exception
     {
         final Path tmp = Files.createTempFile ( "streamed", null );
@@ -111,6 +112,11 @@ public interface StreamServiceHelper
             return null;
         }
 
+        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), isDerived ( ae ), convertMetaData ( ae ) );
+    }
+
+    default String getParentId ( final ArtifactEntity ae )
+    {
         String parentId = null;
         if ( ae instanceof ChildArtifactEntity )
         {
@@ -120,7 +126,12 @@ public interface StreamServiceHelper
                 parentId = parent.getId ();
             }
         }
-        return new ArtifactInformation ( ae.getId (), parentId, ae.getSize (), ae.getName (), ae.getChannel ().getId (), convertMetaData ( ae ) );
+        return parentId;
+    }
+
+    default boolean isDerived ( final ArtifactEntity ae )
+    {
+        return ae instanceof VirtualArtifactEntity || ae instanceof GeneratedArtifactEntity;
     }
 
 }

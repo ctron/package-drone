@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.jpa;
 
+import static javax.persistence.FetchType.LAZY;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -39,7 +41,7 @@ public abstract class ArtifactPropertyEntity
     @Column ( name = "\"VALUE\"" )
     private String value;
 
-    @ManyToOne
+    @ManyToOne ( fetch = LAZY )
     @JoinColumn ( name = "ART_ID", referencedColumnName = "ID" )
     private ArtifactEntity artifact;
 

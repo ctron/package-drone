@@ -34,6 +34,7 @@ import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 
 public class MavenSourceBundleVirtualizer implements Virtualizer
@@ -42,7 +43,7 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
     @Override
     public void virtualize ( final Context context )
     {
-        final ArtifactInformation ai = context.getArtifactInformation ();
+        final SimpleArtifactInformation ai = context.getArtifactInformation ();
         if ( !ai.getName ().endsWith ( "-sources.jar" ) )
         {
             return;
