@@ -58,7 +58,10 @@ public class DatabaseSetup implements AutoCloseable
 
         // init sql
 
-        this.init.add ( "SET sql_mode = 'ANSI'" );
+        if ( data.getJdbcDriver ().equals ( "com.mysql.jdbc.Driver" ) )
+        {
+            this.init.add ( "SET SESSION sql_mode = 'ANSI'" );
+        }
     }
 
     public long getCurrentVersion ()
