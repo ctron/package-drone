@@ -81,10 +81,18 @@
 </table>
 
 
-<c:if test="${ currentVersion != databaseSchemaVersion }">
+<c:if test="${ empty databaseSchemaVersion || currentVersion > databaseSchemaVersion }">
 <div>
 	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
-	   <input type="submit" value="Upgrade Schema" class="pure-button pure-button-primary" />
+	   <c:choose>
+	       <c:when test="${empty databaseSchemaVersion }">
+       <input type="submit" value="Install Schema" class="pure-button pure-button-primary" />
+	       </c:when>
+	       <c:otherwise>
+        <input type="submit" value="Upgrade Schema" class="pure-button pure-button-primary" />
+	       </c:otherwise>
+	   </c:choose>
+	   
     </form>
 </div>
 </c:if>

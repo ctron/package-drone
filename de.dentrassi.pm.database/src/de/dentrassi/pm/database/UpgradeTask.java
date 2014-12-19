@@ -15,5 +15,5 @@ import java.sql.SQLException;
 
 public interface UpgradeTask
 {
-    public void run ( final Connection connection, final UpgradeLog log, long version ) throws SQLException;
+    public void run ( final Connection connection, final UpgradeLog log, Long version ) throws SQLException;
 }

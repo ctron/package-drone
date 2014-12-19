@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public abstract class AbstractUpgradeTask implements UpgradeTask
 {
     @Override
-    public void run ( final Connection connection, final UpgradeLog log, final long version ) throws SQLException
+    public void run ( final Connection connection, final UpgradeLog log, final Long version ) throws SQLException
     {
         performRun ( connection, log );
         commitVersion ( connection, version );
@@ -15,11 +15,17 @@ public abstract class AbstractUpgradeTask implements UpgradeTask
 
     protected abstract void performRun ( Connection connection, UpgradeLog log ) throws SQLException;
 
-    protected void commitVersion ( final Connection connection, final long version ) throws SQLException
+    protected void commitVersion ( final Connection connection, final Long version ) throws SQLException
     {
-        if ( executeUpgrade ( connection, "UPDATE PROPERTIES SET VALUE=? WHERE \"KEY\"=?", "" + version, "database-schema-version" ) < 1 )
+        if ( version == null )
         {
-            executeUpgrade ( connection, "INSERT INTO PROPERTIES (\"KEY\", VALUE) values (?,?)", "database-schema-version", "" + version );
+            connection.commit ();
+            return;
+        }
+
+        if ( executeUpgrade ( connection, "UPDATE PROPERTIES SET VALUE=? WHERE \"KEY\"=?", "" + version, DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION ) < 1 )
+        {
+            executeUpgrade ( connection, "INSERT INTO PROPERTIES (\"KEY\", VALUE) values (?,?)", DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION, "" + version );
         }
         connection.commit ();
     }

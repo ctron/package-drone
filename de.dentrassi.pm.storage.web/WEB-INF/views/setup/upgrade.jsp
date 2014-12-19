@@ -14,4 +14,6 @@
 
 </table>
 
+<a href="<c:url value="/setup"/>" class="pure-button pure-button-primary">Back</a>
+
 </h:main>

@@ -1,25 +1,110 @@
 package de.dentrassi.pm.database;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+
+import com.google.common.io.CharStreams;
 
 public class Tasks
 {
     private final TreeMap<Long, UpgradeTask> tasks = new TreeMap<> ();
 
+    private final Bundle bundle;
+
+    private UpgradeTask createTask;
+
     public Tasks ()
     {
-        loadTasks ();
+        this.bundle = FrameworkUtil.getBundle ( Tasks.class );
+        try
+        {
+            loadTasks ();
+            loadCreateTask ();
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
-    private void loadTasks ()
+    private void loadCreateTask () throws Exception
     {
+        this.createTask = loadTask ( "/sql/create.sql" );
+    }
+
+    private void loadTasks () throws Exception
+    {
+        final Enumeration<String> en = this.bundle.getEntryPaths ( "/sql" );
+
+        final Pattern P = Pattern.compile ( ".*/(\\d+)_.*\\.sql" );
+
+        while ( en.hasMoreElements () )
+        {
+            final String name = en.nextElement ();
+            final Matcher m = P.matcher ( name );
+            if ( !m.matches () )
+            {
+                continue;
+            }
+
+            final long nr = Long.parseLong ( m.group ( 1 ) );
+            final UpgradeTask task = loadTask ( name );
+            if ( task != null )
+            {
+                this.tasks.put ( nr, task );
+            }
+        }
+
+        /*
         {
             final StatementTask s = new StatementTask ( "CREATE TABLE PROPERTIES (\"KEY\" VARCHAR(255) NOT NULL, VALUE TEXT, PRIMARY KEY(\"KEY\"))" );
             this.tasks.put ( 1L, s );
+        }
+        */
+    }
+
+    private UpgradeTask loadTask ( final String name ) throws Exception
+    {
+        final URL entry = this.bundle.getEntry ( name );
+
+        try ( final Reader r = new InputStreamReader ( entry.openStream (), StandardCharsets.UTF_8 ) )
+        {
+            final String sql = CharStreams.toString ( r );
+            final String[] sqlToks = sql.split ( ";" );
+
+            final List<String> sqls = new LinkedList<> ();
+
+            for ( final String sqlTok : sqlToks )
+            {
+                final String s = sqlTok.trim ();
+                if ( !s.isEmpty () )
+                {
+                    sqls.add ( s );
+                }
+            }
+
+            if ( sqls.isEmpty () )
+            {
+                return null;
+            }
+
+            return new StatementTask ( sqls );
         }
     }
 
@@ -29,6 +114,23 @@ public class Tasks
         for ( final Map.Entry<Long, UpgradeTask> entry : map.entrySet () )
         {
             entry.getValue ().run ( connection, log, entry.getKey () );
+        }
+    }
+
+    public void create ( final Connection connection, final UpgradeLog log ) throws SQLException
+    {
+        this.createTask.run ( connection, log, null );
+    }
+
+    public Long getVersion ()
+    {
+        try
+        {
+            return this.tasks.lastKey ();
+        }
+        catch ( final NoSuchElementException e )
+        {
+            return null;
         }
     }
 }

@@ -32,13 +32,15 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class DatabaseSetup implements AutoCloseable
 {
+    public static final String KEY_DATABASE_SCHEMA_VERSION = "database-schema-version";
+
     private final DatabaseConnectionData data;
 
     private final ServiceTracker<DataSourceFactory, DataSourceFactory> tracker;
 
-    private final long currentVersion = 1;
-
     private final List<String> init = new LinkedList<> ();
+
+    private final Tasks tasks = new Tasks ();
 
     public DatabaseSetup ( final DatabaseConnectionData data )
     {
@@ -66,7 +68,15 @@ public class DatabaseSetup implements AutoCloseable
 
     public long getCurrentVersion ()
     {
-        return this.currentVersion;
+        final Long v = this.tasks.getVersion ();
+        if ( v == null )
+        {
+            return -1;
+        }
+        else
+        {
+            return v;
+        }
     }
 
     public Long getSchemaVersion ()
@@ -129,7 +139,7 @@ public class DatabaseSetup implements AutoCloseable
         {
             try ( final PreparedStatement stmt = con.prepareStatement ( "select VALUE from PROPERTIES where \"KEY\"=?" ) )
             {
-                stmt.setString ( 1, "database-schema-version" );
+                stmt.setString ( 1, KEY_DATABASE_SCHEMA_VERSION );
                 try ( final ResultSet rs = stmt.executeQuery () )
                 {
                     if ( !rs.next () )
@@ -177,13 +187,22 @@ public class DatabaseSetup implements AutoCloseable
     {
         final UpgradeLog log = new UpgradeLog ();
 
+        final long l = getCurrentVersion ();
+        if ( l < 0 )
+        {
+            return log;
+        }
+
         doWithConnection ( connection -> {
-            Long from = loadSchemaVersion ( connection );
+            final Long from = loadSchemaVersion ( connection );
             if ( from == null )
             {
-                from = -1L;
+                this.tasks.create ( connection, log );
             }
-            new Tasks ().run ( connection, log, from, this.currentVersion );
+            else
+            {
+                this.tasks.run ( connection, log, from, l );
+            }
             return null;
         } );
 
