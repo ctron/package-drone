@@ -64,6 +64,7 @@ public class BundleInformationParser
 
         result.setName ( ma.getValue ( Constants.BUNDLE_NAME ) );
         result.setVendor ( ma.getValue ( Constants.BUNDLE_VENDOR ) );
+        result.setRequiredExecutionEnvironments ( Headers.parseStringList ( ma.getValue ( Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT ) ) );
 
         processImportPackage ( result, ma );
         processExportPackage ( result, ma );

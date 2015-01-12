@@ -10,10 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.osgi.utils;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 public final class Headers
 {
@@ -36,6 +40,34 @@ public final class Headers
         }
 
         return result;
+    }
+
+    public static <T extends Collection<String>> T parseStringCollection ( final String string, final Supplier<T> provider )
+    {
+        final List<AttributedValue> result = parseList ( string );
+        if ( result == null )
+        {
+            return null;
+        }
+
+        final T col = provider.get ();
+
+        for ( final AttributedValue av : result )
+        {
+            col.add ( av.getValue () );
+        }
+
+        return col;
+    }
+
+    public static List<String> parseStringList ( final String string )
+    {
+        return parseStringCollection ( string, LinkedList::new );
+    }
+
+    public static Set<String> parseStringSet ( final String string )
+    {
+        return parseStringCollection ( string, HashSet::new );
     }
 
     public static AttributedValue parse ( final String string )

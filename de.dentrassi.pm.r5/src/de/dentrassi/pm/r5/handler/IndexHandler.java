@@ -15,6 +15,8 @@ import static de.dentrassi.osgi.utils.Filters.pair;
 import static de.dentrassi.osgi.utils.Filters.versionRange;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -25,6 +27,8 @@ import org.osgi.framework.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.dentrassi.osgi.utils.Filters;
+import de.dentrassi.osgi.utils.Filters.Node;
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
@@ -84,6 +88,21 @@ public class IndexHandler implements Handler
 
         addIdentity ( r, bi );
         addContent ( r, a, this.channel.getId () );
+
+        {
+            final List<Node> nodes = new LinkedList<> ();
+
+            for ( final String ee : bi.getRequiredExecutionEnvironments () )
+            {
+                nodes.add ( pair ( "osgi.ee", ee ) );
+            }
+            if ( !nodes.isEmpty () )
+            {
+                final Map<String, String> reqs = new HashMap<> ( 1 );
+                reqs.put ( "filter", Filters.or ( nodes ) );
+                addRequirement ( r, "osgi.ee", reqs );
+            }
+        }
 
         {
             final Map<String, Object> caps = new HashMap<> ();

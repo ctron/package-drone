@@ -10,8 +10,11 @@
  *******************************************************************************/
 package de.dentrassi.pm.osgi.bundle;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -253,6 +256,18 @@ public class BundleInformation
     private Set<PackageExport> packageExports = new HashSet<> ();
 
     private Set<BundleRequirement> bundleRequirements = new HashSet<> ();
+
+    private List<String> requiredExecutionEnvironments = new LinkedList<> ();
+
+    public void setRequiredExecutionEnvironments ( final List<String> requiredExecutionEnvironments )
+    {
+        this.requiredExecutionEnvironments = new ArrayList<> ( requiredExecutionEnvironments );
+    }
+
+    public List<String> getRequiredExecutionEnvironments ()
+    {
+        return this.requiredExecutionEnvironments;
+    }
 
     public void setBundleLocalization ( final String bundleLocalization )
     {
