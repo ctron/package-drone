@@ -24,8 +24,8 @@ import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 import org.w3c.dom.Element;
 
-import de.dentrassi.pm.osgi.FilterHelper.Multi;
-import de.dentrassi.pm.osgi.FilterHelper.Pair;
+import de.dentrassi.osgi.utils.Filters.Multi;
+import de.dentrassi.osgi.utils.Filters.Pair;
 
 public class FeatureInformation
 {

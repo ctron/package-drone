@@ -1,29 +1,23 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: P2 Adapter
-Bundle-SymbolicName: de.dentrassi.pm.p2
+Bundle-Name: R5 Repository Adapter
+Bundle-SymbolicName: de.dentrassi.pm.r5
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Web-ContextPath: /p2
-Import-Package: com.google.common.io;version="18.0.0",
- com.google.gson;version="2.3.1",
+Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.aspect.common.osgi;version="1.0.0",
- de.dentrassi.pm.aspect.extract;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.common.servlet;version="1.0.0",
  de.dentrassi.pm.osgi.bundle;version="1.0.0",
- de.dentrassi.pm.osgi.feature;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
  de.dentrassi.pm.storage.service;version="1.0.0",
  de.dentrassi.pm.storage.service.util;version="1.0.0",
  javax.servlet;version="3.1.0",
  javax.servlet.http;version="3.1.0",
- org.eclipse.scada.utils.str;version="0.2.0",
- org.osgi.framework;version="1.7.0",
+ org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Export-Package: de.dentrassi.pm.p2.servlet;version="1.0.0"
-Service-Component: OSGI-INF/aspect.xml
-Bundle-ActivationPolicy: lazy
+Web-ContextPath: /r5
+Export-Package: de.dentrassi.pm.r5;version="1.0.0"

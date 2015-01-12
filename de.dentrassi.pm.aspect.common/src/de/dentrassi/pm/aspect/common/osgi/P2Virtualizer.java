@@ -19,9 +19,6 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -56,24 +53,16 @@ public class P2Virtualizer implements Virtualizer
     {
         final ArtifactInformation art = context.getArtifactInformation ();
 
-        final GsonBuilder gb = new GsonBuilder ();
-
-        final String biString = art.getMetaData ().get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
-        if ( biString != null )
+        final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getMetaData () );
+        if ( bi != null )
         {
-            final Gson gson = gb.create ();
-            final BundleInformation bi = gson.fromJson ( biString, BundleInformation.class );
-
             createBundleP2MetaData ( context, art, bi );
             createBundleP2Artifacts ( context, art, bi );
         }
 
-        final String fiString = art.getMetaData ().get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_FEATURE_INFORMATION ) );
-        if ( fiString != null )
+        final FeatureInformation fi = OsgiAspectFactory.fetchFeatureInformation ( art.getMetaData () );
+        if ( fi != null )
         {
-            final Gson gson = gb.create ();
-            final FeatureInformation fi = gson.fromJson ( fiString, FeatureInformation.class );
-
             createFeatureP2MetaData ( context, art, fi );
             createFeatureP2Artifacts ( context, art, fi );
         }

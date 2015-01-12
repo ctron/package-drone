@@ -6,26 +6,26 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.dentrassi.pm.osgi.FilterHelper;
-import de.dentrassi.pm.osgi.FilterHelper.Multi;
-import de.dentrassi.pm.osgi.FilterHelper.Pair;
+import de.dentrassi.osgi.utils.Filters;
+import de.dentrassi.osgi.utils.Filters.Multi;
+import de.dentrassi.osgi.utils.Filters.Pair;
 
 public class FilterTest
 {
     @Test
     public void test1 ()
     {
-        Assert.assertEquals ( "(|(a=b)(c=d))", FilterHelper.or ( pairs ( "a", "b", "c", "d" ) ) );
-        Assert.assertEquals ( "(a=b)", FilterHelper.or ( pairs ( "a", "b" ) ) );
-        Assert.assertEquals ( "", FilterHelper.or ( pairs () ) );
+        Assert.assertEquals ( "(|(a=b)(c=d))", Filters.or ( pairs ( "a", "b", "c", "d" ) ) );
+        Assert.assertEquals ( "(a=b)", Filters.or ( pairs ( "a", "b" ) ) );
+        Assert.assertEquals ( "", Filters.or ( pairs () ) );
     }
 
     @Test
     public void test2 ()
     {
-        final Multi m = new FilterHelper.Multi ( "&" );
-        final Multi m1 = new FilterHelper.Multi ( "|" );
-        final Multi m2 = new FilterHelper.Multi ( "|" );
+        final Multi m = new Filters.Multi ( "&" );
+        final Multi m1 = new Filters.Multi ( "|" );
+        final Multi m2 = new Filters.Multi ( "|" );
 
         m.addNode ( m1 );
         m.addNode ( m2 );
@@ -38,9 +38,9 @@ public class FilterTest
     @Test
     public void test3 ()
     {
-        final Multi m = new FilterHelper.Multi ( "&" );
-        final Multi m1 = new FilterHelper.Multi ( "|" );
-        final Multi m2 = new FilterHelper.Multi ( "|" );
+        final Multi m = new Filters.Multi ( "&" );
+        final Multi m1 = new Filters.Multi ( "|" );
+        final Multi m2 = new Filters.Multi ( "|" );
 
         m.addNode ( m1 );
         m.addNode ( m2 );
@@ -54,9 +54,9 @@ public class FilterTest
     @Test
     public void test4 ()
     {
-        final Multi m = new FilterHelper.Multi ( "&" );
-        final Multi m1 = new FilterHelper.Multi ( "|" );
-        final Multi m2 = new FilterHelper.Multi ( "|" );
+        final Multi m = new Filters.Multi ( "&" );
+        final Multi m1 = new Filters.Multi ( "|" );
+        final Multi m2 = new Filters.Multi ( "|" );
 
         m.addNode ( m1 );
         m.addNode ( m2 );
@@ -67,9 +67,9 @@ public class FilterTest
     @Test
     public void test5 ()
     {
-        final Multi m = new FilterHelper.Multi ( "&" );
-        final Multi m1 = new FilterHelper.Multi ( "|" );
-        final Multi m2 = new FilterHelper.Multi ( "|" );
+        final Multi m = new Filters.Multi ( "&" );
+        final Multi m1 = new Filters.Multi ( "|" );
+        final Multi m2 = new Filters.Multi ( "|" );
 
         m.addNode ( m1 );
         m.addNode ( m2 );
@@ -85,9 +85,9 @@ public class FilterTest
     @Test
     public void test6 ()
     {
-        final Multi m = new FilterHelper.Multi ( "&" );
-        final Multi m1 = new FilterHelper.Multi ( "|" );
-        final Multi m2 = new FilterHelper.Multi ( "|" );
+        final Multi m = new Filters.Multi ( "&" );
+        final Multi m1 = new Filters.Multi ( "|" );
+        final Multi m2 = new Filters.Multi ( "|" );
 
         m.addNode ( m1 );
         m.addNode ( m2 );

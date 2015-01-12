@@ -8,14 +8,26 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.servlet;
+package de.dentrassi.pm.r5.handler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public interface Handler
-{
-    public void prepare () throws Exception;
+import de.dentrassi.pm.common.servlet.Handler;
 
-    public void process ( HttpServletRequest req, HttpServletResponse resp ) throws Exception;
+public class HelpHandler implements Handler
+{
+
+    @Override
+    public void prepare () throws Exception
+    {
+    }
+
+    @Override
+    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+    {
+        resp.setContentType ( "text/plain" );
+        resp.getWriter ().write ( "OSGi R5 repository adapter" );
+    }
+
 }

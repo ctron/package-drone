@@ -10,9 +10,17 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.common.osgi;
 
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.osgi.bundle.BundleInformation;
+import de.dentrassi.pm.osgi.feature.FeatureInformation;
 
 public class OsgiAspectFactory implements ChannelAspectFactory
 {
@@ -37,6 +45,32 @@ public class OsgiAspectFactory implements ChannelAspectFactory
     public ChannelAspect createAspect ()
     {
         return new ChannelAspectImpl ();
+    }
+
+    public static BundleInformation fetchBundleInformation ( final Map<MetaKey, String> metadata )
+    {
+        final String string = metadata.get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
+        if ( string == null )
+        {
+            return null;
+        }
+
+        final GsonBuilder gb = new GsonBuilder ();
+        final Gson gson = gb.create ();
+        return gson.fromJson ( string, BundleInformation.class );
+    }
+
+    public static FeatureInformation fetchFeatureInformation ( final Map<MetaKey, String> metadata )
+    {
+        final String string = metadata.get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_FEATURE_INFORMATION ) );
+        if ( string == null )
+        {
+            return null;
+        }
+
+        final GsonBuilder gb = new GsonBuilder ();
+        final Gson gson = gb.create ();
+        return gson.fromJson ( string, FeatureInformation.class );
     }
 
 }

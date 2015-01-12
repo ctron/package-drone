@@ -27,6 +27,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
 
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Channel;
 
 public abstract class AbstractRepositoryHandler implements Handler

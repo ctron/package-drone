@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Channel;
 
 public class IndexHandler implements Handler

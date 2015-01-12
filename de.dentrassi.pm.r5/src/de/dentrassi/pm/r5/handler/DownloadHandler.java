@@ -8,20 +8,23 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.servlet;
-
-import java.io.PrintWriter;
+package de.dentrassi.pm.r5.handler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
-public class P2IndexHandler implements Handler
+public class DownloadHandler implements Handler
 {
-    public P2IndexHandler ( final Channel channel )
+
+    private final Artifact artifact;
+
+    public DownloadHandler ( final Artifact artifact )
     {
+        this.artifact = artifact;
     }
 
     @Override
@@ -32,11 +35,7 @@ public class P2IndexHandler implements Handler
     @Override
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
-        resp.setContentType ( "text/plain" );
-        final PrintWriter w = resp.getWriter ();
-
-        w.println ( "version=1" );
-        w.println ( "metadata.repository.factory.order=content.xml,\\!" );
-        w.println ( "artifact.repository.factory.order=artifacts.xml,\\!" );
+        DownloadHelper.streamArtifact ( resp, this.artifact, "application/vnd.osgi.bundle", true );
     }
+
 }

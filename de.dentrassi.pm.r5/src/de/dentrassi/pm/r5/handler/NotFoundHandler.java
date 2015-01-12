@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.servlet;
+package de.dentrassi.pm.r5.handler;
 
 import java.io.PrintWriter;
 
@@ -16,12 +16,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.storage.Channel;
 
-public class P2IndexHandler implements Handler
+public class NotFoundHandler implements Handler
 {
-    public P2IndexHandler ( final Channel channel )
+
+    private final String message;
+
+    public NotFoundHandler ( final String message )
     {
+        this.message = message;
     }
 
     @Override
@@ -32,11 +35,12 @@ public class P2IndexHandler implements Handler
     @Override
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
-        resp.setContentType ( "text/plain" );
-        final PrintWriter w = resp.getWriter ();
+        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
 
-        w.println ( "version=1" );
-        w.println ( "metadata.repository.factory.order=content.xml,\\!" );
-        w.println ( "artifact.repository.factory.order=artifacts.xml,\\!" );
+        final PrintWriter w = resp.getWriter ();
+        resp.setContentType ( "text/plain" );
+
+        w.println ( this.message );
     }
+
 }
