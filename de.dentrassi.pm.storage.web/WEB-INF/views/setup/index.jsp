@@ -70,7 +70,7 @@
 
 <div class="pure-u-1 pure-u-md-1-2">
 
-<h2>Database Information</h2>
+<h2>System Information</h2>
 
 <table>
 
