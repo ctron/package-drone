@@ -41,6 +41,7 @@
       <plugin id="de.dentrassi.pm.logging.jul" autoStart="true" startLevel="1" />
       <plugin id="de.dentrassi.pm.maven" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.r5" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="0" />
