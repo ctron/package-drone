@@ -42,11 +42,6 @@ public class ContextImpl extends WebAppContext
 
         final ServletHolder holder = addServlet ( DispatcherServlet.class, "/" );
         holder.getRegistration ().setMultipartConfig ( new MultipartConfigElement ( "", /* 1GB */1024 * 1024 * 1024, /* 1GB */1024 * 1024 * 1024, /* 1MB */1024 * 1024 ) );
-
-        /*
-        final ClassLoader cl = getClassLoader ();
-        setClassLoader ( new WrappingClassLoader ( cl ) );
-        */
     }
 
     @Override
