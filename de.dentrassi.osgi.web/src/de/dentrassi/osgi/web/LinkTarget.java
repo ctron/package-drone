@@ -22,6 +22,7 @@ import org.eclipse.scada.utils.str.StringReplacer;
 import org.eclipse.scada.utils.str.StringReplacer.ReplaceSource;
 
 import de.dentrassi.osgi.web.controller.Controllers;
+import de.dentrassi.osgi.web.controller.routing.RequestMappingInformation;
 
 public class LinkTarget
 {
@@ -88,6 +89,17 @@ public class LinkTarget
         return StringReplacer.replace ( this.url, source, PATTERN, false );
     }
 
+    private static Set<String> getRawPaths ( final Method method )
+    {
+        final RequestMappingInformation rmi = Controllers.fromMethod ( method );
+        if ( rmi == null )
+        {
+            return null;
+        }
+
+        return rmi.getRawPaths ();
+    }
+
     public static LinkTarget createFromController ( final Class<?> controllerClazz, final String methodName )
     {
         for ( final Method m : controllerClazz.getMethods () )
@@ -96,7 +108,8 @@ public class LinkTarget
             {
                 continue;
             }
-            final Set<String> paths = Controllers.getPaths ( Controllers.getRequestMappings ( m ) );
+
+            final Set<String> paths = getRawPaths ( m );
             if ( paths.isEmpty () )
             {
                 continue;
@@ -110,11 +123,12 @@ public class LinkTarget
 
     public static LinkTarget createFromController ( final Method method )
     {
-        final Set<String> paths = Controllers.getPaths ( Controllers.getRequestMappings ( method ) );
+        final Set<String> paths = getRawPaths ( method );
         if ( paths.isEmpty () )
         {
             throw new IllegalStateException ( String.format ( "Method '%s' has no @RequestMapping information assigned", method ) );
         }
+
         return new LinkTarget ( paths.iterator ().next () );
     }
 }

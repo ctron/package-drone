@@ -16,11 +16,17 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 
 @Controller
+@RequestMapping ( "/a" )
 @ViewResolver ( "WEB-INF/views/%s.jsp" )
 public class TestController
 {
-    @RequestMapping ( "/" )
-    public ModelAndView main ()
+    public ModelAndView mainA ()
+    {
+        return new ModelAndView ( "index" );
+    }
+
+    @RequestMapping ( "/b" )
+    public ModelAndView mainB ()
     {
         return new ModelAndView ( "index" );
     }

@@ -29,6 +29,13 @@ public class PathMatcherTest
     }
 
     @Test
+    public void testBugMatch ()
+    {
+        final RequestMappingInformation rmi = new RequestMappingInformation ( "/setup/databaseUpgrade", "GET" );
+        Assert.assertNull ( rmi.matches ( "/setup", "GET" ) );
+    }
+
+    @Test
     public void testNoMatch ()
     {
         final RequestMappingInformation rmi = new RequestMappingInformation ( "/", "GET" );

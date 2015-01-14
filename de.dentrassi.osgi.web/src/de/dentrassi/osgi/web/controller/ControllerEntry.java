@@ -13,7 +13,6 @@ package de.dentrassi.osgi.web.controller;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,8 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
-import de.dentrassi.osgi.web.RequestMapping;
-import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.BindingManager;
 import de.dentrassi.osgi.web.controller.binding.PathVariableBinder;
@@ -57,7 +54,6 @@ public class ControllerEntry
         {
             try
             {
-
                 final Map<String, Object> data = new HashMap<String, Object> ();
 
                 final BindingManager manager = BindingManager.create ( data );
@@ -127,48 +123,9 @@ public class ControllerEntry
         return this.viewResolver;
     }
 
-    protected static RequestMappingInformation parse ( final Method m )
+    protected static RequestMappingInformation parse ( final Method method )
     {
-        final List<RequestMapping> mappings = Controllers.getRequestMappings ( m );
-
-        if ( mappings == null )
-        {
-            return null;
-        }
-
-        final Set<String> paths = Controllers.getPaths ( mappings );
-
-        final Set<String> methods = new HashSet<> ();
-
-        for ( final RequestMapping rm : mappings )
-        {
-            if ( rm != null )
-            {
-                addMethods ( methods, rm.method () );
-            }
-        }
-
-        if ( paths.isEmpty () )
-        {
-            return null;
-        }
-        else
-        {
-            return new RequestMappingInformation ( paths, methods );
-        }
-    }
-
-    private static void addMethods ( final Set<String> result, final RequestMethod[] methods )
-    {
-        if ( methods == null )
-        {
-            return;
-        }
-
-        for ( final RequestMethod m : methods )
-        {
-            result.add ( m.name () );
-        }
+        return Controllers.fromMethod ( method );
     }
 
     public RequestHandler findHandler ( final HttpServletRequest request, final HttpServletResponse response )

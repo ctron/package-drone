@@ -28,6 +28,8 @@ public class RequestMappingInformation
 
     private final Set<String> methods;
 
+    private final Set<String> rawPaths;
+
     public class Match
     {
         private final Map<String, String> attributes;
@@ -53,13 +55,19 @@ public class RequestMappingInformation
         this.methods = methods;
         this.paths = new PathMatcher[paths.size ()];
 
+        this.rawPaths = paths;
+
         int i = 0;
         for ( final String path : paths )
         {
             this.paths[i] = convert ( path );
             i++;
         }
+    }
 
+    public Set<String> getRawPaths ()
+    {
+        return this.rawPaths;
     }
 
     private PathMatcher convert ( final String path )

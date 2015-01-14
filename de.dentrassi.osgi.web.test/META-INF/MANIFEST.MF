@@ -5,7 +5,8 @@ Bundle-SymbolicName: de.dentrassi.osgi.web.test
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: javax.servlet;version="3.1.0",
- javax.servlet.http;version="3.1.0"
+ javax.servlet.http;version="3.1.0",
+ org.eclipse.persistence.internal.libraries.asm.commons;version="3.3.1"
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  org.junit
