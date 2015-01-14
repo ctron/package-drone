@@ -261,7 +261,14 @@ public class BundleInformation
 
     public void setRequiredExecutionEnvironments ( final List<String> requiredExecutionEnvironments )
     {
-        this.requiredExecutionEnvironments = new ArrayList<> ( requiredExecutionEnvironments );
+        if ( requiredExecutionEnvironments != null )
+        {
+            this.requiredExecutionEnvironments = new ArrayList<> ( requiredExecutionEnvironments );
+        }
+        else
+        {
+            this.requiredExecutionEnvironments = new LinkedList<> ();
+        }
     }
 
     public List<String> getRequiredExecutionEnvironments ()
