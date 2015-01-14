@@ -27,11 +27,13 @@
    <vm>
    </vm>
 
+
    <plugins>
    </plugins>
 
    <features>
       <feature id="de.dentrassi.pm"/>
+      <feature id="de.dentrassi.pm.root"/>
    </features>
 
    <configurations>
@@ -73,9 +75,17 @@
       <plugin id="org.mortbay.jasper.apache-jsp" autoStart="true" startLevel="0" />
       <property name="eclipse.ignoreApp" value="true" />
       <property name="jetty.home.bundle" value="org.eclipse.jetty.osgi.boot" />
+      <property name="logback.configurationFile" value="platform:/base/logback.xml" />
       <property name="org.eclipse.jetty.osgi.tldbundles" value="org.apache.taglibs.standard-impl" />
       <property name="osgi.noShutdown" value="true" />
       <property name="osgi.startLevel" value="10" />
    </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>

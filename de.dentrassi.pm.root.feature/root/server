@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR=$(cd $(dirname "$0"); pwd)
+
+JAVA="java"
+
+if [ -n "$JAVA_HOME" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+fi
+
+echo "Using Java: $JAVA"
+
+exec "$JAVA" -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog
