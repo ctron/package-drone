@@ -51,7 +51,6 @@ A lot of things. If there is time it will be implemented. Or you can help by con
 Hopefully some time package drone can:
 
 * Provide access to bundles by an OBR layout
-* Provide access to bundles by an OSGi R5 repository layout
 * Act as a fully functional Maven M2 repository
 
 What it is not designed to do
