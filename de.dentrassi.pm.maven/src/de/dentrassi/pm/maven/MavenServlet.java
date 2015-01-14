@@ -39,7 +39,6 @@ import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenServlet extends HttpServlet
 {
-
     private final static Logger logger = LoggerFactory.getLogger ( MavenServlet.class );
 
     private static final long serialVersionUID = 1L;
