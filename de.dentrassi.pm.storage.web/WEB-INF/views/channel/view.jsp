@@ -73,7 +73,14 @@
 	<li id="upload-refresh" style="display: none;"><a class="btn btn-primary" href="">Reload</a></li>
 </ul>
 
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
 <div id="upload"></div>
+</div>
+</div>
+</div>
+
 <div></div>
 
 <table class="table table-striped table-condensed">
@@ -118,13 +125,16 @@ var dz = new Dropzone ( "#dropzone", {
 	previewsContainer: "#upload",
 	uploadMultiple: false,
 	clickable: false,
-	previewTemplate: "<div class='dz-preview'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> <div class='dz-progress'><div class='dz-upload' data-dz-uploadprogress></div></div> <div class='dz-error-message' data-dz-errormessage></div></div>"
+	previewTemplate: "<div class='panel panel-default'><div class='panel-heading'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> </div> <div class='panel-body'><div class='progress'><div class='progress-bar progress-bar-striped' role='progressbar' data-dz-uploadprogress></div></div> <div class='dz-error-message ' data-dz-errormessage></div></div></div>"
 });
 
 dz.on ( "queuecomplete", function () {
 	document.getElementById("upload-refresh").setAttribute("style", "");
 });
 </script>
+
+<%-- previewTemplate: "<div class='dz-preview'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> <div class='dz-progress'><div class='dz-upload' data-dz-uploadprogress></div></div> <div class='alert alert-danger' role='alert' data-dz-errormessage></div></div>"  -->
+
 <%-- END: drag and drop upload --%>
 
 </h:main>
