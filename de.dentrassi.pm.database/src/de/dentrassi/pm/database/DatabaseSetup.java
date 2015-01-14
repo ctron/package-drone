@@ -208,4 +208,9 @@ public class DatabaseSetup implements AutoCloseable
 
         return log;
     }
+
+    public boolean isConfigured ()
+    {
+        return this.data.getJdbcDriver () != null && !this.data.getJdbcDriver ().isEmpty ();
+    }
 }
