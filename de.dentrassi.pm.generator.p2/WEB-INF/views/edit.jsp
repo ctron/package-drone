@@ -17,7 +17,7 @@
 		<legend>Edit generated P2 feature</legend>
 
         <h:formEntry label="Feature ID" path="id" command="command">
-            <form:input path="id" cssClass="form-control" disabled="true"/>
+            <form:input path="id" cssClass="form-control"/>
         </h:formEntry>
 		
         <h:formEntry label="Feature Version" path="version" command="command">
