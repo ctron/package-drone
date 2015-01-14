@@ -60,23 +60,23 @@
 </style>
 
 <ul class="button-bar">
-    <li><a class="pure-button" href="edit">Edit Channel</a></li>
-	<li><a class="pure-button" href="delete">Delete Channel</a></li>
-	<li><a class="pure-button" href="add">Add Artifact</a></li>
-	<li><a class="pure-button" href="clear">Clear Channel</a></li>
-	<li><a class="pure-button" href="aspects">Configure Aspects</a></li>
+    <li><a class="btn btn-default" href="edit">Edit Channel</a></li>
+	<li><a class="btn btn-danger" href="delete">Delete Channel</a></li>
+	<li><a class="btn btn-primary" href="add">Add Artifact</a></li>
+	<li><a class="btn btn-warning" href="clear">Clear Channel</a></li>
+	<li><a class="btn btn-default" href="aspects">Configure Aspects</a></li>
 	
 	<li>
 	   <span id="dropzone" title="Drop files here for uploading">Drop Artifacts</span>
 	</li>
 	
-	<li id="upload-refresh" style="display: none;"><a class="pure-button pure-button-primary" href="">Reload</a></li>
+	<li id="upload-refresh" style="display: none;"><a class="btn btn-primary" href="">Reload</a></li>
 </ul>
 
 <div id="upload"></div>
 <div></div>
 
-<table class="full">
+<table class="table table-striped table-condensed">
 
 <thead>
 	<tr>

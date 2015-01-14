@@ -9,55 +9,35 @@
 <h:main title="Edit generated P2 feature artifact">
 
 <ul class="button-bar">
-	<li><a class="pure-button" href="/artifact/${artifactId }/view">Cancel</a></li>
+	<li><a class="btn btn-default" href="/artifact/${artifactId }/view">Cancel</a></li>
 </ul>
 
-<form:form action="" method="POST" cssClass="pure-form pure-form-aligned">
+<form:form action="" method="POST" cssClass="form-horizontal">
 	<fieldset>
 		<legend>Edit generated P2 feature</legend>
 
-		<div class="pure-control-group">
-			<form:label path="id">Feature ID:</form:label>
-			<form:input path="id" disabled="disabled"/>
-			<div class="pure-form-message-inline">
-				<form:errorList path="id" cssClass="validation-error" />
-			</div>
-		</div>
+        <h:formEntry label="Feature ID" path="id" command="command">
+            <form:input path="id" cssClass="form-control" disabled="true"/>
+        </h:formEntry>
 		
-		<div class="pure-control-group">
-               <form:label path="version">Version:</form:label>
-               <form:input path="version"/>
-               <div class="pure-form-message-inline">
-                   <form:errorList path="version" cssClass="validation-error" />
-               </div>
-           </div>
-           
-           <div class="pure-control-group">
-               <form:label path="label">Label:</form:label>
-               <form:input path="label"/>
-               <div class="pure-form-message-inline">
-                   <form:errorList path="label" cssClass="validation-error" />
-               </div>
-           </div>
+        <h:formEntry label="Feature Version" path="version" command="command">
+            <form:input path="version" cssClass="form-control"/> 
+        </h:formEntry>
+        
+        <h:formEntry label="Label" path="label" command="command">
+            <form:input path="label" cssClass="form-control"/> 
+        </h:formEntry>
 
-           <div class="pure-control-group">
-               <form:label path="provider">Provider:</form:label>
-               <form:input path="provider"/>
-               <div class="pure-form-message-inline">
-                   <form:errorList path="provider" cssClass="validation-error" />
-               </div>
-           </div>
+        <h:formEntry label="Provider" path="provider" command="command">
+            <form:input path="provider" cssClass="form-control"/> 
+        </h:formEntry>            
 
-            <div class="pure-control-group">
-               <form:label path="description">Description:</form:label>
-               <form:textarea path="description"/>
-               <div class="pure-form-message-inline">
-                   <form:errorList path="description" cssClass="validation-error" />
-               </div>
-           </div>
+        <h:formEntry label="Description" path="description" command="command">
+            <form:textarea path="description" cssClass="form-control"/> 
+        </h:formEntry> 
            
-		<button type="submit" class="pure-button pure-button-primary">Edit</button>
-		<button type="reset" class="pure-button">Reset</button>
+		<button type="submit" class="btn btn-primary">Update</button>
+		<button type="reset" class="btn btn-default">Reset</button>
 	</fieldset>
 </form:form>
 

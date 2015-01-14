@@ -7,10 +7,10 @@
 <h:main title="Channels">
 
 <ul class="button-bar">
-<li><a class="pure-button" href="channel/create">Create Channel</a></li>
+<li><a class="btn btn-default" role="button" href="channel/create">Create Channel</a></li>
 </ul>
 
-<table style="width: 100%">
+<table class="table table-striped" style="width: 100%">
 
 <thead>
 	<tr>

@@ -8,22 +8,26 @@
 <h:main title="Add artifact">
 
 <ul class="button-bar">
-	<li><a class="pure-button" href="view">Cancel</a></li>
+	<li><a class="btn btn-default" href="view">Cancel</a></li>
 </ul>
 
 <h:genBlock>
 
-<form method="post" action="" enctype="multipart/form-data" class="pure-form pure-form-stacked">
+<form method="post" action="" enctype="multipart/form-data" class="">
     <fieldset>
         <legend>Upload artifact to channel</legend>
         
-        <label for="name">File Name</label>
-        <input type="text" id="name" name="name"/>
+        <div class="form-group">
+            <label for="name">File Name</label>
+            <input type="text" id="name" name="name" class="form-control"/>
+        </div>
         
-        <label for="file">File</label>
-        <input type="file" id="file" name="file"/>
+        <div class="form-group">
+            <label for="file">File</label>
+            <input type="file" id="file" name="file"/>
+        </div>
         
-        <button type="submit" class="pure-button pure-button-primary">Upload</button>
+        <button type="submit" class="btn btn-primary">Upload</button>
     </fieldset>
 </form>
 

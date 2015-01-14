@@ -8,29 +8,32 @@
 <h:main title="Edit channel - ${command.id }">
 
 <ul class="button-bar">
-    <li><a class="pure-button" href="view">Back</a></li>
+    <li><a class="btn btn-default" href="view">Back</a></li>
 </ul>
 
-<form:form action="" method="POST" cssClass="pure-form pure-form-aligned">
+<div class="container-fluid">
 
-<fieldset>
+<div class="row">
 
-	<div class="pure-control-group">
-		<form:label path="id">ID:</form:label>
-		<form:input path="id" disabled="true"/>
-	</div>
+<div class="col-xs-12 col-md-6">
+
+<form:form action="" method="POST" cssClass="form-horizontal">
+
+    <h:formEntry label="ID"  command="command" path="id">
+        <form:input path="id" cssClass="form-control" disabled="true"/>
+    </h:formEntry>
+    
+    <h:formEntry label="Name" command="command" path="name">
+        <form:input path="name" cssClass="form-control"/>
+    </h:formEntry>
 	
-	<div  class="pure-control-group">
-		<form:label path="name">Name:</form:label>
-		<form:input path="name"/>
-		<div class="pure-form-message-inline"><form:errorList path="name" cssClass="validation-error" /></div>
-	</div>
-	
-    <input type="submit" value="Submit" class="pure-button pure-button-primary">
-    <input type="reset" value="Reset" class="pure-button">
-
-</fieldset>
+    <input type="submit" value="Submit" class="btn btn-primary">
+    <input type="reset" value="Reset" class="btn btn-default">
 
 </form:form>
+</div>
+</div>
+
+</div>
 
 </h:main>

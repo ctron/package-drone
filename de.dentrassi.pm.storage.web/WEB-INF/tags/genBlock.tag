@@ -3,18 +3,22 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 
-<div class="pure-g">
+<div class="container-fluid">
 
+<div class="row">
+
+<div class="col-sm-3 col-lg-2">
 <h:genMenu />
+</div>
 
 <%-- content area --%>
 
-<div class="pure-u-1 pure-u-md-5-6">
-<div style="margin-left: 1em;">
-
-<jsp:doBody />
-
-</div> <%-- inner content --%>
+<div class="col-sm-9 col-lg-10">
+    <div style="margin-left: 1em;">
+        <jsp:doBody />
+    </div> <%-- inner content --%>
 </div> <%-- content area --%>
+
+</div> <%-- row --%>
 
 </div> <%-- global --%>

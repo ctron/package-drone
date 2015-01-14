@@ -7,7 +7,7 @@
 <h:main title="Channel not found - ${channelId }">
 
 <ul class="button-bar">
-<li><a class="pure-button" href="<c:url value="/channel"/>">All channels</a></li>
+<li><a class="btn btn-default" href="<c:url value="/channel"/>">All channels</a></li>
 </ul>
 
 <h:error title="Not found">Channel ${channelId } does not exists!</h:error>

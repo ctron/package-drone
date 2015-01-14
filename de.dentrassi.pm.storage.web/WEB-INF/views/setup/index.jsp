@@ -8,9 +8,11 @@
 
 <h:main title="Setup">
 
-<div class="pure-g">
+<div class="container-fluid ">
 
-<div class="pure-u-1 pure-u-md-1-2">
+<div class="row">
+
+<div class="col-sm-8">
 
 <c:if test="${empty jdbcDrivers}">
 <div class="warning">
@@ -19,56 +21,45 @@
 </div>
 </c:if>
 
-<form:form action="" method="POST" cssClass="pure-form pure-form-aligned">
+<form:form action="" method="POST" cssClass="form-horizontal">
 
-<fieldset>
+	<h:formEntry label="JDBC Driver"  command="command" path="jdbcDriver">
+	    <form:select path="jdbcDriver" cssClass="form-control">
+	        <form:option value="" label="Choose JDBC Driver"/>
+	        <form:optionList items="${jdbcDrivers }" itemValue="className"/>
+	    </form:select>
+	</h:formEntry>
 
-	<div  class="pure-control-group">
-		<form:label path="jdbcDriver" >JDBC Driver:</form:label>
-		
-		<form:select path="jdbcDriver">
-			<form:option value="" label="Choose JDBC Driver"/>
-			<form:optionList items="${jdbcDrivers }" itemValue="className"/>
-		</form:select>
-
-		<div class="pure-form-message-inline"><form:errorList path="jdbcDriver" cssClass="validation-error" /></div>
-	
-	</div>
-	
-	<div  class="pure-control-group">
-		<form:label path="url">URL:</form:label>
-		<form:input path="url"/>
-		<div class="pure-form-message-inline"><form:errorList path="url" cssClass="validation-error" /></div>
-	</div>
-	
-	<div  class="pure-control-group">
-		<form:label path="user">User:</form:label>
-		<form:input path="user"/>
-		<div class="pure-form-message-inline"><form:errorList path="user" cssClass="validation-error" /></div>
-	</div>
-	
-	<div  class="pure-control-group">
-		<form:label path="password">Password:</form:label>
-		<form:input path="password"/>
-		<div class="pure-form-message-inline"><form:errorList path="password" cssClass="validation-error" /></div>
-	</div>
-	
-	<div  class="pure-control-group">
-		<form:label path="additionalProperties">Additional Properties:</form:label>
-		<form:textarea path="additionalProperties" cols="40" rows="10" />
-		<div class="pure-form-message-inline"><form:errorList path="additionalProperties" cssClass="validation-error" /></div>
+    <h:formEntry label="URL"  command="command" path="url">
+        <form:input path="url" cssClass="form-control"/>
+    </h:formEntry>
+    
+    <h:formEntry label="User"  command="command" path="user">
+        <form:input path="user" cssClass="form-control"/>
+    </h:formEntry>
+    
+    <h:formEntry label="Password"  command="command" path="password">
+        <form:input path="password" cssClass="form-control"/>
+    </h:formEntry>
+    
+	<div class='form-group ${form:validationState(pageContext,"command", "additionalProperties", "", "has-error")}'>
+		<form:label path="additionalProperties" cssClass="col-sm-2 control-label">Additional Properties:</form:label>
+		<div class="col-sm-10">
+		<form:textarea path="additionalProperties" cols="40" rows="10" cssClass="form-control"/>
+		</div>
+		<div class="col-sm-10 col-sm-offset-2">
+            <form:errorList path="additionalProperties" cssClass="help-block" />
+        </div>
 	</div>
 
-<input type="submit" value="Submit" class="pure-button pure-button-primary">
-<input type="reset" value="Reset" class="pure-button">
-
-</fieldset>
+	<input type="submit" value="Submit" class="btn btn-primary">
+	<input type="reset" value="Reset" class="btn btn-default">
 
 </form:form>
 
 </div>
 
-<div class="pure-u-1 pure-u-md-1-2">
+<div class="col-sm-4">
 
 <h2>System Information</h2>
 
@@ -85,10 +76,10 @@
 	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
 	   <c:choose>
 	       <c:when test="${empty databaseSchemaVersion }">
-       <input type="submit" value="Install Schema" class="pure-button pure-button-primary" />
+       <input type="submit" value="Install Schema" class="btn btn-primary" />
 	       </c:when>
 	       <c:otherwise>
-        <input type="submit" value="Upgrade Schema" class="pure-button pure-button-primary" />
+        <input type="submit" value="Upgrade Schema" class="btn btn-primary" />
 	       </c:otherwise>
 	   </c:choose>
 	   
@@ -99,7 +90,9 @@
 
 </div>
 
-</div>
+</div> <%-- row --%>
+
+</div> <%-- container --%>
 
 
 </h:main>

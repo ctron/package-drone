@@ -61,6 +61,7 @@ div.box > .title {
 /* button bar */
 
 ul.button-bar {
+	padding: 1em;
 }
 
 ul.button-bar > li {
@@ -71,17 +72,13 @@ ul.button-bar > li {
 	color: red;
 }
 
-nav {
-	border-bottom: 1px solid #AAA;
-}
-
 .main-title {
-	background: #F3F3F3;
 	border-bottom: 1px solid #AAA;
 }
 
 .main-title header {
 	padding-left: 1em;
+	padding-bottom: 1em;
 }
 
 .button-bar {
@@ -96,6 +93,8 @@ nav {
 	color: #555;
 	font-size: x-large;
 }
+
+/*
 
 thead {
 	background: #F3F3F3;
@@ -115,7 +114,7 @@ table th { text-align: left; padding-left: 1em; }
 
 table.full { width: 100%; }
 table.full td:first-child { width: 100%; }
-
+*/
 
 dl.aspects dt {
 	margin-bottom: 1em;

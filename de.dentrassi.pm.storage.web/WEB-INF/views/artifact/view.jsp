@@ -8,20 +8,20 @@
 <h:main title="Artifact - ${fn:escapeXml(artifact.id) }">
 
 <ul class="button-bar">
-	<li><a class="pure-button" href="delete">Delete</a></li>
+	<li><a class="btn btn-danger" href="delete">Delete</a></li>
 	
 	<c:if test="${artifact.stored }">
-	<li><a class="pure-button pure-button-primary" href="attach">Attach Artifact</a></li>
+	<li><a class="btn btn-primary" href="attach">Attach Artifact</a></li>
 	</c:if>
 	
-	<li><a class="pure-button"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
+	<li><a class="btn btn-default"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<c:if test="${artifact.generator }">
-	<li><a class="pure-button pure-button-primary" href="<c:url value="/artifact/${artifact.id }/generate"/>">Regenerate</a></li>
+	<li><a class="btn btn-success" href="<c:url value="/artifact/${artifact.id }/generate"/>">Regenerate</a></li>
 	   <c:if test="${not empty artifact.editTarget }">
-	       <li><a class="pure-button pure-button-primary" href="<c:url value="${artifact.editTarget.render(pageContext) }"/>">Edit</a></li>
+	       <li><a class="btn btn-primary" href="<c:url value="${artifact.editTarget.render(pageContext) }"/>">Edit</a></li>
 	   </c:if>
 	</c:if>
-	<li><a href="get">Download</a></li>
+	<li><a href="get" class="btn btn-link">Download</a></li>
 </ul>
 
 <h2>Relations</h2>
@@ -37,7 +37,7 @@
 <tr><th>Name:</th><td>${fn:escapeXml(artifact.name) }</td></tr>
 </table>
 
-<table>
+<table class="table table-condensed">
 
 <tr>
 	<th>Namespace</th>
