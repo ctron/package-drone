@@ -67,7 +67,7 @@
 	<li><a class="pure-button" href="aspects">Configure Aspects</a></li>
 	
 	<li>
-	   <span id="dropzone">Drop Artifacts</span>
+	   <span id="dropzone" title="Drop files here for uploading">Drop Artifacts</span>
 	</li>
 	
 	<li id="upload-refresh" style="display: none;"><a class="pure-button pure-button-primary" href="">Reload</a></li>
