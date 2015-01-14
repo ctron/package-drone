@@ -68,10 +68,6 @@ ul.button-bar > li {
 	display: inline;
 }
 
-.unresolved {
-	color: red;
-}
-
 .main-title {
 	border-bottom: 1px solid #AAA;
 }
@@ -92,40 +88,4 @@ ul.button-bar > li {
 	padding-top: 5em;
 	color: #555;
 	font-size: x-large;
-}
-
-/*
-
-thead {
-	background: #F3F3F3;
-}
-
-thead th {
-    padding-top: .5em;
-    padding-bottom: .5em;
-}
-
-td {
-	padding-left: .5em;
-	padding-right: .5em;
-}
-
-table th { text-align: left; padding-left: 1em; }
-
-table.full { width: 100%; }
-table.full td:first-child { width: 100%; }
-*/
-
-dl.aspects dt {
-	margin-bottom: 1em;
-}
-
-dl.aspects dd {
-	margin-bottom: 1.5em;
-	padding: 1em;
-	background: #F9F9F9;
-}
-
-dl.aspects dd input {
-    margin-top: 1em;
 }
