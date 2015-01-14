@@ -156,7 +156,7 @@ public class ContextImpl extends WebAppContext
         catch ( final NumberFormatException e )
         {
             logger.debug ( "Failed to parse bundle id", e );
-            throw new MalformedURLException ( "Invalid bundle Id: " + toks[2] );
+            throw new MalformedURLException ( String.format ( "Invalid bundle Id: %s", toks[2] ) );
         }
 
         final Bundle bundle = findBundle ( bundleId );
