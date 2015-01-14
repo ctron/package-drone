@@ -57,6 +57,7 @@ public class SetupController extends DefaultMenuExtender
 
     private void fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
     {
+        model.put ( "configured", Boolean.FALSE );
 
         try
         {
@@ -64,6 +65,7 @@ public class SetupController extends DefaultMenuExtender
             {
                 model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
                 model.put ( "currentVersion", setup.getCurrentVersion () );
+                model.put ( "configured", setup.isConfigured () );
             }
         }
         catch ( final Exception e )

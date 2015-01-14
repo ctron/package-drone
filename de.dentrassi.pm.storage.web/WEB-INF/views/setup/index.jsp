@@ -80,8 +80,7 @@
 
 </table>
 
-
-<c:if test="${ empty databaseSchemaVersion || currentVersion > databaseSchemaVersion }">
+<c:if test="${ configured && ( empty databaseSchemaVersion || currentVersion > databaseSchemaVersion ) }">
 <div>
 	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
 	   <c:choose>
