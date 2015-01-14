@@ -8,19 +8,20 @@
 <h:main title="Artifact - ${fn:escapeXml(artifact.id) }">
 
 <ul class="button-bar">
-	<li><a class="btn btn-danger" href="delete">Delete</a></li>
+	<li><a class="btn btn-danger" href="delete"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
 	
 	<c:if test="${artifact.stored }">
 	<li><a class="btn btn-primary" href="attach">Attach Artifact</a></li>
 	</c:if>
 	
-	<li><a class="btn btn-default"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<c:if test="${artifact.generator }">
-	<li><a class="btn btn-success" href="<c:url value="/artifact/${artifact.id }/generate"/>">Regenerate</a></li>
+	<li><a class="btn btn-success" href="<c:url value="/artifact/${artifact.id }/generate"/>"><span class="glyphicon glyphicon-refresh"></span> Regenerate</a></li>
 	   <c:if test="${not empty artifact.editTarget }">
 	       <li><a class="btn btn-primary" href="<c:url value="${artifact.editTarget.render(pageContext) }"/>">Edit</a></li>
 	   </c:if>
 	</c:if>
+	
+	<li><a class="btn btn-default"  href="<c:url value="/channel/${artifact.channel.id }/view"/>">Channel</a></li>
 	<li><a href="get" class="btn btn-link">Download</a></li>
 </ul>
 

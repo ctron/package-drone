@@ -61,13 +61,13 @@
 
 <ul class="button-bar">
     <li><a class="btn btn-default" href="edit">Edit Channel</a></li>
-	<li><a class="btn btn-danger" href="delete">Delete Channel</a></li>
+	<li><a class="btn btn-danger" href="delete"><span class="glyphicon glyphicon-trash"></span> Delete Channel</a></li>
 	<li><a class="btn btn-primary" href="add">Add Artifact</a></li>
 	<li><a class="btn btn-warning" href="clear">Clear Channel</a></li>
 	<li><a class="btn btn-default" href="aspects">Configure Aspects</a></li>
 	
 	<li>
-	   <span id="dropzone" title="Drop files here for uploading">Drop Artifacts</span>
+	   <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
 	</li>
 	
 	<li id="upload-refresh" style="display: none;"><a class="btn btn-primary" href="">Reload</a></li>
