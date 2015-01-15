@@ -103,7 +103,7 @@ public class SetupController extends DefaultMenuExtender
         return new ModelAndView ( "/setup/index", model );
     }
 
-    @RequestMapping ( value = "/setup/databaseUpgrade", method = RequestMethod.POST )
+    @RequestMapping ( value = "/databaseUpgrade", method = RequestMethod.POST )
     public ModelAndView upgrade ()
     {
         final Map<String, Object> model = new HashMap<> ();
