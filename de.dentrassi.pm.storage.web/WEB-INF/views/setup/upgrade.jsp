@@ -6,7 +6,7 @@
 
 <h:main title="Database Upgrade">
 
-<table>
+<table class="table">
 
 <tr><th>Database Schema Version</th><td>${databaseSchemaVersion }</td></tr>
 <tr><th>Current Schema Version</th><td>${currentVersion }</td></tr>
@@ -14,6 +14,8 @@
 
 </table>
 
+<p>
 <a href="<c:url value="/setup"/>" class="btn btn-default">Back</a>
+</p>
 
 </h:main>

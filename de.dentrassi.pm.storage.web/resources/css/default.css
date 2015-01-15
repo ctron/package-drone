@@ -25,37 +25,8 @@ ul.validation-error li {
 
 /* boxes */
 
-div.box {
-	border: 1pt solid;
-    border-radius: 10pt;
-    padding: 1em;
-    margin: 1em;
-    display: inline-block; 
-}
-
-div.warning {
-    background-color: #fffce6;
-    border-color: #DDD999;
-}
-
-div.error {
-    background-color: #FFDDDD;
-    border-color: #DD9999;
-}
-
-div.box > .title {
-	font-weight: bold;
-	padding-bottom: .5em;
-}
-
-
-.success {
-	background-color: #efffef;
-	border: solid 1px #99ff99;
-	border-radius: 15px;
-	padding: 1em;
+.box {
 	margin: 1em;
-	display: inline-block;
 }
 
 /* button bar */

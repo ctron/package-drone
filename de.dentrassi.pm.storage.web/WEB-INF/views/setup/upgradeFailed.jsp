@@ -16,6 +16,6 @@ pageContext.setAttribute ( "errorString", sw.toString() );
 
 <h:main title="Database Upgrade Failed">
 
-<h:error title="Upgrade failed"><pre>${errorString }</pre></h:error>
+<h:error title="Upgrade failed" icon="flash"><pre>${errorString }</pre></h:error>
 
 </h:main>

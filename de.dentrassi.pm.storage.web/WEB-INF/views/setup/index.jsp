@@ -61,15 +61,21 @@
 
 <div class="col-sm-4">
 
-<h2>System Information</h2>
+<div class="panel panel-info">
+  <div class="panel-heading">
+    <h3 class="panel-title">Service status</h3>
+  </div>
+  <div class="panel-body">
 
-<table>
+<table class="table">
 
 <tr><th>Database Schema Version</th><td>${databaseSchemaVersion }</td></tr>
 <tr><th>Current Schema Version</th><td>${currentVersion }</td></tr>
 <tr><th>Service Present</th><td>${servicePresent }</td></tr>
 
 </table>
+
+<p>
 
 <c:if test="${ configured && ( empty databaseSchemaVersion || currentVersion > databaseSchemaVersion ) }">
 <div>
@@ -87,8 +93,10 @@
 </div>
 </c:if>
 
-
+  </div>
 </div>
+
+</div> <%-- col --%>
 
 </div> <%-- row --%>
 
