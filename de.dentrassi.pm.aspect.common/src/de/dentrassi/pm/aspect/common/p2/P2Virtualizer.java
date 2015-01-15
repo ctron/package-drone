@@ -16,6 +16,8 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -30,6 +32,8 @@ import de.dentrassi.pm.osgi.feature.FeatureInformation;
 
 public class P2Virtualizer implements Virtualizer
 {
+    private final static Logger logger = LoggerFactory.getLogger ( P2Virtualizer.class );
+
     private final XmlHelper xml;
 
     public P2Virtualizer ()
@@ -54,18 +58,24 @@ public class P2Virtualizer implements Virtualizer
     {
         final ArtifactInformation art = context.getArtifactInformation ();
 
+        logger.debug ( "Process virtualize - artifactId: {} / {}", art.getId (), art.getName () );
+
         final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getMetaData () );
         if ( bi != null )
         {
+            logger.debug ( "Process as bundle" );
             createBundleP2MetaData ( context, art, bi );
             createBundleP2Artifacts ( context, art, bi );
+            return;
         }
 
         final FeatureInformation fi = OsgiAspectFactory.fetchFeatureInformation ( art.getMetaData () );
         if ( fi != null )
         {
+            logger.debug ( "Process as feature" );
             createFeatureP2MetaData ( context, art, fi );
             createFeatureP2Artifacts ( context, art, fi );
+            return;
         }
     }
 

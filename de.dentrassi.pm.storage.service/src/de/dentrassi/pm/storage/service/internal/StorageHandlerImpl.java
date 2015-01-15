@@ -410,11 +410,15 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private void createVirtualArtifacts ( final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
     {
+        logger.debug ( "Creating virtual artifacts for - channel: {}, artifact: {}", channel.getId (), artifact.getId () );
+
         Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId () ) ) );
     }
 
     private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace )
     {
+        logger.debug ( "Creating virtual artifact context for: {}", namespace );
+
         final ArtifactInformation info = convert ( artifact );
         return new ArtifactContextImpl ( channel, file, info, em, ( ) -> {
             final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
@@ -586,20 +590,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                     }
                 } );
 
-                // add metadata first, since the virtualizers might need it
-
-                ae.getExtractedProperties ().clear ();
-
-                this.em.persist ( ae );
-                this.em.flush ();
+                // don't clear extracted meta data, since we only process one aspect and we actually add it
 
                 Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
-
-                // process virtual
-
-                // we don't process the virtual aspect here, since we have to re-created the whole virtual artifacts, in case they depend on the metadata
-
-                // this.channelAspectProcessor.process ( list, ChannelAspect::getArtifactVirtualizer, virtualizer -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, ae, file, aspectFactoryId ) ) );
 
                 // store
 

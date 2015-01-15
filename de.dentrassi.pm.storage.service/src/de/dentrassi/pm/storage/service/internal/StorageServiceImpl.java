@@ -297,6 +297,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
             channel.getAspects ().add ( aspectFactoryId );
             em.persist ( channel );
+            em.flush ();
 
             new StorageHandlerImpl ( em, this.generatorProcessor ).reprocessAspect ( channel, aspectFactoryId );
         } );
@@ -309,6 +310,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
             channel.getAspects ().remove ( aspectFactoryId );
             em.persist ( channel );
+            em.flush ();
 
             {
                 final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
