@@ -1,6 +1,8 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 <%@attribute name="title" required="true" %>
+<%@attribute name="subtitle" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html>
 
@@ -59,14 +61,8 @@
 </div>
 </nav>
 
-<div class="container-fluid">
-    <div class="row">
-	    <div class="col-xs-12 main-title">
-	    	<header>
-				<h1><%= title %></h1>
-			</header>
-	    </div>
-    </div>
+<div class="page-header">
+<h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
 </div>
 
 <section>

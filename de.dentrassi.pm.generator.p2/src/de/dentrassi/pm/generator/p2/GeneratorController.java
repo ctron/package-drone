@@ -69,7 +69,7 @@ public class GeneratorController
         }
 
         final FeatureData data = new FeatureData ();
-        MetaKeys.bind ( data, art.getMetaData () );
+        MetaKeys.bind ( data, art.getInformation ().getMetaData () );
 
         model.put ( "command", data );
 

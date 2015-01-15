@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -44,12 +46,13 @@ import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
-import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
-import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
+import de.dentrassi.pm.storage.jpa.PropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -189,7 +192,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         logger.trace ( "Convert to simple: {}", ae.getId () );
 
-        return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), isDerived ( ae ) );
+        return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ) );
     }
 
     private ChannelImpl convert ( final ChannelEntity ce )
@@ -208,9 +211,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return null;
         }
 
-        logger.trace ( "Loading meta data" );
-        final Map<MetaKey, String> metadata = convertMetaData ( ae );
-
         if ( logger.isTraceEnabled () )
         {
             logger.trace ( "Converting entity: {}", ae.getClass () );
@@ -223,25 +223,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         if ( ae instanceof GeneratorArtifactEntity )
         {
-            final LinkedList<LinkTarget> targets = new LinkedList<> ();
-            this.generatorProcessor.process ( ( (GeneratorArtifactEntity)ae ).getGeneratorId (), ( gen ) -> targets.add ( gen.getEditTarget ( ae.getId () ) ) );
-            final LinkTarget target = targets.isEmpty () ? null : targets.getFirst ();
-            return new GeneratorArtifactImpl ( channel, ae.getId (), ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), target );
+            final LinkTarget[] targets = new LinkTarget[1];
+            this.generatorProcessor.process ( ( (GeneratorArtifactEntity)ae ).getGeneratorId (), ( gen ) -> targets[0] = gen.getEditTarget ( ae.getId () ) );
+            return new GeneratorArtifactImpl ( channel, ae.getId (), convert ( ae ), targets[0] );
         }
         else
         {
-            final boolean stored = ae instanceof StoredArtifactEntity;
-            final boolean derived = isDerived ( ae );
-            String parentId = null;
-            if ( ae instanceof ChildArtifactEntity )
-            {
-                final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
-                if ( parent != null )
-                {
-                    parentId = parent.getId ();
-                }
-            }
-            return new ArtifactImpl ( channel, ae.getId (), parentId, ae.getName (), ae.getSize (), metadata, ae.getCreationTimestamp (), derived, false, stored );
+            return new ArtifactImpl ( channel, ae.getId (), convert ( ae ) );
         }
     }
 
@@ -288,7 +276,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public SimpleArtifactInformation deleteArtifact ( final String artifactId )
     {
         return doWithTransaction ( em -> {
-            return new StorageHandlerImpl ( em, this.generatorProcessor ).deleteArtifact ( artifactId );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            return hi.deleteArtifact ( artifactId );
         } );
     }
 
@@ -336,14 +325,29 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             }
 
             {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
+                q.setParameter ( "factoryId", aspectFactoryId );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+            }
+
+            {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ProvidedChannelPropertyEntity.class.getSimpleName () ) );
+                q.setParameter ( "factoryId", aspectFactoryId );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+            }
+
+            {
                 final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
                 q.setParameter ( "factoryId", aspectFactoryId );
                 q.setParameter ( "channelId", channelId );
                 q.executeUpdate ();
             }
 
-            new StorageHandlerImpl ( em, this.generatorProcessor ).recreateAllVirtualArtifacts ( channel );
-
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            hi.recreateAllVirtualArtifacts ( channel );
+            hi.runChannelAggregators ( channel );
         } );
     }
 
@@ -384,7 +388,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public SimpleArtifactInformation getArtifactInformation ( final String artifactId )
+    public ArtifactInformation getArtifactInformation ( final String artifactId )
     {
         return doWithTransaction ( em -> convert ( getArtifact ( em, artifactId ) ) );
     }
@@ -410,18 +414,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
             final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
 
-            // apply
-            for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
-            {
-                if ( entry.getValue () == null )
-                {
-                    result.remove ( entry.getKey () );
-                }
-                else
-                {
-                    result.put ( entry.getKey (), entry.getValue () );
-                }
-            }
+            // merge
+
+            mergeMetaData ( metadata, result );
 
             // first clear all
 
@@ -454,11 +449,67 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    private Map<MetaKey, String> convert ( final Collection<? extends ArtifactPropertyEntity> properties )
+    public Map<MetaKey, String> applyChannelMetaData ( final String channelId, final Map<MetaKey, String> metadata )
+    {
+        return doWithTransaction ( em -> {
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            final Map<MetaKey, String> result = convert ( channel.getProvidedProperties () );
+
+            // merge
+
+            mergeMetaData ( metadata, result );
+
+            // first clear all
+
+            channel.getProvidedProperties ().clear ();
+
+            em.persist ( channel );
+            em.flush ();
+
+            // now add the new set
+
+            Helper.convertProvidedProperties ( result, channel, channel.getProvidedProperties () );
+
+            // store
+
+            em.persist ( channel );
+            em.flush ();
+
+            // re-run channel aggregators
+
+            hi.runChannelAggregators ( channel );
+
+            return result;
+        } );
+    }
+
+    protected void mergeMetaData ( final Map<MetaKey, String> metadata, final Map<MetaKey, String> result )
+    {
+        for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
+        {
+            if ( entry.getValue () == null )
+            {
+                result.remove ( entry.getKey () );
+            }
+            else
+            {
+                result.put ( entry.getKey (), entry.getValue () );
+            }
+        }
+    }
+
+    public SortedMap<MetaKey, String> getChannelMetaData ( final String id )
+    {
+        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor ).getChannelMetaData ( id ) );
+    }
+
+    private Map<MetaKey, String> convert ( final Collection<? extends PropertyEntity> properties )
     {
         final Map<MetaKey, String> result = new HashMap<MetaKey, String> ( properties.size () );
 
-        for ( final ArtifactPropertyEntity ape : properties )
+        for ( final PropertyEntity ape : properties )
         {
             result.put ( new MetaKey ( ape.getNamespace (), ape.getKey () ), ape.getValue () );
         }
@@ -495,6 +546,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             final Query q = em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
             q.setParameter ( "channelId", channelId );
             q.executeUpdate ();
+            new StorageHandlerImpl ( em, this.generatorProcessor ).runChannelAggregators ( channelId );
         } );
     }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.p2.aspect">
-   <implementation class="de.dentrassi.pm.p2.aspect.P2Aspect"/>
+   <implementation class="de.dentrassi.pm.p2.aspect.P2RepositoryAspect"/>
    <service>
       <provide interface="de.dentrassi.pm.aspect.ChannelAspectFactory"/>
    </service>

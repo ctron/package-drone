@@ -49,7 +49,7 @@ public class MetadataHandler extends AbstractRepositoryHandler
 
         for ( final Artifact artifact : this.channel.getArtifacts () )
         {
-            final String ft = artifact.getMetaData ().get ( new MetaKey ( "p2.repo", "fragment-type" ) );
+            final String ft = artifact.getInformation ().getMetaData ().get ( new MetaKey ( "p2.repo", "fragment-type" ) );
 
             if ( "metadata".equals ( ft ) )
             {

@@ -35,8 +35,11 @@ Export-Package: de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.osgi.web.controller.binding;version="1.0.0",
  de.dentrassi.osgi.web.controller.form;version="1.0.0",
  de.dentrassi.osgi.web.controller.routing;version="1.0.0",
- de.dentrassi.osgi.web.interceptor;version="1.0.0"
+ de.dentrassi.osgi.web.interceptor;version="1.0.0",
+ de.dentrassi.osgi.web.tags;version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.mortbay.jasper.apache-el;bundle-version="8.0.9";visibility:=reexport,
  org.mortbay.jasper.apache-jsp;bundle-version="8.0.9";visibility:=reexport
 Bundle-Activator: de.dentrassi.osgi.web.internal.Activator
+Web-Export-Taglib: META-INF/web.tld
+

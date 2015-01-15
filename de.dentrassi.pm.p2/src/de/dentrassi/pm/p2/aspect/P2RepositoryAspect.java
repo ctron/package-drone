@@ -12,9 +12,10 @@ package de.dentrassi.pm.p2.aspect;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.extract.Extractor;
 
-public class P2Aspect implements ChannelAspectFactory
+public class P2RepositoryAspect implements ChannelAspectFactory
 {
     public static final String ID = "p2.repo";
 
@@ -33,6 +34,12 @@ public class P2Aspect implements ChannelAspectFactory
             public Extractor getExtractor ()
             {
                 return new ExtractorImpl ( this );
+            }
+
+            @Override
+            public ChannelAggregator getChannelAggregator ()
+            {
+                return new P2RepoChannelAggregator ();
             }
         };
     }

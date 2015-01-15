@@ -10,11 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.internal;
 
-import java.util.Date;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
@@ -26,65 +24,32 @@ public class ArtifactImpl implements Artifact
 
     protected final ChannelImpl channel;
 
-    protected final long size;
+    private final ArtifactInformation information;
 
-    protected final String name;
-
-    protected final SortedMap<MetaKey, String> metaData;
-
-    private final boolean derived;
-
-    private final boolean generator;
-
-    private final Date creationTimestamp;
-
-    private final boolean stored;
-
-    private final String parentId;
-
-    public ArtifactImpl ( final ChannelImpl channel, final String id, final String parentId, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final boolean derived, final boolean generator, final boolean stored )
+    public ArtifactImpl ( final ChannelImpl channel, final String id, final ArtifactInformation information )
     {
         this.id = id;
         this.channel = channel;
-        this.name = name;
-        this.size = size;
-        this.metaData = new TreeMap<MetaKey, String> ( metaData );
-        this.derived = derived;
-        this.generator = generator;
-        this.stored = stored;
-        this.creationTimestamp = creationTimestamp;
-        this.parentId = parentId;
+        this.information = information;
     }
 
     @Override
-    public String getParentId ()
+    public ArtifactInformation getInformation ()
     {
-        return this.parentId;
+        return this.information;
     }
 
     @Override
     public Artifact getParent ()
     {
-        if ( this.parentId == null )
+        if ( this.information.getParentId () == null )
         {
             return null;
         }
         else
         {
-            return this.channel.getService ().getArtifact ( this.parentId );
+            return this.channel.getService ().getArtifact ( this.information.getParentId () );
         }
-    }
-
-    @Override
-    public boolean isStored ()
-    {
-        return this.stored;
-    }
-
-    @Override
-    public String getName ()
-    {
-        return this.name;
     }
 
     @Override
@@ -100,55 +65,14 @@ public class ArtifactImpl implements Artifact
     }
 
     @Override
-    public long getSize ()
-    {
-        return this.size;
-    }
-
-    @Override
     public void streamData ( final ArtifactReceiver consumer )
     {
         this.channel.streamData ( this.id, consumer );
     }
 
     @Override
-    public SortedMap<MetaKey, String> getMetaData ()
-    {
-        return this.metaData;
-    }
-
-    @Override
-    public int compareTo ( final Artifact o )
-    {
-        if ( o == null )
-        {
-            return 1;
-        }
-
-        return this.id.compareTo ( o.getId () );
-    }
-
-    @Override
     public void applyMetaData ( final Map<MetaKey, String> metadata )
     {
         this.channel.getService ().applyMetaData ( this.id, metadata );
-    }
-
-    @Override
-    public boolean isDerived ()
-    {
-        return this.derived;
-    }
-
-    @Override
-    public boolean isGenerator ()
-    {
-        return this.generator;
-    }
-
-    @Override
-    public Date getCreationTimestamp ()
-    {
-        return this.creationTimestamp;
     }
 }

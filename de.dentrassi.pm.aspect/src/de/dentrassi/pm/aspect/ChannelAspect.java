@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect;
 
+import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
@@ -43,6 +44,15 @@ public interface ChannelAspect
      * @return a virtualizer or <code>nulll</code>
      */
     public default Virtualizer getArtifactVirtualizer ()
+    {
+        return null;
+    }
+
+    /**
+     * @return an aggregator which works on the whole channel, or
+     *         <code>null</code>
+     */
+    public default ChannelAggregator getChannelAggregator ()
     {
         return null;
     }

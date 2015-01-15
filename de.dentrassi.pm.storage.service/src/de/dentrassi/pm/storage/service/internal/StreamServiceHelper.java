@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,8 +21,11 @@ import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
 
@@ -32,10 +35,12 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
-import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
-import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
-import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
+import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
+import de.dentrassi.pm.storage.jpa.PropertyEntity;
+import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 
 public interface StreamServiceHelper
 {
@@ -90,14 +95,24 @@ public interface StreamServiceHelper
 
     default SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
     {
+        return convertMetaData ( ae.getExtractedProperties (), ae.getProvidedProperties () );
+    }
+
+    default SortedMap<MetaKey, String> convertMetaData ( final ChannelEntity ce )
+    {
+        return convertMetaData ( ce.getExtractedProperties (), ce.getProvidedProperties () );
+    }
+
+    default SortedMap<MetaKey, String> convertMetaData ( final Collection<? extends PropertyEntity> extracted, final Collection<? extends PropertyEntity> provided )
+    {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        for ( final ArtifactPropertyEntity entry : ae.getExtractedProperties () )
+        for ( final PropertyEntity entry : extracted )
         {
             metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
         }
 
-        for ( final ArtifactPropertyEntity entry : ae.getProvidedProperties () )
+        for ( final PropertyEntity entry : provided )
         {
             metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
         }
@@ -112,7 +127,34 @@ public interface StreamServiceHelper
             return null;
         }
 
-        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), isDerived ( ae ), convertMetaData ( ae ) );
+        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), convertMetaData ( ae ) );
+    }
+
+    default Set<String> getArtifactFacets ( final ArtifactEntity ae )
+    {
+        final Set<String> result = new TreeSet<> ();
+
+        if ( ae instanceof GeneratorArtifactEntity )
+        {
+            result.add ( "generator" );
+        }
+
+        if ( isDeleteable ( ae ) )
+        {
+            result.add ( "deletable" );
+        }
+
+        if ( ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity && ! ( ae instanceof GeneratorArtifactEntity ) )
+        {
+            result.add ( "parentable" );
+        }
+
+        return result;
+    }
+
+    default boolean isDeleteable ( final ArtifactEntity ae )
+    {
+        return ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity;
     }
 
     default String getParentId ( final ArtifactEntity ae )
@@ -127,11 +169,6 @@ public interface StreamServiceHelper
             }
         }
         return parentId;
-    }
-
-    default boolean isDerived ( final ArtifactEntity ae )
-    {
-        return ae instanceof VirtualArtifactEntity || ae instanceof GeneratedArtifactEntity;
     }
 
 }

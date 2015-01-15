@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.jpa;
 
+import static javax.persistence.CascadeType.ALL;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +48,12 @@ public class ChannelEntity
     @CollectionTable ( name = "CHANNEL_ASPECTS", joinColumns = @JoinColumn ( name = "CHANNEL_ID", nullable = false ) )
     @Column ( nullable = false, unique = true, name = "ASPECT" )
     private List<String> aspects = new ArrayList<> ();
+
+    @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "channel" )
+    private Collection<ExtractedChannelPropertyEntity> extractedProperties = new LinkedList<> ();
+
+    @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "channel" )
+    private Collection<ProvidedChannelPropertyEntity> providedProperties = new LinkedList<> ();
 
     public void setId ( final String id )
     {
@@ -83,6 +93,26 @@ public class ChannelEntity
     public void setAspects ( final List<String> aspects )
     {
         this.aspects = aspects;
+    }
+
+    public Collection<ExtractedChannelPropertyEntity> getExtractedProperties ()
+    {
+        return this.extractedProperties;
+    }
+
+    public void setExtractedProperties ( final Collection<ExtractedChannelPropertyEntity> extractedProperties )
+    {
+        this.extractedProperties = extractedProperties;
+    }
+
+    public Collection<ProvidedChannelPropertyEntity> getProvidedProperties ()
+    {
+        return this.providedProperties;
+    }
+
+    public void setProvidedProperties ( final Collection<ProvidedChannelPropertyEntity> providedProperties )
+    {
+        this.providedProperties = providedProperties;
     }
 
     @Override

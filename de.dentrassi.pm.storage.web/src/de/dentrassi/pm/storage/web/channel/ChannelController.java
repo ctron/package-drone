@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -143,6 +143,25 @@ public class ChannelController implements MenuExtender
 
         result.put ( "channel", channel );
         result.put ( "sortedArtifacts", sortedArtifacts );
+
+        return result;
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/details", method = RequestMethod.GET )
+    public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final ModelAndView result = new ModelAndView ( "channel/details" );
+
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+        }
+
+        final List<SimpleArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getSimpleArtifacts () );
+        sortedArtifacts.sort ( SimpleArtifactInformation.NAME_COMPARATOR );
+
+        result.put ( "channel", channel );
 
         return result;
     }

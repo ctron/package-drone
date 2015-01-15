@@ -9,5 +9,6 @@ Import-Package: de.dentrassi.osgi.converter;version="1.0.0",
  javax.persistence;version="2.0.0",
  javax.servlet.http;version="3.1.0"
 Export-Package: de.dentrassi.pm.common;version="1.0.0";uses:="org.w3c.dom",
+ de.dentrassi.pm.common.event;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0";uses:="javax.persistence",
  de.dentrassi.pm.common.servlet;version="1.0.0";uses:="javax.servlet.http"

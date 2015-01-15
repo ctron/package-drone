@@ -12,6 +12,9 @@
 		<class>de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ChildArtifactEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.AttachedArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ChannelPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity</class>
 		<properties>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
 			<property name="eclipselink.weaving" value="true"/>

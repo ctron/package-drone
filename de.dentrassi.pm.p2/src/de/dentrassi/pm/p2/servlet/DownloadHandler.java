@@ -69,7 +69,7 @@ public class DownloadHandler implements Handler
         // TODO: speed up search
         for ( final Artifact a : this.channel.getArtifacts () )
         {
-            final Map<MetaKey, String> md = a.getMetaData ();
+            final Map<MetaKey, String> md = a.getInformation ().getMetaData ();
 
             final String thisClassifier = md.get ( new MetaKey ( "osgi", OsgiExtractor.KEY_CLASSIFIER ) );
             final String thisName = md.get ( new MetaKey ( "osgi", OsgiExtractor.KEY_NAME ) );

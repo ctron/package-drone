@@ -7,7 +7,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 
-<h:main title="Channel - ${pm:channel(channel) }">
+<h:main title="Channel" subtitle="${pm:channel(channel) }">
 
 <style type="text/css">
 .dz-progress {
@@ -74,10 +74,10 @@
 	   <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
 	</li>
 	
-	<li id="upload-refresh" style="display: none;"><a class="btn btn-primary" href="">Reload</a></li>
+	<li id="upload-refresh" style="display: none;"><a class="btn btn-success" href="">Reload</a></li>
 </ul>
 
-<div class="container-fluid">
+<div class="container-fluid" id="upload-container" style="display:none;">
 <div class="row">
 <div class="col-md-6">
 <div id="upload"></div>
@@ -85,7 +85,7 @@
 </div>
 </div>
 
-<div></div>
+<h:channelNav channel="${channel}"/>
 
 <table class="table table-striped table-condensed">
 
@@ -109,7 +109,7 @@
 		<td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
 		<td>
-		  <c:if test="${not artifact.derived }"><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+		  <c:if test='${artifact.is("deletable")}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
 		</td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
 		<td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>
@@ -135,10 +135,11 @@ var dz = new Dropzone ( "#dropzone", {
 dz.on ( "queuecomplete", function () {
 	document.getElementById("upload-refresh").setAttribute("style", "");
 });
+
+dz.on ( "addedfile", function () {
+	$( "#upload-container" ).show ();
+});
 </script>
-
-<%-- previewTemplate: "<div class='dz-preview'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> <div class='dz-progress'><div class='dz-upload' data-dz-uploadprogress></div></div> <div class='alert alert-danger' role='alert' data-dz-errormessage></div></div>"  -->
-
 <%-- END: drag and drop upload --%>
 
 </h:main>

@@ -75,7 +75,7 @@ public final class DownloadHelper
 
     private static String getMimeType ( final Artifact artifact )
     {
-        final String mimetype = artifact.getMetaData ().get ( new MetaKey ( "mime", "type" ) );
+        final String mimetype = artifact.getInformation ().getMetaData ().get ( new MetaKey ( "mime", "type" ) );
         return mimetype == null ? APPLICATION_OCTET_STREAM : mimetype;
     }
 }

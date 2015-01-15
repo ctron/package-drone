@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,11 +24,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -49,12 +52,13 @@ import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
-import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.event.AddedEvent;
+import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.StorageAccessor;
@@ -71,6 +75,81 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 {
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
+
+    private class ArtifactContextImpl implements Virtualizer.Context, GenerationContext
+    {
+        private final ChannelEntity channel;
+
+        private final Path file;
+
+        private final ArtifactInformation info;
+
+        private final EntityManager em;
+
+        private final Supplier<ArtifactEntity> entitySupplier;
+
+        private ArtifactContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
+        {
+            this.channel = channel;
+            this.file = file;
+            this.info = info;
+            this.em = em;
+            this.entitySupplier = entitySupplier;
+        }
+
+        @Override
+        public ArtifactInformation getOtherArtifactInformation ( final String artifactId )
+        {
+            if ( artifactId == null )
+            {
+                return null;
+            }
+
+            return convert ( this.em.find ( ArtifactEntity.class, artifactId ) );
+        }
+
+        @Override
+        public ArtifactInformation getArtifactInformation ()
+        {
+            return this.info;
+        }
+
+        @Override
+        public Path getFile ()
+        {
+            return this.file;
+        }
+
+        @Override
+        public void createVirtualArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+        {
+            try
+            {
+                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+            finally
+            {
+                try
+                {
+                    stream.close ();
+                }
+                catch ( final IOException e )
+                {
+                    // ignore this one
+                }
+            }
+        }
+
+        @Override
+        public StorageAccessor getStorage ()
+        {
+            return StorageHandlerImpl.this;
+        }
+    }
 
     private final EntityManager em;
 
@@ -173,81 +252,6 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         this.generatorProcessor.process ( generatorId, ctx );
     }
 
-    private class ArtifactContextImpl implements Virtualizer.Context, GenerationContext
-    {
-        private final ChannelEntity channel;
-
-        private final Path file;
-
-        private final ArtifactInformation info;
-
-        private final EntityManager em;
-
-        private final Supplier<ArtifactEntity> entitySupplier;
-
-        private ArtifactContextImpl ( final ChannelEntity channel, final Path file, final ArtifactInformation info, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
-        {
-            this.channel = channel;
-            this.file = file;
-            this.info = info;
-            this.em = em;
-            this.entitySupplier = entitySupplier;
-        }
-
-        @Override
-        public ArtifactInformation getOtherArtifactInformation ( final String artifactId )
-        {
-            if ( artifactId == null )
-            {
-                return null;
-            }
-
-            return convert ( this.em.find ( ArtifactEntity.class, artifactId ) );
-        }
-
-        @Override
-        public ArtifactInformation getArtifactInformation ()
-        {
-            return this.info;
-        }
-
-        @Override
-        public Path getFile ()
-        {
-            return this.file;
-        }
-
-        @Override
-        public void createVirtualArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
-        {
-            try
-            {
-                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( e );
-            }
-            finally
-            {
-                try
-                {
-                    stream.close ();
-                }
-                catch ( final IOException e )
-                {
-                    // ignore this one
-                }
-            }
-        }
-
-        @Override
-        public StorageAccessor getStorage ()
-        {
-            return StorageHandlerImpl.this;
-        }
-    }
-
     private ArtifactContextImpl createGeneratedContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
     {
         final ArtifactInformation info = convert ( artifact );
@@ -280,7 +284,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 }
             }
 
-            final Map<MetaKey, String> metadata = extractMetaData ( em, channel, file );
+            final SortedMap<MetaKey, String> metadata = extractMetaData ( em, channel, file );
 
             ArtifactEntity ae;
             try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
@@ -292,13 +296,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             {
                 generateArtifact ( channel, (GeneratorArtifactEntity)ae, file );
             }
+
             createVirtualArtifacts ( channel, ae, file );
 
-            final SimpleArtifactInformation a = convert ( ae );
+            runGeneratorTriggers ( channel, new AddedEvent ( metadata ) );
 
-            // now run the post add trigger
-            final AddedContextImpl ctx = new AddedContextImpl ( a, metadata, file, this );
-            runChannelTriggers ( channel, listener -> listener.artifactAdded ( ctx ), ctx );
+            // now run the channel aggregator
+            runChannelAggregators ( channel );
 
             return ae;
         }
@@ -326,9 +330,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    protected Map<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final Path file )
+    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final Path file )
     {
-        final Map<MetaKey, String> metadata = new HashMap<> ();
+        final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
         Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getExtractor, extractor -> {
             try
@@ -336,7 +340,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( file, md );
 
-                convertMetaDataFromExtractor ( metadata, extractor, md );
+                convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
             }
             catch ( final Exception e )
             {
@@ -347,12 +351,16 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return metadata;
     }
 
-    private void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final Extractor extractor, final Map<String, String> md )
+    private static void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
     {
-        final String ns = extractor.getAspect ().getId ();
+        if ( md == null )
+        {
+            return;
+        }
+
         for ( final Map.Entry<String, String> mde : md.entrySet () )
         {
-            metadata.put ( new MetaKey ( ns, mde.getKey () ), mde.getValue () );
+            metadata.put ( new MetaKey ( namespace, mde.getKey () ), mde.getValue () );
         }
     }
 
@@ -431,6 +439,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             }
 
             regenerateArtifact ( (GeneratorArtifactEntity)ae );
+            runChannelAggregators ( ae.getChannel () );
         }
         catch ( final Exception e )
         {
@@ -438,7 +447,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    public SimpleArtifactInformation deleteArtifact ( final String artifactId )
+    public ArtifactInformation deleteArtifact ( final String artifactId )
     {
         final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
         if ( ae == null )
@@ -446,32 +455,20 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             return null; // silently ignore
         }
 
-        if ( ae instanceof VirtualArtifactEntity && ( (VirtualArtifactEntity)ae ).getParent () != null )
+        if ( !isDeleteable ( ae ) )
         {
-            throw new IllegalStateException ( String.format ( "Unable to delete virtual artifact of %s (%s)", ae.getName (), ae.getId () ) );
+            throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
         }
-
-        if ( ae instanceof GeneratedArtifactEntity && ( (GeneratedArtifactEntity)ae ).getParent () != null )
-        {
-            throw new IllegalStateException ( String.format ( "Unable to delete generated artifact of %s (%s)", ae.getName (), ae.getId () ) );
-        }
-
-        final SimpleArtifactInformation info = convert ( ae );
-
-        final String name = ae.getName ();
-        final Map<MetaKey, String> metadata = convertMetaData ( ae );
-
-        final ChannelEntity channel = ae.getChannel ();
 
         this.em.remove ( ae );
         this.em.flush ();
 
-        // now run the post add trigger
+        runGeneratorTriggers ( ae.getChannel (), new RemovedEvent ( convertMetaData ( ae ) ) );
 
-        final RemovedContextImpl ctx = new RemovedContextImpl ( artifactId, name, metadata, this, channel.getId () );
-        runChannelTriggers ( channel, listener -> listener.artifactRemoved ( ctx ), ctx );
+        // now run the channel aggregator
+        runChannelAggregators ( ae.getChannel () );
 
-        return info;
+        return convert ( ae );
     }
 
     private void runGeneratorTriggers ( final ChannelEntity channel, final Object event )
@@ -497,6 +494,59 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 } );
             }
         } );
+    }
+
+    public void runChannelAggregators ( final ChannelEntity channel )
+    {
+        logger.info ( "Running channel aggregators - channelId: {}", channel.getId () );
+
+        final Map<MetaKey, String> metadata = new HashMap<> ();
+
+        final AggregationContext context = createAggregationContext ( channel );
+
+        this.channelAspectProcessor.process ( channel.getAspects (), ChannelAspect::getChannelAggregator, aggregator -> {
+            try
+            {
+                final Map<String, String> md = aggregator.aggregateMetaData ( context );
+                convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aggregator.getId () ), e );
+            }
+        } );
+
+        // clear
+
+        channel.getExtractedProperties ().clear ();
+
+        this.em.persist ( channel );
+        this.em.flush ();
+
+        // set
+
+        Helper.convertExtractedProperties ( metadata, channel, channel.getExtractedProperties () );
+
+        this.em.persist ( channel );
+        this.em.flush ();
+    }
+
+    private AggregationContext createAggregationContext ( final ChannelEntity channel )
+    {
+        final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
+        return new AggregationContext () {
+
+            @Override
+            public Collection<ArtifactInformation> getArtifacts ()
+            {
+                return artifacts;
+            }
+        };
+    }
+
+    public void runChannelAggregators ( final String channelId )
+    {
+        runChannelAggregators ( getCheckedChannel ( channelId ) );
     }
 
     protected void reprocessAspect ( final ChannelEntity channel, final String aspectFactoryId ) throws Exception
@@ -528,7 +578,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                     {
                         final Map<String, String> md = new HashMap<> ();
                         extractor.extractMetaData ( file, md );
-                        convertMetaDataFromExtractor ( metadata, extractor, md );
+                        convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
                     catch ( final Exception e )
                     {
@@ -537,6 +587,11 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 } );
 
                 // add metadata first, since the virtualizers might need it
+
+                ae.getExtractedProperties ().clear ();
+
+                this.em.persist ( ae );
+                this.em.flush ();
 
                 Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
 
@@ -556,6 +611,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // re-create virtual artifacts
 
         createAllVirtualArtifacts ( channel );
+        runChannelAggregators ( channel );
     }
 
     public void scanArtifacts ( final String channelId, final ThrowingConsumer<ArtifactEntity> consumer )
@@ -615,10 +671,10 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         logger.trace ( "Scan complete" );
     }
 
-    public <T extends Comparable<? super T>> Set<T> listArtifacts ( final String channelId, final Function<ArtifactEntity, T> mapper )
+    public <T extends Comparable<? super T>> Set<T> listArtifacts ( final ChannelEntity ce, final Function<ArtifactEntity, T> mapper )
     {
         final Set<T> result = new TreeSet<> ();
-        scanArtifacts ( channelId, ( ae ) -> {
+        scanArtifacts ( ce, ( ae ) -> {
             final T t = mapper.apply ( ae );
             if ( t != null )
             {
@@ -628,10 +684,20 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return result;
     }
 
+    public <T extends Comparable<? super T>> Set<T> listArtifacts ( final String channelId, final Function<ArtifactEntity, T> mapper )
+    {
+        return listArtifacts ( getCheckedChannel ( channelId ), mapper );
+    }
+
     @Override
     public Set<ArtifactInformation> getArtifacts ( final String channelId )
     {
-        return listArtifacts ( channelId, ( ae ) -> convert ( ae ) );
+        return listArtifacts ( getCheckedChannel ( channelId ), ( ae ) -> convert ( ae ) );
+    }
+
+    protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity ce )
+    {
+        return listArtifacts ( ce, ( ae ) -> convert ( ae ) );
     }
 
     public void recreateVirtualArtifacts ( final ArtifactEntity artifact )
@@ -721,4 +787,16 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         return newArtifact;
     }
+
+    public SortedMap<MetaKey, String> getChannelMetaData ( final String channelId )
+    {
+        final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
+        if ( channel == null )
+        {
+            return null;
+        }
+
+        return convertMetaData ( channel );
+    }
+
 }

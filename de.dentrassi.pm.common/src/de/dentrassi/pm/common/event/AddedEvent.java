@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,13 +8,16 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.listener;
+package de.dentrassi.pm.common.event;
 
-public class ChannelListenerAdapter implements ChannelListener
+import java.util.SortedMap;
+
+import de.dentrassi.pm.common.MetaKey;
+
+public class AddedEvent extends ArtifactEvent
 {
-
-    @Override
-    public void artifactPreAdd ( final PreAddContext context )
+    public AddedEvent ( final SortedMap<MetaKey, String> metaData )
     {
+        super ( metaData );
     }
 }

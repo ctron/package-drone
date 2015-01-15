@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,10 +11,9 @@
 package de.dentrassi.pm.storage;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Map;
-import java.util.SortedMap;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 
 public interface Artifact extends Comparable<Artifact>
@@ -23,34 +22,31 @@ public interface Artifact extends Comparable<Artifact>
 
     public String getId ();
 
-    public long getSize ();
-
-    public String getName ();
-
-    public Date getCreationTimestamp ();
-
     public void streamData ( ArtifactReceiver receiver );
-
-    public SortedMap<MetaKey, String> getMetaData ();
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
 
-    public boolean isDerived ();
-
-    public boolean isGenerator ();
-
-    public boolean isStored ();
-
     public Artifact getParent ();
 
-    public String getParentId ();
+    public ArtifactInformation getInformation ();
+
+    @Override
+    default public int compareTo ( final Artifact o )
+    {
+        if ( o == null )
+        {
+            return 1;
+        }
+
+        return getId ().compareTo ( o.getId () );
+    }
 
     public static Comparator<Artifact> NAME_COMPARATOR = new Comparator<Artifact> () {
 
         @Override
         public int compare ( final Artifact o1, final Artifact o2 )
         {
-            final int result = o1.getName ().compareTo ( o2.getName () );
+            final int result = o1.getInformation ().getName ().compareTo ( o2.getInformation ().getName () );
             if ( result != 0 )
             {
                 return result;

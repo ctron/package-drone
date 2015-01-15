@@ -10,20 +10,17 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.internal;
 
-import java.util.Date;
-import java.util.Map;
-
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.storage.GeneratorArtifact;
 
 public class GeneratorArtifactImpl extends ArtifactImpl implements GeneratorArtifact
 {
     private final LinkTarget editTarget;
 
-    public GeneratorArtifactImpl ( final ChannelImpl channel, final String id, final String name, final long size, final Map<MetaKey, String> metaData, final Date creationTimestamp, final LinkTarget editTarget )
+    public GeneratorArtifactImpl ( final ChannelImpl channel, final String id, final ArtifactInformation information, final LinkTarget editTarget )
     {
-        super ( channel, id, null, name, size, metaData, creationTimestamp, false, true, false );
+        super ( channel, id, information );
         this.editTarget = editTarget;
     }
 

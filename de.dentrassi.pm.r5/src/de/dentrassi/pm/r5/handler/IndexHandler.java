@@ -75,7 +75,7 @@ public class IndexHandler implements Handler
 
     private void process ( final Element rep, final Artifact a )
     {
-        final SortedMap<MetaKey, String> md = a.getMetaData ();
+        final SortedMap<MetaKey, String> md = a.getInformation ().getMetaData ();
 
         final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( md );
 
@@ -152,7 +152,7 @@ public class IndexHandler implements Handler
 
     private void addContent ( final Element r, final Artifact a, final String channelId )
     {
-        final String sha256 = a.getMetaData ().get ( new MetaKey ( "hasher", "sha256" ) );
+        final String sha256 = a.getInformation ().getMetaData ().get ( new MetaKey ( "hasher", "sha256" ) );
 
         if ( sha256 == null )
         {
@@ -162,9 +162,9 @@ public class IndexHandler implements Handler
         final Map<String, Object> caps = new HashMap<> ();
 
         caps.put ( "osgi.content", sha256 );
-        caps.put ( "size", a.getSize () );
+        caps.put ( "size", a.getInformation ().getSize () );
         caps.put ( "mime", "application/vnd.osgi.bundle" );
-        caps.put ( "url", channelId + "/artifact/" + a.getId () + "/" + a.getName () );
+        caps.put ( "url", channelId + "/artifact/" + a.getId () + "/" + a.getInformation ().getName () );
 
         addCapability ( r, "osgi.content", caps );
     }

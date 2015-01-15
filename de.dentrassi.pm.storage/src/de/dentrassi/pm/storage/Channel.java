@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -36,4 +37,7 @@ public interface Channel
 
     public Set<SimpleArtifactInformation> getSimpleArtifacts ();
 
+    public SortedMap<MetaKey, String> getMetaData ();
+
+    public void applyMetaData ( Map<MetaKey, String> metadata );
 }

@@ -177,7 +177,7 @@ public class MavenServlet extends HttpServlet
                 final Collection<Artifact> artifacts = channel.findByName ( String.format ( "%s-%s%s.%s", artifactId, value, classifier != null ? "-" + classifier : "", extension ) );
                 for ( final Artifact artifact : artifacts )
                 {
-                    final Map<MetaKey, String> amd = artifact.getMetaData ();
+                    final Map<MetaKey, String> amd = artifact.getInformation ().getMetaData ();
 
                     // check for group id
                     if ( !isSameGroupId ( amd, groupIdXml ) )

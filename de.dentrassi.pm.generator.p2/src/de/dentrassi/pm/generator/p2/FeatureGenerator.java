@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,11 +30,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.aspect.listener.AddedContext;
-import de.dentrassi.pm.aspect.listener.RemovedContext;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.common.event.AddedEvent;
+import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.storage.StorageAccessor;
@@ -157,14 +157,14 @@ public class FeatureGenerator implements ArtifactGenerator
     {
         logger.debug ( "Check if we need to generate: {}", event );
 
-        if ( event instanceof AddedContext )
+        if ( event instanceof AddedEvent )
         {
-            final AddedContext context = (AddedContext)event;
+            final AddedEvent context = (AddedEvent)event;
             return isBundle ( context.getMetaData () );
         }
-        else if ( event instanceof RemovedContext )
+        else if ( event instanceof RemovedEvent )
         {
-            final RemovedContext context = (RemovedContext)event;
+            final RemovedEvent context = (RemovedEvent)event;
             return isBundle ( context.getMetaData () );
         }
         return false;

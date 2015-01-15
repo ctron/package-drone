@@ -70,7 +70,7 @@ public class ArtifactController
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
-        final Map<String, Object> model = new HashMap<String, Object> ();
+        final Map<String, Object> model = new HashMap<String, Object> ( 1 );
         model.put ( "artifact", artifact );
 
         return new ModelAndView ( "artifact/view", model );
@@ -93,7 +93,7 @@ public class ArtifactController
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
-        return new ModelAndView ( "/artifact/attach", "artifact", artifact );
+        return new ModelAndView ( "/artifact/attach", "artifact", artifact.getInformation () );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/attach", method = RequestMethod.POST )

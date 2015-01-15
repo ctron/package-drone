@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,25 +8,14 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.listener;
+package de.dentrassi.osgi.web.tags;
 
-import java.nio.file.Path;
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
-import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.StorageAccessor;
-
-public interface AddedContext
+public class Functions
 {
-    public String getName ();
-
-    public Path getFile ();
-
-    public String getId ();
-
-    public Map<MetaKey, String> getMetaData ();
-
-    public StorageAccessor getStorage ();
-
-    public String getChannelId ();
+    public static String active ( final HttpServletRequest request, final String targetUrl )
+    {
+        return request.getServletPath ().equals ( targetUrl ) ? "active" : "";
+    }
 }

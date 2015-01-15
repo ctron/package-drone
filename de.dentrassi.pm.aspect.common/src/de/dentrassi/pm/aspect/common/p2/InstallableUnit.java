@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.common.osgi;
+package de.dentrassi.pm.aspect.common.p2;
 
 import static de.dentrassi.pm.common.XmlHelper.addElement;
 import static de.dentrassi.pm.common.XmlHelper.fixSize;

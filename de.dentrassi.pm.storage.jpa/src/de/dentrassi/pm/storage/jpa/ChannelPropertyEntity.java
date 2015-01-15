@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,13 +22,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity
-@IdClass ( ArtifactPropertyKey.class )
+@IdClass ( ChannelPropertyKey.class )
 @Inheritance ( strategy = InheritanceType.TABLE_PER_CLASS )
-public abstract class ArtifactPropertyEntity implements PropertyEntity
+public abstract class ChannelPropertyEntity implements PropertyEntity
 {
     @Id
-    @Column ( name = "ART_ID", insertable = false, updatable = false )
-    private String artifactId;
+    @Column ( name = "CHANNEL_ID", insertable = false, updatable = false )
+    private String channelId;
 
     @Id
     @Column ( name = "NS" )
@@ -42,50 +42,44 @@ public abstract class ArtifactPropertyEntity implements PropertyEntity
     private String value;
 
     @ManyToOne ( fetch = LAZY )
-    @JoinColumn ( name = "ART_ID", referencedColumnName = "ID" )
-    private ArtifactEntity artifact;
+    @JoinColumn ( name = "CHANNEL_ID", referencedColumnName = "ID" )
+    private ChannelEntity channel;
 
-    public void setArtifact ( final ArtifactEntity artifact )
+    public void setChannel ( final ChannelEntity channel )
     {
-        this.artifact = artifact;
+        this.channel = channel;
     }
 
-    public ArtifactEntity getArtifact ()
+    public ChannelEntity getChannel ()
     {
-        return this.artifact;
+        return this.channel;
     }
 
-    @Override
     public void setKey ( final String key )
     {
         this.key = key;
     }
 
-    @Override
     public String getKey ()
     {
         return this.key;
     }
 
-    @Override
     public void setNamespace ( final String namespace )
     {
         this.namespace = namespace;
     }
 
-    @Override
     public String getNamespace ()
     {
         return this.namespace;
     }
 
-    @Override
     public void setValue ( final String value )
     {
         this.value = value;
     }
 
-    @Override
     public String getValue ()
     {
         return this.value;

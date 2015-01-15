@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,10 +12,10 @@ package de.dentrassi.pm.common;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
 
 public class SimpleArtifactInformation implements Comparable<SimpleArtifactInformation>
 {
-
     private final long size;
 
     private final String name;
@@ -28,9 +28,9 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
 
     private final Date creationTimestamp;
 
-    private final boolean derived;
+    private final Set<String> facets;
 
-    public SimpleArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final boolean derived )
+    public SimpleArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets )
     {
         this.id = id;
         this.size = size;
@@ -38,12 +38,17 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
         this.channelId = channelId;
         this.parentId = parentId;
         this.creationTimestamp = creationTimestamp;
-        this.derived = derived;
+        this.facets = facets;
     }
 
-    public boolean isDerived ()
+    public Set<String> getFacets ()
     {
-        return this.derived;
+        return this.facets;
+    }
+
+    public boolean is ( final String facet )
+    {
+        return this.facets.contains ( facet );
     }
 
     public Date getCreationTimestamp ()

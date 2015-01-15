@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,13 +8,19 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.listener;
+package de.dentrassi.pm.storage.jpa;
 
-public class ChannelListenerAdapter implements ChannelListener
+public interface PropertyEntity
 {
+    public void setKey ( final String key );
 
-    @Override
-    public void artifactPreAdd ( final PreAddContext context )
-    {
-    }
+    public String getKey ();
+
+    public void setNamespace ( final String namespace );
+
+    public String getNamespace ();
+
+    public void setValue ( final String value );
+
+    public String getValue ();
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,22 +8,24 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.listener;
+package de.dentrassi.pm.common.event;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.SortedMap;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.StorageAccessor;
 
-public interface RemovedContext
+public abstract class ArtifactEvent
 {
-    public String getName ();
+    private final SortedMap<MetaKey, String> metaData;
 
-    public String getId ();
+    public ArtifactEvent ( final SortedMap<MetaKey, String> metaData )
+    {
+        this.metaData = Collections.unmodifiableSortedMap ( metaData );
+    }
 
-    public Map<MetaKey, String> getMetaData ();
-
-    public StorageAccessor getStorage ();
-
-    public String getChannelId ();
+    public SortedMap<MetaKey, String> getMetaData ()
+    {
+        return this.metaData;
+    }
 }
