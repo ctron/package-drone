@@ -61,7 +61,8 @@ div.box > .title {
 /* button bar */
 
 ul.button-bar {
-	padding: 1em;
+	padding-bottom: 1em;
+	padding-left: 1em;
 }
 
 ul.button-bar > li {
@@ -69,7 +70,8 @@ ul.button-bar > li {
 }
 
 .main-title {
-	border-bottom: 1px solid #AAA;
+	border-bottom: 1pt solid #CCC;
+	margin-bottom: 1em;
 }
 
 .main-title header {
@@ -77,8 +79,12 @@ ul.button-bar > li {
 	padding-bottom: 1em;
 }
 
+.main-title h1 {
+	margin-top: 0;
+}
+
 .button-bar {
-	border-bottom: 1px solid #AAA;
+	border-bottom: 1px solid #CCC;
 	padding-bottom: 1em;
 }
 
