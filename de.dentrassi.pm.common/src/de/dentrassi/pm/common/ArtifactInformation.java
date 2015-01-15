@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 
 /**
  * Full artifact information <br/>
@@ -24,16 +25,25 @@ import java.util.SortedMap;
  */
 public class ArtifactInformation extends SimpleArtifactInformation
 {
-    public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets, final SortedMap<MetaKey, String> metaData )
+    private final SortedMap<MetaKey, String> metaData;
+
+    private final SortedSet<String> childIds;
+
+    public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets, final SortedMap<MetaKey, String> metaData, final SortedSet<String> childIds )
     {
         super ( id, parentId, size, name, channelId, creationTimestamp, facets );
         this.metaData = Collections.unmodifiableSortedMap ( metaData );
+        this.childIds = Collections.unmodifiableSortedSet ( childIds );
     }
-
-    private final SortedMap<MetaKey, String> metaData;
 
     public SortedMap<MetaKey, String> getMetaData ()
     {
         return this.metaData;
     }
+
+    public Set<String> getChildIds ()
+    {
+        return this.childIds;
+    }
+
 }

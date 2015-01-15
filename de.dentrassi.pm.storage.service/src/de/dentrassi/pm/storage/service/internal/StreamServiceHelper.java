@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -127,7 +128,13 @@ public interface StreamServiceHelper
             return null;
         }
 
-        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), convertMetaData ( ae ) );
+        final SortedSet<String> childIds = new TreeSet<> ();
+        for ( final ArtifactEntity child : ae.getChildArtifacts () )
+        {
+            childIds.add ( child.getId () );
+        }
+
+        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), convertMetaData ( ae ), childIds );
     }
 
     default Set<String> getArtifactFacets ( final ArtifactEntity ae )
