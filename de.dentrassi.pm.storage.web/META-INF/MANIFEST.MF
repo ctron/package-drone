@@ -62,4 +62,4 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml
 Web-Export-Taglib: WEB-INF/tags/pm.tld
-Export-Package: de.dentrassi.pm.storage.web.tags;version="1.0.0"
+Export-Package: de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"
