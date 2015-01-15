@@ -33,12 +33,15 @@
 }
 
 #dropzone {
-    border: .15em dashed #AAA;
-    border-radius: 2pt;
+    border: 2pt dashed #BBB;
+    border-radius: 3pt;
     
     background: #FAFAFA;
     
-    padding: 0.35em 1em;
+    padding: 6px 12px;
+    
+    text-align: center;
+    vertical-align: middle;
     
     cursor: pointer;
     
