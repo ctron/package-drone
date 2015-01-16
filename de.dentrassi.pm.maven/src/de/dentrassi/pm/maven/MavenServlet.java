@@ -69,6 +69,12 @@ public class MavenServlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
+        if ( "/".equals ( req.getPathInfo () ) )
+        {
+            resp.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
+            resp.setStatus ( HttpServletResponse.SC_OK );
+            return;
+        }
         resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
     }
 

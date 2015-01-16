@@ -135,7 +135,7 @@ public class P2Servlet extends HttpServlet
 
     private void showHelp ( final HttpServletResponse resp ) throws IOException
     {
-        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+        resp.setStatus ( HttpServletResponse.SC_OK );
         resp.getWriter ().println ( "This is the package drone P2 adapter.\n\nAlways know where your towel is!" );
     }
 
