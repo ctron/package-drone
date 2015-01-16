@@ -1,49 +1,32 @@
 package de.dentrassi.pm.testing;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class AbstractServerTest
 {
 
-    private static Process PROCESS;
-
-    @BeforeClass
-    public static void setup () throws IOException, InterruptedException
+    protected URL getUrl () throws MalformedURLException
     {
-        final String javaHome = System.getProperty ( "java.home" );
-    
-        final ProcessBuilder pb = new ProcessBuilder ( "target/instance/server" );
-    
-        pb.environment ().put ( "JAVA_HOME", javaHome );
-    
-        pb.inheritIO ();
-    
-        System.out.println ( "Starting: " + pb );
-        PROCESS = pb.start ();
-        System.out.println ( "Started" );
-    
-        Thread.sleep ( 5000 );
+        return new URL ( getBase () );
     }
 
-    @AfterClass
-    public static void dispose () throws InterruptedException
+    protected String getBase ()
     {
-        System.out.print ( "Terminating server..." );
-        System.out.flush ();
-        if ( !PROCESS.destroyForcibly ().waitFor ( 10, TimeUnit.SECONDS ) )
+        return "http://localhost:8080";
+    }
+
+    protected String resolve ( final String suffix )
+    {
+        try
         {
-            throw new IllegalStateException ( "Failed to terminate process" );
+            return new URI ( getBase () ).resolve ( suffix ).toString ();
         }
-        System.out.println ( "done!" );
+        catch ( final URISyntaxException e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
-
-    public AbstractServerTest ()
-    {
-        super ();
-    }
-
 }
