@@ -71,7 +71,7 @@
 
 <tr><th>Database Schema Version</th><td>${databaseSchemaVersion }</td></tr>
 <tr><th>Current Schema Version</th><td>${currentVersion }</td></tr>
-<tr><th>Service Present</th><td>${servicePresent }</td></tr>
+<tr><th>Service Present</th><td id="service-present">${servicePresent }</td></tr>
 
 </table>
 
