@@ -299,7 +299,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
             createVirtualArtifacts ( channel, ae, file );
 
-            runGeneratorTriggers ( channel, new AddedEvent ( metadata ) );
+            runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
 
             // now run the channel aggregator
             runChannelAggregators ( channel );
@@ -464,10 +464,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
         }
 
+        final SortedMap<MetaKey, String> md = convertMetaData ( ae );
+
         this.em.remove ( ae );
         this.em.flush ();
 
-        runGeneratorTriggers ( ae.getChannel (), new RemovedEvent ( convertMetaData ( ae ) ) );
+        runGeneratorTriggers ( ae.getChannel (), new RemovedEvent ( ae.getId (), md ) );
 
         // now run the channel aggregator
         runChannelAggregators ( ae.getChannel () );

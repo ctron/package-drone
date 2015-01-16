@@ -16,8 +16,8 @@ import de.dentrassi.pm.common.MetaKey;
 
 public class AddedEvent extends ArtifactEvent
 {
-    public AddedEvent ( final SortedMap<MetaKey, String> metaData )
+    public AddedEvent ( final String artifactId, final SortedMap<MetaKey, String> metaData )
     {
-        super ( metaData );
+        super ( artifactId, metaData );
     }
 }

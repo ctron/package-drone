@@ -19,13 +19,27 @@ public abstract class ArtifactEvent
 {
     private final SortedMap<MetaKey, String> metaData;
 
-    public ArtifactEvent ( final SortedMap<MetaKey, String> metaData )
+    private final String artifactId;
+
+    public ArtifactEvent ( final String artifactId, final SortedMap<MetaKey, String> metaData )
     {
+        this.artifactId = artifactId;
         this.metaData = Collections.unmodifiableSortedMap ( metaData );
+    }
+
+    public String getArtifactId ()
+    {
+        return this.artifactId;
     }
 
     public SortedMap<MetaKey, String> getMetaData ()
     {
         return this.metaData;
+    }
+
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[%s - id: %s]", getClass ().getSimpleName (), this.artifactId );
     }
 }

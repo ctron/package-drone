@@ -157,17 +157,21 @@ public class FeatureGenerator implements ArtifactGenerator
     {
         logger.debug ( "Check if we need to generate: {}", event );
 
+        boolean result = false;
         if ( event instanceof AddedEvent )
         {
             final AddedEvent context = (AddedEvent)event;
-            return isBundle ( context.getMetaData () );
+            result = isBundle ( context.getMetaData () );
         }
         else if ( event instanceof RemovedEvent )
         {
             final RemovedEvent context = (RemovedEvent)event;
-            return isBundle ( context.getMetaData () );
+            result = isBundle ( context.getMetaData () );
         }
-        return false;
+
+        logger.debug ( "Result: {}", result );
+
+        return result;
     }
 
     private boolean isBundle ( final Map<MetaKey, String> metaData )
