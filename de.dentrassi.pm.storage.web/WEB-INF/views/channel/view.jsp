@@ -55,7 +55,7 @@ div.dz-error-message {
     text-align: center;
     vertical-align: middle;
     
-    cursor: pointer;
+    cursor: crosshair;
     
      -webkit-touch-callout: none;
     -webkit-user-select: none;
