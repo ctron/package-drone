@@ -26,6 +26,18 @@
     display: inline;
 }
 
+div.dz-error-message {
+    display: none;
+}
+
+.dz-error div.dz-error-message {
+    display: block;
+}
+
+.dz-error-message {
+    padding: 1em;
+}
+
 #upload {
     margin-bottom: 1em;
 }
@@ -63,18 +75,18 @@
 </style>
 
 <ul class="button-bar">
-	<li><a class="btn btn-primary" href="add">Add Artifact</a></li>
+    <li><a class="btn btn-primary" href="add">Add Artifact</a></li>
     <li><a class="btn btn-default" href="edit">Edit Channel</a></li>
     <li><a class="btn btn-default" href="aspects">Configure Aspects</a></li>
     
-	<li><a class="btn btn-danger" href="delete"><span class="glyphicon glyphicon-trash"></span> Delete Channel</a></li>
-	<li><a class="btn btn-warning" href="clear">Clear Channel</a></li>
-	
-	<li>
-	   <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
-	</li>
-	
-	<li id="upload-refresh" style="display: none;"><a class="btn btn-success" href="">Reload</a></li>
+    <li><a class="btn btn-danger" href="delete"><span class="glyphicon glyphicon-trash"></span> Delete Channel</a></li>
+    <li><a class="btn btn-warning" href="clear">Clear Channel</a></li>
+    
+    <li>
+       <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
+    </li>
+    
+    <li id="upload-refresh" style="display: none;"><a class="btn btn-success" href="">Reload</a></li>
 </ul>
 
 <div class="container-fluid" id="upload-container" style="display:none;">
@@ -90,30 +102,30 @@
 <table class="table table-striped table-condensed">
 
 <thead>
-	<tr>
-		<th>Name</th>
-		<th>Size</th>
-		<th>Created</th>
-		<th></th>
-		<th></th>
-		<th></th>
-		<th></th>
-	</tr>
+    <tr>
+        <th>Name</th>
+        <th>Size</th>
+        <th>Created</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
 </thead>
 
 <tbody>
 <c:forEach items="${sortedArtifacts }" var="artifact">
-	<tr>
-		<td>${fn:escapeXml(artifact.name) }</td>
-		<td>${fn:escapeXml(artifact.size) }</td>
-		<td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
-		<td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
-		<td>
-		  <c:if test='${artifact.is("deletable")}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
-		</td>
-		<td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
-		<td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>
-	</tr>
+    <tr>
+        <td>${fn:escapeXml(artifact.name) }</td>
+        <td>${fn:escapeXml(artifact.size) }</td>
+        <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
+        <td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
+        <td>
+          <c:if test='${artifact.is("deletable")}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+        </td>
+        <td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
+        <td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>
+    </tr>
 </c:forEach>
 </tbody>
 
@@ -122,22 +134,22 @@
 <%-- START: drag and drop upload --%>
 <script src="<c:url value="/resources/js/dropzone.min.js"/>"></script>
 <script>
-var url = "<c:url value="/channel/${channel.id}/add"/>";
+var url = "<c:url value="/channel/${channel.id}/drop"/>";
 var dz = new Dropzone ( "#dropzone", {
-	url: url,
-	paramName: "file",
-	previewsContainer: "#upload",
-	uploadMultiple: false,
-	clickable: false,
-	previewTemplate: "<div class='panel panel-default'><div class='panel-heading'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> </div> <div class='panel-body'><div class='progress'><div class='progress-bar progress-bar-striped' role='progressbar' data-dz-uploadprogress></div></div> <div class='dz-error-message ' data-dz-errormessage></div></div></div>"
+    url: url,
+    paramName: "file",
+    previewsContainer: "#upload",
+    uploadMultiple: false,
+    clickable: false,
+    previewTemplate: "<div class='panel panel-default'><div class='panel-heading'><div class='dz-filename' data-dz-name></div> <div class='dz-size' data-dz-size></div> </div> <div class='panel-body'><div class='progress'><div class='progress-bar progress-bar-striped' role='progressbar' data-dz-uploadprogress></div></div> <div class='dz-error-message bg-danger' data-dz-errormessage></div></div></div>"
 });
 
 dz.on ( "queuecomplete", function () {
-	document.getElementById("upload-refresh").setAttribute("style", "");
+    document.getElementById("upload-refresh").setAttribute("style", "");
 });
 
 dz.on ( "addedfile", function () {
-	$( "#upload-container" ).show ();
+    $( "#upload-container" ).show ();
 });
 </script>
 <%-- END: drag and drop upload --%>

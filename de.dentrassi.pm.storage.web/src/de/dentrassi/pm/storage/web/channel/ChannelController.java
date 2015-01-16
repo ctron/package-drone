@@ -18,9 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 
 import de.dentrassi.osgi.web.Controller;
@@ -207,6 +209,32 @@ public class ChannelController implements MenuExtender
         }
 
         return "redirect:/channel/" + channelId + "/view";
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/drop", method = RequestMethod.POST )
+    public void drop ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
+            value = "name" ) String name, final @RequestParameter ( "file" ) Part file, final HttpServletResponse response ) throws IOException
+    {
+        response.setContentType ( "text/plain" );
+
+        try
+        {
+            if ( name == null || name.isEmpty () )
+            {
+                name = file.getSubmittedFileName ();
+            }
+
+            this.service.createArtifact ( channelId, name, file.getInputStream (), null );
+        }
+        catch ( final Throwable e )
+        {
+            response.setStatus ( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            response.getWriter ().write ( "Internal error: " + ExceptionHelper.getMessage ( e ) );
+            return;
+        }
+
+        response.setStatus ( HttpServletResponse.SC_OK );
+        response.getWriter ().write ( "OK" );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
