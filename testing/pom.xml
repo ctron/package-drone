@@ -7,6 +7,14 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Automated tests for Package Drone</name>
 
+	<properties>
+		<mysql.admin.user>root</mysql.admin.user>
+		<mysql.admin.password>admin12</mysql.admin.password>
+		<mysql.test.database>pdtest</mysql.test.database>
+		<mysql.test.user>pd</mysql.test.user>
+		<mysql.test.password>pd</mysql.test.password>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -35,11 +43,40 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+				    <!-- sadly there is no way to just pass all maven properties -->
+					<systemPropertyVariables>
+						<mysql.test.user>${mysql.test.user}</mysql.test.user>
+						<mysql.test.password>${mysql.test.password}</mysql.test.password>
+						<mysql.test.database>${mysql.test.database}</mysql.test.database>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
 				<executions>
+
+					<execution>
+						<id>pre-test</id>
+						<phase>process-test-classes</phase>
+						<configuration>
+							<target>
+								<ant antfile="test-support.ant" target="default" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
 					<execution>
 						<phase>compile</phase>
+						<id>unpack-test</id>
 						<configuration>
 							<target>
 								<copy tofile="${project.build.directory}/package-drone-server.zip">

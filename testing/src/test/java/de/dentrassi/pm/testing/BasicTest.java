@@ -1,6 +1,7 @@
 package de.dentrassi.pm.testing;
 
 import java.io.InputStream;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -9,8 +10,31 @@ public class BasicTest extends AbstractServerTest
     @Test
     public void test1 () throws Exception
     {
-        System.out.println ( "Test 1" );
-        try ( InputStream is = getUrl ().openStream () )
+        testUrl ( "/" );
+    }
+
+    @Test
+    public void test2 () throws Exception
+    {
+        testUrl ( "/p2" );
+    }
+
+    @Test
+    public void test3 () throws Exception
+    {
+        testUrl ( "/r5" );
+    }
+
+    @Test
+    public void test4 () throws Exception
+    {
+        testUrl ( "/maven" );
+    }
+
+    protected void testUrl ( final String suffix ) throws Exception
+    {
+        final URL url = new URL ( resolve ( suffix ) );
+        try ( InputStream is = url.openStream () )
         {
         }
     }

@@ -8,6 +8,21 @@ import java.net.URL;
 public class AbstractServerTest
 {
 
+    protected String getTestUser ()
+    {
+        return System.getProperty ( "mysql.test.user" );
+    }
+
+    protected String getTestPassword ()
+    {
+        return System.getProperty ( "mysql.test.password" );
+    }
+
+    protected String getTestJdbcUrl ()
+    {
+        return String.format ( "jdbc:mysql://localhost/%s", System.getProperty ( "mysql.test.database" ) );
+    }
+
     protected URL getUrl () throws MalformedURLException
     {
         return new URL ( getBase () );

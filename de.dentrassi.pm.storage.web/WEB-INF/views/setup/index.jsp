@@ -82,10 +82,10 @@
 	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
 	   <c:choose>
 	       <c:when test="${empty databaseSchemaVersion }">
-       <input type="submit" value="Install Schema" class="btn btn-primary" />
+       <input type="submit" value="Install Schema" class="btn btn-primary" id="install-schema"/>
 	       </c:when>
 	       <c:otherwise>
-        <input type="submit" value="Upgrade Schema" class="btn btn-primary" />
+        <input type="submit" value="Upgrade Schema" class="btn btn-primary" id="upgrade-schema" />
 	       </c:otherwise>
 	   </c:choose>
 	   

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Test support
+     ====================================================================== -->
+<project name="project" default="default">
+    <description>
+            Test Support Steps
+    </description>
+	
+	<!-- ================================= 
+          target: default
+         ================================= -->
+    <target name="default" depends="after,before">
+    </target>
+	
+    <!-- ================================= 
+          target: before
+         ================================= -->
+    <target name="before">
+        <exec executable="mysqladmin" failifexecutionfails="true" failonerror="true">
+            <arg value="-u${mysql.admin.user}"/>
+            <arg value="-p${mysql.admin.password}"/>
+            <arg value="create"/>
+            <arg value="${mysql.test.database}"/>
+        </exec>
+        <exec executable="mysql" failifexecutionfails="true" failonerror="true" inputstring="CREATE USER '${mysql.test.user}'@'localhost' IDENTIFIED BY '${mysql.test.password}'; GRANT ALL ON ${mysql.test.database}.* TO '${mysql.test.user}'@'localhost';">
+            <arg value="-u${mysql.admin.user}"/>
+            <arg value="-p${mysql.admin.password}"/>
+        </exec>
+    </target>
+	
+    <!-- ================================= 
+          target: after
+         ================================= -->
+    <target name="after">
+        <exec executable="mysqladmin">
+            <arg value="-u${mysql.admin.user}"/>
+            <arg value="-p${mysql.admin.password}"/>
+            <arg value="-f"/> <!-- force -->
+            <arg value="drop"/>
+            <arg value="${mysql.test.database}"/>
+       </exec>
+        <exec executable="mysql" inputstring="DROP USER '${mysql.test.user}'@'localhost';">
+            <arg value="-u${mysql.admin.user}"/>
+            <arg value="-p${mysql.admin.password}"/>
+        </exec>
+    </target>
+
+</project>

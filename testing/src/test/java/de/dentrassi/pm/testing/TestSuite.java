@@ -10,7 +10,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith ( Suite.class )
-@SuiteClasses ( { BasicTest.class, SetupTest.class } )
+@SuiteClasses ( { BasicTest.class, DefaultTest.class } )
 public class TestSuite
 {
 
