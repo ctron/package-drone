@@ -31,3 +31,5 @@ Service-Component: OSGI-INF/featureGen.xml,
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
+Eclipse-BundleShape: dir
+

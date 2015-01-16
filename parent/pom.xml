@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>de.dentrassi.package.drone</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.0.6-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<url>https://github.com/ctron/package-drone</url>
+	<name>Package Drone</name>
+	<inceptionYear>2014</inceptionYear>
+
+	<developers>
+		<developer>
+			<name>Jens Reimann</name>
+			<email>ctron@dentrassi.de</email>
+			<organization>IBH SYSTEMS GmbH</organization>
+			<organizationUrl>http://ibh-systems.com</organizationUrl>
+			<url>http://dentrassi.de</url>
+		</developer>
+	</developers>
+
+	<prerequisites>
+		<maven>3.2</maven>
+	</prerequisites>
+
+	<scm>
+		<connection>scm:git:git://github.com/ctron/package-drone</connection>
+		<url>https://github.com/ctron/package-drone</url>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/ctron/package-drone</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License - v 1.0</name>
+			<distribution>manual</distribution>
+			<url>https://www.eclipse.org/legal/epl-v10.html</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<tycho-version>0.22.0</tycho-version>
+		<tycho-extras-version>0.22.0</tycho-extras-version>
+
+		<tycho.scmUrl>scm:git:ssh://github.com/ctron/package-drone</tycho.scmUrl>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>package.drone.runtime</id>
+			<name>Package Drone Runtime</name>
+			<layout>p2</layout>
+			<url>file:${basedir}/../runtime/target/repository</url>
+		</repository>
+	</repositories>
+
+	<modules>
+		<module>../de.dentrassi.osgi.converter</module>
+		<module>../de.dentrassi.osgi.utils</module>
+		<module>../de.dentrassi.osgi.validation</module>
+		<module>../de.dentrassi.osgi.validation.hibernate</module>
+		
+		<module>../de.dentrassi.osgi.web</module>
+		<module>../de.dentrassi.osgi.web.form</module>
+		<module>../de.dentrassi.osgi.web.servlet</module>
+		
+		<module>../de.dentrassi.pm.aspect</module>
+		<module>../de.dentrassi.pm.aspect.common</module>
+		<module>../de.dentrassi.pm.common</module>
+		
+		<module>../de.dentrassi.pm.database</module>
+		
+		<module>../de.dentrassi.pm.generator</module>
+		<module>../de.dentrassi.pm.generator.p2</module>
+		
+		<module>../de.dentrassi.pm.logging.jul</module>
+		
+		<module>../de.dentrassi.pm.maven</module>
+		<module>../de.dentrassi.pm.osgi</module>
+		<module>../de.dentrassi.pm.p2</module>
+		<module>../de.dentrassi.pm.r5</module>
+		
+		<module>../de.dentrassi.pm.storage</module>
+		<module>../de.dentrassi.pm.storage.jpa</module>
+		<module>../de.dentrassi.pm.storage.service</module>
+		<module>../de.dentrassi.pm.storage.web</module>
+		
+		<module>../de.dentrassi.pm.feature</module>
+		<module>../de.dentrassi.pm.root.feature</module>
+		
+		<module>../product</module>
+	</modules>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.3.1</version>
+				<executions>
+					<execution>
+						<id>enforce-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>1.8</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.tycho.extras</groupId>
+						<artifactId>tycho-buildtimestamp-jgit</artifactId>
+						<version>${tycho-extras-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.tycho.extras</groupId>
+						<artifactId>tycho-sourceref-jgit</artifactId>
+						<version>${tycho-extras-version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<timestampProvider>jgit</timestampProvider>
+					<jgit.ignore>
+						pom.xml
+						CHANGES.txt
+					</jgit.ignore>
+					<format>yyyyMMdd-HHmm</format>
+					<sourceReferences>
+						<generate>true</generate>
+					</sourceReferences>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<environments>
+					   <environment>
+                            <os>all</os>
+                            <ws>all</ws>
+                            <arch>all</arch>
+                        </environment>
+					</environments>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.tycho.extras</groupId>
+					<artifactId>tycho-p2-extras-plugin</artifactId>
+					<version>${tycho-extras-version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+	</build>
+
+</project>

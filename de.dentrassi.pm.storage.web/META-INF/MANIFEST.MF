@@ -13,6 +13,7 @@ Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0"
 Require-TldBundle: de.dentrassi.osgi.web.form
+Eclipse-BundleShape: dir
 Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",

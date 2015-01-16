@@ -2,7 +2,7 @@
 <feature
       id="de.dentrassi.pm"
       label="Package Drone Main Feature"
-      version="0.0.5.qualifier"
+      version="0.0.6.qualifier"
       provider-name="Jens Reimann">
 
    <description url="https://github.com/ctron/package-drone">
@@ -159,14 +159,6 @@
 
    <plugin
          id="javax.transaction"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="logback.configuration"
          download-size="0"
          install-size="0"
          version="0.0.0"
