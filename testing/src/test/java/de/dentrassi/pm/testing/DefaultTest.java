@@ -10,13 +10,10 @@
  *******************************************************************************/
 package de.dentrassi.pm.testing;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -24,24 +21,11 @@ import com.google.common.base.Predicate;
 
 public class DefaultTest extends AbstractServerTest
 {
-    private static FirefoxDriver driver;
-
-    @BeforeClass
-    public static void setupBrowser ()
-    {
-        driver = new FirefoxDriver ();
-    }
-
-    @AfterClass
-    public static void destroyBrowser ()
-    {
-        driver.close ();
-    }
 
     @Test
     public void testSetup () throws Exception
     {
-        driver.get ( getBase () );
+        TestSuite.getDriver ().get ( getBase () );
         Assert.assertEquals ( resolve ( "/setup" ), driver.getCurrentUrl () );
 
         final Select select = new Select ( driver.findElementById ( "jdbcDriver" ) );

@@ -11,6 +11,7 @@
 package de.dentrassi.pm.testing;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -18,11 +19,32 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
-@SuiteClasses ( { BasicTest.class, DefaultTest.class } )
+@SuiteClasses ( { BasicTest.class, DefaultTest.class, UploadTest.class } )
 public class TestSuite
 {
+
+    private static RemoteWebDriver driver;
+
+    public static RemoteWebDriver getDriver ()
+    {
+        return driver;
+    }
+
+    @BeforeClass
+    public static void setupBrowser ()
+    {
+        driver = new FirefoxDriver ();
+    }
+
+    @AfterClass
+    public static void destroyBrowser ()
+    {
+        driver.close ();
+    }
 
     private static Process PROCESS;
 
@@ -39,9 +61,57 @@ public class TestSuite
 
         System.out.println ( "Starting: " + pb );
         PROCESS = pb.start ();
-        System.out.println ( "Started" );
+        System.out.print ( "Started ... waiting for port... " );
+        System.out.flush ();
 
-        Thread.sleep ( 5000 );
+        int i = 0;
+        while ( i < 5 )
+        {
+            if ( isOpen ( 8080 ) )
+            {
+                break;
+            }
+            i++;
+            Thread.sleep ( 1000 );
+        }
+
+        if ( i >= 5 )
+        {
+            PROCESS.destroyForcibly ();
+            throw new IllegalStateException ( "Failed to wait for port" );
+        }
+        else
+        {
+            System.out.println ( "Port open!" );
+        }
+    }
+
+    private static boolean isOpen ( final int port )
+    {
+        ServerSocket server = null;
+        try
+        {
+            server = new ServerSocket ( port );
+            return true;
+        }
+        catch ( final IOException e )
+        {
+        }
+        finally
+        {
+            if ( server != null )
+            {
+                try
+                {
+                    server.close ();
+                }
+                catch ( final IOException e )
+                {
+                }
+            }
+        }
+
+        return false;
     }
 
     @AfterClass

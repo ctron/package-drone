@@ -10,7 +10,19 @@
 	<!-- ================================= 
           target: default
          ================================= -->
-    <target name="default" depends="after,before">
+    <target name="default" depends="after,pre-flight,before">
+    </target>
+	
+	<!-- ================================= 
+          target: pre-flight
+         ================================= -->
+    <target name="pre-flight" description="Test if test can be run">
+    	<echo message="Checking whether Port 8080 is used"/>
+        <condition property="port.ok">
+            <socket server="localhost" port="8080"/> 
+        </condition>
+    	<echo message="Result: ${port.ok}" />
+    	<fail if="${port.ok}"/>
     </target>
 	
     <!-- ================================= 

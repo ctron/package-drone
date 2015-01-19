@@ -99,7 +99,7 @@ div.dz-error-message {
 
 <h:channelNav channel="${channel}"/>
 
-<table class="table table-striped table-condensed">
+<table id="artifacts" class="table table-striped table-condensed">
 
 <thead>
     <tr>
@@ -115,7 +115,7 @@ div.dz-error-message {
 
 <tbody>
 <c:forEach items="${sortedArtifacts }" var="artifact">
-    <tr>
+    <tr id="row-${artifact.id }">
         <td>${fn:escapeXml(artifact.name) }</td>
         <td>${fn:escapeXml(artifact.size) }</td>
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>

@@ -15,8 +15,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.junit.BeforeClass;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
 public class AbstractServerTest
 {
+    protected static RemoteWebDriver driver;
+
+    @BeforeClass
+    public static void setup ()
+    {
+        driver = TestSuite.getDriver ();
+    }
 
     protected String getTestUser ()
     {

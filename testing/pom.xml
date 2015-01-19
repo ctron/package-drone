@@ -52,6 +52,9 @@
 						<mysql.test.password>${mysql.test.password}</mysql.test.password>
 						<mysql.test.database>${mysql.test.database}</mysql.test.database>
 					</systemPropertyVariables>
+					<includes>
+                        <include>**/TestSuite.java</include>
+                    </includes>
 				</configuration>
 			</plugin>
 
@@ -95,17 +98,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
-				<configuration>
-					<includes>
-						<include>**/TestSuite.java</include>
-					</includes>
-				</configuration>
 			</plugin>
 
 		</plugins>
