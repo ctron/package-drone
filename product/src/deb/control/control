@@ -1,0 +1,9 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: java8-jdk
+Maintainer: Jens Reimann <ctron@dentrassi.de>
+Description: Package Drone software artifact manager
+Distribution: development

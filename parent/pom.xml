@@ -169,6 +169,11 @@
                             <ws>all</ws>
                             <arch>all</arch>
                         </environment>
+                         <environment>
+                            <os>linux</os>
+                            <ws>all</ws>
+                            <arch>all</arch>
+                        </environment>
 					</environments>
 				</configuration>
 			</plugin>
