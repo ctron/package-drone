@@ -135,6 +135,17 @@
 										<group>root</group>
 									</mapper>
 								</data>
+								
+								<data>
+								    <src>src/deb/lintian-overrides</src>
+								    <dst>usr/share/lintian/overrides/${project.artifactId}</dst>
+								    <type>file</type>
+								    <mapper>
+                                        <type>perm</type>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+								</data>
 							</dataSet>
 						</configuration>
 					</execution>
