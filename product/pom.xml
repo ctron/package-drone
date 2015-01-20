@@ -115,7 +115,19 @@
 
 								<data>
 									<src>src/deb/package-drone-server.conf</src>
-									<dst>/etc/init/package-drone-server.conf</dst>
+									<dst>etc/init/package-drone-server.conf</dst>
+									<type>file</type>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>root</user>
+										<group>root</group>
+									</mapper>
+								</data>
+
+								<data>
+									<src>src/deb/epl-v10.html</src>
+									<dst>usr/share/doc/${project.artifactId}/copyright</dst>
 									<type>file</type>
 									<mapper>
 										<type>perm</type>

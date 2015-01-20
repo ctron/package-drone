@@ -3,6 +3,7 @@ Version: [[version]]
 Section: misc
 Priority: optional
 Architecture: all
+Pre-Depends: adduser
 Depends: java8-jdk
 Suggests: mariadb-server
 Maintainer: Jens Reimann <ctron@dentrassi.de>
