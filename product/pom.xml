@@ -126,7 +126,7 @@
 								</data>
 
 								<data>
-									<src>src/deb/epl-v10.html</src>
+									<src>src/deb/copyright</src>
 									<dst>usr/share/doc/${project.artifactId}/copyright</dst>
 									<type>file</type>
 									<mapper>
