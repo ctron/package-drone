@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Build repositories                                                            
+     ====================================================================== -->
+<project name="project" default="default">
+	<description>
+    	Build repositories
+    </description>
+
+	<!-- ================================= 
+          target: default
+         ================================= -->
+	<target name="default" depends="download, reprepro">
+	</target>
+
+	<!-- ================================= 
+          target: download
+         ================================= -->
+	<target name="download">
+		<mkdir dir="download" />
+		<!-- for new we don't have RPMs or DEBs to download -->
+	</target>
+
+	<!-- ================================= 
+          target: reprepro              
+         ================================= -->
+	<target name="reprepro">
+		<delete dir="apt/db"/>
+		<delete dir="apt/dists"/>
+		<delete dir="apt/pool"/>
+		<adddeb src="download/package-drone-server_0.0.6_all.deb"/>
+	</target>
+
+	<macrodef name="adddeb">
+		<attribute name="src" />
+		<sequential>
+			<exec executable="reprepro" failifexecutionfails="true" failonerror="true">
+	            <arg value="-b" />
+	            <arg file="apt" />
+	            <arg value="includedeb" />
+	            <arg value="package-drone" />
+	            <arg file="@{src}" />
+	        </exec>
+		</sequential>
+	</macrodef>
+
+</project>
