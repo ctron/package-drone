@@ -6,5 +6,5 @@ Architecture: all
 Depends: java8-jdk
 Suggests: mariadb-server
 Maintainer: Jens Reimann <ctron@dentrassi.de>
-Description: Package Drone software artifact manager
+Description: Package Drone software artifact repository
 Distribution: development
