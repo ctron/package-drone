@@ -53,7 +53,8 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
     <ul class="nav navbar-nav">
     <c:forEach items="${menuManager.entries }" var="entry">
-        <li <c:if test="${currentUrl eq entry.location}" >class="active"</c:if>><a href="<c:url value="${entry.location }" />" <c:if test="${entry.newWindow }"> target="_blank"</c:if> ><c:out value="${entry.label}" escapeXml="true"/></a></li>
+        <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
+        <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${entry.newWindow }"> target="_blank"</c:if> ><c:out value="${entry.label}" escapeXml="true"/></a></li>
         </c:forEach>
     </ul>
     </div>

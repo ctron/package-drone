@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web;
+package de.dentrassi.pm.storage.web.internal;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;

@@ -26,14 +26,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Channel;
 
-public abstract class AbstractRepositoryHandler implements Handler
+public abstract class AbstractRepositoryHandler extends AbstractChannelHandler
 {
-    protected final Channel channel;
-
     protected final Map<String, String> properties = new HashMap<> ();
 
     protected XmlHelper xml;
@@ -46,7 +44,8 @@ public abstract class AbstractRepositoryHandler implements Handler
 
     public AbstractRepositoryHandler ( final Channel channel, final boolean compress, final String basename )
     {
-        this.channel = channel;
+        super ( channel );
+
         this.compress = compress;
         this.basename = basename;
 
@@ -133,11 +132,23 @@ public abstract class AbstractRepositoryHandler implements Handler
 
         final Element root = doc.createElement ( "repository" );
         doc.appendChild ( root );
-        root.setAttribute ( "name", String.format ( "Package Drone - Channel: %s", this.channel.getId () ) );
+        root.setAttribute ( "name", makeExternalTitle () );
         root.setAttribute ( "type", type );
         root.setAttribute ( "version", "1" );
 
         return doc;
+    }
+
+    private String makeExternalTitle ()
+    {
+        final String p2title = this.channel.getMetaData ().get ( new MetaKey ( "p2.repo", "title" ) );
+
+        if ( p2title != null && !p2title.isEmpty () )
+        {
+            return p2title;
+        }
+
+        return String.format ( "Package Drone - Channel: %s", makeTitle () );
     }
 
 }

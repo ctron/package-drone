@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,9 +13,10 @@ package de.dentrassi.pm.storage.web.menu;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.dentrassi.pm.storage.web.menu.MenuManager.MenuEntry;
+import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.storage.web.InterfaceExtender;
 
-public class DefaultMenuExtender implements MenuExtender
+public class DefaultMenuExtender implements InterfaceExtender
 {
     private final List<MenuEntry> entries = new LinkedList<> ();
 
@@ -24,14 +25,14 @@ public class DefaultMenuExtender implements MenuExtender
     }
 
     @Override
-    public List<MenuEntry> getEntries ()
+    public List<MenuEntry> getMainMenuEntries ()
     {
         return this.entries;
     }
 
     public void addEntry ( final String target, final String label, final int order )
     {
-        this.entries.add ( new MenuEntry ( target, label, order ) );
+        this.entries.add ( new MenuEntry ( label, order, new LinkTarget ( target ), null ) );
     }
 
 }

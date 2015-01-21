@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,17 +15,14 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Channel;
 
-public class IndexHandler implements Handler
+public class IndexHandler extends AbstractChannelHandler
 {
-
-    private final Channel channel;
 
     public IndexHandler ( final Channel channel )
     {
-        this.channel = channel;
+        super ( channel );
     }
 
     @Override
@@ -43,11 +40,11 @@ public class IndexHandler implements Handler
         w.println ( "<html>" );
         w.println ( "<head>" );
         w.println ( "<meta charset=\"UTF-8\">" );
-        w.format ( "<title>P2 repository for channel: %s</title>", this.channel.getId () );
+        w.format ( "<title>P2 repository for channel: %s</title>", makeTitle () );
         w.println ( "</head>" );
         w.println ( "<body>" );
 
-        w.format ( "<header><h1>P2 repository for channel: %s</h1></header>", this.channel.getId () );
+        w.format ( "<header><h1>P2 repository for channel: %s</h1></header>", makeTitle () );
 
         w.println ( "<ul>" );
         w.println ( "<li><a href=\"content.xml\">content.xml</a></li>" );
@@ -58,4 +55,5 @@ public class IndexHandler implements Handler
         w.println ( "</body>" );
         w.println ( "</html>" );
     }
+
 }

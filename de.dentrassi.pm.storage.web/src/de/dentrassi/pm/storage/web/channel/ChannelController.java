@@ -26,6 +26,7 @@ import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 
 import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
@@ -40,13 +41,14 @@ import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.web.Activator;
-import de.dentrassi.pm.storage.web.menu.MenuExtender;
-import de.dentrassi.pm.storage.web.menu.MenuManager.MenuEntry;
+import de.dentrassi.pm.storage.web.InterfaceExtender;
+import de.dentrassi.pm.storage.web.Modifier;
+import de.dentrassi.pm.storage.web.internal.Activator;
+import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
-public class ChannelController implements MenuExtender
+public class ChannelController implements InterfaceExtender
 {
 
     private static final class ChannelNameComparator implements Comparator<Channel>
@@ -95,10 +97,10 @@ public class ChannelController implements MenuExtender
         this.generators.close ();
     }
 
-    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "/channel", "Channels", 10 ) );
+    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT ) );
 
     @Override
-    public List<MenuEntry> getEntries ()
+    public List<MenuEntry> getMainMenuEntries ()
     {
         return menuEntries;
     }

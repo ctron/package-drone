@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Web UI
 Bundle-SymbolicName: de.dentrassi.pm.storage.web
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: de.dentrassi.pm.storage.web.Activator
+Bundle-Activator: de.dentrassi.pm.storage.web.internal.Activator
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
@@ -64,4 +64,6 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml
 Web-Export-Taglib: WEB-INF/tags/pm.tld
-Export-Package: de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"
+Export-Package: de.dentrassi.pm.storage.web,
+ de.dentrassi.pm.storage.web.menu,
+ de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"

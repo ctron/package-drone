@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,67 +13,20 @@ package de.dentrassi.pm.storage.web.menu;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
+import de.dentrassi.pm.storage.web.InterfaceExtender;
+
 public class MenuManager
 {
-    public static class MenuEntry implements Comparable<MenuEntry>
-    {
-        private final String location;
-
-        private final String label;
-
-        private final int order;
-
-        private final boolean newWindow;
-
-        public MenuEntry ( final String location, final String label, final int order )
-        {
-            this ( location, label, order, false );
-        }
-
-        public MenuEntry ( final String location, final String label, final int order, final boolean newWindow )
-        {
-            this.location = location;
-            this.label = label;
-            this.order = order;
-            this.newWindow = newWindow;
-        }
-
-        public boolean isNewWindow ()
-        {
-            return this.newWindow;
-        }
-
-        public String getLocation ()
-        {
-            return this.location;
-        }
-
-        public String getLabel ()
-        {
-            return this.label;
-        }
-
-        public int getOrder ()
-        {
-            return this.order;
-        }
-
-        @Override
-        public int compareTo ( final MenuEntry o )
-        {
-            return Integer.compare ( this.order, o.order );
-        }
-    }
-
-    private final ServiceTracker<MenuExtender, MenuExtender> tracker;
+    private final ServiceTracker<InterfaceExtender, InterfaceExtender> tracker;
 
     public MenuManager ()
     {
-        this.tracker = new ServiceTracker<MenuExtender, MenuExtender> ( FrameworkUtil.getBundle ( MenuManager.class ).getBundleContext (), MenuExtender.class, null );
+        this.tracker = new ServiceTracker<InterfaceExtender, InterfaceExtender> ( FrameworkUtil.getBundle ( MenuManager.class ).getBundleContext (), InterfaceExtender.class, null );
         this.tracker.open ();
     }
 
@@ -82,19 +35,32 @@ public class MenuManager
         this.tracker.close ();
     }
 
-    public List<MenuEntry> getEntries ()
+    public List<MenuEntry> getMainMenuEntries ()
+    {
+        // this should be cached
+        return getEntries ( InterfaceExtender::getMainMenuEntries );
+    }
+
+    public List<MenuEntry> getActions ( final Object context )
+    {
+        return getEntries ( ( i ) -> i.getActions ( context ) );
+    }
+
+    protected List<MenuEntry> getEntries ( final Function<InterfaceExtender, List<MenuEntry>> func )
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        // this should be cached
-        for ( final MenuExtender me : this.tracker.getTracked ().values () )
+        for ( final InterfaceExtender me : this.tracker.getTracked ().values () )
         {
-            result.addAll ( me.getEntries () );
+            final List<MenuEntry> actions = func.apply ( me );
+            if ( actions != null )
+            {
+                result.addAll ( actions );
+            }
         }
 
         Collections.sort ( result );
 
         return result;
     }
-
 }

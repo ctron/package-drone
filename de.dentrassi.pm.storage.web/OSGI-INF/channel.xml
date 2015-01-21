@@ -3,7 +3,7 @@
    <implementation class="de.dentrassi.pm.storage.web.channel.ChannelController"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.web.channel.ChannelController"/>
-      <provide interface="de.dentrassi.pm.storage.web.menu.MenuExtender"/>
+      <provide interface="de.dentrassi.pm.storage.web.InterfaceExtender"/>
     </service>
 
    <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/> 

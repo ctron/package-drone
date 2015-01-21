@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.menu;
+package de.dentrassi.pm.storage.web.internal.menu;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
+import de.dentrassi.pm.storage.web.menu.MenuManager;
 
 public class MenuInterceptor extends ModelAndViewInterceptorAdapter
 {

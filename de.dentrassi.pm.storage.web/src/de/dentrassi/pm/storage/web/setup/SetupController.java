@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,7 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;
-import de.dentrassi.pm.storage.web.Activator;
+import de.dentrassi.pm.storage.web.internal.Activator;
 import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
 
 @Controller
@@ -35,7 +35,7 @@ public class SetupController extends DefaultMenuExtender
 {
     public SetupController ()
     {
-        addEntry ( "/setup", "Setup", 100 );
+        addEntry ( "/setup", "Setup", 1000 );
     }
 
     @RequestMapping ( method = RequestMethod.GET )

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,13 +8,14 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.menu;
+package de.dentrassi.pm.storage.web;
 
-import java.util.List;
-
-import de.dentrassi.pm.storage.web.menu.MenuManager.MenuEntry;
-
-public interface MenuExtender
+public enum Modifier
 {
-    public List<MenuEntry> getEntries ();
+    DEFAULT,
+    PRIMARY,
+    SUCCESS,
+    INFO,
+    WARNING,
+    ERROR;
 }
