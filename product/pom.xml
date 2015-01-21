@@ -135,16 +135,16 @@
 										<group>root</group>
 									</mapper>
 								</data>
-								
+
 								<data>
-								    <src>src/deb/lintian-overrides</src>
-								    <dst>usr/share/lintian/overrides/${project.artifactId}</dst>
-								    <type>file</type>
-								    <mapper>
-                                        <type>perm</type>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
+									<src>src/deb/lintian-overrides</src>
+									<dst>usr/share/lintian/overrides/${project.artifactId}</dst>
+									<type>file</type>
+									<mapper>
+										<type>perm</type>
+										<user>root</user>
+										<group>root</group>
+									</mapper>
 								</data>
 							</dataSet>
 						</configuration>
@@ -152,6 +152,162 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1.1</version>
+				<executions>
+					<execution>
+						<id>attach-rpm</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+						<configuration>
+							<license>EPL</license>
+							<distribution>Package Drone</distribution>
+							<group>System Environment/Daemons</group>
+
+							<requires>
+								<require>systemd</require>
+								<require>firewalld</require>
+
+								<!-- right now we cannot add a dependency to java, since the official 
+									java packages don't provide a generic "provide" capability which could be 
+									queried. We would be required to add a dependency to a package name which 
+									even includes the version number of java. So this would not allow the user 
+									to install any updated java version, but fix it to a specific minor version. -->
+								<!-- <require>jre &gt;= 1.8.0</require> -->
+							</requires>
+
+							<prereqs>
+								<!-- for the command "getent" -->
+								<require>glibc-common</require>
+
+								<!-- for the "adduser" scripts -->
+								<prereq>shadow-utils</prereq>
+							</prereqs>
+
+							<defaultUsername>root</defaultUsername>
+							<defaultGroupname>root</defaultGroupname>
+
+							<mappings>
+								<mapping>
+									<directory>/usr/lib/package-drone/instance</directory>
+									<username>pdrone</username>
+									<groupname>pdrone</groupname>
+									<sources>
+										<source>
+											<location>target/products/de.dentrassi.package.drone.server/all/all/all</location>
+											<excludes>
+												<exclude>eclipse.ini</exclude><!-- not needed -->
+											</excludes>
+										</source>
+									</sources>
+								</mapping>
+
+								<mapping>
+									<directory>/usr/lib/systemd/system</directory>
+									<username>root</username>
+									<groupname>root</groupname>
+									<directoryIncluded>false</directoryIncluded>
+									<sources>
+										<source>
+											<location>src/systemd</location>
+										</source>
+									</sources>
+								</mapping>
+
+								<mapping>
+									<directory>/etc/firewalld/services</directory>
+									<configuration>true</configuration>
+									<username>root</username>
+									<groupname>root</groupname>
+									<filemode>0640</filemode>
+									<directoryIncluded>false</directoryIncluded>
+									<sources>
+										<source>
+											<location>src/firewalld/${project.artifactId}.xml</location>
+										</source>
+									</sources>
+								</mapping>
+
+							</mappings>
+
+							<preinstallScriptlet>
+								<script><![CDATA[
+if ! getent passwd pdrone >/dev/null; then
+    # create new user
+    useradd --system --user-group --home /var/lib/pdrone --comment "Package Drone Daemon User" pdrone
+fi
+mkdir -p /var/lib/pdrone
+chown -R pdrone:pdrone /var/lib/pdrone
+]]></script>
+							</preinstallScriptlet>
+
+							<postinstallScriptlet>
+								<script><![CDATA[
+if [ $1 -eq 1 ] ; then
+    systemctl preset package-drone.service >/dev/null 2>&1 || true
+    /usr/bin/firewall-cmd --reload >/dev/null || true
+    /usr/bin/firewall-cmd --permanent --add-service=package-drone-server >/dev/null || true
+    /usr/bin/firewall-cmd --reload >/dev/null || true
+fi
+]]></script>
+							</postinstallScriptlet>
+
+							<preremoveScriptlet>
+								<script><![CDATA[
+if [ $1 -eq 0 ] ; then
+    systemctl --no-reload --user --global disable package-drone.service > /dev/null 2>&1 || true
+fi
+]]>
+								</script>
+							</preremoveScriptlet>
+
+							<postremoveScriptlet>
+								<script><![CDATA[
+if [ "$1" -eq 0 ]; then
+    # this is the final uninstall
+    if which userdel >/dev/null 2>&1; then
+        userdel pdrone > /dev/null || true
+    fi
+    # delete group if it still exists
+    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || true
+    
+    /usr/bin/firewall-cmd --permanent --remove-service=package-drone-server > /dev/null || true
+    /usr/bin/firewall-cmd --reload > /dev/null || true
+fi
+
+systemctl daemon-reload >/dev/null 2>&1 || true
+]]></script>
+							</postremoveScriptlet>
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>bash</executable>
+					<arguments>
+						<argument>-c</argument>
+						<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm"]]></argument>
+					</arguments>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

@@ -10,7 +10,7 @@
 	<!-- ================================= 
           target: default
          ================================= -->
-	<target name="default" depends="download, reprepro">
+	<target name="default" depends="download, reprepro, yumrepo, exportkey">
 	</target>
 
 	<!-- ================================= 
@@ -20,28 +20,83 @@
 		<mkdir dir="download" />
 		<!-- for new we don't have RPMs or DEBs to download -->
 	</target>
+	
+	<!-- ================================= 
+          target: exportkey
+         ================================= -->
+    <target name="exportkey" if="signKey">
+    	<delete file="PD-GPG-KEY"/>
+        <exec executable="gpg" dir="yum" failifexecutionfails="true" failonerror="true" output="PD-GPG-KEY">
+            <arg value="--export" />
+        	<arg value="--armor" />
+        	<arg value="${signKey}" />
+        </exec>
+    </target>
 
 	<!-- ================================= 
           target: reprepro              
          ================================= -->
 	<target name="reprepro">
-		<delete dir="apt/db"/>
-		<delete dir="apt/dists"/>
-		<delete dir="apt/pool"/>
-		<adddeb src="download/package-drone-server_0.0.6_all.deb"/>
+		<delete dir="apt/db" />
+		<delete dir="apt/dists" />
+		<delete dir="apt/pool" />
+		<adddeb src="download/package-drone-server_0.0.6_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
 		<attribute name="src" />
 		<sequential>
 			<exec executable="reprepro" failifexecutionfails="true" failonerror="true">
-	            <arg value="-b" />
-	            <arg file="apt" />
-	            <arg value="includedeb" />
-	            <arg value="package-drone" />
-	            <arg file="@{src}" />
-	        </exec>
+				<arg value="-b" />
+				<arg file="apt" />
+				<arg value="includedeb" />
+				<arg value="package-drone" />
+				<arg file="@{src}" />
+			</exec>
 		</sequential>
 	</macrodef>
+
+	<!-- ================================= 
+          target: yumrepo              
+         ================================= -->
+	<target name="yumrepo" depends="yumrepo.clean, yumrepo.build, yumrepo.sign">
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: yumrepo.clean
+         - - - - - - - - - - - - - - - - - -->
+    <target name="yumrepo.clean">
+        <delete dir="yum"/>
+    </target>
+	
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: yumrepo.build
+         - - - - - - - - - - - - - - - - - -->
+	<target name="yumrepo.build">
+		<mkdir dir="yum" />
+		<copy todir="yum">
+			<fileset dir="download">
+				<include name="*.rpm" />
+			</fileset>
+		</copy>
+		<exec executable="createrepo" dir="yum" failifexecutionfails="true" failonerror="true">
+			<arg value="." />
+		</exec>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: yumrepo.sign
+         - - - - - - - - - - - - - - - - - -->
+	<target name="yumrepo.sign" if="signKey" depends="exportkey">
+		<exec executable="gpg" dir="yum" failifexecutionfails="true" failonerror="true">
+			<arg value="--detach-sign" />
+			<arg value="--batch" />
+			<arg value="--use-agent" />
+			<arg value="-u" />
+			<arg value="${signKey}" />
+			<arg value="--armor" />
+			<arg value="repodata/repomd.xml" />
+		</exec>
+	</target>
 
 </project>

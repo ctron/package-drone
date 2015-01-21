@@ -1,0 +1,10 @@
+[Unit]
+Description=Package Drone Server
+After=network.target
+
+[Service]
+ExecStart=/usr/lib/package-drone/instance/server
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
