@@ -11,6 +11,8 @@ Also if you start a thing like this, it should somehow be extensible, since the 
 
 Warning: This project is as its early stages. Try it out, find it useful or wait until it is stable enough to work for you.
 
+Also see the wiki for more information: https://github.com/ctron/package-drone/wiki
+
 Intended use cases
 ----------------
 
