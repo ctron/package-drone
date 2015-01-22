@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,8 @@ public class TextArea extends FormValueTagSupport
 
     private Integer rows;
 
+    private String placeholder;
+
     @Override
     public int doStartTag () throws JspException
     {
@@ -30,6 +32,7 @@ public class TextArea extends FormValueTagSupport
         writer.writeAttribute ( "name", this.path );
         writer.writeOptionalAttribute ( "cols", this.cols );
         writer.writeOptionalAttribute ( "rows", this.rows );
+        writer.writeOptionalAttribute ( "placeholder", this.placeholder );
         writeDefaultAttributes ( writer );
         writer.write ( " >" );
 
@@ -49,4 +52,10 @@ public class TextArea extends FormValueTagSupport
     {
         this.rows = rows;
     }
+
+    public void setPlaceholder ( final String placeholder )
+    {
+        this.placeholder = placeholder;
+    }
+
 }

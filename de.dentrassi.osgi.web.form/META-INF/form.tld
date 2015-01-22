@@ -77,6 +77,11 @@
 		  <rtexprvalue>true</rtexprvalue>
 		  <type>boolean</type>
 		</attribute>
+		
+		<attribute>
+		  <name>placeholder</name>
+		  <rtexprvalue>true</rtexprvalue>
+		</attribute>
 	</tag>
 
 	<tag>
@@ -154,6 +159,11 @@
 			<name>cssClass</name>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
+		
+		<attribute>
+          <name>placeholder</name>
+          <rtexprvalue>true</rtexprvalue>
+        </attribute>
 	</tag>
 
 	<tag>

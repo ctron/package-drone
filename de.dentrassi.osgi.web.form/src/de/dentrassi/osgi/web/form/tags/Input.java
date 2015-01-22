@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,8 @@ public class Input extends FormValueTagSupport
 
     private boolean disabled;
 
+    private String placeholder;
+
     @Override
     public int doStartTag () throws JspException
     {
@@ -30,6 +32,7 @@ public class Input extends FormValueTagSupport
         writer.writeAttribute ( "name", this.path );
         writer.writeOptionalAttribute ( "value", getPathValue ( this.path ) );
         writer.writeOptionalAttribute ( "type", this.type );
+        writer.writeOptionalAttribute ( "placeholder", this.placeholder );
         writer.writeFlagAttribute ( "disabled", this.disabled );
         writeDefaultAttributes ( writer );
         writer.write ( " />" );
@@ -45,6 +48,11 @@ public class Input extends FormValueTagSupport
     public void setDisabled ( final boolean disabled )
     {
         this.disabled = disabled;
+    }
+
+    public void setPlaceholder ( final String placeholder )
+    {
+        this.placeholder = placeholder;
     }
 
 }

@@ -24,7 +24,7 @@ Artifact Id: ${fn:escapeXml(artifact.id) }
         <div class="form-group">
             <label for="name" class="col-sm-2 control-label">File Name</label>
             <div class="col-sm-10">
-                <input type="text" id="name" name="name" class="form-control"/>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Optional artifact name"/>
             </div>
         </div>
         

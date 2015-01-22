@@ -21,7 +21,7 @@
         
         <div class="form-group">
             <label for="name">File Name</label>
-            <input type="text" id="name" name="name" class="form-control"/>
+            <input type="text" id="name" name="name" class="form-control" placeholder="Optional alternate file name"/>
         </div>
         
         <div class="form-group">

@@ -26,7 +26,7 @@
     </h:formEntry>
     
     <h:formEntry label="Name" command="command" path="name">
-        <form:input path="name" cssClass="form-control"/>
+        <form:input path="name" cssClass="form-control" placeholder="Optional channel alias"/>
     </h:formEntry>
 	
     <input type="submit" value="Submit" class="btn btn-primary">
