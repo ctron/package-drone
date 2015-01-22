@@ -13,18 +13,33 @@ package de.dentrassi.pm.storage.web.menu;
 import java.util.Collections;
 import java.util.List;
 
+import de.dentrassi.pm.storage.web.Modifier;
+
 public class SubMenu extends Node
 {
     private final List<Node> nodes;
 
+    private final Modifier modifier;
+
     public SubMenu ( final String label, final List<Node> nodes )
     {
-        super ( label );
+        this ( label, nodes, Modifier.DEFAULT );
+    }
+
+    public SubMenu ( final String label, final List<Node> nodes, final Modifier modifier )
+    {
+        super ( label, null );
         this.nodes = Collections.unmodifiableList ( nodes );
+        this.modifier = modifier;
     }
 
     public List<Node> getNodes ()
     {
         return this.nodes;
+    }
+
+    public Modifier getModifier ()
+    {
+        return this.modifier;
     }
 }

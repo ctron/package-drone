@@ -34,6 +34,11 @@ public class MenuEntry implements Comparable<MenuEntry>
 
     private final String icon;
 
+    public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon )
+    {
+        this ( category, categoryOrder, label, entryOrder, target, modifier, icon, false );
+    }
+
     public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow )
     {
         this.category = category;

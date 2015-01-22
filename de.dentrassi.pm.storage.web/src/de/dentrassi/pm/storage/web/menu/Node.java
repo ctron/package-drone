@@ -17,13 +17,22 @@ public abstract class Node
 {
     private final String label;
 
-    public Node ( final String label )
+    private final String icon;
+
+    public Node ( final String label, final String icon )
     {
         this.label = label;
+        this.icon = icon;
     }
 
     public String getLabel ()
     {
         return this.label;
     }
+
+    public String getIcon ()
+    {
+        return this.icon;
+    }
+
 }

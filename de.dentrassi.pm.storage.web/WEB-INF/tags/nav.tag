@@ -19,20 +19,20 @@
         </c:when>
         
         <c:when test="${entry.getClass().simpleName eq 'SubMenu' }">
-                <li role="presentation" class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">${fn:escapeXml(entry.label)} <span class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu">
-                         <c:forEach items="${entry.nodes }" var="subEntry">
-                            <c:choose>
-                                <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
-                                    <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
-                                    <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
-                                </c:when>
-                            </c:choose>
-                         </c:forEach>
-                    </ul>
-                </li>
-            </c:when>
+             <li role="presentation" class="dropdown">
+                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">${fn:escapeXml(entry.label)} <span class="caret"></span></a>
+                 <ul class="dropdown-menu" role="menu">
+                      <c:forEach items="${entry.nodes }" var="subEntry">
+                         <c:choose>
+                             <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
+                                 <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
+                                 <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
+                             </c:when>
+                         </c:choose>
+                      </c:forEach>
+                 </ul>
+             </li>
+         </c:when>
         
     </c:choose>
   

@@ -21,25 +21,18 @@ public class Entry extends Node
 
     private final boolean newWindow;
 
-    private final String icon;
-
     public Entry ( final String label, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow )
     {
-        super ( label );
+        super ( label, icon );
         this.target = target;
         this.modifier = modifier;
-        this.icon = icon;
+
         this.newWindow = newWindow;
     }
 
     public Modifier getModifier ()
     {
         return this.modifier;
-    }
-
-    public String getIcon ()
-    {
-        return this.icon;
     }
 
     public LinkTarget getTarget ()
