@@ -22,4 +22,6 @@ public @interface MetaKeyBinding
     public String namespace ();
 
     public String key ();
+
+    public boolean emptyAsNull () default true;
 }

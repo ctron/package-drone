@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,7 +73,14 @@ public final class MetaKeys
             final MetaKeyBinding mkb = field.getAnnotation ( MetaKeyBinding.class );
             final Object value = getValue ( field, data );
             final String stringValue = converter.convertTo ( value, String.class );
-            result.put ( new MetaKey ( mkb.namespace (), mkb.key () ), stringValue );
+            if ( ( stringValue == null || stringValue.isEmpty () ) && mkb.emptyAsNull () )
+            {
+                result.put ( new MetaKey ( mkb.namespace (), mkb.key () ), null );
+            }
+            else
+            {
+                result.put ( new MetaKey ( mkb.namespace (), mkb.key () ), stringValue );
+            }
         }
 
         return result;
