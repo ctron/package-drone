@@ -8,11 +8,9 @@
 <%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form"%>
 
-<h:main title="P2 Information" subtitle="${pm:channel(channel) }">
+<h:main title="Edit P2 Channel Information" subtitle="${pm:channel(channel) }">
 
-<h:buttonbar menu="${menuManager.getActions(channel) }"/>
-
-<h:nav menu="${menuManager.getViews(channel) }"/>
+<h:breadcrumbs/>
 
 <div class="container form-padding">
 

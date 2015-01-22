@@ -28,6 +28,8 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 
 @Controller
 @RequestMapping ( value = "/p2.repo" )
@@ -83,23 +85,38 @@ public class P2Controller
         model.put ( "channel", channel );
         model.put ( "command", channelInfo );
 
+        fillBreadcrumbs ( model, channel.getId (), "Edit" );
+
         return new ModelAndView ( "p2edit", model );
+    }
+
+    private void fillBreadcrumbs ( final Map<String, Object> model, final String channelId, final String action )
+    {
+        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), new Entry ( "Channel", "/channel/" + channelId + "/view" ), new Entry ( action ) ) );
     }
 
     @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.POST )
     public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final P2ChannelInformation data, final BindingResult result ) throws Exception
     {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return new ModelAndView ( "redirect:/channelNotFound" );
+        }
+
         final Map<String, Object> model = new HashMap<> ();
 
         if ( result.hasErrors () )
         {
+            model.put ( "channel", channel );
             model.put ( "command", data );
+            fillBreadcrumbs ( model, channelId, "Edit" );
             return new ModelAndView ( "p2edit", model );
         }
 
         final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
 
-        this.service.getChannel ( channelId ).applyMetaData ( providedMetaData );
+        channel.applyMetaData ( providedMetaData );
 
         return new ModelAndView ( "redirect:/p2.repo/" + channelId + "/info", model );
     }
