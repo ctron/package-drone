@@ -1,0 +1,25 @@
+<%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" body-content="empty"%>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
+
+<c:if test="${not empty breadcrumbs }">
+
+<ol id="breadcrumbs" class="breadcrumb">
+    <c:forEach var="entry" items="${breadcrumbs.entries }" >
+        <c:set var="active" value="${web:active(pageContext.request, entry.target) }"/>
+        <c:choose>
+            <c:when test="${entry.link and empty active }">
+                <li><a href="${entry.target }">${fn:escapeXml(entry.label) }</a></li>
+            </c:when>
+            <c:otherwise>
+                <li class="${active }">${fn:escapeXml(entry.label) }</li>
+            </c:otherwise>
+        </c:choose>
+    </c:forEach>
+</ol>
+
+</c:if>

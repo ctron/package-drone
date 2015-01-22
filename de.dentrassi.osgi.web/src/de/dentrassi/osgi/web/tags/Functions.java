@@ -16,6 +16,11 @@ public class Functions
 {
     public static String active ( final HttpServletRequest request, final String targetUrl )
     {
+        if ( targetUrl == null )
+        {
+            return "";
+        }
+
         return request.getServletPath ().equals ( targetUrl ) ? "active" : "";
     }
 }

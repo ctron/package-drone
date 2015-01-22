@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" body-content="empty"%>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -28,4 +28,3 @@
 
     <c:if test="${not empty after }"><jsp:invoke fragment="after" /></c:if>
 </ul>
-

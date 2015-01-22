@@ -44,6 +44,8 @@ import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 import de.dentrassi.pm.storage.web.internal.Activator;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
@@ -265,6 +267,8 @@ public class ChannelController implements InterfaceExtender
         model.put ( "channel", channel );
         model.put ( "addAspects", infos.values () );
 
+        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
+
         return model;
     }
 
@@ -298,6 +302,8 @@ public class ChannelController implements InterfaceExtender
         edit.setName ( channel.getName () );
 
         model.put ( "command", edit );
+
+        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Edit" ) ) );
 
         return new ModelAndView ( "channel/edit", model );
     }

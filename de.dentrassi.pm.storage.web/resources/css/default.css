@@ -41,10 +41,12 @@ ul.button-bar > li {
 	margin-bottom: 1em;
 }
 
-.main-title {
-	border-bottom: 1pt solid #CCC;
-	margin-bottom: 1em;
+#breadcrumbs {
+	margin-left: 1em;
+	margin-right: 1em;
 }
+
+
 
 .button-bar {
 	border-bottom: 1px solid #EEE;
