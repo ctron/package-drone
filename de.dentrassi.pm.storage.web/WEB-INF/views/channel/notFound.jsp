@@ -6,9 +6,11 @@
 
 <h:main title="Channel not found - ${channelId }">
 
-<ul class="button-bar">
-<li><a class="btn btn-default" href="<c:url value="/channel"/>">All channels</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <li><a class="btn btn-default" href="<c:url value="/channel"/>">All channels</a></li>
+    </jsp:attribute>
+</h:buttonbar>
 
 <h:error title="Not found">Channel ${channelId } does not exists!</h:error>
 

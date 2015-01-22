@@ -32,12 +32,13 @@ ul.validation-error li {
 /* button bar */
 
 ul.button-bar {
-	padding-bottom: 1em;
 	padding-left: 1em;
+	padding-bottom: .4em;
 }
 
 ul.button-bar > li {
-	display: inline;
+	display: inline-block;
+	margin-bottom: 1em;
 }
 
 .main-title {
@@ -45,17 +46,8 @@ ul.button-bar > li {
 	margin-bottom: 1em;
 }
 
-.main-title header {
-	padding-left: 1em;
-	padding-bottom: 1em;
-}
-
-.main-title h1 {
-	margin-top: 0;
-}
-
 .button-bar {
-	border-bottom: 1px solid #CCC;
+	border-bottom: 1px solid #EEE;
 	padding-bottom: 1em;
 }
 

@@ -16,6 +16,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
@@ -25,8 +26,10 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;
+import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.internal.Activator;
 import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
+import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @RequestMapping ( value = "/setup" )
@@ -35,7 +38,7 @@ public class SetupController extends DefaultMenuExtender
 {
     public SetupController ()
     {
-        addEntry ( "/setup", "Setup", 1000 );
+        addEntry ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, new LinkTarget ( "/setup" ), Modifier.DEFAULT, null, false ) );
     }
 
     @RequestMapping ( method = RequestMethod.GET )

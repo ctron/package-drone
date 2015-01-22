@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,7 +37,7 @@ public class LinkTarget
 
     public String render ( final ServletRequest request )
     {
-        return render ( new ReplaceSource () {
+        return expand ( new ReplaceSource () {
 
             @Override
             public String replace ( final String context, final String key )
@@ -52,7 +52,7 @@ public class LinkTarget
                     return v.toString ();
                 }
             }
-        } );
+        } ).getUrl ();
     }
 
     public String render ( final PageContext pageContext )
@@ -76,17 +76,27 @@ public class LinkTarget
 
     public String render ( final Map<String, ?> model )
     {
-        return render ( StringReplacer.newExtendedSource ( model ) );
+        return expand ( StringReplacer.newExtendedSource ( model ) ).getUrl ();
     }
 
-    public String render ( final ReplaceSource source )
+    public LinkTarget expand ( final Map<String, ?> model )
+    {
+        return expand ( StringReplacer.newExtendedSource ( model ) );
+    }
+
+    public LinkTarget expand ( final ReplaceSource source )
     {
         if ( this.url == null || source == null )
         {
-            return this.url;
+            return this;
         }
 
-        return StringReplacer.replace ( this.url, source, PATTERN, false );
+        return new LinkTarget ( StringReplacer.replace ( this.url, source, PATTERN, false ) );
+    }
+
+    public String getUrl ()
+    {
+        return this.url;
     }
 
     private static Set<String> getRawPaths ( final Method method )

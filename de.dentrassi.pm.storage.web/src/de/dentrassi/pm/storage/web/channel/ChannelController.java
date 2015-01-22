@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +98,7 @@ public class ChannelController implements InterfaceExtender
         this.generators.close ();
     }
 
-    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT ) );
+    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT, null ) );
 
     @Override
     public List<MenuEntry> getMainMenuEntries ()
@@ -316,6 +317,29 @@ public class ChannelController implements InterfaceExtender
             model.put ( "command", data );
             return new ModelAndView ( "channel/edit", model );
         }
+    }
+
+    @Override
+    public List<MenuEntry> getActions ( final Object object )
+    {
+        if ( object instanceof Channel )
+        {
+            final Channel channel = (Channel)object;
+
+            final Map<String, Object> model = new HashMap<> ( 1 );
+            model.put ( "channelId", channel.getId () );
+
+            final List<MenuEntry> result = new LinkedList<> ();
+
+            result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
+            result.add ( new MenuEntry ( "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
+            result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
+
+            return result;
+        }
+        return null;
     }
 
 }

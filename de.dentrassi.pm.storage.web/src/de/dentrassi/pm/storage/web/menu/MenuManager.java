@@ -107,7 +107,7 @@ public class MenuManager
 
     private Entry convertEntry ( final MenuEntry entry )
     {
-        return new Entry ( entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.isNewWindow () );
+        return new Entry ( entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow () );
     }
 
 }

@@ -74,20 +74,15 @@ div.dz-error-message {
 
 </style>
 
-<ul class="button-bar">
-    <li><a class="btn btn-primary" href="add">Add Artifact</a></li>
-    <li><a class="btn btn-default" href="edit">Edit Channel</a></li>
-    <li><a class="btn btn-default" href="aspects">Configure Aspects</a></li>
-    
-    <li><a class="btn btn-danger" href="delete"><span class="glyphicon glyphicon-trash"></span> Delete Channel</a></li>
-    <li><a class="btn btn-warning" href="clear">Clear Channel</a></li>
-    
+<h:buttonbar menu="${menuManager.getActions(channel) }">
+    <jsp:attribute name="after">
     <li>
        <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
     </li>
     
     <li id="upload-refresh" style="display: none;"><a class="btn btn-success" href="">Reload</a></li>
-</ul>
+    </jsp:attribute>
+</h:buttonbar>
 
 <div class="container-fluid" id="upload-container" style="display:none;">
 <div class="row">

@@ -7,9 +7,11 @@
 
 <h:main title="Add artifact">
 
-<ul class="button-bar">
-	<li><a class="btn btn-default" href="view">Cancel</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <li><a class="btn btn-default" href="view">Cancel</a></li>
+    </jsp:attribute>
+</h:buttonbar>
 
 <h:genBlock>
 

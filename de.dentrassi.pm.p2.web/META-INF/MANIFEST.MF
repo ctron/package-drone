@@ -12,4 +12,6 @@ Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
- de.dentrassi.pm.storage;version="1.0.0"
+ de.dentrassi.pm.storage;version="1.0.0",
+ org.eclipse.scada.utils.str;version="0.2.0"
+Service-Component: OSGI-INF/interfaceExtender.xml

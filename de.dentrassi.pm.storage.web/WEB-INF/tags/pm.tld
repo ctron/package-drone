@@ -12,5 +12,11 @@
 		<function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
 		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.Channel)</function-signature>
 	</function>
-
+	
+	<function>
+        <name>modifier</name>
+        <function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
+        <function-signature>java.lang.String modifier(java.lang.String,de.dentrassi.pm.storage.web.Modifier)</function-signature>
+    </function>
+    
 </taglib>

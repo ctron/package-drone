@@ -13,7 +13,6 @@ package de.dentrassi.pm.storage.web.menu;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 
 public class DefaultMenuExtender implements InterfaceExtender
@@ -30,9 +29,9 @@ public class DefaultMenuExtender implements InterfaceExtender
         return this.entries;
     }
 
-    public void addEntry ( final String target, final String label, final int order )
+    public void addEntry ( final MenuEntry entry )
     {
-        this.entries.add ( new MenuEntry ( label, order, new LinkTarget ( target ), null ) );
+        this.entries.add ( entry );
     }
 
 }

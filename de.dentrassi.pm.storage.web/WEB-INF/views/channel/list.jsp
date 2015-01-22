@@ -6,9 +6,11 @@
 
 <h:main title="Channels">
 
-<ul class="button-bar">
-<li><a class="btn btn-primary" role="button" href="channel/create">Create Channel</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <li><a class="btn btn-primary" role="button" href="channel/create">Create Channel</a></li>
+    </jsp:attribute>
+</h:buttonbar>
 
 <table class="table table-striped" style="width: 100%" id="channels">
 

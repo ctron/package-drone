@@ -40,9 +40,9 @@
 
 <body>
 
-<h:menu menu="${menuManager.mainMenu }">
+<h:navbar menu="${menuManager.mainMenu }">
     <jsp:attribute name="brand"><a class="navbar-brand" href="<c:url value="/"/>">Package Drone</a></jsp:attribute>
-</h:menu>
+</h:navbar>
 
 <div class="page-header">
 <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>

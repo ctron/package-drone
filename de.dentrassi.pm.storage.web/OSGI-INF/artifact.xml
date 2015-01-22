@@ -3,6 +3,7 @@
    <implementation class="de.dentrassi.pm.storage.web.artifact.ArtifactController"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.web.artifact.ArtifactController"/>
+      <provide interface="de.dentrassi.pm.storage.web.InterfaceExtender"/>
     </service>
 
    <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/> 

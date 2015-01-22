@@ -7,9 +7,11 @@
 
 <h:main title="Edit channel - ${command.id }">
 
-<ul class="button-bar">
-    <li><a class="btn btn-default" href="view">Back</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <li><a class="btn btn-default" href="view">Back</a></li>
+    </jsp:attribute>
+</h:buttonbar>
 
 <div class="container-fluid">
 

@@ -17,5 +17,6 @@ public enum Modifier
     SUCCESS,
     INFO,
     WARNING,
-    ERROR;
+    DANGER,
+    LINK;
 }

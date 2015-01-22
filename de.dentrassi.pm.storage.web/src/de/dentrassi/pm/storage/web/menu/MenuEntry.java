@@ -32,7 +32,9 @@ public class MenuEntry implements Comparable<MenuEntry>
 
     private final boolean newWindow;
 
-    public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final boolean newWindow )
+    private final String icon;
+
+    public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow )
     {
         this.category = category;
         this.categoryOrder = category != null ? categoryOrder : entryOrder;
@@ -40,10 +42,11 @@ public class MenuEntry implements Comparable<MenuEntry>
         this.entryOrder = category != null ? entryOrder : 0;
         this.target = target;
         this.modifier = modifier;
+        this.icon = icon;
         this.newWindow = newWindow;
     }
 
-    public MenuEntry ( final String label, final int entryOrder, final LinkTarget target, final Modifier modifier )
+    public MenuEntry ( final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon )
     {
         this.category = null;
         this.categoryOrder = entryOrder;
@@ -51,7 +54,13 @@ public class MenuEntry implements Comparable<MenuEntry>
         this.entryOrder = 0;
         this.target = target;
         this.modifier = modifier;
+        this.icon = icon;
         this.newWindow = false;
+    }
+
+    public String getIcon ()
+    {
+        return this.icon;
     }
 
     public boolean isNewWindow ()

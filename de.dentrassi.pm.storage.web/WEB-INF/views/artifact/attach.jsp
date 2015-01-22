@@ -7,9 +7,11 @@
 
 <h:main title="Attach Artifact to '${fn:escapeXml(artifact.name) }'">
 
-<ul class="button-bar">
-	<li><a class="btn btn-default" href="view">Back</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <li><a class="btn btn-default" href="view">Back</a></li>
+    </jsp:attribute>
+</h:buttonbar>
 
 <p>
 Artifact Id: ${fn:escapeXml(artifact.id) }
