@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,9 @@ import java.util.Set;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
-public class BundleInformation
+import de.dentrassi.pm.osgi.TranslatedInformation;
+
+public class BundleInformation implements TranslatedInformation
 {
     public static class PackageImport
     {
@@ -245,6 +247,12 @@ public class BundleInformation
 
     private String vendor;
 
+    private String docUrl;
+
+    private String license;
+
+    private String description;
+
     private boolean singleton;
 
     private String bundleLocalization;
@@ -269,6 +277,36 @@ public class BundleInformation
         {
             this.requiredExecutionEnvironments = new LinkedList<> ();
         }
+    }
+
+    public void setDescription ( final String description )
+    {
+        this.description = description;
+    }
+
+    public String getDescription ()
+    {
+        return this.description;
+    }
+
+    public void setLicense ( final String license )
+    {
+        this.license = license;
+    }
+
+    public String getLicense ()
+    {
+        return this.license;
+    }
+
+    public void setDocUrl ( final String docUrl )
+    {
+        this.docUrl = docUrl;
+    }
+
+    public String getDocUrl ()
+    {
+        return this.docUrl;
     }
 
     public List<String> getRequiredExecutionEnvironments ()
@@ -326,6 +364,7 @@ public class BundleInformation
         return this.singleton;
     }
 
+    @Override
     public Map<String, Properties> getLocalization ()
     {
         return this.localization;

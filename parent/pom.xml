@@ -83,7 +83,9 @@
 		<module>../de.dentrassi.pm.logging.jul</module>
 		
 		<module>../de.dentrassi.pm.maven</module>
+		
 		<module>../de.dentrassi.pm.osgi</module>
+		<module>../de.dentrassi.pm.osgi.web</module>
 		
 		<module>../de.dentrassi.pm.p2</module>
 		<module>../de.dentrassi.pm.p2.web</module>

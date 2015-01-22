@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,8 +26,9 @@ import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.utils.Filters.Multi;
 import de.dentrassi.osgi.utils.Filters.Pair;
+import de.dentrassi.pm.osgi.TranslatedInformation;
 
-public class FeatureInformation
+public class FeatureInformation implements TranslatedInformation
 {
     private String id;
 
@@ -546,6 +547,7 @@ public class FeatureInformation
         this.localization = localization;
     }
 
+    @Override
     public Map<String, Properties> getLocalization ()
     {
         return this.localization;

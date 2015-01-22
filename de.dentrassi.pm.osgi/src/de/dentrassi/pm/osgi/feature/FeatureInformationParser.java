@@ -99,19 +99,19 @@ public class FeatureInformationParser
             if ( "description".equals ( node.getNodeName () ) )
             {
                 result.setDescriptionUrl ( makeNull ( ele.getAttribute ( "url" ) ) );
-                result.setDescription ( ele.getTextContent () );
+                result.setDescription ( trim ( ele.getTextContent () ) );
             }
 
             if ( "copyright".equals ( node.getNodeName () ) )
             {
                 result.setCopyrightUrl ( makeNull ( ele.getAttribute ( "url" ) ) );
-                result.setCopyright ( ele.getTextContent () );
+                result.setCopyright ( trim ( ele.getTextContent () ) );
             }
 
             if ( "license".equals ( node.getNodeName () ) )
             {
                 result.setLicenseUrl ( makeNull ( ele.getAttribute ( "url" ) ) );
-                result.setLicense ( ele.getTextContent () );
+                result.setLicense ( trim ( ele.getTextContent () ) );
             }
 
             if ( "includes".equals ( node.getNodeName () ) )
@@ -133,6 +133,15 @@ public class FeatureInformationParser
         attachLocalization ( result );
 
         return result;
+    }
+
+    private String trim ( final String text )
+    {
+        if ( text == null )
+        {
+            return text;
+        }
+        return text.trim ();
     }
 
     private String makeNull ( final String value )
