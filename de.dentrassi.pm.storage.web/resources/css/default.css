@@ -31,13 +31,9 @@ ul.validation-error li {
 
 /* button bar */
 
-ul.button-bar {
+.button-bar {
 	padding-left: 1em;
 	padding-bottom: .4em;
-}
-
-ul.button-bar > li {
-	display: inline-block;
 	margin-bottom: 1em;
 }
 
@@ -45,8 +41,6 @@ ul.button-bar > li {
 	margin-left: 1em;
 	margin-right: 1em;
 }
-
-
 
 .button-bar {
 	border-bottom: 1px solid #EEE;

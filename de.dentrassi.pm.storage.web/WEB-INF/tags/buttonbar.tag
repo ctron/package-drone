@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" body-content="empty"%>
+<%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -9,7 +9,7 @@
 <%@attribute name="before" fragment="true"%>
 <%@attribute name="after" fragment="true"%>
 
-<ul class="button-bar">
+<div class="button-bar btn-toolbar" role="toolbar">
 
     <c:if test="${not empty before }"><jsp:invoke fragment="before" /></c:if>
 
@@ -19,7 +19,9 @@
         <c:choose>
             <c:when test="${entry.getClass().simpleName eq 'Entry'}">
                 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
-                <li><a role="button" class="btn ${pm:modifier('btn-', entry.modifier) }" href="${url}"><h:menuEntry entry="${entry }" /></a></li>
+                <div class="btn-group" role="group">
+                    <a role="button" class="btn ${pm:modifier('btn-', entry.modifier) }" href="${url}"><h:menuEntry entry="${entry }" /></a>
+                </div>
             </c:when>
         </c:choose>
     </c:forEach>
@@ -27,4 +29,4 @@
 </c:if>
 
     <c:if test="${not empty after }"><jsp:invoke fragment="after" /></c:if>
-</ul>
+</div>

@@ -28,5 +28,23 @@ public abstract class AbstractChannelnterfaceExtender implements InterfaceExtend
         return null;
     }
 
-    protected abstract List<MenuEntry> getChannelAction ( Channel channel );
+    protected List<MenuEntry> getChannelAction ( final Channel channel )
+    {
+        return null;
+    }
+
+    @Override
+    public List<MenuEntry> getViews ( final Object object )
+    {
+        if ( object instanceof Channel )
+        {
+            return getChannelViews ( (Channel)object );
+        }
+        return null;
+    }
+
+    protected List<MenuEntry> getChannelViews ( final Channel channel )
+    {
+        return null;
+    }
 }

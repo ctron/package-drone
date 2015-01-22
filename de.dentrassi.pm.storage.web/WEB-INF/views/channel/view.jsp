@@ -41,8 +41,6 @@ div.dz-error-message {
 #upload {
     margin-bottom: 1em;
 }
-#upload-refresh {
-}
 
 #dropzone {
     border: 2pt dashed #BBB;
@@ -53,8 +51,7 @@ div.dz-error-message {
     padding: 6px 12px;
     
     text-align: center;
-    vertical-align: middle;
-    
+        
     cursor: crosshair;
     
      -webkit-touch-callout: none;
@@ -76,11 +73,15 @@ div.dz-error-message {
 
 <h:buttonbar menu="${menuManager.getActions(channel) }">
     <jsp:attribute name="after">
-    <li>
-       <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
-    </li>
+    <div class="btn-group" role="group">
+        <div class="btn">
+            <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
+        </div>
+    </div>
     
-    <li id="upload-refresh" style="display: none;"><a class="btn btn-success" href="">Reload</a></li>
+    <div class="btn-group" role="group" id="upload-refresh" style="display: none;">
+        <a class="btn btn-success" href="">Reload</a>
+    </div>
     </jsp:attribute>
 </h:buttonbar>
 
