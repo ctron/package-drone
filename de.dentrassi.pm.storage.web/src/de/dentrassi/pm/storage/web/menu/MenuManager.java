@@ -46,6 +46,11 @@ public class MenuManager
         return getEntries ( ( i ) -> i.getActions ( context ) );
     }
 
+    public Menu getViews ( final Object context )
+    {
+        return getEntries ( ( i ) -> i.getViews ( context ) );
+    }
+
     protected Menu getEntries ( final Function<InterfaceExtender, List<MenuEntry>> func )
     {
         final List<MenuEntry> result = new LinkedList<> ();

@@ -342,4 +342,24 @@ public class ChannelController implements InterfaceExtender
         return null;
     }
 
+    @Override
+    public List<MenuEntry> getViews ( final Object object )
+    {
+        if ( object instanceof Channel )
+        {
+            final Channel channel = (Channel)object;
+
+            final Map<String, Object> model = new HashMap<> ( 1 );
+            model.put ( "channelId", channel.getId () );
+
+            final List<MenuEntry> result = new LinkedList<> ();
+
+            result.add ( new MenuEntry ( "List", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "Details", 200, LinkTarget.createFromController ( ChannelController.class, "details" ).expand ( model ), Modifier.DEFAULT, null ) );
+
+            return result;
+        }
+        return null;
+    }
+
 }

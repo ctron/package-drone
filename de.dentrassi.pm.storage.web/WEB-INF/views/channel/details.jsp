@@ -11,7 +11,8 @@
 
 <h:buttonbar menu="${menuManager.getActions(channel) }"/>
 
-<h:channelNav channel="${channel}"/>
+<%--<h:channelNav channel="${channel}"/> --%>
+<h:nav menu="${menuManager.getViews(channel) }"/>
 
 <h:metaDataTable metaData="${channel.metaData}"/>
 
