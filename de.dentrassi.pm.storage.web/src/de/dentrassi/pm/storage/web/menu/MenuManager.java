@@ -35,18 +35,18 @@ public class MenuManager
         this.tracker.close ();
     }
 
-    public List<MenuEntry> getMainMenuEntries ()
+    public Menu getMainMenu ()
     {
         // this should be cached
         return getEntries ( InterfaceExtender::getMainMenuEntries );
     }
 
-    public List<MenuEntry> getActions ( final Object context )
+    public Menu getActions ( final Object context )
     {
         return getEntries ( ( i ) -> i.getActions ( context ) );
     }
 
-    protected List<MenuEntry> getEntries ( final Function<InterfaceExtender, List<MenuEntry>> func )
+    protected Menu getEntries ( final Function<InterfaceExtender, List<MenuEntry>> func )
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
@@ -59,8 +59,55 @@ public class MenuManager
             }
         }
 
-        Collections.sort ( result );
-
-        return result;
+        return convert ( result );
     }
+
+    protected Menu convert ( final List<MenuEntry> entries )
+    {
+        if ( entries == null )
+        {
+            return null;
+        }
+
+        Collections.sort ( entries );
+
+        final List<Node> nodes = new LinkedList<> ();
+
+        List<Node> currentNodes = nodes;
+        String currentCategory = null;
+
+        for ( final MenuEntry entry : entries )
+        {
+            if ( entry.getCategory () == null )
+            {
+                // main menu entry
+                currentNodes = nodes;
+                currentCategory = null;
+            }
+            else
+            {
+                // sub menu entry
+                if ( currentCategory == null || !currentCategory.equals ( entry.getCategory () ) )
+                {
+                    // switch category
+                    currentNodes = new LinkedList<> ();
+                    currentCategory = entry.getCategory ();
+                    nodes.add ( new SubMenu ( entry.getCategory (), currentNodes ) );
+                }
+                else
+                {
+                    // same category
+                }
+            }
+            currentNodes.add ( convertEntry ( entry ) );
+        }
+
+        return new Menu ( nodes );
+    }
+
+    private Entry convertEntry ( final MenuEntry entry )
+    {
+        return new Entry ( entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.isNewWindow () );
+    }
+
 }

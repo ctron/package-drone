@@ -13,6 +13,9 @@ package de.dentrassi.pm.storage.web.menu;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.storage.web.Modifier;
 
+/**
+ * A menu entry from an extension point
+ */
 public class MenuEntry implements Comparable<MenuEntry>
 {
     private final String category;
@@ -76,16 +79,33 @@ public class MenuEntry implements Comparable<MenuEntry>
         return this.modifier;
     }
 
+    protected String getMainLabel ()
+    {
+        if ( this.category != null )
+        {
+            return this.category;
+        }
+        return this.label;
+    }
+
     @Override
     public int compareTo ( final MenuEntry o )
     {
-        final int rc = Integer.compare ( this.categoryOrder, o.categoryOrder );
-
+        // first by category
+        int rc = Integer.compare ( this.categoryOrder, o.categoryOrder );
         if ( rc != 0 )
         {
             return rc;
         }
 
-        return Integer.compare ( this.entryOrder, o.entryOrder );
+        // then by entry
+        rc = Integer.compare ( this.entryOrder, o.entryOrder );
+        if ( rc != 0 )
+        {
+            return rc;
+        }
+
+        // last by label
+        return getMainLabel ().compareTo ( o.getMainLabel () );
     }
 }

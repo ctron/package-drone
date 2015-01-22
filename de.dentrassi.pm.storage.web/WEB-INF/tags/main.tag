@@ -1,8 +1,12 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
-<%@attribute name="title" required="true" %>
-<%@attribute name="subtitle" %>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+
+<%@attribute name="title" required="true" %>
+<%@attribute name="subtitle" %>
+
 <!DOCTYPE html>
 <html>
 
@@ -36,31 +40,9 @@
 
 <body>
 
-
-<nav class="navbar navbar-default">
-<div class="container-fluid">
-
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="<c:url value="/"/>">Package Drone</a>
-    </div>
-    
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-    <ul class="nav navbar-nav">
-    <c:forEach items="${menuManager.entries }" var="entry">
-        <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
-        <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${entry.newWindow }"> target="_blank"</c:if> ><c:out value="${entry.label}" escapeXml="true"/></a></li>
-        </c:forEach>
-    </ul>
-    </div>
-
-</div>
-</nav>
+<h:menu menu="${menuManager.mainMenu }">
+    <jsp:attribute name="brand"><a class="navbar-brand" href="<c:url value="/"/>">Package Drone</a></jsp:attribute>
+</h:menu>
 
 <div class="page-header">
 <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
