@@ -1,4 +1,4 @@
-package de.dentrassi.pm.p2.aspect;
+package de.dentrassi.pm.p2.internal.aspect;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

@@ -6,7 +6,9 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Web-ContextPath: /p2
-Import-Package: com.google.common.io;version="18.0.0",
+Import-Package: com.google.common.escape;version="18.0.0",
+ com.google.common.html;version="18.0.0",
+ com.google.common.io;version="18.0.0",
  com.google.gson;version="2.3.1",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.aspect.aggregate;version="1.0.0",
@@ -25,6 +27,7 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.osgi.framework;version="1.7.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Export-Package: de.dentrassi.pm.p2.servlet;version="1.0.0"
+Export-Package: de.dentrassi.pm.p2.aspect;version="1.0.0",
+ de.dentrassi.pm.p2.servlet;version="1.0.0"
 Service-Component: OSGI-INF/aspect.xml
 Bundle-ActivationPolicy: lazy

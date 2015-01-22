@@ -1,0 +1,106 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
+package de.dentrassi.pm.p2.web;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedMap;
+
+import javax.validation.Valid;
+
+import de.dentrassi.osgi.web.Controller;
+import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.service.StorageService;
+
+@Controller
+@RequestMapping ( value = "/p2.repo" )
+@ViewResolver ( "/WEB-INF/views/%s.jsp" )
+public class P2Controller
+{
+    private StorageService service;
+
+    public void setService ( final StorageService service )
+    {
+        this.service = service;
+    }
+
+    @RequestMapping ( value = "/{channelId}/info" )
+    public ModelAndView info ( @PathVariable ( "channelId" ) final String channelId ) throws Exception
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return new ModelAndView ( "redirect:/channelNotFound" );
+        }
+
+        final SortedMap<MetaKey, String> metaData = channel.getMetaData ();
+
+        final P2ChannelInformation channelInfo = new P2ChannelInformation ();
+        MetaKeys.bind ( channelInfo, metaData );
+
+        model.put ( "channel", channel );
+        model.put ( "channelInfo", channelInfo );
+
+        return new ModelAndView ( "p2info", model );
+    }
+
+    @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.GET )
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId ) throws Exception
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return new ModelAndView ( "redirect:/channelNotFound" );
+        }
+
+        final SortedMap<MetaKey, String> metaData = channel.getMetaData ();
+
+        final P2ChannelInformation channelInfo = new P2ChannelInformation ();
+
+        MetaKeys.bind ( channelInfo, metaData );
+
+        model.put ( "channel", channel );
+        model.put ( "command", channelInfo );
+
+        return new ModelAndView ( "p2edit", model );
+    }
+
+    @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.POST )
+    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final P2ChannelInformation data, final BindingResult result ) throws Exception
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        if ( result.hasErrors () )
+        {
+            model.put ( "command", data );
+            return new ModelAndView ( "p2edit", model );
+        }
+
+        final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
+
+        this.service.getChannel ( channelId ).applyMetaData ( providedMetaData );
+
+        return new ModelAndView ( "redirect:/p2.repo/" + channelId + "/info", model );
+    }
+}

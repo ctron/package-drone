@@ -78,6 +78,16 @@ public class MenuEntry implements Comparable<MenuEntry>
         return this.category;
     }
 
+    public int getCategoryOrder ()
+    {
+        return this.categoryOrder;
+    }
+
+    public int getEntryOrder ()
+    {
+        return this.entryOrder;
+    }
+
     public String getLabel ()
     {
         return this.label;

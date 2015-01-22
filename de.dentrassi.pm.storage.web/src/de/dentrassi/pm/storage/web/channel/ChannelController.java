@@ -127,9 +127,7 @@ public class ChannelController implements InterfaceExtender
     {
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
-        final Channel channel = this.service.createChannel ();
-
-        result.put ( "success", String.format ( "Created channel %s", channel.getId () ) );
+        this.service.createChannel ();
 
         return result;
     }

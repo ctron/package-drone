@@ -17,6 +17,11 @@ public class Functions
 {
     public static String channel ( final Channel channel )
     {
+        if ( channel == null )
+        {
+            return null;
+        }
+
         if ( channel.getName () == null )
         {
             return channel.getId ();

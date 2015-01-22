@@ -26,7 +26,7 @@
                          <c:choose>
                              <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
                                  <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
-                                 <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
+                                 <li class="${web:active(pageContext.request, url)}"><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
                              </c:when>
                          </c:choose>
                       </c:forEach>

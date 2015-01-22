@@ -4,12 +4,13 @@
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 
-<h:main title="Add artifact">
+<h:main title="Add artifact" subtitle="${pm:channel(channel) }">
 
 <h:buttonbar>
     <jsp:attribute name="before">
-        <li><a class="btn btn-default" href="view">Cancel</a></li>
+        <div class="btn-group" role="group"><a class="btn btn-default" href="view">Cancel</a></div>
     </jsp:attribute>
 </h:buttonbar>
 

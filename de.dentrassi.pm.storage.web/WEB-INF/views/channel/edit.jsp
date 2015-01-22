@@ -5,7 +5,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
-<h:main title="Edit channel - ${command.id }">
+<h:main title="Edit channel" subtitle="${command.id }">
 
 <h:breadcrumbs />
 

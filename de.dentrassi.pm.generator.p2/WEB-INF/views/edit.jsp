@@ -8,10 +8,13 @@
 
 <h:main title="Edit generated P2 feature artifact">
 
-<ul class="button-bar">
-	<li><a class="btn btn-default" href="/artifact/${artifactId }/view">Cancel</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <div class="btn-group" role="group"><a class="btn btn-default" href="/channel/${channelId }/view">Cancel</a></div>
+    </jsp:attribute>
+</h:buttonbar>
 
+<div class="container form-padding">
 <form:form action="" method="POST" cssClass="form-horizontal">
 	<fieldset>
 		<legend>Edit generated P2 feature</legend>
@@ -40,5 +43,6 @@
 		<button type="reset" class="btn btn-default">Reset</button>
 	</fieldset>
 </form:form>
+</div>
 
 </h:main>

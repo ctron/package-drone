@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.aspect;
+package de.dentrassi.pm.p2.internal.aspect;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,6 +18,7 @@ import java.util.Map;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 
 public class P2RepoChannelAggregator implements ChannelAggregator
 {

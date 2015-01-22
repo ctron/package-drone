@@ -10,9 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.menu;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.osgi.framework.FrameworkUtil;
@@ -67,13 +70,14 @@ public class MenuManager
         return convert ( result );
     }
 
-    protected Menu convert ( final List<MenuEntry> entries )
+    protected Menu convert ( List<MenuEntry> entries )
     {
         if ( entries == null )
         {
             return null;
         }
 
+        entries = condenseCategories ( entries );
         Collections.sort ( entries );
 
         final List<Node> nodes = new LinkedList<> ();
@@ -108,6 +112,50 @@ public class MenuManager
         }
 
         return new Menu ( nodes );
+    }
+
+    private List<MenuEntry> condenseCategories ( final List<MenuEntry> entries )
+    {
+        final Map<String, Integer> map = new HashMap<> ();
+        for ( final MenuEntry entry : entries )
+        {
+            final String cat = entry.getCategory ();
+            if ( cat == null )
+            {
+                continue;
+            }
+
+            final Integer prio = map.get ( cat );
+            if ( prio == null && entry.getCategoryOrder () != Integer.MAX_VALUE )
+            {
+                map.put ( cat, entry.getCategoryOrder () );
+            }
+        }
+
+        final List<MenuEntry> result = new ArrayList<> ( entries.size () );
+
+        for ( final MenuEntry entry : entries )
+        {
+            final String cat = entry.getCategory ();
+            if ( cat == null )
+            {
+                result.add ( entry );
+                continue;
+            }
+
+            final Integer prio = map.get ( cat );
+            if ( prio == null )
+            {
+                result.add ( entry );
+                map.put ( cat, entry.getCategoryOrder () );
+            }
+            else
+            {
+                result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon () ) );
+            }
+        }
+
+        return result;
     }
 
     private Entry convertEntry ( final MenuEntry entry )

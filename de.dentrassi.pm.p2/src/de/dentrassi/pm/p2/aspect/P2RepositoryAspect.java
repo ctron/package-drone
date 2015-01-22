@@ -14,6 +14,8 @@ import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.p2.internal.aspect.ExtractorImpl;
+import de.dentrassi.pm.p2.internal.aspect.P2RepoChannelAggregator;
 
 public class P2RepositoryAspect implements ChannelAspectFactory
 {

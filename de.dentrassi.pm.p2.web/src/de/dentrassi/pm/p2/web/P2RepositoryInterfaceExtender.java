@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.web;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,12 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "channelId", channel.getId () );
 
-        return Collections.singletonList ( new MenuEntry ( null, 0, "P2 Repository", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
+        final List<MenuEntry> result = new LinkedList<> ();
+
+        result.add ( new MenuEntry ( null, 0, "P2 Repository", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
+        result.add ( new MenuEntry ( "Edit", Integer.MAX_VALUE, "P2 Repository Information", 10_000, new LinkTarget ( "/p2.repo/{channelId}/edit" ).expand ( model ), Modifier.DEFAULT, null, false ) );
+
+        return result;
     }
 
     @Override
@@ -40,8 +44,8 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
         model.put ( "channelId", channel.getId () );
 
         final List<MenuEntry> result = new LinkedList<> ();
-        result.add ( new MenuEntry ( "P2", 10_000, "Information", 100, new LinkTarget ( "/p2.repo/{channelId}/info" ).expand ( model ), Modifier.INFO, null, false ) );
-        result.add ( new MenuEntry ( "P2", 10_000, "Details", 200, new LinkTarget ( "/p2.repo/{channelId}/details" ).expand ( model ), Modifier.DEFAULT, null, false ) );
+        result.add ( new MenuEntry ( null, 0, "P2", 1000, new LinkTarget ( "/p2.repo/{channelId}/info" ).expand ( model ), Modifier.INFO, null, false ) );
+        // result.add ( new MenuEntry ( "P2", 10_000, "Details", 200, new LinkTarget ( "/p2.repo/{channelId}/details" ).expand ( model ), Modifier.DEFAULT, null, false ) );
         return result;
     }
 }

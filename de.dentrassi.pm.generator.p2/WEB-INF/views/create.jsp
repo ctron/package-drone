@@ -8,9 +8,11 @@
 
 <h:main title="Create generated P2 feature artifact">
 
-<ul class="button-bar">
-	<li><a class="btn btn-default" href="/channel/${channelId }/view">Cancel</a></li>
-</ul>
+<h:buttonbar>
+    <jsp:attribute name="before">
+        <div class="btn-group" role="group"><a class="btn btn-default" href="/channel/${channelId }/view">Cancel</a></div>
+    </jsp:attribute>
+</h:buttonbar>
 
 <h:genBlock>
 

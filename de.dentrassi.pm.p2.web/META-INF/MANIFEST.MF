@@ -11,7 +11,17 @@ Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",
+ de.dentrassi.osgi.web.controller.binding;version="1.0.0",
+ de.dentrassi.osgi.web.controller.form;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.p2.aspect;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
+ de.dentrassi.pm.storage.service;version="1.0.0",
+ javax.servlet;version="3.1.0",
+ javax.servlet.http;version="3.1.0",
+ javax.servlet.jsp;version="2.3.0",
+ javax.servlet.jsp.tagext;version="2.3.0",
+ javax.validation;version="1.1.0.Final",
  org.eclipse.scada.utils.str;version="0.2.0"
-Service-Component: OSGI-INF/interfaceExtender.xml
+Service-Component: OSGI-INF/interfaceExtender.xml,
+ OSGI-INF/p2.xml

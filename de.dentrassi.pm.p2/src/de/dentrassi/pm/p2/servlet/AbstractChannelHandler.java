@@ -10,7 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.servlet;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
+import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 import de.dentrassi.pm.storage.Channel;
 
 public abstract class AbstractChannelHandler implements Handler
@@ -33,4 +35,22 @@ public abstract class AbstractChannelHandler implements Handler
             return this.channel.getId ();
         }
     }
+
+    protected String makeExternalTitle ()
+    {
+        final String p2title = getTitle ();
+
+        if ( p2title != null && !p2title.isEmpty () )
+        {
+            return p2title;
+        }
+
+        return String.format ( "Package Drone - Channel: %s", makeTitle () );
+    }
+
+    protected String getTitle ()
+    {
+        return this.channel.getMetaData ().get ( new MetaKey ( P2RepositoryAspect.ID, "title" ) );
+    }
+
 }

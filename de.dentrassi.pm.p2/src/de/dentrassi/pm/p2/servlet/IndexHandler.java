@@ -15,6 +15,8 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.html.HtmlEscapers;
+
 import de.dentrassi.pm.storage.Channel;
 
 public class IndexHandler extends AbstractChannelHandler
@@ -44,7 +46,15 @@ public class IndexHandler extends AbstractChannelHandler
         w.println ( "</head>" );
         w.println ( "<body>" );
 
-        w.format ( "<header><h1>P2 repository for channel: %s</h1></header>", makeTitle () );
+        w.format ( "<header><h1>P2 repository for channel: %s</h1>", makeTitle () );
+        {
+            final String title = getTitle ();
+            if ( title != null && !title.isEmpty () )
+            {
+                w.format ( "<h2>%s<h2>", HtmlEscapers.htmlEscaper ().escape ( title ) );
+            }
+        }
+        w.println ( "</header>" );
 
         w.println ( "<ul>" );
         w.println ( "<li><a href=\"content.xml\">content.xml</a></li>" );
@@ -55,5 +65,4 @@ public class IndexHandler extends AbstractChannelHandler
         w.println ( "</body>" );
         w.println ( "</html>" );
     }
-
 }

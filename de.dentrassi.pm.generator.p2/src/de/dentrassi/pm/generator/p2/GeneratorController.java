@@ -72,6 +72,7 @@ public class GeneratorController
         MetaKeys.bind ( data, art.getInformation ().getMetaData () );
 
         model.put ( "command", data );
+        model.put ( "channelId", art.getChannel ().getId () );
 
         return new ModelAndView ( "edit", model );
     }

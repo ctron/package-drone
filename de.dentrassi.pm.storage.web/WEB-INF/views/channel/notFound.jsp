@@ -4,7 +4,7 @@
 <%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<h:main title="Channel not found - ${channelId }">
+<h:main title="Channel not found" subtitle="${channelId }">
 
 <h:buttonbar>
     <jsp:attribute name="before">

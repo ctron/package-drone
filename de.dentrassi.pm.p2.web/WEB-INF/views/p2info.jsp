@@ -7,12 +7,18 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
 
-<h:main title="Channel" subtitle="${pm:channel(channel) }">
+<h:main title="P2 Information" subtitle="${pm:channel(channel) }">
 
 <h:buttonbar menu="${menuManager.getActions(channel) }"/>
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<h:metaDataTable metaData="${channel.metaData}"/>
+<table class="table">
+
+<tr>
+    <th>Repository Title<th><td>${fn:escapeXml(channelInfo.title)}</td>
+</tr>
+
+</table>
 
 </h:main>

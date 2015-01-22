@@ -23,6 +23,10 @@ ul.validation-error li {
 	margin-right: 1em;
 }
 
+.form-padding {
+	padding-top: 1em;
+}
+
 /* boxes */
 
 .box {

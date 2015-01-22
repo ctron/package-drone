@@ -8,7 +8,7 @@
 
 <h:buttonbar>
     <jsp:attribute name="before">
-        <li><a class="btn btn-primary" role="button" href="channel/create">Create Channel</a></li>
+        <div class="btn-group" role="group"><a class="btn btn-primary" role="button" href="channel/create">Create Channel</a></div>
     </jsp:attribute>
 </h:buttonbar>
 

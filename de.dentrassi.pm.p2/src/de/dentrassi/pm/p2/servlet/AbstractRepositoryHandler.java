@@ -26,7 +26,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
 
-import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.Channel;
 
@@ -137,18 +136,6 @@ public abstract class AbstractRepositoryHandler extends AbstractChannelHandler
         root.setAttribute ( "version", "1" );
 
         return doc;
-    }
-
-    private String makeExternalTitle ()
-    {
-        final String p2title = this.channel.getMetaData ().get ( new MetaKey ( "p2.repo", "title" ) );
-
-        if ( p2title != null && !p2title.isEmpty () )
-        {
-            return p2title;
-        }
-
-        return String.format ( "Package Drone - Channel: %s", makeTitle () );
     }
 
 }

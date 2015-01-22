@@ -9,7 +9,7 @@
 
 <h:buttonbar>
     <jsp:attribute name="before">
-        <li><a class="btn btn-default" href="view">Back</a></li>
+        <div class="btn-group" role="group"><a class="btn btn-default" href="view">Back</a></div>
     </jsp:attribute>
 </h:buttonbar>
 
