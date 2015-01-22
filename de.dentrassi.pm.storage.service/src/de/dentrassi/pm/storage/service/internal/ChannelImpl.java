@@ -108,4 +108,10 @@ public class ChannelImpl implements Channel
         return this.service.getChannelMetaData ( this.id );
     }
 
+    @Override
+    public SortedMap<MetaKey, String> getProvidedMetaData ()
+    {
+        return this.service.getChannelProvidedMetaData ( this.id );
+    }
+
 }

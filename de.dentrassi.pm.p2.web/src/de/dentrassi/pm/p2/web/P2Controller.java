@@ -74,7 +74,7 @@ public class P2Controller
             return new ModelAndView ( "redirect:/channelNotFound" );
         }
 
-        final SortedMap<MetaKey, String> metaData = channel.getMetaData ();
+        final SortedMap<MetaKey, String> metaData = channel.getProvidedMetaData ();
 
         final P2ChannelInformation channelInfo = new P2ChannelInformation ();
 

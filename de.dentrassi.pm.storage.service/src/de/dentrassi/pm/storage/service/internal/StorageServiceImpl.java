@@ -507,6 +507,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor ).getChannelMetaData ( id ) );
     }
 
+    public SortedMap<MetaKey, String> getChannelProvidedMetaData ( final String id )
+    {
+        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor ).getChannelProvidedMetaData ( id ) );
+    }
+
     private Map<MetaKey, String> convert ( final Collection<? extends PropertyEntity> properties )
     {
         final Map<MetaKey, String> result = new HashMap<MetaKey, String> ( properties.size () );

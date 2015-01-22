@@ -794,4 +794,15 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return convertMetaData ( channel );
     }
 
+    public SortedMap<MetaKey, String> getChannelProvidedMetaData ( final String channelId )
+    {
+        final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
+        if ( channel == null )
+        {
+            return null;
+        }
+
+        return convertMetaData ( null, channel.getProvidedProperties () );
+    }
+
 }

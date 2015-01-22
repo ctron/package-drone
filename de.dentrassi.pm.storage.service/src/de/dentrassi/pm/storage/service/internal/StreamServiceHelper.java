@@ -108,14 +108,20 @@ public interface StreamServiceHelper
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        for ( final PropertyEntity entry : extracted )
+        if ( extracted != null )
         {
-            metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+            for ( final PropertyEntity entry : extracted )
+            {
+                metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+            }
         }
 
-        for ( final PropertyEntity entry : provided )
+        if ( provided != null )
         {
-            metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+            for ( final PropertyEntity entry : provided )
+            {
+                metadata.put ( new MetaKey ( entry.getNamespace (), entry.getKey () ), entry.getValue () );
+            }
         }
 
         return metadata;
