@@ -27,6 +27,7 @@ Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  org.osgi.framework;version="1.8.0",
  org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/featureGen.xml,
+ OSGI-INF/categoryGen.xml,
  OSGI-INF/controller.xml
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",

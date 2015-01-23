@@ -662,4 +662,10 @@ public class FeatureInformation implements TranslatedInformation
     {
         this.licenseUrl = licenseUrl;
     }
+
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[Feature: %s]", this.id );
+    }
 }

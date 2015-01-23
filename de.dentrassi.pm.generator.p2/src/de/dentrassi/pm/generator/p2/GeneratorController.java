@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,8 +55,8 @@ public class GeneratorController
         this.service = service;
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/edit", method = RequestMethod.GET )
-    public ModelAndView edit ( @PathVariable ( "artifactId" ) final String artifactId ) throws Exception
+    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/editFeature", method = RequestMethod.GET )
+    public ModelAndView editFeature ( @PathVariable ( "artifactId" ) final String artifactId ) throws Exception
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -77,8 +77,8 @@ public class GeneratorController
         return new ModelAndView ( "edit", model );
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/edit", method = RequestMethod.POST )
-    public ModelAndView editPost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result ) throws Exception
+    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/editFeature", method = RequestMethod.POST )
+    public ModelAndView editFeaturePost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result ) throws Exception
     {
         if ( result.hasErrors () )
         {
@@ -94,8 +94,8 @@ public class GeneratorController
         return new ModelAndView ( "redirect:/artifact/" + artifactId + "/view" );
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/create", method = RequestMethod.GET )
-    public ModelAndView create ( @PathVariable ( "channelId" ) final String channelId )
+    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/createFeature", method = RequestMethod.GET )
+    public ModelAndView createFeature ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView mav = new ModelAndView ( "create" );
 
@@ -106,8 +106,8 @@ public class GeneratorController
         return mav;
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/create", method = RequestMethod.POST )
-    public ModelAndView createPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result )
+    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/createFeature", method = RequestMethod.POST )
+    public ModelAndView createFeaturePost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result )
     {
         if ( result.hasErrors () )
         {
@@ -126,6 +126,78 @@ public class GeneratorController
 
         final String name = String.format ( "%s-%s.feature", data.getId (), data.getVersion () );
         this.service.createGeneratorArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
+
+        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+    }
+
+    // category
+
+    @RequestMapping ( value = "/generators/p2.category/artifact/{artifactId}/editCategory", method = RequestMethod.GET )
+    public ModelAndView editCategory ( @PathVariable ( "artifactId" ) final String artifactId ) throws Exception
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "artifactId", artifactId );
+
+        final Artifact art = this.service.getArtifact ( artifactId );
+        if ( art == null )
+        {
+            return new ModelAndView ( "notFound", model );
+        }
+
+        final CategoryData data = new CategoryData ();
+        MetaKeys.bind ( data, art.getInformation ().getMetaData () );
+
+        model.put ( "command", data );
+        model.put ( "channelId", art.getChannel ().getId () );
+
+        return new ModelAndView ( "editCategory", model );
+    }
+
+    @RequestMapping ( value = "/generators/p2.category/artifact/{artifactId}/editCategory", method = RequestMethod.POST )
+    public ModelAndView editCategoryPost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final CategoryData data, final BindingResult result ) throws Exception
+    {
+        if ( result.hasErrors () )
+        {
+            final ModelAndView mav = new ModelAndView ( "editCategory" );
+            mav.put ( "artifactId", artifactId );
+            return mav;
+        }
+
+        final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
+
+        this.service.getArtifact ( artifactId ).applyMetaData ( providedMetaData );
+
+        return new ModelAndView ( "redirect:/artifact/" + artifactId + "/view" );
+    }
+
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategory", method = RequestMethod.GET )
+    public ModelAndView createCategory ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final ModelAndView mav = new ModelAndView ( "createCategory" );
+
+        mav.put ( "generators", this.generators.getInformations ().values () );
+        mav.put ( "channelId", channelId );
+        mav.put ( "command", new CategoryData () );
+
+        return mav;
+    }
+
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategory", method = RequestMethod.POST )
+    public ModelAndView createCategoryPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CategoryData data, final BindingResult result ) throws Exception
+    {
+        if ( result.hasErrors () )
+        {
+            final ModelAndView mav = new ModelAndView ( "createCategory" );
+            mav.put ( "generators", this.generators.getInformations ().values () );
+            mav.put ( "channelId", channelId );
+            return mav;
+        }
+
+        final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
+
+        final String name = String.format ( "%s.category", data.getId () );
+        this.service.createGeneratorArtifact ( channelId, name, CategoryGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
 
         return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
     }

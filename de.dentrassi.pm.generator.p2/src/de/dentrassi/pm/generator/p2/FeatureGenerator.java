@@ -56,13 +56,13 @@ public class FeatureGenerator implements ArtifactGenerator
     @Override
     public LinkTarget getAddTarget ()
     {
-        return LinkTarget.createFromController ( GeneratorController.class, "create" );
+        return LinkTarget.createFromController ( GeneratorController.class, "createFeature" );
     }
 
     @Override
     public LinkTarget getEditTarget ( final String artifactId )
     {
-        final String url = LinkTarget.createFromController ( GeneratorController.class, "edit" ).render ( Collections.singletonMap ( "artifactId", artifactId ) );
+        final String url = LinkTarget.createFromController ( GeneratorController.class, "editFeature" ).render ( Collections.singletonMap ( "artifactId", artifactId ) );
         return new LinkTarget ( url );
     }
 

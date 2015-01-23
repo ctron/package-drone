@@ -423,12 +423,22 @@ public class InstallableUnit
 
     private static InstallableUnit createFeatureGroup ( final FeatureInformation feature )
     {
+        logger.debug ( "Processing: {}", feature );
+
         final InstallableUnit result = new InstallableUnit ();
+
+        // version
+
+        final String version = feature.getVersion ();
+        if ( version == null || version.isEmpty () )
+        {
+            return null;
+        }
 
         // core
 
         result.setId ( feature.getId () + ".feature.group" );
-        result.setVersion ( feature.getVersion () );
+        result.setVersion ( version );
 
         // provides
 
@@ -451,7 +461,10 @@ public class InstallableUnit
 
         final Map<Key, Requirement> reqs = result.getRequires ();
 
-        reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), new Requirement ( new VersionRange ( String.format ( "[%1$s,%1$s]", feature.getVersion () ) ), false, null, "(org.eclipse.update.install.features=true)" ) );
+        final String versionRange = String.format ( "[%1$s,%1$s]", version );
+        logger.debug ( "VersionRange: {}", versionRange );
+
+        reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), new Requirement ( new VersionRange ( versionRange ), false, null, "(org.eclipse.update.install.features=true)" ) );
 
         for ( final FeatureInclude fi : feature.getIncludedFeatures () )
         {
@@ -632,7 +645,10 @@ public class InstallableUnit
 
         for ( final InstallableUnit iu : ius )
         {
-            iu.writeXmlForUnit ( units );
+            if ( iu != null )
+            {
+                iu.writeXmlForUnit ( units );
+            }
         }
 
         return doc;

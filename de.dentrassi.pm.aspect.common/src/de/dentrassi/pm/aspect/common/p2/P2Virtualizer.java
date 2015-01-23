@@ -63,7 +63,7 @@ public class P2Virtualizer implements Virtualizer
         final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getMetaData () );
         if ( bi != null )
         {
-            logger.debug ( "Process as bundle" );
+            logger.debug ( "Process as bundle: {} ({})- {}", art.getName (), art.getId (), bi );
             createBundleP2MetaData ( context, art, bi );
             createBundleP2Artifacts ( context, art, bi );
             return;
@@ -72,7 +72,7 @@ public class P2Virtualizer implements Virtualizer
         final FeatureInformation fi = OsgiAspectFactory.fetchFeatureInformation ( art.getMetaData () );
         if ( fi != null )
         {
-            logger.debug ( "Process as feature" );
+            logger.debug ( "Process as feature: {} ({}) - {}", art.getName (), art.getId (), fi );
             createFeatureP2MetaData ( context, art, fi );
             createFeatureP2Artifacts ( context, art, fi );
             return;
