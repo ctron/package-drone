@@ -43,7 +43,9 @@
 <body>
 
 <h:navbar menu="${menuManager.mainMenu }">
-    <jsp:attribute name="brand"><a class="navbar-brand" href="<c:url value="/"/>">Package Drone</a></jsp:attribute>
+    <jsp:attribute name="brand">
+        <a class="navbar-brand" href="<c:url value="/"/>"><img alt="Package Drone" src="<c:url value="/resources/pdrone.png" />"/></a>
+    </jsp:attribute>
 </h:navbar>
 
 <div class="page-header">
@@ -57,6 +59,12 @@
 </div>
 
 </section>
+
+<footer>
+
+<div class="pull-right"><a href="http://packagedrone.org" target="_blank">Package Drone ${droneVersion }</a></div>
+
+</footer>
 
 </body>
 

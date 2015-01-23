@@ -12,7 +12,11 @@
 ul.validation-error {
      margin: 0px;
 }
- 
+
+.navbar-brand > img {
+	margin-top: -5px;
+}
+
 ul.validation-error li {
 	color: red;
 	display: inline-block;
@@ -51,10 +55,22 @@ ul.validation-error li {
 	padding-bottom: 1em;
 }
 
-.welcome {
-	text-align: center;
-	vertical-align: center;
-	padding-top: 5em;
-	color: #555;
-	font-size: x-large;
+footer {
+	border-top: 1px solid #EEE;
+	padding: 3em;
+	margin-top: 3em;
+	font-size: x-small;
+	color: #AAA;
 }
+
+footer a {
+	color: #AAA;
+}
+
+footer a:hover,
+footer a:active,
+footer a:focus {
+    color: #AAA;
+}
+
+

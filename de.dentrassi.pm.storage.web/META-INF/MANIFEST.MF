@@ -60,6 +60,7 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
  OSGI-INF/aboutMenu.xml,
  OSGI-INF/welcome.xml,
  OSGI-INF/menuInterceptor.xml,
+ OSGI-INF/commonInterceptor.xml,
  OSGI-INF/setup.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml

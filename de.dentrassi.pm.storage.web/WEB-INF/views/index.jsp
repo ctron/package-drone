@@ -4,8 +4,8 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<h:main title="Welcome">
+<h:main title="Welcome to the Package Drone!">
 
-<div class="welcome">Welcome to the Package Drone</div>
+<img class="center-block" src="<c:url value="/resources/images/logo.png"/>"/>
 
 </h:main>
