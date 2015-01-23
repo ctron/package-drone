@@ -66,5 +66,6 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
 Web-Export-Taglib: WEB-INF/tags/main/pm.tld
 Export-Package: de.dentrassi.pm.storage.web;version="1.0.0",
  de.dentrassi.pm.storage.web.breadcrumbs;version="1.0.0",
+ de.dentrassi.pm.storage.web.common;version="1.0.0",
  de.dentrassi.pm.storage.web.menu;version="1.0.0",
  de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"

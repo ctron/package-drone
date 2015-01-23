@@ -36,6 +36,7 @@ import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.channel.ChannelController;
+import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
@@ -78,6 +79,11 @@ public class ArtifactController implements InterfaceExtender
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
+        if ( artifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
+
         final Map<String, Object> model = new HashMap<String, Object> ( 1 );
         model.put ( "artifact", artifact );
 
@@ -88,6 +94,11 @@ public class ArtifactController implements InterfaceExtender
     public ModelAndView generate ( @PathVariable ( "artifactId" ) final String artifactId )
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
+        if ( artifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
+
         if ( artifact instanceof GeneratorArtifact )
         {
             ( (GeneratorArtifact)artifact ).generate ();
@@ -100,6 +111,11 @@ public class ArtifactController implements InterfaceExtender
     public ModelAndView attach ( @PathVariable ( "artifactId" ) final String artifactId )
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
+
+        if ( artifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
 
         return new ModelAndView ( "/artifact/attach", "artifact", artifact.getInformation () );
     }

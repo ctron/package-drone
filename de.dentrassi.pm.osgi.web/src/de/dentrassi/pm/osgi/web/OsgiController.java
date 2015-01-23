@@ -29,6 +29,7 @@ import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
+import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
@@ -73,7 +74,7 @@ public class OsgiController implements InterfaceExtender
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "redirect:/channelNotFound" );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final Map<String, Object> model = new HashMap<> ();
@@ -103,7 +104,7 @@ public class OsgiController implements InterfaceExtender
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "redirect:/channelNotFound" );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final Map<String, Object> model = new HashMap<> ();

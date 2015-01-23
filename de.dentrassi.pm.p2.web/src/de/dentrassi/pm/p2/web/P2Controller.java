@@ -30,6 +30,7 @@ import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
+import de.dentrassi.pm.storage.web.common.CommonController;
 
 @Controller
 @RequestMapping ( value = "/p2.repo" )
@@ -51,7 +52,7 @@ public class P2Controller
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "redirect:/channelNotFound" );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final SortedMap<MetaKey, String> metaData = channel.getMetaData ();
@@ -73,7 +74,7 @@ public class P2Controller
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "redirect:/channelNotFound" );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final SortedMap<MetaKey, String> metaData = channel.getProvidedMetaData ();
@@ -101,7 +102,7 @@ public class P2Controller
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "redirect:/channelNotFound" );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final Map<String, Object> model = new HashMap<> ();

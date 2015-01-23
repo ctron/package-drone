@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package de.dentrassi.osgi.web.controller;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -35,10 +36,13 @@ public class ModelAndViewRequestHandler implements RequestHandler
 
     private final Class<?> controllerClazz;
 
-    public ModelAndViewRequestHandler ( final ModelAndView modelAndView, final Class<?> controllerClazz )
+    private final Method method;
+
+    public ModelAndViewRequestHandler ( final ModelAndView modelAndView, final Class<?> controllerClazz, final Method method )
     {
         this.modelAndView = modelAndView;
         this.controllerClazz = controllerClazz;
+        this.method = method;
     }
 
     public ModelAndView getModelAndView ()
@@ -49,7 +53,24 @@ public class ModelAndViewRequestHandler implements RequestHandler
     @Override
     public void process ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException, ServletException
     {
-        final ViewResolver viewResolver = this.controllerClazz.getAnnotation ( ViewResolver.class );
+        ViewResolver viewResolver = null;
+        Class<?> resourceClazz = this.controllerClazz;
+
+        if ( this.modelAndView.getAlternateViewResolver () != null )
+        {
+            viewResolver = this.modelAndView.getAlternateViewResolver ().getAnnotation ( ViewResolver.class );
+            resourceClazz = this.modelAndView.getAlternateViewResolver ();
+        }
+
+        if ( viewResolver == null )
+        {
+            viewResolver = this.method.getAnnotation ( ViewResolver.class );
+        }
+
+        if ( viewResolver == null )
+        {
+            viewResolver = this.controllerClazz.getAnnotation ( ViewResolver.class );
+        }
 
         if ( viewResolver == null )
         {
@@ -64,9 +85,10 @@ public class ModelAndViewRequestHandler implements RequestHandler
         }
         else
         {
-            final Bundle bundle = FrameworkUtil.getBundle ( this.controllerClazz );
+            final Bundle bundle = FrameworkUtil.getBundle ( resourceClazz );
 
-            final String path = "/bundle/" + bundle.getBundleId () + "/" + String.format ( viewResolver.value (), this.modelAndView.getViewName () );
+            final String resolvedView = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
+            final String path = String.format ( "/bundle/%s/%s", bundle.getBundleId (), resolvedView );
 
             logger.debug ( "Render: {}", path );
 

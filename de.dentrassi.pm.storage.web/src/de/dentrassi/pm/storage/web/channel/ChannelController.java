@@ -46,6 +46,7 @@ import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
+import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.internal.Activator;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
@@ -140,7 +141,7 @@ public class ChannelController implements InterfaceExtender
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final List<SimpleArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getSimpleArtifacts () );
@@ -160,7 +161,7 @@ public class ChannelController implements InterfaceExtender
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final List<SimpleArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getSimpleArtifacts () );
@@ -251,11 +252,16 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
     public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
     {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
         final ModelAndView model = new ModelAndView ( "channel/aspects" );
 
         final ChannelAspectProcessor aspects = Activator.getAspects ();
 
-        final Channel channel = this.service.getChannel ( channelId );
         final Map<String, ChannelAspectInformation> infos = aspects.getAspectInformations ();
         for ( final ChannelAspectInformation ca : channel.getAspects () )
         {
@@ -292,7 +298,7 @@ public class ChannelController implements InterfaceExtender
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
         {
-            return new ModelAndView ( "channel/notFound", "channelId", channelId );
+            return CommonController.createNotFound ( "channel", channelId );
         }
 
         final EditChannel edit = new EditChannel ();

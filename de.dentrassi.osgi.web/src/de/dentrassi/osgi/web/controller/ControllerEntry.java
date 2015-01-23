@@ -69,11 +69,11 @@ public class ControllerEntry
 
                 if ( result instanceof ModelAndView )
                 {
-                    return new ModelAndViewRequestHandler ( (ModelAndView)result, ControllerEntry.this.controller.getClass () );
+                    return new ModelAndViewRequestHandler ( (ModelAndView)result, ControllerEntry.this.controller.getClass (), this.m );
                 }
                 else if ( result instanceof String )
                 {
-                    return new ModelAndViewRequestHandler ( new ModelAndView ( (String)result ), ControllerEntry.this.controller.getClass () );
+                    return new ModelAndViewRequestHandler ( new ModelAndView ( (String)result ), ControllerEntry.this.controller.getClass (), this.m );
                 }
                 else if ( result == null )
                 {

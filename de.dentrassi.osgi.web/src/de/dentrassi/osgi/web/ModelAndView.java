@@ -21,6 +21,8 @@ public class ModelAndView
 
     private Map<String, Object> model;
 
+    private Class<?> alternateViewResolver;
+
     public ModelAndView ( final String viewName, final Map<String, ?> model )
     {
         this.viewName = viewName;
@@ -41,6 +43,31 @@ public class ModelAndView
 
     public ModelAndView ()
     {
+    }
+
+    /**
+     * Set an alternate view resolver class
+     * <p>
+     * Normally the view is resolved by using the called controller class.
+     * However this method allows to set an alternate controller class which
+     * will be used instead to resolve the view.
+     * </p>
+     * <p>
+     * This can be required if there should be a
+     * <q>common view</q> which is re-used all over the application.
+     * </p>
+     *
+     * @param alternateViewResolver
+     *            the view resolver to use instead of the controller class
+     */
+    public void setAlternateViewResolver ( final Class<?> alternateViewResolver )
+    {
+        this.alternateViewResolver = alternateViewResolver;
+    }
+
+    public Class<?> getAlternateViewResolver ()
+    {
+        return this.alternateViewResolver;
     }
 
     public void setModel ( final Map<String, Object> model )

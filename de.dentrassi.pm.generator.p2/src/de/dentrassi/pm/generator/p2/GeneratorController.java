@@ -31,6 +31,7 @@ import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.common.CommonController;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -65,7 +66,7 @@ public class GeneratorController
         final Artifact art = this.service.getArtifact ( artifactId );
         if ( art == null )
         {
-            return new ModelAndView ( "notFound", model );
+            return CommonController.createNotFound ( "artifact", artifactId );
         }
 
         final FeatureData data = new FeatureData ();
@@ -142,7 +143,7 @@ public class GeneratorController
         final Artifact art = this.service.getArtifact ( artifactId );
         if ( art == null )
         {
-            return new ModelAndView ( "notFound", model );
+            return CommonController.createNotFound ( "artifact", artifactId );
         }
 
         final CategoryData data = new CategoryData ();
