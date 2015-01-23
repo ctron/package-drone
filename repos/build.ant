@@ -53,6 +53,7 @@
 		<delete dir="apt/dists" />
 		<delete dir="apt/pool" />
 		<adddeb src="download/package-drone-server_0.0.6_all.deb" />
+		<adddeb src="download/package-drone-server_0.0.7_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
