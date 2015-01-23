@@ -4,7 +4,7 @@ Section: misc
 Priority: optional
 Architecture: all
 Pre-Depends: adduser
-Depends: java8-jdk
+Depends: java8-jdk | java8-runtime-headless | java8-runtime
 Suggests: mariadb-server
 Maintainer: Jens Reimann <ctron@dentrassi.de>
 Distribution: development

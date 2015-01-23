@@ -18,8 +18,20 @@
          ================================= -->
 	<target name="download">
 		<mkdir dir="download" />
-		<!-- for new we don't have RPMs or DEBs to download -->
+		<get-release version="0.0.6"/>
 	</target>
+	
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: get-release          
+         = = = = = = = = = = = = = = = = = -->
+    <macrodef name="get-release">
+        <attribute name="version"/>
+        <sequential>
+        	<get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server-@{version}-1.noarch.rpm" dest="download" usetimestamp="true"/>
+            <get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server_@{version}_all.deb" dest="download" usetimestamp="true"/>
+        </sequential>
+    </macrodef>
+
 	
 	<!-- ================================= 
           target: exportkey
