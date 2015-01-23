@@ -7,7 +7,7 @@ Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
- de.dentrassi.pm.storage.web;bundle-version="1.0.0"
+ de.dentrassi.pm.storage.web;bundle-version="0.0.7"
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",
