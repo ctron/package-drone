@@ -39,7 +39,7 @@ public class MetadataHandler extends AbstractRepositoryHandler
 
         final Element root = doc.createElement ( "repository" );
         doc.appendChild ( root );
-        root.setAttribute ( "name", String.format ( "Package Drone - Channel: %s", this.channel.getId () ) );
+        root.setAttribute ( "name", makeExternalTitle () );
         root.setAttribute ( "type", "org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository" );
         root.setAttribute ( "version", "1" );
 
