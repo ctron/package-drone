@@ -34,7 +34,7 @@
         <td>
         <c:choose>
             <c:when test="${not empty bundle.description }">
-                <a tabindex="0" href="#" data-toggle="popover" data-trigger="focus" data-placement="left" title="${fn:escapeXml(bundle.translate(bundle.name)) }" data-content="${fn:escapeXml(bundle.translate(bundle.description)) }">${fn:escapeXml(bundle.translate(bundle.name)) }</a><h:translatedLabels data="${bundle }" property="name" />
+                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(bundle.translate(bundle.name)) }" data-content="${fn:escapeXml(bundle.translate(bundle.description)) }">${fn:escapeXml(bundle.translate(bundle.name)) }</a><h:translatedLabels data="${bundle }" property="name" />
             </c:when>
             <c:otherwise>
                 <h:translated data="${bundle }" property="name" />            

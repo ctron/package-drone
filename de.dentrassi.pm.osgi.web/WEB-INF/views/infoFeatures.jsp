@@ -33,7 +33,7 @@
         <td>
         <c:choose>
             <c:when test="${not empty feature.description }">
-                <a tabindex="0" href="#" data-toggle="popover" data-trigger="focus" data-placement="left" title="${fn:escapeXml(feature.translate(feature.label)) }" data-content="${fn:escapeXml(feature.translate(feature.description)) }">${fn:escapeXml(feature.translate(feature.label)) }</a><h:translatedLabels data="${feature }" property="label" />
+                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(feature.translate(feature.label)) }" data-content="${fn:escapeXml(feature.translate(feature.description)) }">${fn:escapeXml(feature.translate(feature.label)) }</a><h:translatedLabels data="${feature }" property="label" />
             </c:when>
             <c:otherwise>
                 <h:translated data="${feature }" property="label" />            
