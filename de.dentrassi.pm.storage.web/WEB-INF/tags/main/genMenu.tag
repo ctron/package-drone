@@ -3,8 +3,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-
-
 <ul class="nav nav-stacked nav-pills">
    <li class="">Default</li>
     <c:url value="/channel/${channelId }/add" var="url" />

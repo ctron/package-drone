@@ -2,7 +2,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%@attribute name="title" required="true" %>
 <%@attribute name="subtitle" %>
@@ -21,6 +21,8 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<link rel="icon" href="${pageContext.request.contextPath}/resources/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/vnd.microsoft.icon"/>
 	
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
 	

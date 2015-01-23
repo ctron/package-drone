@@ -51,15 +51,15 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>WEB-INF/tags</name>
+			<name>WEB-INF/tags/main</name>
 			<type>2</type>
-			<locationURI>TAGS_LOC</locationURI>
+			<locationURI>MAIN_TAGS_LOC</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
-			<name>TAGS_LOC</name>
-			<value>$%7BPARENT-1-PROJECT_LOC%7D/de.dentrassi.pm.storage.web/WEB-INF/tags</value>
+			<name>MAIN_TAGS_LOC</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/de.dentrassi.pm.storage.web/WEB-INF/tags/main</value>
 		</variable>
 	</variableList>
 </projectDescription>

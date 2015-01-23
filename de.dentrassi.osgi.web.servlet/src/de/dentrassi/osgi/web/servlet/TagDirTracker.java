@@ -133,10 +133,11 @@ public class TagDirTracker
         {
             if ( name.startsWith ( tli.getPrefix () ) )
             {
-                logger.trace ( "Using {} for {}", tli, name );
+                logger.trace ( "Trying {} for {}", tli, name );
                 final Resource resource = createResource ( tli, name );
                 if ( resource != null )
                 {
+                    logger.trace ( "Using {} for {}", tli, name );
                     return resource;
                 }
             }
@@ -158,6 +159,8 @@ public class TagDirTracker
 
     public Set<String> getUrls ( final String name )
     {
+        logger.trace ( "Getting url for: {}", name );
+
         final Set<String> result = new HashSet<> ();
 
         for ( final TagDirInfo tli : this.bundleTracker.getTracked ().values () )
@@ -170,6 +173,11 @@ public class TagDirTracker
                     result.addAll ( tli.getDirectoryUrls () );
                 }
             }
+        }
+
+        if ( logger.isTraceEnabled () )
+        {
+            logger.trace ( "Result: {}", result );
         }
 
         return result;

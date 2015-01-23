@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     
-<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/de.dentrassi.pm.osgi.web" prefix="osgi" %>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -33,10 +34,10 @@
         <td>
         <c:choose>
             <c:when test="${not empty feature.description }">
-                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(feature.translate(feature.label)) }" data-content="${fn:escapeXml(feature.translate(feature.description)) }">${fn:escapeXml(feature.translate(feature.label)) }</a><h:translatedLabels data="${feature }" property="label" />
+                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(feature.translate(feature.label)) }" data-content="${fn:escapeXml(feature.translate(feature.description)) }">${fn:escapeXml(feature.translate(feature.label)) }</a><osgi:translatedLabels data="${feature }" property="label" />
             </c:when>
             <c:otherwise>
-                <h:translated data="${feature }" property="label" />            
+                <osgi:translated data="${feature }" property="label" />
             </c:otherwise>
         </c:choose>
         </td>

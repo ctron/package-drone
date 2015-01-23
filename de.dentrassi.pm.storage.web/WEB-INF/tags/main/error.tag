@@ -1,5 +1,5 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@attribute name="title" required="true" %>
 <%@attribute name="icon" required="false" %>
 

@@ -88,6 +88,11 @@ public class ContextImpl extends WebAppContext
 
         resources.addAll ( super.getResourcePaths ( name ) );
 
+        if ( logger.isTraceEnabled () )
+        {
+            logger.trace ( "Result: {}", resources );
+        }
+
         return resources;
     }
 

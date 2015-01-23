@@ -8,7 +8,7 @@ Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Web-Static-Resources: /resources;target:="/resources"
-Web-TagLib-Directory: /WEB-INF/tags
+Web-TagLib-Directory: /WEB-INF/tags/main
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0"
@@ -63,7 +63,7 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
  OSGI-INF/setup.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml
-Web-Export-Taglib: WEB-INF/tags/pm.tld
+Web-Export-Taglib: WEB-INF/tags/main/pm.tld
 Export-Package: de.dentrassi.pm.storage.web;version="1.0.0",
  de.dentrassi.pm.storage.web.breadcrumbs;version="1.0.0",
  de.dentrassi.pm.storage.web.menu;version="1.0.0",

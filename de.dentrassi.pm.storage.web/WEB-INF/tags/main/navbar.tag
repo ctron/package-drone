@@ -2,7 +2,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%@attribute name="menu" required="true" type="de.dentrassi.pm.storage.web.menu.Menu"%>
 <%@attribute name="brand" fragment="true"%>

@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
     
-<%@ taglib tagdir="/WEB-INF/tags" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/de.dentrassi.pm.osgi.web" prefix="osgi" %>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -34,10 +35,10 @@
         <td>
         <c:choose>
             <c:when test="${not empty bundle.description }">
-                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(bundle.translate(bundle.name)) }" data-content="${fn:escapeXml(bundle.translate(bundle.description)) }">${fn:escapeXml(bundle.translate(bundle.name)) }</a><h:translatedLabels data="${bundle }" property="name" />
+                <a tabindex="0" href="#" data-toggle="popover" data-trigger="hover" data-placement="left" title="${fn:escapeXml(bundle.translate(bundle.name)) }" data-content="${fn:escapeXml(bundle.translate(bundle.description)) }">${fn:escapeXml(bundle.translate(bundle.name)) }</a><osgi:translatedLabels data="${bundle }" property="name" />
             </c:when>
             <c:otherwise>
-                <h:translated data="${bundle }" property="name" />            
+                <osgi:translated data="${bundle }" property="name" />            
             </c:otherwise>
         </c:choose>
         </td>
