@@ -190,6 +190,7 @@ public class DatabaseSetup implements AutoCloseable
         final long l = getCurrentVersion ();
         if ( l < 0 )
         {
+            // we don't have anything in the bundle
             return log;
         }
 

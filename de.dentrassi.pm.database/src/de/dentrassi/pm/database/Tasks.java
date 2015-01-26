@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
 package de.dentrassi.pm.database;
 
 import java.io.InputStreamReader;
@@ -18,11 +28,15 @@ import java.util.regex.Pattern;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.CharStreams;
 
 public class Tasks
 {
+    private final static Logger logger = LoggerFactory.getLogger ( Tasks.class );
+
     private final TreeMap<Long, UpgradeTask> tasks = new TreeMap<> ();
 
     private final Bundle bundle;
@@ -113,6 +127,7 @@ public class Tasks
         final SortedMap<Long, UpgradeTask> map = this.tasks.subMap ( from + 1, to + 1 );
         for ( final Map.Entry<Long, UpgradeTask> entry : map.entrySet () )
         {
+            logger.info ( "Running schema upgrade #{}", entry.getKey () );
             entry.getValue ().run ( connection, log, entry.getKey () );
         }
     }
