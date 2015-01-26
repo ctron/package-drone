@@ -252,6 +252,8 @@ if [ $1 -eq 1 ] ; then
     /usr/bin/firewall-cmd --reload >/dev/null || true
     /usr/bin/firewall-cmd --permanent --add-service=package-drone-server >/dev/null || true
     /usr/bin/firewall-cmd --reload >/dev/null || true
+else
+    systemctl try-restart package-drone-server >/dev/null || true
 fi
 ]]></script>
 							</postinstallScriptlet>
