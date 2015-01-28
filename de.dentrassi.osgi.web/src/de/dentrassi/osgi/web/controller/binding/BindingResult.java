@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,5 +24,16 @@ public interface BindingResult
 
     public void addError ( BindingError error );
 
+    /**
+     * Get a list of all errors, including child errors. <br>
+     * See also {@link #getLocalErrors()} which does not return child errors
+     */
     public List<BindingError> getErrors ();
+
+    /**
+     * Get an unmodifiable list of local error
+     */
+    public List<BindingError> getLocalErrors ();
+
+    public boolean hasMarker ( String marker );
 }

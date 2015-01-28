@@ -59,7 +59,7 @@ public class DefaultTest extends AbstractServerTest
             @Override
             public boolean apply ( final WebDriver input )
             {
-                return driver.findElementById ( "service-present" ).getText ().equals ( "true" );
+                return driver.findElementById ( "storage-service-present" ).getText ().equals ( "true" );
             }
         } );
     }

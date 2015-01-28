@@ -5,7 +5,10 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%@attribute name="menu" required="true" type="de.dentrassi.pm.storage.web.menu.Menu"%>
+
 <%@attribute name="brand" fragment="true"%>
+<%@attribute name="after" fragment="true"%>
+
 
 <c:if test="${not empty menu }">
 
@@ -50,7 +53,12 @@
         </c:choose>
     </c:forEach>
     </ul>
+    
+    <c:if test="${not empty after }"><jsp:invoke fragment="after"/></c:if>
+    
     </div>
+    
+    
 
 </div>
 

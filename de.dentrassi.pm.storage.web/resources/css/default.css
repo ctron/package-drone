@@ -73,4 +73,13 @@ footer a:focus {
     color: #AAA;
 }
 
+/* details */
 
+.details {
+	font-size: large;
+}
+
+img.gravatar {
+	margin-left: .5em;
+	margin-right: .5em;
+}

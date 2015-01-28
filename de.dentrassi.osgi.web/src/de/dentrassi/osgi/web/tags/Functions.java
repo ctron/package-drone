@@ -10,10 +10,31 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.tags;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import javax.servlet.http.HttpServletRequest;
+
+import de.dentrassi.osgi.utils.Strings;
 
 public class Functions
 {
+    private static final MessageDigest MD;
+
+    static
+    {
+        MessageDigest md = null;
+        try
+        {
+            md = MessageDigest.getInstance ( "MD5" );
+        }
+        catch ( final NoSuchAlgorithmException e )
+        {
+        }
+        MD = md;
+    };
+
     public static String active ( final HttpServletRequest request, final String targetUrl )
     {
         if ( targetUrl == null )
@@ -32,5 +53,27 @@ public class Functions
         }
 
         return string.substring ( 0, 1 ).toUpperCase () + string.substring ( 1 );
+    }
+
+    public static String gravatar ( final String email )
+    {
+        if ( email == null || MD == null )
+        {
+            return null;
+        }
+
+        if ( email.isEmpty () )
+        {
+            return null;
+        }
+
+        try
+        {
+            return Strings.hex ( MD.digest ( email.getBytes ( "CP1252" ) ) );
+        }
+        catch ( final UnsupportedEncodingException e )
+        {
+            return null;
+        }
     }
 }

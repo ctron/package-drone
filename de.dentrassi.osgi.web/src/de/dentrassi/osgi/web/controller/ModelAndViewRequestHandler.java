@@ -80,7 +80,7 @@ public class ModelAndViewRequestHandler implements RequestHandler
         if ( this.modelAndView.isRedirect () )
         {
             final String redir = this.modelAndView.getRedirect ();
-            logger.debug ( "Processing redirect: {}", redir );
+            logger.debug ( "Processed redirect: {}", redir );
             response.sendRedirect ( redir );
         }
         else

@@ -12,21 +12,23 @@ package de.dentrassi.pm.storage.web;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 public interface InterfaceExtender
 {
-    public default List<MenuEntry> getActions ( final Object object )
+    public default List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
         return null;
     }
 
-    public default List<MenuEntry> getViews ( final Object object )
+    public default List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
         return null;
     }
 
-    public default List<MenuEntry> getMainMenuEntries ()
+    public default List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
         return null;
     }

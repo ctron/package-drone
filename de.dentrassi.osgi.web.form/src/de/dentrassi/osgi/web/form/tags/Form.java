@@ -55,6 +55,8 @@ public class Form extends FormTagSupport
 
         this.commandValue = this.pageContext.getRequest ().getAttribute ( this.command );
 
+        this.pageContext.setAttribute ( "bindingResult", getBindingResult () );
+
         return EVAL_BODY_INCLUDE;
     }
 
@@ -76,6 +78,8 @@ public class Form extends FormTagSupport
     @Override
     public int doEndTag () throws JspException
     {
+        this.pageContext.removeAttribute ( "bindingResult" );
+
         final WriterHelper writer = new WriterHelper ( this.pageContext );
         writer.write ( "</form>" );
         return EVAL_PAGE;

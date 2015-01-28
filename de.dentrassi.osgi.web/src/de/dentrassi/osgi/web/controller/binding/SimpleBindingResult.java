@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,10 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import de.dentrassi.osgi.web.controller.binding.BindingManager.Result;
 
@@ -22,6 +25,13 @@ public class SimpleBindingResult implements BindingResult
     private final Map<String, BindingResult> children = new HashMap<> ();
 
     private final List<BindingError> errors = new LinkedList<> ();
+
+    private final Set<String> markers = new HashSet<> ();
+
+    public void addMarkers ( final Set<String> markers )
+    {
+        this.markers.addAll ( markers );
+    }
 
     @Override
     public boolean hasErrors ()
@@ -34,6 +44,24 @@ public class SimpleBindingResult implements BindingResult
         for ( final BindingResult br : this.children.values () )
         {
             if ( br.hasErrors () )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasMarker ( final String marker )
+    {
+        if ( this.markers.contains ( marker ) )
+        {
+            return true;
+        }
+
+        for ( final BindingResult br : this.children.values () )
+        {
+            if ( br.hasMarker ( marker ) )
             {
                 return true;
             }
@@ -55,10 +83,21 @@ public class SimpleBindingResult implements BindingResult
 
     public void addErrors ( final String name, final List<BindingError> errors )
     {
-        BindingResult br = this.children.get ( name );
-        if ( br == null )
+        BindingResult br;
+
+        if ( name == null || name.isEmpty () )
         {
-            br = new Result ();
+            br = this;
+        }
+        else
+        {
+            br = this.children.get ( name );
+
+            if ( br == null )
+            {
+                br = new Result ();
+                this.children.put ( name, br );
+            }
         }
 
         for ( final BindingError error : errors )
@@ -84,5 +123,11 @@ public class SimpleBindingResult implements BindingResult
         }
 
         return result;
+    }
+
+    @Override
+    public List<BindingError> getLocalErrors ()
+    {
+        return Collections.unmodifiableList ( this.errors );
     }
 }

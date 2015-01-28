@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,6 @@ package de.dentrassi.osgi.web.controller.binding;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
-
-import javax.validation.Valid;
 
 public class ParameterBindTarget implements BindTarget
 {
@@ -45,7 +43,7 @@ public class ParameterBindTarget implements BindTarget
     }
 
     @Override
-    public boolean isAnnotationPresent ( final Class<Valid> clazz )
+    public boolean isAnnotationPresent ( final Class<? extends Annotation> clazz )
     {
         return this.parameter.isAnnotationPresent ( clazz );
     }

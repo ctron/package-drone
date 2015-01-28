@@ -11,7 +11,8 @@ Web-Static-Resources: /resources;target:="/resources"
 Web-TagLib-Directory: /WEB-INF/tags/main
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
- de.dentrassi.osgi.web.form;bundle-version="1.0.0"
+ de.dentrassi.osgi.web.form;bundle-version="1.0.0",
+ de.dentrassi.pm.sec.web;bundle-version="1.0.0"
 Require-TldBundle: de.dentrassi.osgi.web.form
 Eclipse-BundleShape: dir
 Import-Package: com.google.common.io;version="18.0.0",
@@ -61,6 +62,7 @@ Service-Component: OSGI-INF/setupInterceptor.xml,
  OSGI-INF/welcome.xml,
  OSGI-INF/menuInterceptor.xml,
  OSGI-INF/commonInterceptor.xml,
+ OSGI-INF/config.xml,
  OSGI-INF/setup.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml
@@ -69,4 +71,5 @@ Export-Package: de.dentrassi.pm.storage.web;version="1.0.0",
  de.dentrassi.pm.storage.web.breadcrumbs;version="1.0.0",
  de.dentrassi.pm.storage.web.common;version="1.0.0",
  de.dentrassi.pm.storage.web.menu;version="1.0.0",
+ de.dentrassi.pm.storage.web.setup;version="1.0.0",
  de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"

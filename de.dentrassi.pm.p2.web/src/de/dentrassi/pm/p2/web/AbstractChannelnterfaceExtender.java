@@ -12,6 +12,8 @@ package de.dentrassi.pm.p2.web;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
@@ -19,31 +21,31 @@ import de.dentrassi.pm.storage.web.menu.MenuEntry;
 public abstract class AbstractChannelnterfaceExtender implements InterfaceExtender
 {
     @Override
-    public List<MenuEntry> getActions ( final Object object )
+    public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {
-            return getChannelAction ( (Channel)object );
+            return getChannelAction ( request, (Channel)object );
         }
         return null;
     }
 
-    protected List<MenuEntry> getChannelAction ( final Channel channel )
+    protected List<MenuEntry> getChannelAction ( final HttpServletRequest request, final Channel channel )
     {
         return null;
     }
 
     @Override
-    public List<MenuEntry> getViews ( final Object object )
+    public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {
-            return getChannelViews ( (Channel)object );
+            return getChannelViews ( request, (Channel)object );
         }
         return null;
     }
 
-    protected List<MenuEntry> getChannelViews ( final Channel channel )
+    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
     {
         return null;
     }

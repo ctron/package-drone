@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,9 @@
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.setup;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +25,16 @@ import de.dentrassi.pm.storage.service.StorageService;
 public class SetupInterceptor extends ModelAndViewInterceptorAdapter
 {
     private ServiceTracker<StorageService, StorageService> tracker;
+
+    private final Set<String> ignoredPrefixes = new HashSet<> ();
+
+    public SetupInterceptor ()
+    {
+        this.ignoredPrefixes.add ( "/setup" );
+        this.ignoredPrefixes.add ( "/login" );
+        this.ignoredPrefixes.add ( "/logout" );
+        this.ignoredPrefixes.add ( "/resources" );
+    }
 
     public void activate ()
     {
@@ -39,8 +52,17 @@ public class SetupInterceptor extends ModelAndViewInterceptorAdapter
     {
         final String current = request.getServletPath ();
 
-        if ( current.startsWith ( "/setup" ) || current.startsWith ( "/resources" ) )
+        for ( final String prefix : this.ignoredPrefixes )
         {
+            if ( current.startsWith ( prefix ) )
+            {
+                return super.preHandle ( request, response );
+            }
+        }
+
+        if ( current.startsWith ( "/config" ) && request.getUserPrincipal () != null )
+        {
+            // this is a special case where the user is logged in, but the system might not be fully functionaly. In this case let him pass.
             return super.preHandle ( request, response );
         }
 

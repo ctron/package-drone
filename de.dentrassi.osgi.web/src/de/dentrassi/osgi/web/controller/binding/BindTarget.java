@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,6 @@ package de.dentrassi.osgi.web.controller.binding;
 
 import java.lang.annotation.Annotation;
 
-import javax.validation.Valid;
-
 public interface BindTarget
 {
     public Class<?> getType ();
@@ -24,5 +22,5 @@ public interface BindTarget
 
     public String getQualifier ();
 
-    public boolean isAnnotationPresent ( Class<Valid> clazz );
+    public boolean isAnnotationPresent ( Class<? extends Annotation> clazz );
 }

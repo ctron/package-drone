@@ -22,6 +22,7 @@ public class ConverterManager
         final ConverterManager result = new ConverterManager ();
 
         result.addConverter ( StringToIntegerConverter.INSTANCE );
+        result.addConverter ( StringToBooleanConverter.INSTANCE );
 
         return result;
     }

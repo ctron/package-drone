@@ -70,6 +70,11 @@ public class Breadcrumbs
         return this.entries;
     }
 
+    public static Entry create ( final String label, final Class<?> controllerClazz, final String methodName )
+    {
+        return new Entry ( label, LinkTarget.createFromController ( controllerClazz, methodName ).getUrl () );
+    }
+
     public static Entry create ( final String label, final Class<?> controllerClazz, final String methodName, final Map<String, ?> model )
     {
         return new Entry ( label, LinkTarget.createFromController ( controllerClazz, methodName ).expand ( model ).getUrl () );

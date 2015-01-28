@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,7 +37,7 @@ public class FormValueTagSupport extends FormTagSupport
         {
             return Collections.emptyList ();
         }
-        return br.getErrors ();
+        return br.getLocalErrors ();
     }
 
     protected BindingResult getBindingResult ()
@@ -46,6 +46,11 @@ public class FormValueTagSupport extends FormTagSupport
         if ( br == null )
         {
             return null;
+        }
+
+        if ( this.path == null || this.path.isEmpty () )
+        {
+            return br;
         }
 
         return br.getChild ( this.path );

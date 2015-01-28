@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,16 +8,19 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.setup;
+package de.dentrassi.pm.storage.web.config;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -32,7 +35,17 @@ public class Configurator implements AutoCloseable
 {
     private static final String GEMINI_FACTORY_PID = "gemini.jpa.punit";
 
-    private static final String JPA_UNIT = "de.dentrassi.pm.storage.jpa";
+    private static final Set<String> JPA_UNITS;
+
+    static
+    {
+        final Set<String> set = new HashSet<> ( 2 );
+
+        set.add ( "de.dentrassi.pm.storage.jpa" );
+        set.add ( "de.dentrassi.pm.sec.jpa" );
+
+        JPA_UNITS = Collections.unmodifiableSet ( set );
+    }
 
     private final ServiceTracker<ConfigurationAdmin, ConfigurationAdmin> tracker;
 
@@ -64,7 +77,8 @@ public class Configurator implements AutoCloseable
         try
         {
             final Configuration[] result = cm.listConfigurations ( String.format ( "(%s=%s)", "service.factoryPid", GEMINI_FACTORY_PID ) );
-            // delete old
+
+            // delete all old
             if ( result != null )
             {
                 for ( final Configuration cfg : result )
@@ -73,26 +87,30 @@ public class Configurator implements AutoCloseable
                 }
             }
 
-            final Configuration cfg = cm.createFactoryConfiguration ( GEMINI_FACTORY_PID, null );
-
-            final Dictionary<String, Object> props = new Hashtable<> ();
-
-            props.put ( "gemini.jpa.punit.name", JPA_UNIT );
-
-            props.put ( "javax.persistence.jdbc.driver", data.getJdbcDriver () );
-            props.put ( "javax.persistence.jdbc.url", data.getUrl () );
-            props.put ( "javax.persistence.jdbc.user", data.getUser () );
-            props.put ( "javax.persistence.jdbc.password", data.getPassword () );
-
-            final Properties p = new Properties ();
-            p.load ( new StringReader ( data.getAdditionalProperties () ) );
-
-            for ( final Map.Entry<Object, Object> entry : p.entrySet () )
+            for ( final String unitName : JPA_UNITS )
             {
-                props.put ( "javax.persistence.jdbc." + entry.getKey (), entry.getValue () );
-            }
 
-            cfg.update ( props );
+                final Configuration cfg = cm.createFactoryConfiguration ( GEMINI_FACTORY_PID, null );
+
+                final Dictionary<String, Object> props = new Hashtable<> ();
+
+                props.put ( "gemini.jpa.punit.name", unitName );
+
+                props.put ( "javax.persistence.jdbc.driver", data.getJdbcDriver () );
+                props.put ( "javax.persistence.jdbc.url", data.getUrl () );
+                props.put ( "javax.persistence.jdbc.user", data.getUser () );
+                props.put ( "javax.persistence.jdbc.password", data.getPassword () );
+
+                final Properties p = new Properties ();
+                p.load ( new StringReader ( data.getAdditionalProperties () ) );
+
+                for ( final Map.Entry<Object, Object> entry : p.entrySet () )
+                {
+                    props.put ( "javax.persistence.jdbc." + entry.getKey (), entry.getValue () );
+                }
+
+                cfg.update ( props );
+            }
         }
         catch ( final Exception e )
         {

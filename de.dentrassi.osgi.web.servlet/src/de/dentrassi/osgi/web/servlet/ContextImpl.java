@@ -12,10 +12,13 @@ package de.dentrassi.osgi.web.servlet;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletRegistration.Dynamic;
 
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
@@ -38,6 +41,8 @@ public class ContextImpl extends WebAppContext
 
     private final TagLibTracker taglibTracker;
 
+    private FilterTracker filterTracker;
+
     public ContextImpl ()
     {
         this.context = FrameworkUtil.getBundle ( ContextImpl.class ).getBundleContext ();
@@ -51,7 +56,17 @@ public class ContextImpl extends WebAppContext
         super.preConfigure ();
 
         final ServletHolder holder = addServlet ( DispatcherServlet.class, "/" );
-        holder.getRegistration ().setMultipartConfig ( new MultipartConfigElement ( "", /* 1GB */1024 * 1024 * 1024, /* 1GB */1024 * 1024 * 1024, /* 1MB */1024 * 1024 ) );
+
+        final Dynamic reg = holder.getRegistration ();
+
+        reg.setMultipartConfig ( new MultipartConfigElement ( "", /* 1GB */1024 * 1024 * 1024, /* 1GB */1024 * 1024 * 1024, /* 1MB */1024 * 1024 ) );
+
+        this.filterTracker = new FilterTracker ( this.context, getServletContext () );
+
+        // filter
+
+        final javax.servlet.FilterRegistration.Dynamic filter = getServletContext ().addFilter ( "filterTracker", this.filterTracker );
+        filter.addMappingForServletNames ( EnumSet.of ( DispatcherType.REQUEST ), false, holder.getName () );
     }
 
     @Override

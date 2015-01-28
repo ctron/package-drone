@@ -13,12 +13,12 @@ package de.dentrassi.pm.storage.web.channel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
@@ -32,6 +32,7 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
@@ -40,47 +41,26 @@ import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.sec.web.controller.Secured;
+import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
+import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
+import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.internal.Activator;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
+@Secured
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
+@ControllerInterceptor ( SecuredControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
-
-    private static final class ChannelNameComparator implements Comparator<Channel>
-    {
-        @Override
-        public int compare ( final Channel o1, final Channel o2 )
-        {
-            final String n1 = o1.getName () != null ? o1.getName () : "";
-            final String n2 = o2.getName () != null ? o2.getName () : "";
-
-            if ( !n1.isEmpty () && n2.isEmpty () )
-            {
-                return -1;
-            }
-            if ( n1.isEmpty () && !n2.isEmpty () )
-            {
-                return 1;
-            }
-
-            final int rc = n1.compareTo ( n2 );
-            if ( rc != 0 )
-            {
-                return rc;
-            }
-
-            return o1.getId ().compareTo ( o2.getId () );
-        }
-    }
 
     private StorageService service;
 
@@ -104,13 +84,14 @@ public class ChannelController implements InterfaceExtender
     private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT, null ) );
 
     @Override
-    public List<MenuEntry> getMainMenuEntries ()
+    public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
         return menuEntries;
     }
 
     private static final ChannelNameComparator NAME_COMPARATOR = new ChannelNameComparator ();
 
+    @Secured ( false )
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
     public ModelAndView list ()
     {
@@ -133,6 +114,7 @@ public class ChannelController implements InterfaceExtender
         return result;
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/view", method = RequestMethod.GET )
     public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -153,6 +135,7 @@ public class ChannelController implements InterfaceExtender
         return result;
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/details", method = RequestMethod.GET )
     public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -249,6 +232,7 @@ public class ChannelController implements InterfaceExtender
         return "redirect:/channel/" + channelId + "/view";
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
     public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -330,7 +314,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getActions ( final Object object )
+    public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {
@@ -341,12 +325,26 @@ public class ChannelController implements InterfaceExtender
 
             final List<MenuEntry> result = new LinkedList<> ();
 
-            result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
-            result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
-            result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
+            if ( SecurityFilter.isLoggedIn ( request ) )
+            {
+                result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
 
-            result.add ( new MenuEntry ( "Edit", 150, "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
-            result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Edit", 150, "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
+            }
+
+            return result;
+        }
+        else if ( Tags.ACTION_TAG_CHANNELS.equals ( object ) )
+        {
+            final List<MenuEntry> result = new LinkedList<> ();
+
+            if ( SecurityFilter.isLoggedIn ( request ) )
+            {
+                result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "create" ), Modifier.PRIMARY, null ) );
+            }
 
             return result;
         }
@@ -354,7 +352,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getViews ( final Object object )
+    public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {

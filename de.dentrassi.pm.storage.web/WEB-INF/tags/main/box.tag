@@ -9,6 +9,6 @@
 
 <div class="panel panel-${type} box">
 	<div class="panel-heading"><h3 class="panel-title">
-	<c:if test="${ not empty icon }"><span class="glyphicon glyphicon-${icon }"></span> </c:if>${fn:escapeXml (title) }</h3></div>
+	<c:if test="${ not empty icon }"><span class="glyphicon glyphicon-${icon }"></span>&nbsp;</c:if>${fn:escapeXml (title) }</h3></div>
 	<div class="panel-body"><jsp:doBody/></div>
 </div>

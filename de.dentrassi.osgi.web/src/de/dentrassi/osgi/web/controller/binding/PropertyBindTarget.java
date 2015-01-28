@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,6 @@ package de.dentrassi.osgi.web.controller.binding;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +47,7 @@ public class PropertyBindTarget implements BindTarget
     }
 
     @Override
-    public boolean isAnnotationPresent ( final Class<Valid> clazz )
+    public boolean isAnnotationPresent ( final Class<? extends Annotation> clazz )
     {
         return getAnnotation ( clazz ) != null;
     }

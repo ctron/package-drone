@@ -46,7 +46,7 @@ public class MapBinder implements Binder
             final Object value = this.objects.get ( q );
             if ( value != null )
             {
-                return Binding.simpleBinding ( value );
+                return Binding.simpleBinding ( converter.convertTo ( value, type ) );
             }
         }
         else

@@ -40,7 +40,7 @@
 
         <parallel>
 
-        	<get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.6.v20141205.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+        	<get src="http://eclipse.org/downloads/download.php?file=/jetty/stable-9/dist/jetty-distribution-9.2.7.v20150116.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
             <!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
         	-->

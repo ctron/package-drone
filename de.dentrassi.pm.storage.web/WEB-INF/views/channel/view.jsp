@@ -73,15 +73,17 @@ div.dz-error-message {
 
 <h:buttonbar menu="${menuManager.getActions(channel) }">
     <jsp:attribute name="after">
-    <div class="btn-group" role="group">
-        <div class="btn">
-            <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
-        </div>
-    </div>
-    
-    <div class="btn-group" role="group" id="upload-refresh" style="display: none;">
-        <a class="btn btn-success" href="">Reload</a>
-    </div>
+        <c:if test="${not empty pageContext.request.userPrincipal }">
+		    <div class="btn-group" role="group">
+		        <div class="btn">
+		            <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
+		        </div>
+		    </div>
+		    
+		    <div class="btn-group" role="group" id="upload-refresh" style="display: none;">
+		        <a class="btn btn-success" href="">Reload</a>
+		    </div>
+	    </c:if>
     </jsp:attribute>
 </h:buttonbar>
 
@@ -118,7 +120,7 @@ div.dz-error-message {
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
         <td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
         <td>
-          <c:if test='${artifact.is("deletable")}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+          <c:if test='${artifact.is("deletable") and not empty pageContext.request.userPrincipal}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
         </td>
         <td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
         <td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>

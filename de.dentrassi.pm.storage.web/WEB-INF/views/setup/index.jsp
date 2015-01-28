@@ -1,106 +1,61 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-    
+<%@ page
+    language="java"
+    contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"
+    trimDirectiveWhitespaces="true"
+    %>
+
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
-<%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
+<web:define name="entryBody">
 
-<h:main title="Setup">
-
-<div class="container-fluid ">
-
-<div class="row">
-
-<div class="col-sm-8">
-
-<c:if test="${empty jdbcDrivers}">
-<div class="warning">
-	<div class="title">No JDBC drivers were found.</div>
-	<div>You need to install some OSGi compatible JDBC drivers!</div>
-</div>
-</c:if>
-
-<form:form action="" method="POST" cssClass="form-horizontal">
-
-	<h:formEntry label="JDBC Driver"  command="command" path="jdbcDriver">
-	    <form:select path="jdbcDriver" cssClass="form-control">
-	        <form:option value="" label="Choose JDBC Driver"/>
-	        <form:optionList items="${jdbcDrivers }" itemValue="className"/>
-	    </form:select>
-	</h:formEntry>
-
-    <h:formEntry label="URL"  command="command" path="url">
-        <form:input path="url" cssClass="form-control"/>
-    </h:formEntry>
+    <${(empty task.target) ? "div" : "a" }
     
-    <h:formEntry label="User"  command="command" path="user">
-        <form:input path="user" cssClass="form-control"/>
-    </h:formEntry>
+    <c:if test="${ not empty task.target}">
+    href="${task.target.render(pageContext.request) }"
+    </c:if>
     
-    <h:formEntry label="Password"  command="command" path="password">
-        <form:input path="password" cssClass="form-control"/>
-    </h:formEntry>
     
-	<div class='form-group ${form:validationState(pageContext,"command", "additionalProperties", "", "has-error")}'>
-		<form:label path="additionalProperties" cssClass="col-sm-2 control-label">Additional Properties:</form:label>
-		<div class="col-sm-10">
-		<form:textarea path="additionalProperties" cols="40" rows="10" cssClass="form-control"/>
+    
+    class="
+    list-group-item 
+    ${ (task.state eq "DONE" ) ? "list-group-item-success" : "" }
+    "
+    >
+
+    <h4 class="list-group-item-heading">${fn:escapeXml(task.title) }
+    
+    <c:if test="${not empty task.target }"><div class="pull-right"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></div></c:if>
+    
+    </h4>
+    <p class="list-group-item-text">${task.description }</p>
+    
+    </${ (empty task.target) ? 'div' : 'a' }>
+    
+</web:define>
+
+<h:main title="Setup" subtitle="Prepare your system">
+
+<p class="lead">
+There are a few things you have to do in order to setup up Package Drone
+</p>
+
+<div class="container-fluid"><div class="row">
+
+    <div class="col-md-4">
+
+		<div class="list-group">
+			<c:forEach var="task" items="${tasks }">
+			     <web:call name="entryBody"/>
+			</c:forEach>
 		</div>
-		<div class="col-sm-10 col-sm-offset-2">
-            <form:errorList path="additionalProperties" cssClass="help-block" />
-        </div>
+
 	</div>
 
-	<input type="submit" value="Submit" class="btn btn-primary">
-	<input type="reset" value="Reset" class="btn btn-default">
-
-</form:form>
-
-</div>
-
-<div class="col-sm-4">
-
-<div class="panel panel-info">
-  <div class="panel-heading">
-    <h3 class="panel-title">Service status</h3>
-  </div>
-  <div class="panel-body">
-
-<table class="table">
-
-<tr><th>Database Schema Version</th><td>${databaseSchemaVersion }</td></tr>
-<tr><th>Current Schema Version</th><td>${currentVersion }</td></tr>
-<tr><th>Service Present</th><td id="service-present">${servicePresent }</td></tr>
-
-</table>
-
-<p>
-
-<c:if test="${ configured && ( empty databaseSchemaVersion || currentVersion > databaseSchemaVersion ) }">
-<div>
-	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
-	   <c:choose>
-	       <c:when test="${empty databaseSchemaVersion }">
-       <input type="submit" value="Install Schema" class="btn btn-primary" id="install-schema"/>
-	       </c:when>
-	       <c:otherwise>
-        <input type="submit" value="Upgrade Schema" class="btn btn-primary" id="upgrade-schema" />
-	       </c:otherwise>
-	   </c:choose>
-	   
-    </form>
-</div>
-</c:if>
-
-  </div>
-</div>
-
-</div> <%-- col --%>
-
-</div> <%-- row --%>
-
-</div> <%-- container --%>
-
+</div></div>
 
 </h:main>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,125 +11,53 @@
 package de.dentrassi.pm.storage.web.setup;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
+import javax.servlet.http.HttpServletRequest;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
-import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
-import de.dentrassi.osgi.web.controller.binding.BindingResult;
-import de.dentrassi.osgi.web.controller.form.FormData;
-import de.dentrassi.pm.database.DatabaseConnectionData;
-import de.dentrassi.pm.database.DatabaseSetup;
-import de.dentrassi.pm.database.JdbcHelper;
-import de.dentrassi.pm.storage.web.Modifier;
-import de.dentrassi.pm.storage.web.internal.Activator;
-import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
+import de.dentrassi.pm.storage.web.setup.Task.State;
 
 @Controller
-@RequestMapping ( value = "/setup" )
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
-public class SetupController extends DefaultMenuExtender
+@RequestMapping ( "/setup" )
+public class SetupController
 {
-    public SetupController ()
+
+    private List<Task> getTasks ( final HttpServletRequest request )
     {
-        addEntry ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, new LinkTarget ( "/setup" ), Modifier.DEFAULT, null, false ) );
+        final List<Task> result = new LinkedList<> ();
+
+        final boolean loggedIn = request.getUserPrincipal () != null;
+        {
+            final BasicTask task = new BasicTask ( "Sign is as admin user", "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application.", new LinkTarget ( "/login" ) );
+            if ( loggedIn )
+            {
+                task.setState ( State.DONE );
+            }
+            result.add ( task );
+        }
+
+        result.add ( new BasicTask ( "Configure the database connection", "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null ) );
+
+        result.add ( new BasicTask ( "Install or upgdate the database schema", "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null ) );
+
+        return result;
     }
 
-    @RequestMapping ( method = RequestMethod.GET )
-    public ModelAndView main ()
+    @RequestMapping
+    public ModelAndView index ( final HttpServletRequest request )
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        try ( Configurator cfg = Configurator.create () )
-        {
-            final DatabaseConnectionData command = cfg.getDatabaseSettings ();
+        model.put ( "tasks", getTasks ( request ) );
 
-            fillData ( command, model );
-
-            model.put ( "command", command );
-        }
-
-        return new ModelAndView ( "/setup/index", model );
-    }
-
-    private void fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
-    {
-        model.put ( "configured", Boolean.FALSE );
-
-        try
-        {
-            try ( DatabaseSetup setup = new DatabaseSetup ( command ) )
-            {
-                model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
-                model.put ( "currentVersion", setup.getCurrentVersion () );
-                model.put ( "configured", setup.isConfigured () );
-            }
-        }
-        catch ( final Exception e )
-        {
-        }
-
-        model.put ( "servicePresent", Activator.getTracker ().getStorageService () != null );
-        model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
-    }
-
-    @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView setup ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result )
-    {
-        final Map<String, Object> model = new HashMap<> ();
-        model.put ( "command", data );
-
-        model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
-
-        if ( !result.hasErrors () )
-        {
-            // store
-
-            try ( Configurator cfg = Configurator.create () )
-            {
-                cfg.setDatabaseSettings ( data );
-            }
-
-            // now wait until the configuration was performed in the background
-
-            Activator.getTracker ().waitForStorageService ( 5000 );
-        }
-
-        fillData ( data, model );
-
-        return new ModelAndView ( "/setup/index", model );
-    }
-
-    @RequestMapping ( value = "/databaseUpgrade", method = RequestMethod.POST )
-    public ModelAndView upgrade ()
-    {
-        final Map<String, Object> model = new HashMap<> ();
-
-        try
-        {
-            try ( Configurator cfg = Configurator.create () )
-            {
-                final DatabaseConnectionData data = cfg.getDatabaseSettings ();
-                try ( DatabaseSetup setup = new DatabaseSetup ( data ) )
-                {
-                    setup.performUpgrade ();
-                }
-                fillData ( data, model );
-            }
-
-            return new ModelAndView ( "/setup/upgrade", model );
-        }
-        catch ( final Throwable e )
-        {
-            model.clear ();
-            model.put ( "error", e );
-            return new ModelAndView ( "/setup/upgradeFailed", model );
-        }
+        return new ModelAndView ( "setup/index", model );
     }
 }

@@ -3,6 +3,5 @@
    <implementation class="de.dentrassi.pm.storage.web.setup.SetupController"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.web.setup.SetupController"/>
-      <provide interface="de.dentrassi.pm.storage.web.InterfaceExtender"/>
    </service>
 </scr:component>

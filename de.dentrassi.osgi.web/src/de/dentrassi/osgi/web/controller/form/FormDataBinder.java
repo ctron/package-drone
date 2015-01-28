@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,8 @@ package de.dentrassi.osgi.web.controller.form;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +28,9 @@ import de.dentrassi.osgi.web.controller.binding.BindingManager;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.MapBinder;
 import de.dentrassi.osgi.web.controller.binding.ModelAndViewAwareBinding;
+import de.dentrassi.osgi.web.controller.validator.CompositeValidator;
+import de.dentrassi.osgi.web.controller.validator.ControllerValidatorProcessor;
+import de.dentrassi.osgi.web.controller.validator.FormDataValidator;
 import de.dentrassi.osgi.web.controller.validator.JavaValidator;
 import de.dentrassi.osgi.web.controller.validator.Validator;
 
@@ -33,17 +38,18 @@ public class FormDataBinder implements Binder
 {
     private final HttpServletRequest request;
 
-    private final Validator validator;
+    private final Object controller;
 
     public FormDataBinder ( final HttpServletRequest request )
     {
-        this ( request, new JavaValidator () );
+        this.request = request;
+        this.controller = null;
     }
 
-    public FormDataBinder ( final HttpServletRequest request, final Validator validator )
+    public FormDataBinder ( final HttpServletRequest request, final Object controller )
     {
         this.request = request;
-        this.validator = validator;
+        this.controller = controller;
     }
 
     @Override
@@ -96,7 +102,6 @@ public class FormDataBinder implements Binder
             this.object = object;
             this.bindingResult = bindingResult;
         }
-
     }
 
     private ConstructionResult contruct ( final Class<?> clazz, final BindingManager bindingManager, final BindTarget target ) throws Exception
@@ -116,7 +121,16 @@ public class FormDataBinder implements Binder
 
         if ( target.isAnnotationPresent ( Valid.class ) )
         {
-            bm.setValidator ( this.validator );
+            final List<Validator> validators = new LinkedList<> ();
+            validators.add ( new JavaValidator () );
+            validators.add ( new FormDataValidator () );
+
+            if ( this.controller != null )
+            {
+                validators.add ( new ControllerValidatorProcessor ( this.controller ) );
+            }
+
+            bm.setValidator ( new CompositeValidator ( validators ) );
         }
 
         bm.addBinder ( new MapBinder ( objects ) );

@@ -17,14 +17,15 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
 import de.dentrassi.pm.storage.web.menu.MenuManager;
+import de.dentrassi.pm.storage.web.menu.MenuManagerImpl;
 
 public class MenuInterceptor extends ModelAndViewInterceptorAdapter
 {
-    private MenuManager menuManager;
+    private MenuManagerImpl menuManager;
 
     public void activate ()
     {
-        this.menuManager = new MenuManager ();
+        this.menuManager = new MenuManagerImpl ();
     }
 
     public void deactivate ()
@@ -41,7 +42,7 @@ public class MenuInterceptor extends ModelAndViewInterceptorAdapter
     {
         if ( modelAndView != null && !modelAndView.isRedirect () )
         {
-            modelAndView.put ( "menuManager", this.menuManager );
+            modelAndView.put ( "menuManager", new MenuManager ( this.menuManager, request ) );
         }
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,11 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
+import org.eclipse.scada.utils.ExceptionHelper;
+
 public class ExceptionError implements BindingError
 {
-    private final Exception ex;
+    private final Throwable ex;
 
-    public ExceptionError ( final Exception ex )
+    public ExceptionError ( final Throwable ex )
     {
         this.ex = ex;
     }
@@ -22,7 +24,6 @@ public class ExceptionError implements BindingError
     @Override
     public String getMessage ()
     {
-        return this.ex.getMessage ();
+        return ExceptionHelper.getMessage ( this.ex );
     }
-
 }

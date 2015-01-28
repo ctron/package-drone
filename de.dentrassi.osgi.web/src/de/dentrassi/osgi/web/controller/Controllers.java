@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,7 +28,13 @@ public final class Controllers
         final RequestMapping methodAn = method.getAnnotation ( RequestMapping.class );
         final RequestMapping classAn = getAnnotation ( method.getDeclaringClass (), RequestMapping.class );
 
+        /*
         if ( methodAn == null && classAn == null )
+        {
+            return null;
+        }
+        */
+        if ( methodAn == null )
         {
             return null;
         }

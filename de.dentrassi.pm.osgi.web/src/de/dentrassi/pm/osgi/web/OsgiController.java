@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -45,7 +47,7 @@ public class OsgiController implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getViews ( final Object object )
+    public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {

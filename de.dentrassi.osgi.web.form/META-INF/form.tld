@@ -83,6 +83,18 @@
 		  <rtexprvalue>true</rtexprvalue>
 		</attribute>
 	</tag>
+	
+	   <tag>
+        <name>hidden</name>
+        <tag-class>de.dentrassi.osgi.web.form.tags.Hidden</tag-class>
+        <body-content>empty</body-content>
+
+        <attribute>
+            <name>path</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
 
 	<tag>
 		<name>select</name>
@@ -175,11 +187,10 @@
 			<name>path</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
-			
 		</attribute>
 
 		<attribute>
-			<description>The name of the item variable</description>
+			<description>The name of the item variable. The default value is 'error'.</description>
 			<name>var</name>
 		</attribute>
 	</tag>
@@ -204,11 +215,34 @@
 			<name>skipIfEmpty</name>
 		</attribute>
 	</tag>
+	
+	<tag>
+	   <name>withResult</name>
+	   <tag-class>de.dentrassi.osgi.web.form.tags.WithResult</tag-class>
+	   <body-content>JSP</body-content>
+	   
+        <attribute>
+            <name>path</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        
+        <attribute>
+            <name>command</name>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        
+        <attribute>
+            <description>The name of the page context variable that will get the result. The default is 'result'.</description>
+            <name>var</name>
+        </attribute>
+        
+	</tag>
     
     <function>
         <name>validationState</name>
         <function-class>de.dentrassi.osgi.web.form.tags.Functions</function-class>
         <function-signature>java.lang.String validationState(javax.servlet.jsp.PageContext,java.lang.String,java.lang.String,java.lang.String,java.lang.String)</function-signature>
-    </function>	
-	
+    </function>
+    	
 </taglib>

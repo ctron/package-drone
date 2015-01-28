@@ -13,6 +13,8 @@ package de.dentrassi.pm.storage.web.internal;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
@@ -27,7 +29,7 @@ public class AboutMenuExtender implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getMainMenuEntries ()
+    public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
         return this.entries;
     }

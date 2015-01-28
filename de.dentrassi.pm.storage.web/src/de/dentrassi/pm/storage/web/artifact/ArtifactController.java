@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
@@ -25,10 +26,14 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.sec.web.controller.Secured;
+import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
+import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -39,8 +44,10 @@ import de.dentrassi.pm.storage.web.channel.ChannelController;
 import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
+@Secured
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
+@ControllerInterceptor ( SecuredControllerInterceptor.class )
 public class ArtifactController implements InterfaceExtender
 {
     private StorageService service;
@@ -50,12 +57,14 @@ public class ArtifactController implements InterfaceExtender
         this.service = service;
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
     public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
     public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
     {
@@ -74,6 +83,7 @@ public class ArtifactController implements InterfaceExtender
         return new ModelAndView ( "redirect:/channel/" + info.getChannelId () + "/view" );
     }
 
+    @Secured ( false )
     @RequestMapping ( value = "/artifact/{artifactId}/view", method = RequestMethod.GET )
     public ModelAndView view ( @PathVariable ( "artifactId" ) final String artifactId )
     {
@@ -143,7 +153,7 @@ public class ArtifactController implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getActions ( final Object object )
+    public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Artifact )
         {
@@ -158,26 +168,31 @@ public class ArtifactController implements InterfaceExtender
 
             result.add ( new MenuEntry ( "Channel", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
 
-            if ( ai.is ( "parentable" ) )
+            if ( SecurityFilter.isLoggedIn ( request ) )
             {
-                result.add ( new MenuEntry ( "Attach Artifact", 200, LinkTarget.createFromController ( ArtifactController.class, "attach" ).expand ( model ), Modifier.PRIMARY, null ) );
-            }
-            if ( ai.is ( "generator" ) )
-            {
-                result.add ( new MenuEntry ( "Regenerate", 300, LinkTarget.createFromController ( ArtifactController.class, "generate" ).expand ( model ), Modifier.SUCCESS, "refresh" ) );
-            }
-            if ( ai.is ( "deleteable" ) )
-            {
-                result.add ( new MenuEntry ( "Delete", 1000, LinkTarget.createFromController ( ArtifactController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
-            }
-            if ( art instanceof GeneratorArtifact )
-            {
-                final GeneratorArtifact genart = (GeneratorArtifact)art;
 
-                if ( genart.getEditTarget () != null )
+                if ( ai.is ( "parentable" ) )
                 {
-                    result.add ( new MenuEntry ( "Edit", 400, genart.getEditTarget (), Modifier.DEFAULT, null ) );
+                    result.add ( new MenuEntry ( "Attach Artifact", 200, LinkTarget.createFromController ( ArtifactController.class, "attach" ).expand ( model ), Modifier.PRIMARY, null ) );
                 }
+                if ( ai.is ( "generator" ) )
+                {
+                    result.add ( new MenuEntry ( "Regenerate", 300, LinkTarget.createFromController ( ArtifactController.class, "generate" ).expand ( model ), Modifier.SUCCESS, "refresh" ) );
+                }
+                if ( ai.is ( "deleteable" ) )
+                {
+                    result.add ( new MenuEntry ( "Delete", 1000, LinkTarget.createFromController ( ArtifactController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                }
+                if ( art instanceof GeneratorArtifact )
+                {
+                    final GeneratorArtifact genart = (GeneratorArtifact)art;
+
+                    if ( genart.getEditTarget () != null )
+                    {
+                        result.add ( new MenuEntry ( "Edit", 400, genart.getEditTarget (), Modifier.DEFAULT, null ) );
+                    }
+                }
+
             }
 
             result.add ( new MenuEntry ( "Download", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "dump" ).expand ( model ), Modifier.LINK, null ) );

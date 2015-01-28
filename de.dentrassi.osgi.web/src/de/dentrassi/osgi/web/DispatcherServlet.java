@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -74,10 +74,17 @@ public class DispatcherServlet extends HttpServlet
         super.destroy ();
     }
 
+    private static final boolean DEFAULT_TO_UTF8 = !Boolean.getBoolean ( DispatcherServlet.class.getName () + ".disableDefaultUtf8" );
+
     @Override
     protected void service ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
         logger.trace ( "service - {} - {} ({})", request.getMethod (), request.getServletPath (), request );
+
+        if ( DEFAULT_TO_UTF8 )
+        {
+            response.setCharacterEncoding ( "UTF-8" );
+        }
 
         try
         {

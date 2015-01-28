@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import java.util.Map;
 
 import de.dentrassi.osgi.converter.ConverterManager;
 import de.dentrassi.osgi.web.ModelAndView;
+import de.dentrassi.osgi.web.controller.validator.ValidationResult;
 import de.dentrassi.osgi.web.controller.validator.Validator;
 
 public class BindingManager
@@ -39,7 +40,7 @@ public class BindingManager
 
     public BindingManager ()
     {
-        this.converter = new ConverterManager ();
+        this.converter = ConverterManager.create ();
     }
 
     public static final BindingManager create ( final Map<String, Object> data )
@@ -174,12 +175,14 @@ public class BindingManager
             return;
         }
 
-        final Map<String, List<BindingError>> vr = this.validator.validate ( o );
+        final ValidationResult vr = this.validator.validate ( o );
 
-        for ( final Map.Entry<String, List<BindingError>> entry : vr.entrySet () )
+        for ( final Map.Entry<String, List<BindingError>> entry : vr.getErrors ().entrySet () )
         {
             this.result.addErrors ( entry.getKey (), entry.getValue () );
         }
+
+        this.result.addMarkers ( vr.getMarkers () );
     }
 
     public BindingResult getResult ()

@@ -1,16 +1,17 @@
+<%@page import="de.dentrassi.pm.storage.web.Tags"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+<%
+pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
+%>
+
 <h:main title="Channels">
 
-<h:buttonbar>
-    <jsp:attribute name="before">
-        <div class="btn-group" role="group"><a class="btn btn-primary" role="button" href="channel/create">Create Channel</a></div>
-    </jsp:attribute>
-</h:buttonbar>
+<h:buttonbar menu="${menuManager.getActions(TAG) }" />
 
 <table class="table table-striped" style="width: 100%" id="channels">
 

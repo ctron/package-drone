@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.validator;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,13 +52,13 @@ public class JavaValidator implements Validator
     }
 
     @Override
-    public Map<String, List<BindingError>> validate ( final Object target )
+    public ValidationResult validate ( final Object target )
     {
         final Set<ConstraintViolation<Object>> vr = this.validator.validate ( target );
 
         if ( vr == null || vr.isEmpty () )
         {
-            return Collections.emptyMap ();
+            return ValidationResult.EMPTY;
         }
 
         final Map<String, List<BindingError>> result = new HashMap<> ();
@@ -76,7 +75,9 @@ public class JavaValidator implements Validator
             errors.add ( convert ( entry ) );
         }
 
-        return result;
+        final ValidationResult validationResult = new ValidationResult ();
+        validationResult.setErrors ( result );
+        return validationResult;
     }
 
     private BindingError convert ( final ConstraintViolation<Object> entry )
