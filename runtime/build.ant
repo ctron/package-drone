@@ -45,7 +45,7 @@
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
         	-->
         	
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM3-201410292000/equinox-SDK-MarsM3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM4-201412102000/equinox-SDK-MarsM4.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	<!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/R-KeplerSR2-201402211700/equinox-SDK-KeplerSR2.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	-->
