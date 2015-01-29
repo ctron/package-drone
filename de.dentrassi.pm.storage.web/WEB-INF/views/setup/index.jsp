@@ -13,28 +13,24 @@
 
 <web:define name="entryBody">
 
-    <${(empty task.target) ? "div" : "a" }
-    
-    <c:if test="${ not empty task.target}">
-    href="${task.target.render(pageContext.request) }"
-    </c:if>
-    
-    
-    
-    class="
-    list-group-item 
-    ${ (task.state eq "DONE" ) ? "list-group-item-success" : "" }
-    "
-    >
+    <div
+    class="list-group-item 
+    ${ ( task.state eq 'DONE' ) ? 'list-group-item-success' : '' }
+    ">
 
-    <h4 class="list-group-item-heading">${fn:escapeXml(task.title) }
-    
-    <c:if test="${not empty task.target }"><div class="pull-right"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></div></c:if>
-    
-    </h4>
-    <p class="list-group-item-text">${task.description }</p>
-    
-    </${ (empty task.target) ? 'div' : 'a' }>
+	    <h4 class="list-group-item-heading">${fn:escapeXml(task.title) }
+	    
+		    <c:if test="${(not empty task.target) and (not ( task.state eq 'DONE' )) }"><div class="pull-right">
+			    <a href="${task.target.render(pageContext.request) }">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+			    </a>
+		    </div></c:if>
+		    
+	    </h4>
+	    
+	    <p class="list-group-item-text">${task.description }</p>
+	    
+    </div>
     
 </web:define>
 

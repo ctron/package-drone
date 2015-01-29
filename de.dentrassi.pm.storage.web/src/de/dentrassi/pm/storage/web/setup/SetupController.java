@@ -36,7 +36,7 @@ public class SetupController
 
         final boolean loggedIn = request.getUserPrincipal () != null;
         {
-            final BasicTask task = new BasicTask ( "Sign is as admin user", "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application.", new LinkTarget ( "/login" ) );
+            final BasicTask task = new BasicTask ( "Sign is as admin user", "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application. <br/><br/> Alternatively the token is written to the file <code>${user.home}/.drone-admin-token</code>.", new LinkTarget ( "/login" ) );
             if ( loggedIn )
             {
                 task.setState ( State.DONE );
