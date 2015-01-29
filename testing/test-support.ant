@@ -29,12 +29,14 @@
           target: before
          ================================= -->
     <target name="before">
+    	<echo message="Create database: ${mysql.test.database}"/>
         <exec executable="mysqladmin" failifexecutionfails="true" failonerror="true">
             <arg value="-u${mysql.admin.user}"/>
             <arg value="-p${mysql.admin.password}"/>
             <arg value="create"/>
             <arg value="${mysql.test.database}"/>
         </exec>
+    	<echo message="Create user: ${mysql.test.user}"/>
         <exec executable="mysql" failifexecutionfails="true" failonerror="true" inputstring="CREATE USER '${mysql.test.user}'@'localhost' IDENTIFIED BY '${mysql.test.password}'; GRANT ALL ON ${mysql.test.database}.* TO '${mysql.test.user}'@'localhost';">
             <arg value="-u${mysql.admin.user}"/>
             <arg value="-p${mysql.admin.password}"/>
