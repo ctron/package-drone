@@ -38,8 +38,7 @@
 	<function>
 		<name>active</name>
 		<function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
-		<function-signature>java.lang.String
-			active(javax.servlet.http.HttpServletRequest,java.lang.String)</function-signature>
+		<function-signature>java.lang.String active(javax.servlet.http.HttpServletRequest,java.lang.String)</function-signature>
 	</function>
 
 	<function>
