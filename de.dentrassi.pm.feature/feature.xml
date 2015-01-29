@@ -707,4 +707,38 @@
          install-size="0"
          version="0.0.0"/>
 
+   <plugin
+         id="de.dentrassi.pm.sec"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.sec.jpa"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.sec.service"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.sec.web"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.sec.web.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
 </feature>

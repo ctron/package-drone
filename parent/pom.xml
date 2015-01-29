@@ -92,6 +92,12 @@
 		
 		<module>../de.dentrassi.pm.r5</module>
 		
+		<module>../de.dentrassi.pm.sec</module>
+		<module>../de.dentrassi.pm.sec.jpa</module>
+		<module>../de.dentrassi.pm.sec.service</module>
+		<module>../de.dentrassi.pm.sec.web</module>
+		<module>../de.dentrassi.pm.sec.web.ui</module>
+		
 		<module>../de.dentrassi.pm.storage</module>
 		<module>../de.dentrassi.pm.storage.jpa</module>
 		<module>../de.dentrassi.pm.storage.service</module>
