@@ -79,7 +79,7 @@
 
 <c:if test="${ configured && ( empty databaseSchemaVersion || currentVersion > databaseSchemaVersion ) }">
 <div>
-	<form method="post" action="<c:url value="/setup/databaseUpgrade" />">
+	<form method="post" action="<c:url value="/config/databaseUpgrade" />">
 	   <c:choose>
 	       <c:when test="${empty databaseSchemaVersion }">
        <input type="submit" value="Install Schema" class="btn btn-primary" id="install-schema"/>

@@ -15,7 +15,7 @@
 </table>
 
 <p>
-<a href="<c:url value="/setup"/>" class="btn btn-default">Back</a>
+<a href="<c:url value="/config"/>" class="btn btn-default">Back</a>
 </p>
 
 </h:main>
