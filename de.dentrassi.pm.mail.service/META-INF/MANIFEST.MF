@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mail Service
+Bundle-SymbolicName: de.dentrassi.pm.mail.service
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: de.dentrassi.pm.mail.service;version="1.0.0"
+Import-Package: javax.mail;version="1.4.1",
+ javax.mail.internet;version="1.4.1",
+ javax.mail.util;version="1.4.1",
+ org.osgi.framework;version="1.8.0",
+ org.osgi.service.cm;version="1.5.0"
+Service-Component: OSGI-INF/defaultProvider.xml
