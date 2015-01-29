@@ -83,7 +83,10 @@ public class GodModeService implements UserService
         this.adminSalt = Users.createToken ( 32 );
         this.adminTokenHash = Users.hashIt ( this.adminSalt, adminToken );
 
-        announce ( adminToken );
+        if ( ENABLED )
+        {
+            announce ( adminToken );
+        }
     }
 
     @Override
