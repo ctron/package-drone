@@ -10,5 +10,6 @@ Import-Package: javax.mail;version="1.4.1",
  javax.mail.internet;version="1.4.1",
  javax.mail.util;version="1.4.1",
  org.osgi.framework;version="1.8.0",
- org.osgi.service.cm;version="1.5.0"
-Service-Component: OSGI-INF/defaultProvider.xml
+ org.osgi.service.cm;version="1.5.0",
+ org.osgi.service.component;version="1.2.2"
+Service-Component: OSGI-INF/default.xml

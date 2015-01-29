@@ -27,8 +27,19 @@ public class StringToIntegerConverter implements Converter
     @Override
     public Integer convertTo ( final Object value )
     {
+        if ( value == null )
+        {
+            return null;
+        }
+
         try
         {
+            final String str = value.toString ();
+            if ( str.isEmpty () )
+            {
+                return null;
+            }
+
             return Integer.parseInt ( value.toString () );
         }
         catch ( final NumberFormatException e )

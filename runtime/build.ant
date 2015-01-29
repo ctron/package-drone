@@ -7,7 +7,7 @@
     	Set up jetty target platform
     </description>
     
-    <property name="eclipse.orbit.release" value="R20140525021250"/>
+    <property name="eclipse.orbit.release" value="R20150124073747"/>
 
     <!-- ================================= 
           target: default
@@ -105,6 +105,11 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
 
+        	<!-- email -->
+        	
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish.source_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
+        	
         </parallel>
 
     </target>

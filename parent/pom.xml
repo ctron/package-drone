@@ -83,6 +83,7 @@
 		<module>../de.dentrassi.pm.logging.jul</module>
 		
 		<module>../de.dentrassi.pm.mail.service</module>
+		<module>../de.dentrassi.pm.mail.web</module>
 		
 		<module>../de.dentrassi.pm.maven</module>
 		

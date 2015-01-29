@@ -11,7 +11,7 @@
 package de.dentrassi.pm.mail.service.internal;
 
 import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -22,60 +22,74 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.ComponentContext;
 
 import de.dentrassi.pm.mail.service.MailService;
 
 public class DefaultMailService implements MailService
 {
+    private static final String PROPERTY_PREFIX = "property.";
+
     private Session session;
 
-    private final String username;
+    private Dictionary<String, Object> config;
 
-    private final String password;
-
-    private final String from;
-
-    private final Properties properties;
-
-    private Authenticator auth;
-
-    private ServiceRegistration<MailService> handle;
-
-    public DefaultMailService ( final String username, final String password, final Properties properties, final String from )
+    public DefaultMailService ()
     {
-        this.username = username;
-        this.password = password;
-        this.properties = properties;
-        this.from = from;
-
-        this.auth = new Authenticator () {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication ()
-            {
-                return new PasswordAuthentication ( DefaultMailService.this.username, DefaultMailService.this.password );
-            }
-        };
     }
 
-    public void start ()
+    public void updated ( final ComponentContext context )
     {
-        this.session = Session.getInstance ( this.properties, this.auth );
-        final BundleContext ctx = FrameworkUtil.getBundle ( DefaultMailService.class ).getBundleContext ();
+        stop ();
+        start ( context );
+    }
 
-        final Dictionary<String, ?> props = new Hashtable<> ();
-        this.handle = ctx.registerService ( MailService.class, this, props );
+    public void start ( final ComponentContext context )
+    {
+        this.config = context.getProperties ();
+
+        final String username = getString ( "username" );
+        final String password = getString ( "password" );
+
+        final Properties properties = new Properties ();
+
+        final Enumeration<String> keys = this.config.keys ();
+        while ( keys.hasMoreElements () )
+        {
+            final String key = keys.nextElement ();
+            if ( key.startsWith ( PROPERTY_PREFIX ) )
+            {
+                properties.put ( key.substring ( PROPERTY_PREFIX.length () ), properties.get ( key ) );
+            }
+        }
+
+        Authenticator auth = null;
+        if ( username != null && password != null )
+        {
+            auth = new Authenticator () {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication ()
+                {
+                    return new PasswordAuthentication ( username, password );
+                }
+            };
+        }
+
+        this.session = Session.getInstance ( properties, auth );
+    }
+
+    private String getString ( final String key )
+    {
+        final Object val = this.config.get ( key );
+        if ( val != null )
+        {
+            return val.toString ();
+        }
+        return null;
     }
 
     public void stop ()
     {
-        if ( this.handle != null )
-        {
-            this.handle.unregister ();
-            this.handle = null;
-        }
         this.session = null;
     }
 
@@ -84,7 +98,16 @@ public class DefaultMailService implements MailService
     {
         final Message message = new MimeMessage ( this.session );
 
-        message.setFrom ( new InternetAddress ( this.from ) );
+        final String from = getString ( "from" );
+        if ( from != null )
+        {
+            message.setFrom ( new InternetAddress ( from ) );
+        }
+        else
+        {
+            message.setFrom ();
+        }
+
         message.setSubject ( subject );
         message.setText ( text );
         message.setHeader ( "Return-Path", "<>" );

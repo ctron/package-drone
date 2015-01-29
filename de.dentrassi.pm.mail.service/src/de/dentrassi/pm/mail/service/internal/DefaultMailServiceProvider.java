@@ -19,7 +19,10 @@ import org.osgi.service.cm.ManagedService;
 
 public class DefaultMailServiceProvider implements ManagedService
 {
+    public final String PID = "de.dentrassi.pm.mail.service.default";
+
     private static final String PROPERTY_PREFIX = "property.";
+
     private DefaultMailService service;
 
     public DefaultMailServiceProvider ()
