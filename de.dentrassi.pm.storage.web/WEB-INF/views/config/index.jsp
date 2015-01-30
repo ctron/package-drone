@@ -65,7 +65,6 @@
   <div class="panel-heading">
     <h3 class="panel-title">Service status</h3>
   </div>
-  <div class="panel-body">
 
 <table class="table">
 
@@ -75,9 +74,8 @@
 
 </table>
 
-<p>
-
 <c:if test="${ configured && ( empty databaseSchemaVersion || currentVersion > databaseSchemaVersion ) }">
+<div class="panel-body">
 <div>
 	<form method="post" action="<c:url value="/config/databaseUpgrade" />">
 	   <c:choose>
@@ -90,10 +88,11 @@
 	   </c:choose>
 	   
     </form>
-</div>
+    </div>
+  </div>
 </c:if>
 
-  </div>
+
 </div>
 
 </div> <%-- col --%>
