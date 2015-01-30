@@ -267,6 +267,18 @@ public class BundleInformation implements TranslatedInformation
 
     private List<String> requiredExecutionEnvironments = new LinkedList<> ();
 
+    private String eclipseBundleShape;
+
+    public void setEclipseBundleShape ( final String eclipseBundleShape )
+    {
+        this.eclipseBundleShape = eclipseBundleShape;
+    }
+
+    public String getEclipseBundleShape ()
+    {
+        return this.eclipseBundleShape;
+    }
+
     public void setRequiredExecutionEnvironments ( final List<String> requiredExecutionEnvironments )
     {
         if ( requiredExecutionEnvironments != null )

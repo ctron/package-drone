@@ -69,6 +69,8 @@ public class BundleInformationParser
         result.setLicense ( ma.getValue ( Constants.BUNDLE_LICENSE ) );
         result.setDescription ( ma.getValue ( Constants.BUNDLE_DESCRIPTION ) );
 
+        result.setEclipseBundleShape ( ma.getValue ( "Eclipse-BundleShape" ) );
+
         result.setRequiredExecutionEnvironments ( Headers.parseStringList ( ma.getValue ( Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT ) ) );
 
         processImportPackage ( result, ma );
