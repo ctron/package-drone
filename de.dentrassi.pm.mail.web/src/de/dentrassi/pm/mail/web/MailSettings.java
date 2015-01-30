@@ -10,6 +10,30 @@ public class MailSettings
 
     private Integer port;
 
+    private String from;
+
+    private String prefix;
+
+    public void setPrefix ( final String prefix )
+    {
+        this.prefix = prefix;
+    }
+
+    public String getPrefix ()
+    {
+        return this.prefix;
+    }
+
+    public void setFrom ( final String from )
+    {
+        this.from = from;
+    }
+
+    public String getFrom ()
+    {
+        return this.from;
+    }
+
     public void setPort ( final Integer port )
     {
         this.port = port;

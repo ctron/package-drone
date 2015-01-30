@@ -6,15 +6,18 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: de.dentrassi.pm.sec.jpa;bundle-version="1.0.0"
-Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
+Import-Package: com.google.common.io;version="18.0.0",
+ de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
+ de.dentrassi.pm.mail.service;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  javax.persistence;version="2.1.0",
  javax.persistence.criteria;version="2.1.0",
  org.eclipse.scada.utils;version="0.2.0",
  org.eclipse.scada.utils.str;version="0.2.0",
  org.osgi.framework;version="1.8.0",
- org.osgi.util.tracker;version="1.5.1"
+ org.osgi.util.tracker;version="1.5.1",
+ org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/security.xml,
  OSGI-INF/database.xml, OSGI-INF/databaseRem.xml, OSGI-INF/godmode.xml
 Export-Package: de.dentrassi.pm.sec.service;version="1.0.0"

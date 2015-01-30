@@ -17,6 +17,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -47,6 +50,20 @@ public class SetupController
         result.add ( new BasicTask ( "Configure the database connection", "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null ) );
 
         result.add ( new BasicTask ( "Install or upgdate the database schema", "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null ) );
+
+        {
+            final BasicTask task = new BasicTask ( "Configure the mail service", "You will need to configure a mail server which Package Drone can use to sent e-mails.", loggedIn ? new LinkTarget ( "/config" ) : null );
+
+            final BundleContext ctx = FrameworkUtil.getBundle ( SetupController.class ).getBundleContext ();
+            final boolean mailPresent = ctx.getServiceReference ( "de.dentrassi.pm.mail.service.MailService" ) != null;
+
+            if ( mailPresent )
+            {
+                task.setState ( State.DONE );
+            }
+
+            result.add ( task );
+        }
 
         return result;
     }

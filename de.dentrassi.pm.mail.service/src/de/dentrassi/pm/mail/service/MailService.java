@@ -13,4 +13,20 @@ package de.dentrassi.pm.mail.service;
 public interface MailService
 {
     public void sendMessage ( String to, String subject, String text ) throws Exception;
+
+    /**
+     * Send a message <br/>
+     * The content of the message is read from the readable parameter. The
+     * method will not close the readable.
+     *
+     * @param to
+     *            the recipient address
+     * @param subject
+     *            the subject (without prefix)
+     * @param readable
+     *            the readable providing the content
+     * @throws Exception
+     *             if anything goes wrong
+     */
+    public void sendMessage ( String to, String subject, Readable readable ) throws Exception;
 }

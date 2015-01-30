@@ -14,12 +14,19 @@ import static de.dentrassi.pm.sec.service.internal.Users.convert;
 import static de.dentrassi.pm.sec.service.internal.Users.createToken;
 import static de.dentrassi.pm.sec.service.internal.Users.hashIt;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManager;
@@ -28,6 +35,14 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import org.eclipse.scada.utils.ExceptionHelper;
+import org.eclipse.scada.utils.str.StringReplacer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.CharStreams;
+
+import de.dentrassi.pm.mail.service.MailService;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
@@ -40,8 +55,21 @@ import de.dentrassi.pm.sec.service.UserService;
 
 public class DatabaseUserService extends AbstractDatabaseUserService implements UserService, UserStorage
 {
+    private final static Logger logger = LoggerFactory.getLogger ( DatabaseUserService.class );
 
     private static final long MIN_EMAIL_DELAY = TimeUnit.MINUTES.toMillis ( 5 );
+
+    private MailService mailService;
+
+    public void setMailService ( final MailService mailService )
+    {
+        this.mailService = mailService;
+    }
+
+    public void unsetMailService ( final MailService mailService )
+    {
+        this.mailService = null;
+    }
 
     @Override
     public UserInformation refresh ( final UserInformation user )
@@ -239,7 +267,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     protected void sendVerifyEmail ( final String email, final String userId, final String token )
     {
         final String link = String.format ( "http://localhost:8080/signup/verifyEmail?userId=%s&token=%s", userId, token );
-        System.err.println ( "E-Mail link: " + link );
+
+        final Map<String, String> model = new HashMap<> ();
+        model.put ( "token", token );
+        model.put ( "link", link );
+        sendEmail ( email, "Verify your account", "verify", model );
     }
 
     protected void sendResetEmail ( final String email, final String resetToken )
@@ -253,7 +285,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         {
             throw new RuntimeException ( e );
         }
-        System.err.println ( "E-Mail link: " + link );
+
+        final Map<String, String> model = new HashMap<> ();
+        model.put ( "token", resetToken );
+        model.put ( "link", link );
+        sendEmail ( email, "Password reset request", "passwordReset", model );
     }
 
     @Override
@@ -364,7 +400,14 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     @Override
     public String resetPassword ( final String email )
     {
-        return doWithTransaction ( ( em ) -> processResetPassword ( em, email ) );
+        try
+        {
+            return doWithTransaction ( ( em ) -> processResetPassword ( em, email ) );
+        }
+        catch ( final Exception e )
+        {
+            return ExceptionHelper.getMessage ( e );
+        }
     }
 
     private String processResetPassword ( final EntityManager em, final String email )
@@ -389,7 +432,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         if ( user.isLocked () )
         {
             // we silently fail, since this would give out information about the user's state
-            // TODO: we could send an e-mail stating that the account is locked
+            sendEmail ( user.getEmail (), "Password reset request", "lockedUser", null );
             return null;
         }
 
@@ -407,6 +450,48 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         sendResetEmail ( email, resetToken );
 
         return null;
+    }
+
+    private void sendEmail ( final String email, final String subject, final String resource, final Map<String, ?> model )
+    {
+        final MailService mailService = this.mailService;
+
+        if ( mailService == null )
+        {
+            throw new IllegalStateException ( "Failed to send e-mail. Mail service not present!" );
+        }
+
+        final URL url = DatabaseUserService.class.getResource ( String.format ( "mails/%s.txt", resource ) );
+        if ( url == null )
+        {
+            logger.info ( "Failed to load mail content" );
+            throw new IllegalStateException ( String.format ( "Unable to find message content: %s", resource ) );
+        }
+
+        String data;
+        try ( InputStream is = url.openStream (); Reader r = new InputStreamReader ( is, StandardCharsets.UTF_8 ) )
+        {
+            data = CharStreams.toString ( r );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to process mail content", e );
+            throw new RuntimeException ( "Failed to load mail content: " + resource, e );
+        }
+
+        if ( model != null )
+        {
+            data = StringReplacer.replace ( data, StringReplacer.newExtendedSource ( model ), StringReplacer.DEFAULT_PATTERN, true );
+        }
+
+        try
+        {
+            mailService.sendMessage ( email, subject, data );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to send e-mail to: " + email, e );
+        }
     }
 
     private Date nextMailSlot ( final Date date )

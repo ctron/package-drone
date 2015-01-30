@@ -61,7 +61,7 @@ public class ConfigController implements InterfaceExtender
 
     private ConfigurationAdmin admin;
 
-    private DefaultMailService mailService;
+    private volatile DefaultMailService mailService;
 
     public void setMailService ( final DefaultMailService mailService )
     {
@@ -105,6 +105,22 @@ public class ConfigController implements InterfaceExtender
             setCurrent ( settings );
         }
 
+        // poor man's wait
+
+        int i = 10;
+        while ( this.mailService == null && i > 0 )
+        {
+            try
+            {
+                Thread.sleep ( 100 );
+            }
+            catch ( final InterruptedException e )
+            {
+                break;
+            }
+            i--;
+        }
+
         fillModel ( model );
 
         return new ModelAndView ( "index", model );
@@ -120,6 +136,8 @@ public class ConfigController implements InterfaceExtender
 
             put ( properties, "username", settings.getUsername () );
             put ( properties, "password", settings.getPassword () );
+            put ( properties, "from", settings.getFrom () );
+            put ( properties, "prefix", settings.getPrefix () );
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.transport.protocol", "smtp" );
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.host", settings.getHost () );
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.port", settings.getPort () );
@@ -159,6 +177,8 @@ public class ConfigController implements InterfaceExtender
 
             result.setUsername ( getString ( cfg, "username" ) );
             result.setPassword ( getString ( cfg, "password" ) );
+            result.setFrom ( getString ( cfg, "from" ) );
+            result.setPrefix ( getString ( cfg, "prefix" ) );
             result.setHost ( getString ( cfg, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.host" ) );
             result.setPort ( getInteger ( cfg, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.port" ) );
 
@@ -241,7 +261,7 @@ public class ConfigController implements InterfaceExtender
                 }
             }
 
-            this.mailService.sendMessage ( email, "[Package Drone] Test Mail", "This is an automated test message requested by: " + user );
+            this.mailService.sendMessage ( email, "Test Mail", "This is an automated test message requested by: " + user );
         }
         catch ( final Throwable e )
         {

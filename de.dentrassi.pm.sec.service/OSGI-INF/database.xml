@@ -6,4 +6,5 @@
       <provide interface="de.dentrassi.pm.sec.UserStorage"/>
       <provide interface="de.dentrassi.pm.sec.service.UserService"/>
    </service>
+   <reference bind="setMailService" cardinality="0..1" interface="de.dentrassi.pm.mail.service.MailService" name="MailService" policy="dynamic" unbind="unsetMailService"/>
 </scr:component>

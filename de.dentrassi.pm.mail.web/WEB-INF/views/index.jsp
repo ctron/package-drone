@@ -49,6 +49,14 @@ if ( principal instanceof UserInformationPrincipal )
 		        <h:formEntry label="Port" path="port" command="command">
 		            <form:input path="port" cssClass="form-control"  placeholder="Optional port number of the SMTP server"/>
 		        </h:formEntry>
+		        
+		        <h:formEntry label="From" path="from" command="command">
+                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail"/>
+                </h:formEntry>
+                
+                <h:formEntry label="Prefix" path="prefix" command="command">
+                    <form:input path="prefix" cssClass="form-control"  placeholder="Optional subject prefix"/>
+                </h:formEntry>
 		    
 		        <div class="form-group">
 		            <div class="col-sm-offset-2 col-sm-10">

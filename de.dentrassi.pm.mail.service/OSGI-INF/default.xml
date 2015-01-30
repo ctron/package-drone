@@ -5,5 +5,5 @@
       <provide interface="de.dentrassi.pm.mail.service.MailService"/>
       <provide interface="de.dentrassi.pm.mail.service.java.DefaultMailService"/>
    </service>
-   <property name="service.pid" type="String" value="de.dentrassi.pm.mail.service.defaultProvider"/>
+   <property name="service.pid" type="String" value="de.dentrassi.pm.mail.service.default"/>
 </scr:component>

@@ -16,15 +16,20 @@ import java.util.Properties;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.mail.service.MailService;
 
@@ -108,32 +113,39 @@ public class DefaultMailService implements MailService
     }
 
     @Override
+    public void sendMessage ( final String to, final String subject, final Readable readable ) throws Exception
+    {
+        // create message
+
+        final Message message = createMessage ( to, subject );
+
+        // set text
+
+        message.setText ( CharStreams.toString ( readable ) );
+
+        // send message
+
+        sendMessage ( message );
+    }
+
+    @Override
     public void sendMessage ( final String to, final String subject, final String text ) throws Exception
     {
-        final Message message = new MimeMessage ( this.session );
+        // create message
 
-        final String from = getString ( "from" );
-        if ( from != null )
-        {
-            message.setFrom ( new InternetAddress ( from ) );
-        }
-        else
-        {
-            message.setFrom ();
-        }
+        final Message message = createMessage ( to, subject );
 
-        // recipient
+        // set text
 
-        final InternetAddress recipient = new InternetAddress ();
-        recipient.setAddress ( to );
-        message.setRecipient ( javax.mail.Message.RecipientType.TO, recipient );
-
-        // mail
-
-        message.setSubject ( subject );
         message.setText ( text );
-        message.setHeader ( "Return-Path", "<>" );
 
+        // send message
+
+        sendMessage ( message );
+    }
+
+    private void sendMessage ( final Message message ) throws MessagingException, NoSuchProviderException
+    {
         // commit
 
         message.saveChanges ();
@@ -155,5 +167,41 @@ public class DefaultMailService implements MailService
 
             transport.close ();
         }
+    }
+
+    private Message createMessage ( final String to, final String subject ) throws MessagingException, AddressException
+    {
+        final Message message = new MimeMessage ( this.session );
+
+        final String from = getString ( "from" );
+        if ( from != null )
+        {
+            message.setFrom ( new InternetAddress ( from ) );
+        }
+        else
+        {
+            message.setFrom ();
+        }
+
+        // recipient
+
+        final InternetAddress recipient = new InternetAddress ();
+        recipient.setAddress ( to );
+        message.setRecipient ( javax.mail.Message.RecipientType.TO, recipient );
+
+        // mail
+
+        final String prefix = getString ( "prefix" );
+        if ( prefix != null )
+        {
+            message.setSubject ( prefix + " " + subject );
+        }
+        else
+        {
+            message.setSubject ( subject );
+        }
+
+        message.setHeader ( "Return-Path", "<>" );
+        return message;
     }
 }
