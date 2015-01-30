@@ -23,7 +23,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
-@SuiteClasses ( { BasicTest.class, SetupTest.class, DefaultTest.class, UploadTest.class } )
+@SuiteClasses ( { BasicTest.class, SetupTest.class, DefaultTest.class, MailTest.class, UploadTest.class } )
 public class TestSuite
 {
 

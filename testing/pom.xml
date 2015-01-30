@@ -4,7 +4,7 @@
 
 	<groupId>de.dentrassi.package.drone</groupId>
 	<artifactId>testing</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>Automated tests for Package Drone</name>
 
 	<properties>
