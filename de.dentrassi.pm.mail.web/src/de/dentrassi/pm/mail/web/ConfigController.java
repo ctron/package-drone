@@ -11,6 +11,9 @@
 package de.dentrassi.pm.mail.web;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.security.Principal;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -21,8 +24,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
@@ -32,7 +38,12 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.mail.service.java.DefaultMailService;
+import de.dentrassi.pm.sec.DatabaseDetails;
+import de.dentrassi.pm.sec.UserInformation;
+import de.dentrassi.pm.sec.UserInformationPrincipal;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
@@ -46,8 +57,21 @@ import de.dentrassi.pm.storage.web.menu.MenuEntry;
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ConfigController.class );
 
     private ConfigurationAdmin admin;
+
+    private DefaultMailService mailService;
+
+    public void setMailService ( final DefaultMailService mailService )
+    {
+        this.mailService = mailService;
+    }
+
+    public void unsetMailService ( final DefaultMailService mailService )
+    {
+        this.mailService = null;
+    }
 
     public void setAdmin ( final ConfigurationAdmin admin )
     {
@@ -61,7 +85,14 @@ public class ConfigController implements InterfaceExtender
 
         model.put ( "command", getCurrent () );
 
+        fillModel ( model );
+
         return new ModelAndView ( "index", model );
+    }
+
+    private void fillModel ( final Map<String, Object> model )
+    {
+        model.put ( "servicePresent", this.mailService != null );
     }
 
     @RequestMapping ( method = RequestMethod.POST )
@@ -74,6 +105,8 @@ public class ConfigController implements InterfaceExtender
             setCurrent ( settings );
         }
 
+        fillModel ( model );
+
         return new ModelAndView ( "index", model );
     }
 
@@ -81,15 +114,15 @@ public class ConfigController implements InterfaceExtender
     {
         try
         {
-            final Configuration cfg = this.admin.getConfiguration ( "de.dentrassi.pm.mail.service.default" );
+            final Configuration cfg = this.admin.getConfiguration ( DefaultMailService.SERVICE_PID );
 
             final Dictionary<String, Object> properties = new Hashtable<> ();
 
             put ( properties, "username", settings.getUsername () );
             put ( properties, "password", settings.getPassword () );
-            put ( properties, "properties.mail.transport.protocol", "smtp" );
-            put ( properties, "properties.mail.smtp.host", settings.getHost () );
-            put ( properties, "properties.mail.smtp.port", settings.getPort () );
+            put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.transport.protocol", "smtp" );
+            put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.host", settings.getHost () );
+            put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.port", settings.getPort () );
 
             cfg.update ( properties );
         }
@@ -116,7 +149,7 @@ public class ConfigController implements InterfaceExtender
     {
         try
         {
-            final Configuration cfg = this.admin.getConfiguration ( "de.dentrassi.pm.mail.service.defaultProvider", "" );
+            final Configuration cfg = this.admin.getConfiguration ( DefaultMailService.SERVICE_PID );
             if ( cfg == null || cfg.getProperties () == null )
             {
                 return createDefault ();
@@ -126,8 +159,8 @@ public class ConfigController implements InterfaceExtender
 
             result.setUsername ( getString ( cfg, "username" ) );
             result.setPassword ( getString ( cfg, "password" ) );
-            result.setHost ( getString ( cfg, "properties.mail.smtp.host" ) );
-            result.setPort ( getInteger ( cfg, "properties.mail.smtp.port" ) );
+            result.setHost ( getString ( cfg, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.host" ) );
+            result.setPort ( getInteger ( cfg, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.port" ) );
 
             return result;
         }
@@ -187,5 +220,46 @@ public class ConfigController implements InterfaceExtender
         }
 
         return result;
+    }
+
+    @RequestMapping ( value = "/sendTest", method = RequestMethod.POST )
+    public ModelAndView sendTest ( @RequestParameter ( "testEmailReceiver" ) final String email, final Principal principal )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        try
+        {
+            String user = principal.getName ();
+
+            if ( principal instanceof UserInformationPrincipal )
+            {
+                final UserInformation userInfo = ( (UserInformationPrincipal)principal ).getUserInformation ();
+                final DatabaseDetails dbDetails = userInfo.getDetails ( DatabaseDetails.class );
+                if ( dbDetails != null && dbDetails.getEmail () != null )
+                {
+                    user = dbDetails.getEmail ();
+                }
+            }
+
+            this.mailService.sendMessage ( email, "[Package Drone] Test Mail", "This is an automated test message requested by: " + user );
+        }
+        catch ( final Throwable e )
+        {
+            logger.warn ( "Failed to send test e-mail", e );
+
+            final StringWriter sw = new StringWriter ();
+            e.printStackTrace ( new PrintWriter ( sw ) );
+            try
+            {
+                sw.close ();
+            }
+            catch ( final IOException e1 )
+            {
+            }
+            model.put ( "message", ExceptionHelper.getMessage ( e ) );
+            model.put ( "stacktrace", sw.toString () );
+        }
+
+        return new ModelAndView ( "testSent", model );
     }
 }

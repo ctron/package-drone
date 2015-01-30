@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" configuration-policy="require" deactivate="stop" modified="updated" name="de.dentrassi.pm.mail.service.default">
-   <implementation class="de.dentrassi.pm.mail.service.internal.DefaultMailService"/>
+   <implementation class="de.dentrassi.pm.mail.service.java.DefaultMailService"/>
    <service>
       <provide interface="de.dentrassi.pm.mail.service.MailService"/>
+      <provide interface="de.dentrassi.pm.mail.service.java.DefaultMailService"/>
    </service>
    <property name="service.pid" type="String" value="de.dentrassi.pm.mail.service.defaultProvider"/>
 </scr:component>

@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.mail.service.internal;
+package de.dentrassi.pm.mail.service.java;
 
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -23,12 +23,18 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.osgi.service.component.ComponentContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.mail.service.MailService;
 
 public class DefaultMailService implements MailService
 {
-    private static final String PROPERTY_PREFIX = "property.";
+    private final static Logger logger = LoggerFactory.getLogger ( DefaultMailService.class );
+
+    public static final String PROPERTY_PREFIX = "properties.";
+
+    public static final String SERVICE_PID = "de.dentrassi.pm.mail.service.default";
 
     private Session session;
 
@@ -57,9 +63,17 @@ public class DefaultMailService implements MailService
         while ( keys.hasMoreElements () )
         {
             final String key = keys.nextElement ();
+            logger.debug ( "Checking key: {}", key );
             if ( key.startsWith ( PROPERTY_PREFIX ) )
             {
-                properties.put ( key.substring ( PROPERTY_PREFIX.length () ), properties.get ( key ) );
+                final Object val = this.config.get ( key );
+                if ( val == null )
+                {
+                    continue;
+                }
+                final String mkey = key.substring ( PROPERTY_PREFIX.length () );
+                logger.info ( "Property - {} = {}", mkey, val );
+                properties.put ( mkey, val );
             }
         }
 
@@ -107,6 +121,14 @@ public class DefaultMailService implements MailService
         {
             message.setFrom ();
         }
+
+        // recipient
+
+        final InternetAddress recipient = new InternetAddress ();
+        recipient.setAddress ( to );
+        message.setRecipient ( javax.mail.Message.RecipientType.TO, recipient );
+
+        // mail
 
         message.setSubject ( subject );
         message.setText ( text );
