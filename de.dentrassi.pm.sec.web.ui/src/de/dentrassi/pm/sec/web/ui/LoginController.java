@@ -39,9 +39,27 @@ import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 public class LoginController
 {
     @RequestMapping ( method = RequestMethod.GET )
-    public ModelAndView login ()
+    public ModelAndView login ( final HttpServletRequest request )
     {
-        return new ModelAndView ( "login/form" );
+        final Map<String, Object> model = new HashMap<> ();
+
+        final LoginData data = new LoginData ();
+
+        final Cookie[] cookies = request.getCookies ();
+        if ( cookies != null )
+        {
+            for ( final Cookie cookie : cookies )
+            {
+                if ( cookie.getName ().equals ( SecurityFilter.COOKIE_EMAIL ) )
+                {
+                    data.setEmail ( cookie.getValue () );
+                }
+            }
+        }
+
+        model.put ( "command", data );
+
+        return new ModelAndView ( "login/form", model );
     }
 
     @RequestMapping ( method = RequestMethod.POST )
