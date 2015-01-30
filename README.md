@@ -39,10 +39,10 @@ What it currently can do
 Known bugs and limitation
 ----------------
 
-* The concept of P2 categories and binaries is missing
+* The concept of P2 binaries is missing
 * Automatic cleanup is missing
 * There is deadlock in Equinox/EclipseLink when updating the JPA database settings
-* There is no security AT ALL
+* There is only authentication at the moment, no finer grained authorization and no repository authorization
 * PostgreSQL is not supported, since PostgreSQL does not support Blobs in a sane way
 
 What it currently cannot do
@@ -50,9 +50,9 @@ What it currently cannot do
 
 A lot of things. If there is time it will be implemented. Or you can help by contributing ;-)
 
-Hopefully some time package drone can:
+Hopefully some time Package Drone can:
 
-* Provide access to bundles by an OBR layout
+* Provide access to bundles by an OBR layout (it can do R5)
 * Act as a fully functional Maven M2 repository
 
 What it is not designed to do
