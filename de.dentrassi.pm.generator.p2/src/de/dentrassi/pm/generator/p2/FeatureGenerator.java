@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -37,6 +40,7 @@ import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
+import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.storage.StorageAccessor;
 
 public class FeatureGenerator implements ArtifactGenerator
@@ -144,12 +148,24 @@ public class FeatureGenerator implements ArtifactGenerator
             return;
         }
 
+        boolean unpack = false;
+
+        try
+        {
+            final Gson gson = new GsonBuilder ().create ();
+            final BundleInformation bi = gson.fromJson ( a.getMetaData ().get ( new MetaKey ( "osgi", "bundle-information" ) ), BundleInformation.class );
+            unpack = "dir".equals ( bi.getEclipseBundleShape () );
+        }
+        catch ( final Exception e )
+        {
+        }
+
         final Element p = root.getOwnerDocument ().createElement ( "plugin" );
         root.appendChild ( p );
 
         p.setAttribute ( "id", id );
         p.setAttribute ( "version", version );
-        p.setAttribute ( "unpack", "false" );
+        p.setAttribute ( "unpack", "" + unpack );
     }
 
     @Override
