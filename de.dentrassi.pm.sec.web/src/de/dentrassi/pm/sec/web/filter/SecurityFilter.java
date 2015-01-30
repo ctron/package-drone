@@ -124,11 +124,14 @@ public class SecurityFilter implements Filter
 
     private String findCookie ( final String name, final Cookie[] cookies )
     {
-        for ( final Cookie cookie : cookies )
+        if ( cookies != null )
         {
-            if ( cookie.getName ().equals ( name ) )
+            for ( final Cookie cookie : cookies )
             {
-                return cookie.getValue ();
+                if ( cookie.getName ().equals ( name ) )
+                {
+                    return cookie.getValue ();
+                }
             }
         }
         return null;
