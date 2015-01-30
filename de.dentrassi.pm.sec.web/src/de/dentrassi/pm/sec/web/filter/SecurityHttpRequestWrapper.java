@@ -38,6 +38,12 @@ public class SecurityHttpRequestWrapper extends HttpServletRequestWrapper
     @Override
     public void login ( final String username, final String password ) throws ServletException
     {
+        final Object value = getSession ().getAttribute ( SecurityFilter.ATTR_USER_INFORMATION );
+        if ( value != null )
+        {
+            throw new ServletException ( "Already logged in" );
+        }
+
         try
         {
             if ( this.service == null )

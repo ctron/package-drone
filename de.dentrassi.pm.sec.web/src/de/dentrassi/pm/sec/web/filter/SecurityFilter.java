@@ -84,13 +84,15 @@ public class SecurityFilter implements Filter
 
     protected void processFilter ( final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain ) throws IOException, ServletException
     {
-        final HttpSession session = request.getSession ( false );
+        final HttpSession session = request.getSession ();
+
+        logger.trace ( "Processing request: {}", request );
 
         if ( session != null )
         {
             // always reload details
 
-            markReloadDetails ( request.getSession ( false ) );
+            markReloadDetails ( session );
 
             // try to log on
 
@@ -105,6 +107,7 @@ public class SecurityFilter implements Filter
                     try
                     {
                         final UserInformation user = this.service.login ( email, token );
+                        logger.info ( "Tried to log in using rememberMe token: {} -> {} for {}", email, user, request );
                         applyUserInformation ( request, user );
                     }
                     catch ( final LoginException e )
