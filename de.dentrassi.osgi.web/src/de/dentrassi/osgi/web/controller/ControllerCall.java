@@ -124,6 +124,7 @@ public class ControllerCall
         data.put ( "request", request );
         data.put ( "response", response );
         data.put ( "session", request.getSession () );
+        data.put ( "principal", request.getUserPrincipal () );
 
         final BindingManager manager = BindingManager.create ( data );
 
