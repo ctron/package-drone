@@ -73,8 +73,9 @@ if ( principal instanceof UserInformationPrincipal )
 	           </tbody>
 	       </table>
 	       
-	       <div class="panel-body">
-	         <c:if test="${servicePresent }">
+	       
+         <c:if test="${servicePresent }">
+	         <div class="panel-body">
              <form class="form-inline" action="<c:url value="/default.mail/config/sendTest"/>" method="post">
                  <div class="form-group">
                     <p class="form-control-static">Test E-Mail</p>
@@ -85,8 +86,9 @@ if ( principal instanceof UserInformationPrincipal )
                  </div>
                  <button type="submit" class="btn btn-default">Send</button>
              </form>
-             </c:if>
-	       </div>
+             </div>
+          </c:if>
+	       
 	   </div>
 	
 	</div> <%-- info col --%>
