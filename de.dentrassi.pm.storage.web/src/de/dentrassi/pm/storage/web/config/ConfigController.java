@@ -11,8 +11,11 @@
 package de.dentrassi.pm.storage.web.config;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import de.dentrassi.osgi.web.Controller;
@@ -29,9 +32,9 @@ import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
+import de.dentrassi.pm.storage.web.InterfaceExtender;
 import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.internal.Activator;
-import de.dentrassi.pm.storage.web.menu.DefaultMenuExtender;
 import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
@@ -39,11 +42,19 @@ import de.dentrassi.pm.storage.web.menu.MenuEntry;
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
-public class ConfigController extends DefaultMenuExtender
+public class ConfigController implements InterfaceExtender
 {
-    public ConfigController ()
+    @Override
+    public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
-        addEntry ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, new LinkTarget ( "/setup" ), Modifier.DEFAULT, null, false ) );
+        final List<MenuEntry> result = new LinkedList<> ();
+
+        if ( request.getUserPrincipal () != null )
+        {
+            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, new LinkTarget ( "/setup" ), Modifier.DEFAULT, null, false ) );
+        }
+
+        return result;
     }
 
     @RequestMapping ( method = RequestMethod.GET )
