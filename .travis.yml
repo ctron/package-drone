@@ -1,7 +1,7 @@
 language: java
 
 install:
- - ant -f runtime/build.ant
+ - cd runtime ; ant -f build.ant
 
 before_script: cd parent
 
