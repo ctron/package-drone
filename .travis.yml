@@ -1,4 +1,7 @@
 language: java
+
+before_build: cd parent
+
 jdk:
   - oraclejdk8
   - openjdk8
