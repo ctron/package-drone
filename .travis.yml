@@ -12,4 +12,3 @@ script: mvn package -B
 
 jdk:
   - oraclejdk8
-  - openjdk8
