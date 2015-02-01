@@ -1,6 +1,6 @@
 language: java
 
-before_build: cd parent
+before_script: cd parent
 
 jdk:
   - oraclejdk8
