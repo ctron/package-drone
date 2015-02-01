@@ -4,6 +4,7 @@ install:
  - cd runtime ; mvn package ; cd ..
 
 before_script: cd parent
+script: mvn package -B
 
 jdk:
   - oraclejdk8
