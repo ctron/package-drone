@@ -74,10 +74,11 @@ public class ConfigController implements InterfaceExtender
         return new ModelAndView ( "/config/index", model );
     }
 
-    private void fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
+    private boolean fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
     {
         model.put ( "configured", Boolean.FALSE );
 
+        boolean needUpdate = false;
         try
         {
             try ( DatabaseSetup setup = new DatabaseSetup ( command ) )
@@ -85,6 +86,7 @@ public class ConfigController implements InterfaceExtender
                 model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
                 model.put ( "currentVersion", setup.getCurrentVersion () );
                 model.put ( "configured", setup.isConfigured () );
+                needUpdate = setup.isNeedUpgrade ();
             }
         }
         catch ( final Exception e )
@@ -94,6 +96,8 @@ public class ConfigController implements InterfaceExtender
         model.put ( "storageServicePresent", Activator.getTracker ().getStorageService () != null );
 
         model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
+
+        return needUpdate;
     }
 
     @RequestMapping ( method = RequestMethod.POST )
@@ -118,9 +122,16 @@ public class ConfigController implements InterfaceExtender
             Activator.getTracker ().waitForStorageService ( 5000 );
         }
 
-        fillData ( data, model );
+        final boolean needUpgrade = fillData ( data, model );
 
-        return new ModelAndView ( "/config/index", model );
+        if ( needUpgrade )
+        {
+            return new ModelAndView ( "/config/index", model );
+        }
+        else
+        {
+            return new ModelAndView ( "redirect:/setup" );
+        }
     }
 
     @RequestMapping ( value = "/databaseUpgrade", method = RequestMethod.POST )

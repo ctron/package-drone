@@ -25,6 +25,8 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.pm.database.DatabaseSetup;
+import de.dentrassi.pm.storage.web.config.Configurator;
 import de.dentrassi.pm.storage.web.setup.Task.State;
 
 @Controller
@@ -35,6 +37,19 @@ public class SetupController
 
     private List<Task> getTasks ( final HttpServletRequest request )
     {
+
+        boolean needUpgrade;
+        boolean configured;
+
+        try ( Configurator cfg = Configurator.create () )
+        {
+            try ( DatabaseSetup db = new DatabaseSetup ( cfg.getDatabaseSettings () ) )
+            {
+                needUpgrade = db.isNeedUpgrade ();
+                configured = db.isConfigured ();
+            }
+        }
+
         final List<Task> result = new LinkedList<> ();
 
         final boolean loggedIn = request.getUserPrincipal () != null;
@@ -47,12 +62,26 @@ public class SetupController
             result.add ( task );
         }
 
-        result.add ( new BasicTask ( "Configure the database connection", "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null ) );
-
-        result.add ( new BasicTask ( "Install or upgdate the database schema", "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null ) );
+        {
+            final BasicTask task = new BasicTask ( "Configure the database connection", "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null );
+            if ( configured )
+            {
+                task.setState ( State.DONE );
+            }
+            result.add ( task );
+        }
 
         {
-            final BasicTask task = new BasicTask ( "Configure the mail service", "You will need to configure a mail server which Package Drone can use to sent e-mails.", loggedIn ? new LinkTarget ( "/config" ) : null );
+            final BasicTask task = new BasicTask ( "Install or upgdate the database schema", "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null );
+            if ( !needUpgrade && configured )
+            {
+                task.setState ( State.DONE );
+            }
+            result.add ( task );
+        }
+
+        {
+            final BasicTask task = new BasicTask ( "Configure the mail service", "You will need to configure a mail server which Package Drone can use to sent e-mails.", loggedIn ? new LinkTarget ( "/default.mail/config" ) : null );
 
             final BundleContext ctx = FrameworkUtil.getBundle ( SetupController.class ).getBundleContext ();
             final boolean mailPresent = ctx.getServiceReference ( "de.dentrassi.pm.mail.service.MailService" ) != null;

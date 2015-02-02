@@ -214,4 +214,16 @@ public class DatabaseSetup implements AutoCloseable
     {
         return this.data.getJdbcDriver () != null && !this.data.getJdbcDriver ().isEmpty ();
     }
+
+    public boolean isNeedUpgrade ()
+    {
+        if ( isConfigured () && getSchemaVersion () != null && getCurrentVersion () > getSchemaVersion () )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
