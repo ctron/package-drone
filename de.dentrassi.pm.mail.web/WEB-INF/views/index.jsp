@@ -47,7 +47,7 @@ if ( principal instanceof UserInformationPrincipal )
 		        </h:formEntry>
 		        
 		        <h:formEntry label="Port" path="port" command="command">
-		            <form:input path="port" cssClass="form-control"  placeholder="Optional port number of the SMTP server"/>
+		            <form:input path="port" cssClass="form-control" type="number"  placeholder="Optional port number of the SMTP server"/>
 		        </h:formEntry>
 		        
 		        <h:formEntry label="From" path="from" command="command">

@@ -1,5 +1,8 @@
 package de.dentrassi.pm.mail.web;
 
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+
 public class MailSettings
 {
     private String username;
@@ -8,6 +11,8 @@ public class MailSettings
 
     private String host;
 
+    @DecimalMin ( "0" )
+    @DecimalMax ( "" + ( 64 * 1024 - 1 ) )
     private Integer port;
 
     private String from;
