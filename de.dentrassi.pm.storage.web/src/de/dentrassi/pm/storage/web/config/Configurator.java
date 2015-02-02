@@ -89,7 +89,6 @@ public class Configurator implements AutoCloseable
 
             for ( final String unitName : JPA_UNITS )
             {
-
                 final Configuration cfg = cm.createFactoryConfiguration ( GEMINI_FACTORY_PID, null );
 
                 final Dictionary<String, Object> props = new Hashtable<> ();

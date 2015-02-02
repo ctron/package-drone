@@ -11,3 +11,4 @@ Import-Package: javax.persistence;version="2.0.5",
  javax.persistence.metamodel;version="2.0.5",
  org.eclipse.persistence.annotations;version="2.5.0"
 Export-Package: de.dentrassi.pm.sec.jpa;version="1.0.0";uses:="javax.persistence.metamodel"
+Require-Capability: osgi.extender; filter:="(&(osgi.extender=osgi.jpa)(version>=1.0))"
