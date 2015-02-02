@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.core">
+   <implementation class="de.dentrassi.pm.core.internal.CoreServiceImpl"/>
+   <reference bind="setEntityManagerFactory" cardinality="1..1" interface="javax.persistence.EntityManagerFactory" name="EntityManagerFactory" policy="static" target="(osgi.unit.name=de.dentrassi.pm.storage.jpa)"/>
+   <service>
+      <provide interface="de.dentrassi.pm.core.CoreService"/>
+   </service>
+</scr:component>

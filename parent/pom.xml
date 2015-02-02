@@ -75,6 +75,9 @@
 		<module>../de.dentrassi.pm.aspect.common</module>
 		<module>../de.dentrassi.pm.common</module>
 		
+		<module>../de.dentrassi.pm.core</module>
+		<module>../de.dentrassi.pm.core.web</module>
+		
 		<module>../de.dentrassi.pm.database</module>
 		
 		<module>../de.dentrassi.pm.generator</module>

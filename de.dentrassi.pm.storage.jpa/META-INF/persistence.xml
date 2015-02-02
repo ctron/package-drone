@@ -15,6 +15,7 @@
 		<class>de.dentrassi.pm.storage.jpa.ChannelPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.GlobalPropertyEntity</class>
 		<properties>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
 			<property name="eclipselink.weaving" value="true"/>
