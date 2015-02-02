@@ -60,15 +60,12 @@ public class FilterTracker implements Filter
 
     private final ServiceTracker<Filter, TrackedFilter> tracker;
 
-    private Context servletContext;
-
     private BundleContext context;
 
     private TrackedFilter[] filters = null;
 
     public FilterTracker ( final BundleContext context, final Context servletContext )
     {
-        this.servletContext = servletContext;
         this.context = context;
 
         this.tracker = new ServiceTracker<> ( context, Filter.class, new ServiceTrackerCustomizer<Filter, TrackedFilter> () {

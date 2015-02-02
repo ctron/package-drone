@@ -12,11 +12,9 @@ package de.dentrassi.osgi.web.servlet;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletRegistration.Dynamic;
 
@@ -66,7 +64,7 @@ public class ContextImpl extends WebAppContext
         // filter
 
         final javax.servlet.FilterRegistration.Dynamic filter = getServletContext ().addFilter ( "filterTracker", this.filterTracker );
-        filter.addMappingForServletNames ( EnumSet.of ( DispatcherType.REQUEST ), false, holder.getName () );
+        filter.addMappingForUrlPatterns ( null, false, "/*" );
     }
 
     @Override
