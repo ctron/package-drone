@@ -51,7 +51,7 @@ public class ConfigController implements InterfaceExtender
 
         if ( request.getUserPrincipal () != null )
         {
-            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, new LinkTarget ( "/setup" ), Modifier.DEFAULT, null, false ) );
+            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, LinkTarget.createFromController ( ConfigController.class, "main" ), Modifier.DEFAULT, null, false ) );
         }
 
         return result;

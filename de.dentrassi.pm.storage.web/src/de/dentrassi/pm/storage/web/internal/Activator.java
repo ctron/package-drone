@@ -32,6 +32,9 @@ public class Activator implements BundleActivator
     @Override
     public void start ( final BundleContext bundleContext ) throws Exception
     {
+        System.err.println ( "Start" );
+        new RuntimeException ().printStackTrace ( System.err );
+
         Activator.INSTANCE = this;
         this.tracker = new ServiceTracker ( bundleContext );
         this.tracker.open ();
@@ -45,6 +48,9 @@ public class Activator implements BundleActivator
     @Override
     public void stop ( final BundleContext bundleContext ) throws Exception
     {
+        System.err.println ( "Stop" );
+        new RuntimeException ().printStackTrace ( System.err );
+
         this.tracker.close ();
         this.aspects.close ();
         Activator.INSTANCE = null;
