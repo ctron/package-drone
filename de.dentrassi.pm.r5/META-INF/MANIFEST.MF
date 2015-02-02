@@ -21,3 +21,4 @@ Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
  org.slf4j;version="1.7.2"
 Web-ContextPath: /r5
 Export-Package: de.dentrassi.pm.r5;version="1.0.0"
+Bundle-ActivationPolicy: lazy
