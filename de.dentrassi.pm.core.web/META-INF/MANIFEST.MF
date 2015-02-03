@@ -13,6 +13,7 @@ Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.osgi.web.controller;version="1.0.0",
  de.dentrassi.osgi.web.controller.binding;version="1.0.0",
  de.dentrassi.osgi.web.controller.form;version="1.0.0",
+ de.dentrassi.osgi.web.interceptor;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.common.web;version="1.0.0",
  de.dentrassi.pm.common.web.menu;version="1.0.0",
@@ -25,5 +26,7 @@ Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  javax.servlet.jsp;version="2.3.0",
  javax.servlet.jsp.tagext;version="2.3.0",
  javax.validation;version="1.1.0",
- org.hibernate.validator.constraints;version="5.1.3"
-Service-Component: OSGI-INF/core.xml
+ org.hibernate.validator.constraints;version="5.1.3",
+ org.slf4j;version="1.7.2"
+Service-Component: OSGI-INF/core.xml,
+ OSGI-INF/siteInfoInt.xml

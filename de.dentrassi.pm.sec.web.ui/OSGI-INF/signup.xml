@@ -5,4 +5,5 @@
       <provide interface="de.dentrassi.pm.sec.web.ui.SignupController"/>
    </service>
    <reference bind="setStorage" cardinality="1..1" interface="de.dentrassi.pm.sec.UserStorage" name="UserStorage" policy="static"/>
+   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
 </scr:component>

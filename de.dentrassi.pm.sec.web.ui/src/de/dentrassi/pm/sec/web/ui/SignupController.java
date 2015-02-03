@@ -23,6 +23,7 @@ import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
 
@@ -31,10 +32,21 @@ import de.dentrassi.pm.sec.DatabaseUserInformation;
 @RequestMapping ( "/signup" )
 public class SignupController extends AbstractUserCreationController
 {
+    private CoreService coreService;
+
+    public void setCoreService ( final CoreService coreService )
+    {
+        this.coreService = coreService;
+    }
 
     @RequestMapping ( method = RequestMethod.GET )
     public ModelAndView signup ()
     {
+        if ( !isSelfRegistrationAllowed () )
+        {
+            return new ModelAndView ( "signup/notAllowed" );
+        }
+
         final ModelAndView model = new ModelAndView ( "signup/form" );
 
         model.put ( "command", new CreateUser () );
@@ -42,9 +54,19 @@ public class SignupController extends AbstractUserCreationController
         return model;
     }
 
+    private boolean isSelfRegistrationAllowed ()
+    {
+        return Boolean.parseBoolean ( this.coreService.getCoreProperty ( "allow-self-registration" ) );
+    }
+
     @RequestMapping ( method = RequestMethod.POST )
     public ModelAndView signupPost ( @Valid @FormData ( "command" ) final CreateUser data, final BindingResult result )
     {
+        if ( !isSelfRegistrationAllowed () )
+        {
+            return new ModelAndView ( "signup/notAllowed" );
+        }
+
         if ( result.hasErrors () )
         {
             final Map<String, Object> model = new HashMap<> ( 1 );
@@ -125,7 +147,7 @@ public class SignupController extends AbstractUserCreationController
     @RequestMapping ( value = "/newPassword", method = RequestMethod.GET )
     public ModelAndView newPassword ( @RequestParameter ( "email" ) final String email, @RequestParameter ( "token" ) final String token )
     {
-        // TODO: check token first! Will be re-checked later, but gives better feedback
+        // TODO: check token first! Will be re-checked and enforced later, but gives better feedback
 
         final NewPassword data = new NewPassword ();
 

@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.core.internal;
+package de.dentrassi.pm.core.jpa;
 
 import java.util.Map;
 import java.util.SortedMap;
@@ -103,5 +103,4 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
 
         return result;
     }
-
 }

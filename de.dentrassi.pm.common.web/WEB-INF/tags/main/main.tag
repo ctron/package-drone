@@ -54,7 +54,11 @@
     </jsp:attribute>
     <jsp:attribute name="after">
         <c:if test="${empty principal }">
-            <p class="navbar-text navbar-right"><a href="<c:url value="/signup"/>">Register</a> or <a href="<c:url value="/login"/>">Sign in</a></p>
+            <p class="navbar-text navbar-right">
+                <c:if test="${siteInformation.allowSelfRegistration }">
+                    <a href="<c:url value="/signup"/>">Register</a> or
+                </c:if> 
+                <a href="<c:url value="/login"/>">Sign in</a></p>
         </c:if>
         <c:if test="${not empty principal }">
             <p class="navbar-text navbar-right">
