@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.mail.service.MailService;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseDetails;
@@ -52,6 +53,7 @@ import de.dentrassi.pm.sec.jpa.UserEntity;
 import de.dentrassi.pm.sec.jpa.UserEntity_;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.UserService;
+import de.dentrassi.pm.system.SystemService;
 
 public class DatabaseUserService extends AbstractDatabaseUserService implements UserService, UserStorage
 {
@@ -60,6 +62,20 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     private static final long MIN_EMAIL_DELAY = TimeUnit.MINUTES.toMillis ( 5 );
 
     private MailService mailService;
+
+    private CoreService coreService;
+
+    private SystemService systemService;
+
+    public void setSystemService ( final SystemService systemService )
+    {
+        this.systemService = systemService;
+    }
+
+    public void setCoreService ( final CoreService coreService )
+    {
+        this.coreService = coreService;
+    }
 
     public void setMailService ( final MailService mailService )
     {
@@ -266,7 +282,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
     protected void sendVerifyEmail ( final String email, final String userId, final String token )
     {
-        final String link = String.format ( "http://localhost:8080/signup/verifyEmail?userId=%s&token=%s", userId, token );
+        final String link = String.format ( "%s/signup/verifyEmail?userId=%s&token=%s", getSitePrefix (), userId, token );
 
         final Map<String, String> model = new HashMap<> ();
         model.put ( "token", token );
@@ -279,7 +295,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         String link;
         try
         {
-            link = String.format ( "http://localhost:8080/signup/newPassword?email=%s&token=%s", URLEncoder.encode ( email, "UTF-8" ), resetToken );
+            link = String.format ( "%s/signup/newPassword?email=%s&token=%s", getSitePrefix (), URLEncoder.encode ( email, "UTF-8" ), resetToken );
         }
         catch ( final UnsupportedEncodingException e )
         {
@@ -290,6 +306,16 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         model.put ( "token", resetToken );
         model.put ( "link", link );
         sendEmail ( email, "Password reset request", "passwordReset", model );
+    }
+
+    private String getSitePrefix ()
+    {
+        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        if ( prefix != null )
+        {
+            return prefix;
+        }
+        return "http://localhost:8080";
     }
 
     @Override
@@ -406,6 +432,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         }
         catch ( final Exception e )
         {
+            logger.warn ( "Failed to reset password", e );
             return ExceptionHelper.getMessage ( e );
         }
     }

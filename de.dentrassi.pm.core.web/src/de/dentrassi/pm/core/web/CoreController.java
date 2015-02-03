@@ -35,6 +35,7 @@ import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
+import de.dentrassi.pm.system.SystemService;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -43,11 +44,18 @@ import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
 public class CoreController implements InterfaceExtender
 {
-    private CoreService service;
+    private CoreService coreService;
 
-    public void setService ( final CoreService service )
+    private SystemService systemService;
+
+    public void setCoreService ( final CoreService service )
     {
-        this.service = service;
+        this.coreService = service;
+    }
+
+    public void setSystemService ( final SystemService systemService )
+    {
+        this.systemService = systemService;
     }
 
     @Override
@@ -69,7 +77,7 @@ public class CoreController implements InterfaceExtender
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "properties", this.service.list () );
+        model.put ( "properties", this.coreService.list () );
 
         return new ModelAndView ( "list", model );
     }
@@ -79,7 +87,7 @@ public class CoreController implements InterfaceExtender
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        final Map<MetaKey, String> props = this.service.list ();
+        final Map<MetaKey, String> props = this.coreService.list ();
 
         final SiteInformation site = new SiteInformation ();
         try
@@ -91,9 +99,15 @@ public class CoreController implements InterfaceExtender
             // use plain new object
         }
 
-        model.put ( "command", site );
+        fillModel ( model, site );
 
         return new ModelAndView ( "site", model );
+    }
+
+    protected void fillModel ( final Map<String, Object> model, final SiteInformation site )
+    {
+        model.put ( "command", site );
+        model.put ( "defaultSitePrefix", this.systemService.getDefaultSitePrefix () );
     }
 
     @RequestMapping ( value = "/site", method = RequestMethod.POST )
@@ -112,10 +126,10 @@ public class CoreController implements InterfaceExtender
                 data.put ( entry.getKey ().getKey (), entry.getValue () );
             }
 
-            this.service.setProperties ( data );
+            this.coreService.setProperties ( data );
         }
 
-        model.put ( "command", site );
+        fillModel ( model, site );
 
         return new ModelAndView ( "site", model );
     }

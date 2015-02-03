@@ -22,7 +22,7 @@
                     <form:input path="prefix" cssClass="form-control" placeholder="Optional site prefix"/>
                     <span class="help-block">
                     Enter a Site prefix (like <code>http://myserver.com</code>), which will be used instead of
-                    the automatically detected prefix (default: <code>${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}</code>).
+                    the automatically detected prefix (default: <code>${fn:escapeXml(defaultSitePrefix)}</code>).
                     </span>
                 </h:formEntry>
                 

@@ -115,6 +115,8 @@
 		<module>../de.dentrassi.pm.storage.service.jpa</module>
 		<module>../de.dentrassi.pm.storage.web</module>
 		
+		<module>../de.dentrassi.pm.system</module>
+		
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>
 		

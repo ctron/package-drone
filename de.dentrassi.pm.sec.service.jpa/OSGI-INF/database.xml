@@ -7,4 +7,6 @@
       <provide interface="de.dentrassi.pm.sec.service.UserService"/>
    </service>
    <reference bind="setMailService" cardinality="0..1" interface="de.dentrassi.pm.mail.service.MailService" name="MailService" policy="dynamic" unbind="unsetMailService"/>
+   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+   <reference bind="setSystemService" cardinality="1..1" interface="de.dentrassi.pm.system.SystemService" name="SystemService" policy="static"/>
 </scr:component>

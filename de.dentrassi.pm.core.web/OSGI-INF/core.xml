@@ -5,5 +5,6 @@
       <provide interface="de.dentrassi.pm.core.web.CoreController"/>
       <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
    </service>
-   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+   <reference bind="setSystemService" cardinality="1..1" interface="de.dentrassi.pm.system.SystemService" name="SystemService" policy="static"/>
 </scr:component>

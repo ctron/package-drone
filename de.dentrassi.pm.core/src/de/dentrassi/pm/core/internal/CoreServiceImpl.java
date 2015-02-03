@@ -26,16 +26,22 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
 {
 
     @Override
-    public String getCoreProperty ( final String key )
+    public String getCoreProperty ( final String key, final String defaultValue )
     {
         return doWithTransaction ( ( em ) -> {
             final GlobalPropertyEntity pe = em.find ( GlobalPropertyEntity.class, key );
             if ( pe == null )
             {
-                return null;
+                return defaultValue;
             }
             return pe.getValue ();
         } );
+    }
+
+    @Override
+    public String getCoreProperty ( final String key )
+    {
+        return getCoreProperty ( key, null );
     }
 
     @Override
