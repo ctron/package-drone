@@ -53,8 +53,7 @@
         	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.2/milestones/gemini-jpa-1.2.0.M1.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.5.2/eclipselink-plugins-2.5.2.v20140319-9ad6abd.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
-            <get src="http://neutronium.openscada.org/download/1.3/milestone/1.3.0.M9/org.openscada-1.3.0.M9.zip" dest="download/org.openscada.zip" usetimestamp="true" />
-
+            
         	<!-- eclipselink from maven central -->
         	<!--
         	<get src="http://central.maven.org/maven2/org/eclipse/persistence/eclipselink/2.5.2/eclipselink-2.5.2.jar" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
@@ -225,13 +224,6 @@
                 -->
 
             </fileset>
-            
-        	<!-- postgres is not possible for now -->
-        	<!--
-            <fileset dir="unpack/openscada/plugins">
-                <include name="org.openscada.external.postgresql_*.jar"/>
-            </fileset>
-            -->
             
             <fileset dir="download/bundles" />
         	<fileset dir="provided" />
