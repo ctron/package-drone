@@ -16,7 +16,7 @@ import java.util.List;
 
 import javax.servlet.jsp.tagext.Tag;
 
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import de.dentrassi.osgi.web.controller.binding.BindingError;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
@@ -68,7 +68,7 @@ public class FormValueTagSupport extends FormTagSupport
 
         try
         {
-            return BeanUtils.getProperty ( command, path );
+            return PropertyUtils.getProperty ( command, path );
         }
         catch ( NoSuchMethodException | IllegalAccessException | InvocationTargetException e )
         {

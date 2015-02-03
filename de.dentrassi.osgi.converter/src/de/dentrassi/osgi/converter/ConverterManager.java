@@ -23,6 +23,8 @@ public class ConverterManager
 
         result.addConverter ( StringToIntegerConverter.INSTANCE );
         result.addConverter ( StringToBooleanConverter.INSTANCE );
+        result.addConverter ( StringToPrimitiveBooleanConverter.INSTANCE );
+        result.addConverter ( BooleanToStringConverter.INSTANCE );
 
         return result;
     }
@@ -36,6 +38,7 @@ public class ConverterManager
         this.converters.add ( converter );
     }
 
+    @SuppressWarnings ( "unchecked" )
     public <T> T convertTo ( final Object value, final Class<T> clazz )
     {
         if ( value == null )
@@ -64,12 +67,16 @@ public class ConverterManager
                 {
                     return clazz.cast ( o );
                 }
+                else if ( clazz.isPrimitive () )
+                {
+                    return (T)o;
+                }
                 else
                 {
                     throw new ConversionException ( String.format ( "Invalid result type (expected: %s, actual: %s)", clazz.getName (), o.getClass ().getName () ) );
                 }
             }
         }
-        throw new ConversionException ( String.format ( "Unable to convert to %s", clazz.getName () ) );
+        throw new ConversionException ( String.format ( "Unable to convert %s to %s", value.getClass (), clazz.getName () ) );
     }
 }

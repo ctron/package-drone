@@ -8,9 +8,11 @@
 <%@attribute name="label" required="true" %>
 
 <div class='form-group ${form:validationState(pageContext,command,path, "", "has-error")}'>
-    <form:label path="${path }" cssClass="col-sm-2 control-label">${fn:escapeXml(label) }</form:label>
-    
-    <div class="col-sm-10">
+
+    <div class="col-sm-offset-2 col-sm-10">
+        <div class="checkbox">
+            <form:label path="${path }"><form:checkbox path="${path }" />${fn:escapeXml(label) }</form:label>
+        </div>
         <jsp:doBody/>
     </div>
     

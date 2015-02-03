@@ -18,13 +18,31 @@
 
             <form:form action="" method="POST" cssClass="form-horizontal">
             
-                <h:formEntry label="Site Prefix" path="prefix" command="command">
-                    <form:input path="prefix" cssClass="form-control" placeholder="Optional site prefix"/>
-                    <span class="help-block">
-                    Enter a Site prefix (like <code>http://myserver.com</code>), which will be used instead of
-                    the automatically detected prefix (default: <code>${fn:escapeXml(defaultSitePrefix)}</code>).
-                    </span>
-                </h:formEntry>
+                <fieldset>
+                
+                    <legend>Global</legend>
+            
+	                <h:formEntry label="Site Prefix" path="prefix" command="command">
+	                    <form:input path="prefix" cssClass="form-control" placeholder="Optional site prefix"/>
+	                    <span class="help-block">
+	                    Enter a Site prefix (like <code>http://myserver.com</code>), which will be used instead of
+	                    the automatically detected prefix (default: <code>${fn:escapeXml(defaultSitePrefix)}</code>).
+	                    </span>
+	                </h:formEntry>
+                
+                </fieldset>
+                
+                <fieldset>
+                    <legend>User registration</legend>
+                
+	                <h:formCheckbox label="Allow self registration" path="allowSelfRegistration" command="command">
+	                    <span class="help-block">
+	                    Enabling self registration will allow others to create a new user on their own. Including
+	                    validation of the e-mail address.
+	                    </span>
+	                </h:formCheckbox>
+                
+                </fieldset>
                 
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">

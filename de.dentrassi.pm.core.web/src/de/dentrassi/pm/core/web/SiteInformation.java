@@ -20,6 +20,19 @@ public class SiteInformation
     @URL
     private String prefix;
 
+    @MetaKeyBinding ( namespace = "core", key = "allow-self-registration" )
+    private boolean allowSelfRegistration;
+
+    public void setAllowSelfRegistration ( final boolean disableRegistration )
+    {
+        this.allowSelfRegistration = disableRegistration;
+    }
+
+    public boolean isAllowSelfRegistration ()
+    {
+        return this.allowSelfRegistration;
+    }
+
     public void setPrefix ( final String prefix )
     {
         this.prefix = prefix;

@@ -84,7 +84,30 @@
 		</attribute>
 	</tag>
 	
-	   <tag>
+	<tag>
+        <name>checkbox</name>
+        <tag-class>de.dentrassi.osgi.web.form.tags.Checkbox</tag-class>
+        <body-content>empty</body-content>
+
+        <attribute>
+            <name>path</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+
+        <attribute>
+            <name>cssClass</name>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+
+        <attribute>
+          <name>disabled</name>
+          <rtexprvalue>true</rtexprvalue>
+          <type>boolean</type>
+        </attribute>
+    </tag>
+	
+    <tag>
         <name>hidden</name>
         <tag-class>de.dentrassi.osgi.web.form.tags.Hidden</tag-class>
         <body-content>empty</body-content>
