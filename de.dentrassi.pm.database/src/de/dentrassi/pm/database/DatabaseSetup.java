@@ -217,7 +217,7 @@ public class DatabaseSetup implements AutoCloseable
 
     public boolean isNeedUpgrade ()
     {
-        if ( isConfigured () && getSchemaVersion () != null && getCurrentVersion () > getSchemaVersion () )
+        if ( isConfigured () && ( getSchemaVersion () == null || getCurrentVersion () > getSchemaVersion () ) )
         {
             return true;
         }
