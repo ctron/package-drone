@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.sec.UserInformation;
-import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.SecurityService;
 
 public class SecurityFilter implements Filter
@@ -110,7 +109,7 @@ public class SecurityFilter implements Filter
                         logger.info ( "Tried to log in using rememberMe token: {} -> {} for {}", email, user, request );
                         applyUserInformation ( request, user );
                     }
-                    catch ( final LoginException e )
+                    catch ( final Exception e )
                     {
                         // silently ignore the failure
                     }
