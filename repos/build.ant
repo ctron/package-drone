@@ -20,6 +20,7 @@
 		<mkdir dir="download" />
 		<get-release version="0.0.6"/>
 		<get-release version="0.0.7"/>
+		<get-release version="0.0.8"/>
 	</target>
 	
 	<!-- = = = = = = = = = = = = = = = = =
@@ -56,6 +57,7 @@
 		<adddeb src="download/package-drone-server_0.0.6_all.deb" />
 		<adddeb src="download/package-drone-server_0.0.7_all.deb" />
 		<adddeb src="download/package-drone-server_0.0.8_all.deb" />
+		<adddeb src="download/package-drone-server_0.0.9_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
