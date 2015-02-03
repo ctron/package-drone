@@ -12,4 +12,5 @@
 
 	<artifactId>de.dentrassi.pm.system</artifactId>
 	<packaging>eclipse-plugin</packaging>
+	<version>1.0.0-SNAPSHOT</version>
 </project>
