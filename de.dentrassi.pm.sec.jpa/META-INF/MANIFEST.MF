@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Meta-Persistence: META-INF/persistence.xml
-Require-Bundle: org.eclipse.persistence.core;bundle-version="2.5.0";visibility:=reexport
 Import-Package: javax.persistence;version="2.0.5",
  javax.persistence.metamodel;version="2.0.5",
  org.eclipse.persistence.annotations;version="2.5.0"
