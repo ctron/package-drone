@@ -16,6 +16,8 @@ import java.util.Collections;
 
 import javax.servlet.jsp.JspException;
 
+import org.apache.commons.beanutils.BeanUtils;
+
 public class OptionList extends OptionTagSupport
 {
     private static final long serialVersionUID = 1L;
@@ -41,7 +43,7 @@ public class OptionList extends OptionTagSupport
     {
         try
         {
-            final Object result = Beans.getFromBean ( o, this.itemValue );
+            final Object result = BeanUtils.getProperty ( o, this.itemValue );
             renderOption ( writer, result, o, false );
         }
         catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e )
