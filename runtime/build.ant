@@ -132,7 +132,6 @@
         <unzip src="download/gemini-dbaccess.zip" dest="unpack/gemini-dbaccess" />
         <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
         <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
-        <unzip src="download/org.openscada.zip" dest="unpack/openscada" />
     </target>
 
     <!-- ================================= 
