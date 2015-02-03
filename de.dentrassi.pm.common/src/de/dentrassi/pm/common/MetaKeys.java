@@ -110,19 +110,27 @@ public final class MetaKeys
     {
         if ( field.isAccessible () )
         {
-            field.set ( target, value );
+            internalSetField ( field, target, value );
         }
         else
         {
             field.setAccessible ( true );
             try
             {
-                field.set ( target, value );
+                internalSetField ( field, target, value );
             }
             finally
             {
                 field.setAccessible ( false );
             }
+        }
+    }
+
+    protected static void internalSetField ( final Field field, final Object target, final Object value ) throws IllegalAccessException
+    {
+        if ( value != null || !field.getType ().isPrimitive () )
+        {
+            field.set ( target, value );
         }
     }
 
