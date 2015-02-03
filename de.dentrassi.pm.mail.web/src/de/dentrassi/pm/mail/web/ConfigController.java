@@ -40,6 +40,8 @@ import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.mail.service.java.DefaultMailService;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.UserInformation;
@@ -47,8 +49,6 @@ import de.dentrassi.pm.sec.UserInformationPrincipal;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @RequestMapping ( "/default.mail/config" )

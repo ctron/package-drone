@@ -59,7 +59,7 @@
 	<variableList>
 		<variable>
 			<name>MAIN_TAG_LOC</name>
-			<value>$%7BPARENT-1-PROJECT_LOC%7D/de.dentrassi.pm.storage.web/WEB-INF/tags/main</value>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/de.dentrassi.pm.common.web/WEB-INF/tags/main</value>
 		</variable>
 	</variableList>
 </projectDescription>

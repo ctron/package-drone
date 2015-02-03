@@ -24,15 +24,15 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
+import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.Modifier;
-import de.dentrassi.pm.storage.web.common.CommonController;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @RequestMapping ( "/osgi.info" )

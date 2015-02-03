@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Setup Web UI
+Bundle-SymbolicName: de.dentrassi.pm.setup.web
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
+ de.dentrassi.osgi.web;bundle-version="1.0.0",
+ de.dentrassi.osgi.web.form;bundle-version="1.0.0",
+ de.dentrassi.pm.sec.web;bundle-version="1.0.0",
+ de.dentrassi.pm.common.web;bundle-version="1.0.0"
+Eclipse-BundleShape: dir
+Import-Package: de.dentrassi.pm.database;version="1.0.0",
+ javax.servlet;version="3.1.0",
+ javax.servlet.http;version="3.1.0",
+ javax.validation;version="1.1.0",
+ org.osgi.framework;version="1.8.0",
+ org.osgi.service.cm;version="1.5.0",
+ org.osgi.util.tracker;version="1.5.1"
+Bundle-Activator: de.dentrassi.pm.setup.web.internal.Activator
+Service-Component: OSGI-INF/setupInterceptor.xml,
+ OSGI-INF/setup.xml,
+ OSGI-INF/config.xml
+ 

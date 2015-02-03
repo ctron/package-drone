@@ -3,7 +3,7 @@
    <implementation class="de.dentrassi.pm.sec.web.ui.UserController"/>
    <service>
       <provide interface="de.dentrassi.pm.sec.web.ui.UserController"/>
-      <provide interface="de.dentrassi.pm.storage.web.InterfaceExtender"/>
+      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
    </service>
    <reference bind="setStorage" cardinality="1..1" interface="de.dentrassi.pm.sec.UserStorage" name="UserStorage" policy="static"/>
 </scr:component>

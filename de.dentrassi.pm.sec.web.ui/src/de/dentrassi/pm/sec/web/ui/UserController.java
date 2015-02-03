@@ -30,6 +30,10 @@ import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
@@ -37,12 +41,8 @@ import de.dentrassi.pm.sec.UserStorage;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
-import de.dentrassi.pm.storage.web.common.CommonController;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )

@@ -16,8 +16,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 
 public class AboutMenuExtender implements InterfaceExtender
 {

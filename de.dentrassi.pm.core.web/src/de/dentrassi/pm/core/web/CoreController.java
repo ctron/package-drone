@@ -29,12 +29,12 @@ import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )

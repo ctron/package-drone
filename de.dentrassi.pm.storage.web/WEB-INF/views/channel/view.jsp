@@ -5,9 +5,9 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
+<%@ taglib uri="http://dentrass.de/pm/storage" prefix="storage" %>
 
-<h:main title="Channel" subtitle="${pm:channel(channel) }">
+<h:main title="Channel" subtitle="${storage:channel(channel) }">
 
 <style type="text/css">
 .dz-progress {

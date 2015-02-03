@@ -49,4 +49,17 @@
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>WEB-INF/tags/main</name>
+			<type>2</type>
+			<locationURI>MAIN_TAGS_LOC</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>MAIN_TAGS_LOC</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/de.dentrassi.pm.common.web/WEB-INF/tags/main</value>
+		</variable>
+	</variableList>
 </projectDescription>

@@ -18,9 +18,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.web.Modifier;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtender
 {

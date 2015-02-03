@@ -40,20 +40,20 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
-import de.dentrassi.pm.storage.web.common.CommonController;
 import de.dentrassi.pm.storage.web.internal.Activator;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Secured
 @Controller

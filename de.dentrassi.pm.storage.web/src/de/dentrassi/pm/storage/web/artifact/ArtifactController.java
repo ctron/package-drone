@@ -31,6 +31,10 @@ import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
@@ -38,11 +42,7 @@ import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.Modifier;
 import de.dentrassi.pm.storage.web.channel.ChannelController;
-import de.dentrassi.pm.storage.web.common.CommonController;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 @Secured
 @Controller

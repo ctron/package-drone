@@ -28,10 +28,10 @@ import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.web.common.CommonController;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )

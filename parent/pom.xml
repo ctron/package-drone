@@ -73,7 +73,9 @@
 		
 		<module>../de.dentrassi.pm.aspect</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
+		
 		<module>../de.dentrassi.pm.common</module>
+		<module>../de.dentrassi.pm.common.web</module>
 		
 		<module>../de.dentrassi.pm.core</module>
 		<module>../de.dentrassi.pm.core.web</module>
@@ -101,12 +103,16 @@
 		<module>../de.dentrassi.pm.sec</module>
 		<module>../de.dentrassi.pm.sec.jpa</module>
 		<module>../de.dentrassi.pm.sec.service</module>
+		<module>../de.dentrassi.pm.sec.service.admin</module>
+		<module>../de.dentrassi.pm.sec.service.jpa</module>
+		
 		<module>../de.dentrassi.pm.sec.web</module>
 		<module>../de.dentrassi.pm.sec.web.ui</module>
 		
 		<module>../de.dentrassi.pm.storage</module>
 		<module>../de.dentrassi.pm.storage.jpa</module>
 		<module>../de.dentrassi.pm.storage.service</module>
+		<module>../de.dentrassi.pm.storage.service.jpa</module>
 		<module>../de.dentrassi.pm.storage.web</module>
 		
 		<module>../de.dentrassi.pm.feature</module>

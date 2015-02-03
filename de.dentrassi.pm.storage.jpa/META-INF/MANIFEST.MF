@@ -11,4 +11,4 @@ Import-Package: javax.persistence;version="2.0.5",
 Export-Package: de.dentrassi.pm.storage.jpa;version="1.0.0";uses:="javax.persistence.metamodel"
 Meta-Persistence: META-INF/persistence.xml
 Require-Bundle: org.eclipse.persistence.core;bundle-version="2.5.0";visibility:=reexport
-Require-Capability: osgi.extender; filter:="(&(osgi.extender=osgi.jpa)(version>=1.0))"
+Fixme-Require-Capability: osgi.extender; filter:="(&(osgi.extender=osgi.jpa)(version>=1.0))"

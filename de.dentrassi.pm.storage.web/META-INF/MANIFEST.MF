@@ -7,18 +7,19 @@ Bundle-Activator: de.dentrassi.pm.storage.web.internal.Activator
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Web-Static-Resources: /resources;target:="/resources"
-Web-TagLib-Directory: /WEB-INF/tags/main
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
  de.dentrassi.pm.sec.web;bundle-version="1.0.0"
-Require-TldBundle: de.dentrassi.osgi.web.form
 Eclipse-BundleShape: dir
+Web-Export-Taglib: WEB-INF/tags/storage/storage.tld
 Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
+ de.dentrassi.pm.common.web;version="1.0.0",
+ de.dentrassi.pm.common.web.menu;version="1.0.0",
+ de.dentrassi.pm.common.web.task;version="1.0.0",
  de.dentrassi.pm.database;version="1.0.0",
  de.dentrassi.pm.generator;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
@@ -29,14 +30,14 @@ Import-Package: com.google.common.io;version="18.0.0",
  javax.servlet.http;version="3.1.0",
  javax.servlet.jsp;version="2.3.0",
  javax.servlet.jsp.tagext;version="2.3.0",
- javax.validation;version="1.1.0.Final",
- javax.validation.bootstrap;version="1.1.0.Final",
- javax.validation.constraints;version="1.1.0.Final",
- javax.validation.constraintvalidation;version="1.1.0.Final",
- javax.validation.executable;version="1.1.0.Final",
- javax.validation.groups;version="1.1.0.Final",
- javax.validation.metadata;version="1.1.0.Final",
- javax.validation.spi;version="1.1.0.Final",
+ javax.validation;version="1.1.0",
+ javax.validation.bootstrap;version="1.1.0",
+ javax.validation.constraints;version="1.1.0",
+ javax.validation.constraintvalidation;version="1.1.0",
+ javax.validation.executable;version="1.1.0",
+ javax.validation.groups;version="1.1.0",
+ javax.validation.metadata;version="1.1.0",
+ javax.validation.spi;version="1.1.0",
  org.apache.commons.fileupload;version="1.3.1",
  org.apache.commons.fileupload.disk;version="1.3.1",
  org.apache.commons.fileupload.portlet;version="1.3.1",
@@ -57,19 +58,11 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.osgi.service.jdbc;version="1.0.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Service-Component: OSGI-INF/setupInterceptor.xml, 
- OSGI-INF/aboutMenu.xml,
+Service-Component: OSGI-INF/aboutMenu.xml,
  OSGI-INF/welcome.xml,
- OSGI-INF/menuInterceptor.xml,
  OSGI-INF/commonInterceptor.xml,
- OSGI-INF/config.xml,
- OSGI-INF/setup.xml,
  OSGI-INF/channel.xml,
  OSGI-INF/artifact.xml
-Web-Export-Taglib: WEB-INF/tags/main/pm.tld
 Export-Package: de.dentrassi.pm.storage.web;version="1.0.0",
  de.dentrassi.pm.storage.web.breadcrumbs;version="1.0.0",
- de.dentrassi.pm.storage.web.common;version="1.0.0",
- de.dentrassi.pm.storage.web.menu;version="1.0.0",
- de.dentrassi.pm.storage.web.setup;version="1.0.0",
- de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"
+ de.dentrassi.pm.storage.web.tags;version="1.0.0"

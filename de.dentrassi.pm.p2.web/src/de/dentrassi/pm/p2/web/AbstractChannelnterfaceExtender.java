@@ -14,9 +14,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.web.InterfaceExtender;
-import de.dentrassi.pm.storage.web.menu.MenuEntry;
 
 public abstract class AbstractChannelnterfaceExtender implements InterfaceExtender
 {
