@@ -60,7 +60,7 @@
         	<get src="http://central.maven.org/maven2/org/eclipse/persistence/eclipselink/2.5.2/eclipselink-2.5.2.jar" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
         	-->
         	
-            <get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/9.2.6.v20141205/jetty-osgi-boot-9.2.6.v20141205.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/9.2.7.v20150116/jetty-osgi-boot-9.2.7.v20150116.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.classic_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.core_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
@@ -80,7 +80,7 @@
 
             <!-- jsp stuff -->
 
-            <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/9.2.6.v20141205/jetty-osgi-boot-jsp-9.2.6.v20141205.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/9.2.7.v20150116/jetty-osgi-boot-jsp-9.2.7.v20150116.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xalan_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xml.serializer_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
 
