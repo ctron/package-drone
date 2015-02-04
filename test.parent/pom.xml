@@ -28,7 +28,7 @@
 
 	<distributionManagement>
 		<repository>
-			<id>test</id>
+			<id>pdrone.test</id>
 			<url>http://localhost:8080/maven/test</url>
 		</repository>
 	</distributionManagement>
