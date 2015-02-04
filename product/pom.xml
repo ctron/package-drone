@@ -112,10 +112,22 @@
 										<group>pdrone</group>
 									</mapper>
 								</data>
+								
+								<data>
+								    <src>src/default/${project.artifactId}</src>
+								    <dst>etc/default/${project.artifactId}</dst>
+								    <type>file</type>
+								    <conffile>true</conffile>
+								    <mapper>
+								        <type>perm</type>
+								        <user>root</user>
+								        <group>root</group>
+								    </mapper>
+								</data>
 
 								<data>
-									<src>src/deb/package-drone-server.conf</src>
-									<dst>etc/init/package-drone-server.conf</dst>
+									<src>src/deb/${project.artifactId}.conf</src>
+									<dst>etc/init/${project.artifactId}.conf</dst>
 									<type>file</type>
 									<conffile>true</conffile>
 									<mapper>
@@ -204,6 +216,19 @@
 											</excludes>
 										</source>
 									</sources>
+								</mapping>
+								
+								<mapping>
+								    <directory>/etc/default</directory>
+								    <directoryIncluded>false</directoryIncluded>
+								    <configuration>true</configuration>
+								    <username>root</username>
+								    <groupname>root</groupname>
+								    <sources>
+								        <source>
+								            <location>src/default/${project.artifactId}</location>
+								        </source>
+								    </sources>
 								</mapping>
 
 								<mapping>
