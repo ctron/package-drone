@@ -121,8 +121,11 @@ public class UserController extends AbstractUserCreationController implements In
         }
 
         result.put ( "users", list );
+
         result.put ( "prev", prev );
         result.put ( "next", next );
+        result.put ( "position", position );
+        result.put ( "pageSize", 25 );
 
         return result;
     }

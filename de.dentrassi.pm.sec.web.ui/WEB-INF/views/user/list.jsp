@@ -14,12 +14,7 @@ pageContext.setAttribute ( "TAG", UserStorage.ACTION_TAG_USERS );
 
 <h:buttonbar menu="${menuManager.getActions(TAG) }" />
 
-<nav>
-  <ul class="pager">
-    <li class="previous <c:if test="${not prev }">disabled</c:if>"><a href="#"><span aria-hidden="true">&larr;</span> Prev</a></li>
-    <li class="next <c:if test="${not next }">disabled</c:if>"><a href="#">Next <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
+<h:defaultPager />
 
 <table class="table table-condensed table-striped">
 
@@ -57,11 +52,6 @@ pageContext.setAttribute ( "TAG", UserStorage.ACTION_TAG_USERS );
 
 </table>
 
-<nav>
-  <ul class="pager">
-    <li class="previous <c:if test="${not prev }">disabled</c:if>"><a href="#"><span aria-hidden="true">&larr;</span> Prev</a></li>
-    <li class="next <c:if test="${not next }">disabled</c:if>"><a href="#">Next <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
+<h:defaultPager />
 
 </h:main>
