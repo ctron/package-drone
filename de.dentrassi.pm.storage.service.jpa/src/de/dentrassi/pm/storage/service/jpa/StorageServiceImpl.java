@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
@@ -585,18 +587,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    public Collection<DeployKey> getDeployKeys ( final String channelId )
+    public Collection<DeployKey> getAllDeployKeys ( final String channelId )
     {
         return doWithTransaction ( ( em ) -> {
             final Set<DeployKey> result = new HashSet<> ();
 
-            // FIXME: only return the channel assigned deploy groups
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
 
-            final TypedQuery<DeployGroupEntity> q = em.createQuery ( String.format ( "select dg from %s as dg order by dg.name, dg.id asc", DeployGroupEntity.class.getName () ), DeployGroupEntity.class );
-
-            final List<DeployGroupEntity> resultList = q.getResultList ();
-
-            for ( final DeployGroupEntity dg : resultList )
+            for ( final DeployGroupEntity dg : channel.getDeployGroups () )
             {
                 for ( final DeployKeyEntity dk : dg.getKeys () )
                 {
@@ -605,6 +603,50 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             }
 
             return result;
+        } );
+    }
+
+    public Collection<DeployGroup> getDeployGroups ( final String channelId )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final Set<DeployGroup> result = new HashSet<> ();
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            for ( final DeployGroupEntity dg : channel.getDeployGroups () )
+            {
+                result.add ( DeployAuthServiceImpl.convert ( dg ) );
+            }
+
+            return result;
+        } );
+    }
+
+    public void addDeployGroup ( final String channelId, final String groupId )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            final DeployGroupEntity group = DeployAuthServiceImpl.getGroupChecked ( em, groupId );
+            channel.getDeployGroups ().add ( group );
+            em.persist ( channel );
+        } );
+    }
+
+    public void removeDeployGroup ( final String channelId, final String groupId )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            final Iterator<DeployGroupEntity> i = channel.getDeployGroups ().iterator ();
+            while ( i.hasNext () )
+            {
+                final DeployGroupEntity dg = i.next ();
+                if ( dg.getId ().equals ( groupId ) )
+                {
+                    i.remove ();
+                }
+            }
+
+            em.persist ( channel );
         } );
     }
 }

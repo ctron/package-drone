@@ -222,7 +222,7 @@ public class DeployAuthController implements InterfaceExtender
         {
             return CommonController.createError ( "Create deploy group", "Failed to create deploy group", e );
         }
-        return new ModelAndView ( "redirect:/deploy/auth/listGroups" );
+        return new ModelAndView ( "redirect:/deploy/auth/group" );
     }
 
     @RequestMapping ( value = "/group/{groupId}/view" )
@@ -277,6 +277,40 @@ public class DeployAuthController implements InterfaceExtender
         addBreadcrumbs ( "Edit", group, model );
 
         return new ModelAndView ( "editGroup", model );
+    }
+
+    @RequestMapping ( value = "/key/{keyId}/edit" )
+    public ModelAndView editKey ( @PathVariable ( "keyId" ) final String keyId )
+    {
+        final DeployKey key = this.service.getKey ( keyId );
+
+        if ( key == null )
+        {
+            return CommonController.createNotFound ( "Deploy Key", keyId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "command", key );
+
+        return new ModelAndView ( "editKey", model );
+    }
+
+    @RequestMapping ( value = "/key/{keyId}/edit", method = RequestMethod.POST )
+    public ModelAndView editKeyPost ( @PathVariable ( "keyId" ) final String groupId, @Valid @FormData ( "command" ) DeployKey key, final BindingResult result )
+    {
+        key.setId ( groupId );
+
+        if ( !result.hasErrors () )
+        {
+            key = this.service.updateKey ( key );
+            if ( key != null && key.getGroupId () != null )
+            {
+                return new ModelAndView ( "redirect:/deploy/auth/group/" + key.getGroupId () + "/view" );
+            }
+        }
+
+        return new ModelAndView ( "editKey", Collections.singletonMap ( "command", key ) );
     }
 
     @RequestMapping ( value = "/group/{groupId}/createKey" )

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,8 @@ import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployGroup;
+import de.dentrassi.pm.storage.service.DeployAuthService;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
@@ -64,11 +67,18 @@ public class ChannelController implements InterfaceExtender
 
     private StorageService service;
 
+    private DeployAuthService deployAuthService;
+
     private final GeneratorProcessor generators = new GeneratorProcessor ( FrameworkUtil.getBundle ( ChannelController.class ).getBundleContext () );
 
     public void setService ( final StorageService service )
     {
         this.service = service;
+    }
+
+    public void setDeployAuthService ( final DeployAuthService deployAuthService )
+    {
+        this.deployAuthService = deployAuthService;
     }
 
     public void start ()
@@ -232,6 +242,56 @@ public class ChannelController implements InterfaceExtender
         return "redirect:/channel/" + channelId + "/view";
     }
 
+    @RequestMapping ( value = "/channel/{channelId}/deployKeys" )
+    public ModelAndView deployKeys ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "channel", channel );
+        model.put ( "deployGroups", getGroupsForChannel ( channel ) );
+
+        return new ModelAndView ( "channel/deployKeys", model );
+    }
+
+    protected List<DeployGroup> getGroupsForChannel ( final Channel channel )
+    {
+        final List<DeployGroup> groups = this.deployAuthService.listGroups ( 0, -1 );
+        groups.removeAll ( channel.getDeployGroups () );
+        Collections.sort ( groups, DeployGroup.NAME_COMPARATOR );
+        return groups;
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/addDeployGroup", method = RequestMethod.POST )
+    public ModelAndView addDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId )
+    {
+        return modifyDeployGroup ( channelId, groupId, Channel::addDeployGroup );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/removeDeployGroup", method = RequestMethod.POST )
+    public ModelAndView removeDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId )
+    {
+        return modifyDeployGroup ( channelId, groupId, Channel::removeDeployGroup );
+    }
+
+    protected ModelAndView modifyDeployGroup ( final String channelId, final String groupId, final BiConsumer<Channel, String> cons )
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        cons.accept ( channel, groupId );
+
+        return new ModelAndView ( "redirect:/channel/" + channelId + "/deployKeys" );
+    }
+
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
     public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
@@ -365,6 +425,7 @@ public class ChannelController implements InterfaceExtender
 
             result.add ( new MenuEntry ( "List", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
             result.add ( new MenuEntry ( "Details", 200, LinkTarget.createFromController ( ChannelController.class, "details" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "Deploy Keys", 1000, LinkTarget.createFromController ( ChannelController.class, "deployKeys" ).expand ( model ), Modifier.DEFAULT, null ) );
 
             return result;
         }

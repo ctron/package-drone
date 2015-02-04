@@ -43,5 +43,11 @@ public interface Channel
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
 
-    public Collection<DeployKey> getDeployKeys ();
+    public Collection<DeployKey> getAllDeployKeys ();
+
+    public Collection<DeployGroup> getDeployGroups ();
+
+    public void addDeployGroup ( String groupId );
+
+    public void removeDeployGroup ( String groupId );
 }

@@ -156,12 +156,35 @@ public class DeployAuthServiceImpl extends AbstractJpaServiceImpl implements Dep
     }
 
     @Override
+    public DeployKey updateKey ( final DeployKey key )
+    {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException ( "Argument must not be null" );
+        }
+
+        return doWithTransaction ( ( em ) -> {
+            final DeployKeyEntity dk = getKeyChecked ( em, key.getId () );
+            dk.setName ( key.getName () );
+
+            em.persist ( dk );
+            return convert ( dk );
+        } );
+    }
+
+    @Override
     public DeployGroup getGroup ( final String groupId )
     {
         return doWithTransaction ( ( em ) -> convert ( em.find ( DeployGroupEntity.class, groupId ) ) );
     }
 
-    private DeployGroupEntity getGroupChecked ( final EntityManager em, final String groupId )
+    @Override
+    public DeployKey getKey ( final String keyId )
+    {
+        return doWithTransaction ( ( em ) -> convert ( em.find ( DeployKeyEntity.class, keyId ) ) );
+    }
+
+    static DeployGroupEntity getGroupChecked ( final EntityManager em, final String groupId )
     {
         final DeployGroupEntity dg = em.find ( DeployGroupEntity.class, groupId );
         if ( dg == null )
@@ -169,6 +192,16 @@ public class DeployAuthServiceImpl extends AbstractJpaServiceImpl implements Dep
             throw new IllegalStateException ( String.format ( "Group '%s' could not be found", groupId ) );
         }
         return dg;
+    }
+
+    static DeployKeyEntity getKeyChecked ( final EntityManager em, final String keyId )
+    {
+        final DeployKeyEntity dk = em.find ( DeployKeyEntity.class, keyId );
+        if ( dk == null )
+        {
+            throw new IllegalStateException ( String.format ( "Key '%s' could not be found", keyId ) );
+        }
+        return dk;
     }
 
     @Override

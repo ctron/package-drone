@@ -23,6 +23,7 @@ import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
 
 public class ChannelImpl implements Channel
@@ -53,9 +54,27 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public Collection<DeployKey> getDeployKeys ()
+    public Collection<DeployKey> getAllDeployKeys ()
     {
-        return this.service.getDeployKeys ( this.id );
+        return this.service.getAllDeployKeys ( this.id );
+    }
+
+    @Override
+    public Collection<DeployGroup> getDeployGroups ()
+    {
+        return this.service.getDeployGroups ( this.id );
+    }
+
+    @Override
+    public void addDeployGroup ( final String groupId )
+    {
+        this.service.addDeployGroup ( this.id, groupId );
+    }
+
+    @Override
+    public void removeDeployGroup ( final String groupId )
+    {
+        this.service.removeDeployGroup ( this.id, groupId );
     }
 
     @Override

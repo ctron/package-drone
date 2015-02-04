@@ -63,6 +63,7 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
                         <fmt:formatDate value="${key.creationTimestamp }" type="both" />
                     </td>
                     <td rowspan="2">
+                        <a class="btn btn-default" href="<c:url value="/deploy/auth/key/${key.id }/edit"/>">Edit</a>
                         <button type="button" data-toggle="modal" data-target="#dlg-delete" class="btn btn-danger" data-key-id="${fn:escapeXml(key.id) }" data-key-name="${fn:escapeXml(key.name) }"><span class="glyphicon glyphicon-trash"></span> Delete</button>
                     </td>
                 </tr>

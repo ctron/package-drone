@@ -30,4 +30,8 @@ public interface DeployAuthService
     public DeployKey createDeployKey ( String groupId, String name );
 
     public DeployKey deleteKey ( String keyId );
+
+    public DeployKey getKey ( String keyId );
+
+    public DeployKey updateKey ( DeployKey key );
 }

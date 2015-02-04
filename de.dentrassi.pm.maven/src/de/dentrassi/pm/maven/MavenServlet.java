@@ -193,7 +193,7 @@ public class MavenServlet extends HttpServlet
 
         logger.debug ( "Auth String (cleaned): {}", authStr );
 
-        for ( final DeployKey key : channel.getDeployKeys () )
+        for ( final DeployKey key : channel.getAllDeployKeys () )
         {
             if ( key.getKey ().equals ( authStr ) )
             {

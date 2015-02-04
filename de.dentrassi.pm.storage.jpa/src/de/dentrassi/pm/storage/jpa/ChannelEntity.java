@@ -26,6 +26,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.eclipse.persistence.annotations.UuidGenerator;
@@ -54,6 +55,22 @@ public class ChannelEntity
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "channel" )
     private Collection<ProvidedChannelPropertyEntity> providedProperties = new LinkedList<> ();
+
+    @OneToMany
+    @JoinTable ( name = "CHANNEL_DEPLOY_GROUPS", joinColumns = @JoinColumn ( name = "CHANNEL_ID",
+            referencedColumnName = "id" ), inverseJoinColumns = @JoinColumn ( name = "GROUP_ID",
+            referencedColumnName = "id" ) )
+    private Set<DeployGroupEntity> deployGroups = new HashSet<> ();
+
+    public void setDeployGroups ( final Set<DeployGroupEntity> deployGroups )
+    {
+        this.deployGroups = deployGroups;
+    }
+
+    public Set<DeployGroupEntity> getDeployGroups ()
+    {
+        return this.deployGroups;
+    }
 
     public void setId ( final String id )
     {
