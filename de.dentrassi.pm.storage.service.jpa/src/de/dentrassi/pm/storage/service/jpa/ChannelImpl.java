@@ -23,6 +23,7 @@ import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployKey;
 
 public class ChannelImpl implements Channel
 {
@@ -49,6 +50,12 @@ public class ChannelImpl implements Channel
     public Collection<Artifact> findByName ( final String artifactName )
     {
         return this.service.findByName ( this.id, artifactName );
+    }
+
+    @Override
+    public Collection<DeployKey> getDeployKeys ()
+    {
+        return this.service.getDeployKeys ( this.id );
     }
 
     @Override

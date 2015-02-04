@@ -12,6 +12,9 @@ package de.dentrassi.pm.storage.service;
 
 import java.util.List;
 
+import de.dentrassi.pm.storage.DeployGroup;
+import de.dentrassi.pm.storage.DeployKey;
+
 public interface DeployAuthService
 {
     public List<DeployGroup> listGroups ( int position, int count );

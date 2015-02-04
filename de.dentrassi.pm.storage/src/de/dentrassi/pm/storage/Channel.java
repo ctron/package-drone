@@ -42,4 +42,6 @@ public interface Channel
     public SortedMap<MetaKey, String> getProvidedMetaData ();
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
+
+    public Collection<DeployKey> getDeployKeys ();
 }

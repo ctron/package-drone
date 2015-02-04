@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,12 @@ import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.DeployGroupEntity;
+import de.dentrassi.pm.storage.jpa.DeployKeyEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
@@ -581,4 +585,26 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    public Collection<DeployKey> getDeployKeys ( final String channelId )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final Set<DeployKey> result = new HashSet<> ();
+
+            // FIXME: only return the channel assigned deploy groups
+
+            final TypedQuery<DeployGroupEntity> q = em.createQuery ( String.format ( "select dg from %s as dg order by dg.name, dg.id asc", DeployGroupEntity.class.getName () ), DeployGroupEntity.class );
+
+            final List<DeployGroupEntity> resultList = q.getResultList ();
+
+            for ( final DeployGroupEntity dg : resultList )
+            {
+                for ( final DeployKeyEntity dk : dg.getKeys () )
+                {
+                    result.add ( DeployAuthServiceImpl.convert ( dk ) );
+                }
+            }
+
+            return result;
+        } );
+    }
 }

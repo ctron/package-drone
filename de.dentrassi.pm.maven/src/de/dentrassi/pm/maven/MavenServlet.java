@@ -11,6 +11,9 @@
 package de.dentrassi.pm.maven;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +38,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenServlet extends HttpServlet
@@ -85,6 +89,13 @@ public class MavenServlet extends HttpServlet
         {
             final StorageService service = this.tracker.getService ();
 
+            if ( service == null )
+            {
+                response.getWriter ().write ( "System not operational" );
+                response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+                return;
+            }
+
             logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
 
             final String[] toks = request.getPathInfo ().split ( "/" );
@@ -98,6 +109,11 @@ public class MavenServlet extends HttpServlet
             {
                 response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
                 response.getWriter ().format ( "Channel %s not found", channelId );
+                return;
+            }
+
+            if ( !authenicate ( channel, request, response ) )
+            {
                 return;
             }
 
@@ -125,6 +141,67 @@ public class MavenServlet extends HttpServlet
         {
             throw new ServletException ( e );
         }
+    }
+
+    private boolean authenicate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response )
+    {
+        if ( isAuthenticated ( channel, request ) )
+        {
+            return true;
+        }
+
+        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
+        response.setHeader ( "WWW-Authenticate", "Basic realm=\"channel-" + channel.getId () + "\"" );
+
+        return false;
+    }
+
+    private boolean isAuthenticated ( final Channel channel, final HttpServletRequest request )
+    {
+        final String auth = request.getHeader ( "Authorization" );
+        logger.debug ( "Auth header: {}", auth );
+
+        if ( auth == null || auth.isEmpty () )
+        {
+            return false;
+        }
+
+        final String[] toks = auth.split ( "\\s" );
+        if ( toks.length < 2 )
+        {
+            return false;
+        }
+
+        if ( !"Basic".equalsIgnoreCase ( toks[0] ) )
+        {
+            return false;
+        }
+
+        final byte[] authData = Base64.getDecoder ().decode ( toks[1] );
+        String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
+
+        logger.debug ( "Auth String: {}", authStr );
+
+        if ( authStr.startsWith ( ":" ) )
+        {
+            authStr = authStr.substring ( 1 );
+        }
+        if ( authStr.endsWith ( ":" ) )
+        {
+            authStr = authStr.substring ( 0, authStr.length () - 1 );
+        }
+
+        logger.debug ( "Auth String (cleaned): {}", authStr );
+
+        for ( final DeployKey key : channel.getDeployKeys () )
+        {
+            if ( key.getKey ().equals ( authStr ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception

@@ -1,5 +1,5 @@
-<%@page import="de.dentrassi.pm.storage.service.DeployGroup"%>
-<%@page import="de.dentrassi.pm.storage.service.DeployKey"%>
+<%@page import="de.dentrassi.pm.storage.DeployGroup"%>
+<%@page import="de.dentrassi.pm.storage.DeployKey"%>
 <%@page import="java.util.Collections"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 

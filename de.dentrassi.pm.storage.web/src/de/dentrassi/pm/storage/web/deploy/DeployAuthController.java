@@ -37,9 +37,9 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
+import de.dentrassi.pm.storage.DeployGroup;
+import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.DeployAuthService;
-import de.dentrassi.pm.storage.service.DeployGroup;
-import de.dentrassi.pm.storage.service.DeployKey;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 

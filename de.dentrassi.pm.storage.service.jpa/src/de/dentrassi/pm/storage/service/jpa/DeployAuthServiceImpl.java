@@ -20,11 +20,11 @@ import javax.persistence.TypedQuery;
 
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.common.utils.Tokens;
+import de.dentrassi.pm.storage.DeployGroup;
+import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.jpa.DeployGroupEntity;
 import de.dentrassi.pm.storage.jpa.DeployKeyEntity;
 import de.dentrassi.pm.storage.service.DeployAuthService;
-import de.dentrassi.pm.storage.service.DeployGroup;
-import de.dentrassi.pm.storage.service.DeployKey;
 
 public class DeployAuthServiceImpl extends AbstractJpaServiceImpl implements DeployAuthService
 {
@@ -65,7 +65,7 @@ public class DeployAuthServiceImpl extends AbstractJpaServiceImpl implements Dep
         } );
     }
 
-    private DeployGroup convert ( final DeployGroupEntity dg )
+    static DeployGroup convert ( final DeployGroupEntity dg )
     {
         if ( dg == null )
         {
@@ -91,7 +91,7 @@ public class DeployAuthServiceImpl extends AbstractJpaServiceImpl implements Dep
         return result;
     }
 
-    private DeployKey convert ( final DeployKeyEntity dk )
+    static DeployKey convert ( final DeployKeyEntity dk )
     {
         if ( dk == null )
         {
