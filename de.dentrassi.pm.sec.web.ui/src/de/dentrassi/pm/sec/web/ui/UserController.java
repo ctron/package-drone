@@ -213,10 +213,11 @@ public class UserController extends AbstractUserCreationController implements In
             return new ModelAndView ( "user/edit", model );
         }
 
-        final DatabaseUserInformation newUser = this.storage.updateUser ( userId, data );
+        this.storage.updateUser ( userId, data );
 
+        // TODO: only reload if it was our own profile
         SecurityFilter.markReloadDetails ( session );
 
-        return new ModelAndView ( String.format ( "redirect:/user/%s/view", newUser.getId () ) );
+        return new ModelAndView ( String.format ( "redirect:/user/%s/view", userId ) );
     }
 }
