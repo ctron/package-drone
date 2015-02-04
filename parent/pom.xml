@@ -63,6 +63,10 @@
 
 	<modules>
 		<module>../de.dentrassi.osgi.converter</module>
+		
+		<module>../de.dentrassi.osgi.scheduler</module>
+		<module>../de.dentrassi.osgi.scheduler.simple</module>
+		
 		<module>../de.dentrassi.osgi.utils</module>
 		<module>../de.dentrassi.osgi.validation</module>
 		<module>../de.dentrassi.osgi.validation.hibernate</module>

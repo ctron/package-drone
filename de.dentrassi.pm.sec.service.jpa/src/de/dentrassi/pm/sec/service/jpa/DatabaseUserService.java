@@ -397,7 +397,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         {
             user.setEmailVerified ( true );
             user.setEmailToken ( null );
-            user.setEmailTokenDate ( null );
+            user.setEmailTokenSalt ( null );
             user.setEmailTokenDate ( null );
 
             em.persist ( user );

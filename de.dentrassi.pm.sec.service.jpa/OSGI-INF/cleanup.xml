@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.sec.service.user.database.cleanup">
+   <reference bind="setEntityManagerFactory" cardinality="1..1" interface="javax.persistence.EntityManagerFactory" name="EntityManagerFactory" policy="static" target="(osgi.unit.name=de.dentrassi.pm.sec.jpa)"/>
+   <implementation class="de.dentrassi.pm.sec.service.jpa.CleanupJob"/>
+   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+   <property name="scheduler.period.ms" type="Long" value="60000"/>
+   <service>
+      <provide interface="de.dentrassi.osgi.scheduler.ScheduledTask"/>
+   </service>
+</scr:component>

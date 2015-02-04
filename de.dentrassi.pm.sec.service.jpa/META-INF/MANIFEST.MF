@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.io;version="18.0.0",
+ de.dentrassi.osgi.scheduler;version="1.0.0",
  de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
  de.dentrassi.pm.core;version="1.0.0",
@@ -22,4 +23,4 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.slf4j;version="1.7.2"
 Require-Bundle: de.dentrassi.pm.sec.jpa;bundle-version="1.0.0"
 Service-Component: OSGI-INF/security.xml,
- OSGI-INF/database.xml, OSGI-INF/databaseRem.xml
+ OSGI-INF/database.xml, OSGI-INF/databaseRem.xml, OSGI-INF/cleanup.xml
