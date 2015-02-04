@@ -579,4 +579,57 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         return null;
     }
 
+    private UserEntity getUserChecked ( final EntityManager em, final String userId )
+    {
+        final UserEntity user = em.find ( UserEntity.class, userId );
+        if ( user == null )
+        {
+            throw new IllegalArgumentException ( String.format ( "User '%s' could not be found", userId ) );
+        }
+
+        return user;
+    }
+
+    @Override
+    public void lockUser ( final String userId )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+
+            final UserEntity user = getUserChecked ( em, userId );
+
+            if ( user.isDeleted () )
+            {
+                throw new IllegalArgumentException ( String.format ( "User '%s' is deleted", userId ) );
+            }
+
+            user.setLocked ( true );
+
+            em.persist ( user );
+        } );
+    }
+
+    @Override
+    public void unlockUser ( final String userId )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final UserEntity user = getUserChecked ( em, userId );
+
+            user.setLocked ( false );
+
+            em.persist ( user );
+        } );
+
+    }
+
+    @Override
+    public void deleteUser ( final String userId )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final UserEntity user = getUserChecked ( em, userId );
+            user.setDeleted ( true );
+            user.setPasswordHash ( null );
+            user.setPasswordSalt ( null );
+            em.persist ( user );
+        } );
+    }
 }

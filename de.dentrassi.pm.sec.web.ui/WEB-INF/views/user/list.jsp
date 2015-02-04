@@ -29,9 +29,11 @@ pageContext.setAttribute ( "TAG", UserStorage.ACTION_TAG_USERS );
 
 <tbody>
     <c:forEach var="user" items="${users }">
-    <tr>
+    <tr
+    <c:if test="${ user.id eq pageContext.request.remoteUser }">class="info"</c:if>
+    >
         <td><a href="<c:url value="/user/${user.id }/view"/>">${fn:escapeXml(user.id) }</a></td>
-        <td>${fn:escapeXml(user.details.name) }</td>
+        <td>${fn:escapeXml(user.details.name) } <c:if test="${ user.id eq pageContext.request.remoteUser }">&nbsp;<small>(you)</small></c:if></td>
         <td>
         ${fn:escapeXml(user.details.email) }</td>
         <td>

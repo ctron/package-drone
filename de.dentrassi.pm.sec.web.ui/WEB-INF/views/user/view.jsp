@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <%@page import="de.dentrassi.pm.sec.UserStorage"%>
 
@@ -17,9 +17,10 @@
 <c:set var="gravatar" value="${web:gravatar(user.details.email) }"/>
 
 <h2>
-<c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=48"/>&nbsp;</c:if>
+<c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=48"/></c:if>
 ${fn:escapeXml(user.details.name)}
 <small>
+<c:if test="${you }">(This is you!)</c:if>
 <c:if test="${user.details.deleted }"><span class="label label-default">Deleted</span></c:if>
 <c:if test="${user.details.locked }"><span class="label label-warning">Locked</span></c:if>
 </small>

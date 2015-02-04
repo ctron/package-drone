@@ -72,7 +72,10 @@ public class UserController extends AbstractUserCreationController implements In
         {
             final List<MenuEntry> result = new LinkedList<MenuEntry> ();
 
-            result.add ( new MenuEntry ( "Add user", 100, LinkTarget.createFromController ( UserController.class, "addUser" ), Modifier.PRIMARY, null ) );
+            if ( SecurityFilter.isLoggedIn ( request ) )
+            {
+                result.add ( new MenuEntry ( "Add user", 100, LinkTarget.createFromController ( UserController.class, "addUser" ), Modifier.PRIMARY, null ) );
+            }
 
             return result;
         }
@@ -84,9 +87,32 @@ public class UserController extends AbstractUserCreationController implements In
                 final List<MenuEntry> result = new LinkedList<MenuEntry> ();
 
                 final Map<String, Object> model = new HashMap<> ( 1 );
-                model.put ( "userId", ( (DatabaseUserInformation)object ).getId () );
+                final String userId = ( (DatabaseUserInformation)object ).getId ();
+                model.put ( "userId", userId );
 
-                result.add ( new MenuEntry ( "Edit user", 100, LinkTarget.createFromController ( UserController.class, "editUser" ).expand ( model ), Modifier.PRIMARY, null ) );
+                final boolean you = userId.equals ( request.getRemoteUser () );
+
+                if ( SecurityFilter.isLoggedIn ( request ) )
+                {
+                    result.add ( new MenuEntry ( "Edit user", 100, LinkTarget.createFromController ( UserController.class, "editUser" ).expand ( model ), Modifier.PRIMARY, null ) );
+
+                    if ( !you )
+                    {
+                        if ( details.isLocked () )
+                        {
+                            result.add ( new MenuEntry ( "Unlock user", 200, LinkTarget.createFromController ( UserController.class, "unlockUser" ).expand ( model ), Modifier.SUCCESS, null ) );
+                        }
+                        else
+                        {
+                            result.add ( new MenuEntry ( "Lock user", 200, LinkTarget.createFromController ( UserController.class, "lockUser" ).expand ( model ), Modifier.WARNING, null ) );
+                        }
+
+                        if ( !details.isDeleted () )
+                        {
+                            result.add ( new MenuEntry ( "Delete user", 300, LinkTarget.createFromController ( UserController.class, "deleteUser" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                        }
+                    }
+                }
 
                 return result;
             }
@@ -156,7 +182,7 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( value = "/{userId}/view", method = RequestMethod.GET )
-    public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId )
+    public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
     {
         final DatabaseUserInformation user = this.storage.getUserDetails ( userId );
 
@@ -167,6 +193,7 @@ public class UserController extends AbstractUserCreationController implements In
 
         final ModelAndView model = new ModelAndView ( "user/view" );
         model.put ( "user", user );
+        model.put ( "you", userId.equals ( request.getRemoteUser () ) );
         return model;
     }
 
@@ -222,5 +249,26 @@ public class UserController extends AbstractUserCreationController implements In
         SecurityFilter.markReloadDetails ( session );
 
         return new ModelAndView ( String.format ( "redirect:/user/%s/view", userId ) );
+    }
+
+    @RequestMapping ( "/{userId}/lock" )
+    public ModelAndView lockUser ( @PathVariable ( "userId" ) final String userId )
+    {
+        this.storage.lockUser ( userId );
+        return new ModelAndView ( "redirect:/user/" + userId + "/view" );
+    }
+
+    @RequestMapping ( "/{userId}/unlock" )
+    public ModelAndView unlockUser ( @PathVariable ( "userId" ) final String userId )
+    {
+        this.storage.unlockUser ( userId );
+        return new ModelAndView ( "redirect:/user/" + userId + "/view" );
+    }
+
+    @RequestMapping ( "/{userId}/delete" )
+    public ModelAndView deleteUser ( @PathVariable ( "userId" ) final String userId )
+    {
+        this.storage.deleteUser ( userId );
+        return new ModelAndView ( "redirect:/user/" + userId + "/view" );
     }
 }
