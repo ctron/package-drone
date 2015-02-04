@@ -11,32 +11,34 @@
 package de.dentrassi.pm.testing;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class BasicTest extends AbstractServerTest
 {
     @Test
-    public void test1 () throws Exception
+    public void testMain () throws Exception
     {
         testUrl ( "/" );
     }
 
     @Test
-    public void test2 () throws Exception
+    public void testP2 () throws Exception
     {
         testUrl ( "/p2" );
     }
 
     @Test
-    public void test3 () throws Exception
+    public void testR5 () throws Exception
     {
         testUrl ( "/r5" );
     }
 
     @Test
-    public void test4 () throws Exception
+    public void testMaven () throws Exception
     {
         testUrl ( "/maven" );
     }
@@ -48,4 +50,53 @@ public class BasicTest extends AbstractServerTest
         {
         }
     }
+
+    @Test
+    public void testUser () throws Exception
+    {
+        testNotAuth ( "/user" );
+    }
+
+    @Test
+    public void testConfig () throws Exception
+    {
+        testNotAuth ( "/config" );
+    }
+
+    @Test
+    public void testSetup () throws Exception
+    {
+        testNotAuth ( "/setup" );
+    }
+
+    @Test
+    public void testConfigCoreList () throws Exception
+    {
+        testNotAuth ( "/config/core/list" );
+    }
+
+    @Test
+    public void testConfigCoreSite () throws Exception
+    {
+        testNotAuth ( "/config/core/site" );
+    }
+
+    @Test
+    public void testMailConfig () throws Exception
+    {
+        testNotAuth ( "/default.mail/config" );
+    }
+
+    protected void testNotAuth ( final String suffix ) throws Exception
+    {
+        final URL url = new URL ( resolve ( suffix ) );
+
+        final HttpURLConnection con = (HttpURLConnection)url.openConnection ();
+        con.connect ();
+        final int rc = con.getResponseCode ();
+        con.disconnect ();
+
+        Assert.assertEquals ( 403, rc );
+    }
+
 }
