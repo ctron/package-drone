@@ -31,6 +31,13 @@ ul.validation-error li {
 	padding-top: 1em;
 }
 
+/* tables */
+
+tr.table-row-additional > td  {
+	border-top: 0 !important;
+}
+
+
 /* boxes */
 
 .box {

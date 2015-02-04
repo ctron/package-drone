@@ -20,7 +20,7 @@
 	        <form:hidden path="token"/>
 	    	   
 		    <h:formEntry label="E-Mail"  command="command" path="email">
-		        <form:input path="email" cssClass="form-control" type="email" disabled="disabled"/>
+		        <form:input path="email" cssClass="form-control" type="email" disabled="true"/>
 		    </h:formEntry>
 		    
 		    <h:formEntry label="Password"  command="command" path="password">

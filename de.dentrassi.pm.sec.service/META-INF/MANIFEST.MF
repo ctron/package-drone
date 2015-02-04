@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
+ de.dentrassi.pm.common.utils;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  org.osgi.framework;version="1.8.0",
  org.slf4j;version="1.7.2"

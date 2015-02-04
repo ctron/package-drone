@@ -1,0 +1,126 @@
+<%@page import="de.dentrassi.pm.storage.service.DeployGroup"%>
+<%@page import="de.dentrassi.pm.storage.service.DeployKey"%>
+<%@page import="java.util.Collections"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%
+DeployGroup dg = (DeployGroup)request.getAttribute ( "group" );
+Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
+%>
+
+<h:main title="Group" subtitle="${fn:escapeXml( (empty group.name) ? group.id : group.name ) }">
+
+<h:buttonbar menu="${menuManager.getActions ( group ) }">
+
+    <jsp:attribute name="after">
+        <a class="btn btn-default" href="<c:url value="/deploy/auth/group"/>">Groups</a>
+    </jsp:attribute>
+
+</h:buttonbar>
+
+<section>
+    <h2>Information</h2>
+    
+    <dl class="dl-horizontal details">
+    
+	    <dt>ID</dt>
+	    <dd>${fn:escapeXml(group.id) }</dd>
+	    
+	    <dt>Name</dt>
+	    <dd>${fn:escapeXml(group.name) }</dd>
+	</dl>
+    
+</section>
+
+<section>
+    <h2>Deploy keys</h2>
+    
+    
+    <div class="table-responsive">
+    <table class="table">
+    
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+    
+        <tbody>
+            <c:forEach var="key" items="${group.keys}">
+                <tr>
+                    <td>${fn:escapeXml(key.id) }</td>
+                    <td>${fn:escapeXml(key.name) }</td>
+                    <td style="white-space: nowrap;">
+                        <fmt:formatDate value="${key.creationTimestamp }" type="both" />
+                    </td>
+                    <td rowspan="2">
+                        <button type="button" data-toggle="modal" data-target="#dlg-delete" class="btn btn-danger" data-key-id="${fn:escapeXml(key.id) }" data-key-name="${fn:escapeXml(key.name) }"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+                    </td>
+                </tr>
+                <tr class="table-row-additional">
+                    <td colspan="3" style="padding-left: 3em;">
+                        <code>${fn:escapeXml(key.key) }</code>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    
+    </table>
+    </div>
+    
+</section>
+
+<div class="modal" id="dlg-delete" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Delete deploy key</h4>
+      </div>
+      <div class="modal-body">
+        <p>
+            Are you sure you want to delete the deploy key:
+            <span class="dlg-delete-key-id"></span>
+            
+            <span style="display:none;" class="dlg-delete-key-name-span">named <q><span class="dlg-delete-key-name"></span></q></span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a type="button" class="btn btn-danger" href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+      </div>
+    </div><%-- /.modal-content --%>
+  </div><%-- /.modal-dialog --%>
+</div><%-- /.modal --%>
+
+<script type="text/javascript">
+$('#dlg-delete').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data("key-id");
+    var name = button.data("key-name");
+    var modal = $(this);
+    
+    modal.find ( '.btn-danger').attr('href', '<c:url value="/deploy/auth/key/"/>' + id + '/delete');
+    modal.find ( '.dlg-delete-key-id' ).text ( id );
+    if ( name.length > 0 )
+    	{
+    	    modal.find ( '.dlg-delete-key-name' ).text ( name );
+    	    modal.find ( '.dlg-delete-key-name-span' ).show ();
+    	}
+    else
+    	{
+    	   modal.find ( '.dlg-delete-key-name-span' ).hide ();
+    	}
+});
+</script>
+
+</h:main>

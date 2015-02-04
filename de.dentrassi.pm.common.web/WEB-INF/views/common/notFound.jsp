@@ -15,7 +15,7 @@
 response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
 %>
 
-<h:main title="Not found">
+<h:main title="Not found" subtitle="${fn:escapeXml(id) }">
 
 <div class="container"><div class="row">
 

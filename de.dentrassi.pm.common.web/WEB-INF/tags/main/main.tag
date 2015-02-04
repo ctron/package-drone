@@ -27,20 +27,20 @@
     
     <link rel="icon" href="${pageContext.request.contextPath}/resources/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/vnd.microsoft.icon"/>
     
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
-    
     <%-- bootstrap --%>
     
     <link href="${bootstrap}/css/bootstrap.min.css" rel="stylesheet">
+    
     <!--[if lt IE 9]>
       <script src="${html5shiv}/3.7.2/html5shiv.min.js"></script>
       <script src="${respond}/respond.min.js"></script>
     <![endif]-->
-
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="${jquery}/jquery-1.11.2.min.js"></script>
     <script src="${bootstrap}/js/bootstrap.min.js"></script>
 
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
 </head>
 
 <body>
