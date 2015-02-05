@@ -55,7 +55,6 @@ if ( p instanceof UserInformationPrincipal )
 
 <body>
 
-<sec:user var="principal"/>
 <c:set var="gravatar" value="${web:gravatar(principal.details.email) }"/>
 
 <h:navbar menu="${menuManager.mainMenu }">
@@ -89,11 +88,18 @@ if ( p instanceof UserInformationPrincipal )
     </jsp:attribute>
 </h:navbar>
 
-<div class="page-header">
-<h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+			<div class="page-header">
+			   <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
+		    </div>
+	    </div>
+    </div>
 </div>
-<section>
 
+
+<section>
 <div id="content">
 <jsp:doBody/>
 </div>
