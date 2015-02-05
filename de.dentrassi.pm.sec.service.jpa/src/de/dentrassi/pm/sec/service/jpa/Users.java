@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 
-import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
 import de.dentrassi.pm.sec.jpa.UserEntity;
@@ -109,15 +108,6 @@ public final class Users
         }
 
         return Base64.getEncoder ().encodeToString ( digest );
-    }
-
-    protected static String createToken ( final int length )
-    {
-        final byte[] data = new byte[length];
-
-        random.nextBytes ( data );
-
-        return Strings.hex ( data );
     }
 
 }

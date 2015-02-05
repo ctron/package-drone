@@ -10,8 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.sec.service.jpa;
 
+import static de.dentrassi.pm.common.utils.Tokens.createToken;
 import static de.dentrassi.pm.sec.service.jpa.Users.convert;
-import static de.dentrassi.pm.sec.service.jpa.Users.createToken;
 import static de.dentrassi.pm.sec.service.jpa.Users.hashIt;
 
 import java.io.InputStream;
