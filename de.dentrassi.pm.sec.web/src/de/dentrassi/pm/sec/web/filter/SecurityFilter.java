@@ -95,30 +95,35 @@ public class SecurityFilter implements Filter
 
             // try to log on
 
-            final Object userObj = session.getAttribute ( ATTR_USER_INFORMATION );
-            if ( userObj == null )
-            {
-                final String token = findCookie ( COOKIE_REMEMBER_ME, request.getCookies () );
-                final String email = findCookie ( COOKIE_EMAIL, request.getCookies () );
-
-                if ( token != null && email != null )
-                {
-                    try
-                    {
-                        final UserInformation user = this.service.login ( email, token );
-                        logger.info ( "Tried to log in using rememberMe token: {} -> {} for {}", email, user, request );
-                        applyUserInformation ( request, user );
-                    }
-                    catch ( final Exception e )
-                    {
-                        // silently ignore the failure
-                    }
-                }
-            }
+            tryRememberMe ( request, session );
 
         }
 
         filterChain.doFilter ( new SecurityHttpRequestWrapper ( this.service, request ), response );
+    }
+
+    protected void tryRememberMe ( final HttpServletRequest request, final HttpSession session )
+    {
+        final Object userObj = session.getAttribute ( ATTR_USER_INFORMATION );
+        if ( userObj == null )
+        {
+            final String token = findCookie ( COOKIE_REMEMBER_ME, request.getCookies () );
+            final String email = findCookie ( COOKIE_EMAIL, request.getCookies () );
+
+            if ( token != null && email != null )
+            {
+                try
+                {
+                    final UserInformation user = this.service.login ( email, token );
+                    logger.info ( "Tried to log in using rememberMe token: {} -> {} for {}", email, user, request );
+                    applyUserInformation ( request, user );
+                }
+                catch ( final Exception e )
+                {
+                    // silently ignore the failure
+                }
+            }
+        }
     }
 
     private String findCookie ( final String name, final Cookie[] cookies )
