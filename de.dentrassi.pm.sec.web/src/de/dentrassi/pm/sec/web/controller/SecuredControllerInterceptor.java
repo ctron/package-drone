@@ -21,10 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.RequestHandler;
-import de.dentrassi.osgi.web.controller.ControllerInterceptorProcessor;
-import de.dentrassi.osgi.web.controller.NoOpRequestHandler;
 
-public class SecuredControllerInterceptor implements ControllerInterceptorProcessor
+public class SecuredControllerInterceptor extends AbstractSecurityControllerInterceptor
 {
 
     private final static Logger logger = LoggerFactory.getLogger ( SecuredControllerInterceptor.class );
@@ -53,10 +51,7 @@ public class SecuredControllerInterceptor implements ControllerInterceptorProces
         {
             // anonymous - but not allowed
 
-            response.setStatus ( HttpServletResponse.SC_FORBIDDEN );
-            response.getWriter ().write ( "Access denied" );
-
-            return new NoOpRequestHandler ();
+            return handleLoginRequired ( response );
         }
 
         return next.apply ( request, response );

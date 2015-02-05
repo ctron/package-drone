@@ -49,7 +49,7 @@ public class GodModeService implements UserService
 
     private static final String NAME = System.getProperty ( PROP_BASE + ".admin.user", "admin" );
 
-    private static final Set<String> ROLES = Collections.unmodifiableSet ( new HashSet<> ( Arrays.asList ( System.getProperty ( PROP_BASE + ".admin.roles", "" ).split ( "\\w,\\w" ) ) ) );
+    private static final Set<String> ROLES;
 
     private static final boolean ANNOUNCE_CONSOLE = !Boolean.getBoolean ( PROP_BASE + ".admin.disableAnnounce.console" );
 
@@ -61,6 +61,12 @@ public class GodModeService implements UserService
 
     static
     {
+        // roles
+
+        ROLES = Collections.unmodifiableSet ( new HashSet<> ( Arrays.asList ( System.getProperty ( PROP_BASE + ".admin.roles", "ADMIN, USER" ).split ( "\\s*,\\s*" ) ) ) );
+
+        // announce file
+
         final String file = System.getProperty ( PROP_BASE + ".admin.announce.file" );
         final String userDir = System.getProperty ( "user.home" );
 

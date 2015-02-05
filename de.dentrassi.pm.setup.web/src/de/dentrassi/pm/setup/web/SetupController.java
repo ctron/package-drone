@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.framework.BundleContext;
@@ -25,20 +26,22 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.pm.common.web.task.BasicTask;
 import de.dentrassi.pm.common.web.task.Task;
 import de.dentrassi.pm.common.web.task.Task.State;
 import de.dentrassi.pm.database.DatabaseSetup;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 @RequestMapping ( "/setup" )
+@HttpConstraint ( rolesAllowed = "ADMIN" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class SetupController
 {
-
     private List<Task> getTasks ( final HttpServletRequest request )
     {
-
         boolean needUpgrade;
         boolean configured;
 
