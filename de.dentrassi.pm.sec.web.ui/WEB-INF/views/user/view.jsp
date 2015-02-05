@@ -37,7 +37,7 @@
 			<dl class="dl-horizontal details">
 			    
 			    <dt>ID</dt>
-			    <dd>${fn:escapeXml(user.id) }</dd>
+			    <dd id="userId">${fn:escapeXml(user.id) }</dd>
 			    
 			    <dt>Name</dt>
 			    <dd>${fn:escapeXml(user.details.name) }</dd>
