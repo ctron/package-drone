@@ -18,7 +18,6 @@ import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashSet;
 
 import de.dentrassi.osgi.utils.Strings;
@@ -70,7 +69,7 @@ public final class Users
             details.setRoles ( new HashSet<> ( Arrays.asList ( toks ) ) );
         }
 
-        return new DatabaseUserInformation ( user.getId (), Collections.emptySet (), details );
+        return new DatabaseUserInformation ( user.getId (), details.getRoles (), details );
     }
 
     protected static MessageDigest createDigest ()

@@ -11,6 +11,7 @@
 package de.dentrassi.pm.sec.web.filter;
 
 import java.security.Principal;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -103,7 +104,15 @@ public class SecurityHttpRequestWrapper extends HttpServletRequestWrapper
     @Override
     public boolean isUserInRole ( final String role )
     {
-        return false; // FIXME: implement
+        final UserInformation user = getUserDetails ( this.service, getSession ( false ) );
+
+        final Set<String> roles = user.getRoles ();
+        if ( roles == null )
+        {
+            return false;
+        }
+
+        return roles.contains ( role );
     }
 
     @Override
