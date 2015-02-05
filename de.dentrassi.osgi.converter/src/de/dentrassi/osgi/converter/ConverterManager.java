@@ -25,6 +25,7 @@ public class ConverterManager
         result.addConverter ( StringToBooleanConverter.INSTANCE );
         result.addConverter ( StringToPrimitiveBooleanConverter.INSTANCE );
         result.addConverter ( BooleanToStringConverter.INSTANCE );
+        result.addConverter ( StringToSetConverter.INSTANCE );
 
         return result;
     }

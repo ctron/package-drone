@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.form.tags;
 
+import java.util.Collection;
+
 import javax.servlet.jsp.tagext.Tag;
 import javax.servlet.jsp.tagext.TagSupport;
 
@@ -37,6 +39,10 @@ public class OptionTagSupport extends TagSupport
         if ( selectedValue == value )
         {
             return true;
+        }
+        if ( selectedValue instanceof Collection<?> )
+        {
+            return ( (Collection<?>)selectedValue ).contains ( value );
         }
         if ( selectedValue == null )
         {

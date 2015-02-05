@@ -16,43 +16,62 @@
 
 <c:set var="gravatar" value="${web:gravatar(user.details.email) }"/>
 
-<h2>
-<c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=48"/></c:if>
-${fn:escapeXml(user.details.name)}
-<small>
-<c:if test="${you }">(This is you!)</c:if>
-<c:if test="${user.details.deleted }"><span class="label label-default">Deleted</span></c:if>
-<c:if test="${user.details.locked }"><span class="label label-warning">Locked</span></c:if>
-</small>
-</h2>
+<div class="container-fluid">
 
-<dl class="dl-horizontal details">
-    
-    <dt>ID:</dt>
-    <dd>${fn:escapeXml(user.id) }</dd>
-    
-    <dt>Name:</dt>
-    <dd>${fn:escapeXml(user.details.name) }</dd>
-    
-    <dt>E-Mail:</dt>
-    
-    <dd>${fn:escapeXml(user.details.email) }
-	    <small>
-	    <c:if test="${user.details.emailVerified }">&nbsp;<span class="label label-success">Verified</span></c:if>
-	    <c:if test="${not user.details.emailVerified }">&nbsp;<span class="label label-warning">Not Verified</span></c:if>
-	    </small>
-    </dd>
-</dl>
+    <div class="row">
 
-<h2>Registration</h2>
+        <div class="col-md-12">
+			<h2>
+				<c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=48"/></c:if>
+				${fn:escapeXml(user.details.name)}
+				<small>
+					<c:if test="${you }">(This is you!)</c:if>
+					<c:if test="${user.details.deleted }"><span class="label label-default">Deleted</span></c:if>
+					<c:if test="${user.details.locked }"><span class="label label-warning">Locked</span></c:if>
+					<c:forEach var="role" items="${user.roles }">
+					   <span class="label label-default">${role }</span>&nbsp;
+					</c:forEach>
+				</small>
+			</h2>
+			
+			<dl class="dl-horizontal details">
+			    
+			    <dt>ID</dt>
+			    <dd>${fn:escapeXml(user.id) }</dd>
+			    
+			    <dt>Name</dt>
+			    <dd>${fn:escapeXml(user.details.name) }</dd>
+			    
+			    <dt>E-Mail</dt>
+			    
+			    <dd>${fn:escapeXml(user.details.email) }
+				    <small>
+				    <c:if test="${user.details.emailVerified }">&nbsp;<span class="label label-success">Verified</span></c:if>
+				    <c:if test="${not user.details.emailVerified }">&nbsp;<span class="label label-warning">Not Verified</span></c:if>
+				    </small>
+			    </dd>
+			</dl>
+		</div>
 
-<dl class="dl-horizontal details">
-    <dt>Registration Date:</dt>
-    <dd><fmt:formatDate value="${user.details.registrationDate }" type="both" /></dd>
+    </div>
     
-    <dt>E-Mail Token Date:</dt>
-    <dd><fmt:formatDate value="${user.details.emailTokenDate }" type="both" /></dd>
+    <div class="row">
     
-</dl>
+        <div class="col-md-6">
+
+			<h3 class="details-heading">Registration</h3>
+			
+			<dl class="dl-horizontal details">
+			    <dt>Registration Date</dt>
+			    <dd><fmt:formatDate value="${user.details.registrationDate }" type="both" /></dd>
+			    
+			    <dt>E-Mail Token Date</dt>
+			    <dd><fmt:formatDate value="${user.details.emailTokenDate }" type="both" /></dd>
+			    
+			</dl>
+		</div>
+    </div>
+
+</div>
 
 </h:main>

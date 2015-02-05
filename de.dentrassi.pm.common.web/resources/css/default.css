@@ -86,6 +86,11 @@ footer a:focus {
 	font-size: large;
 }
 
+.details-heading  {
+	border-bottom: 1px solid #EEE;
+	padding-bottom: .5em;
+}
+
 img.gravatar {
 	margin-left: .5em;
 	margin-right: .5em;

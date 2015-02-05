@@ -134,6 +134,12 @@
 			<name>cssClass</name>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
+		
+		<attribute>
+            <name>multiple</name>
+            <rtexprvalue>true</rtexprvalue>
+            <type>boolean</type>
+		</attribute>
 	</tag>
 
 	<tag>

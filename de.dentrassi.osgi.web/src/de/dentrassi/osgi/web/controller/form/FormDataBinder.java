@@ -114,7 +114,16 @@ public class FormDataBinder implements Binder
         while ( en.hasMoreElements () )
         {
             final String key = en.nextElement ();
-            objects.put ( key, this.request.getParameter ( key ) );
+            final String[] value = this.request.getParameterValues ( key );
+
+            if ( value.length == 1 )
+            {
+                objects.put ( key, value[0] );
+            }
+            else
+            {
+                objects.put ( key, value );
+            }
         }
 
         final BindingManager bm = new BindingManager ();

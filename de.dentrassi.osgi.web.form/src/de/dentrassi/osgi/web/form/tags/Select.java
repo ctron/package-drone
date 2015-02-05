@@ -20,6 +20,13 @@ public class Select extends FormValueTagSupport
 
     private Object selectedValue;
 
+    private boolean multiple;
+
+    public void setMultiple ( final boolean multiple )
+    {
+        this.multiple = multiple;
+    }
+
     @Override
     public int doStartTag () throws JspException
     {
@@ -28,6 +35,7 @@ public class Select extends FormValueTagSupport
         writer.write ( "<select" );
         writer.writeOptionalAttribute ( "id", this.path );
         writer.writeOptionalAttribute ( "name", this.path );
+        writer.writeFlagAttribute ( "multiple", this.multiple );
         writeDefaultAttributes ( writer );
         writer.write ( " >" );
 

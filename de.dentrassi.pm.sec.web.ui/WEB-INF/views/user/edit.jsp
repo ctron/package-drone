@@ -12,25 +12,57 @@
 
 <h:breadcrumbs/>
 
-<div class="container">
+<style>
+<!--
+fieldset {
+    padding: 1em;
+}
+-->
+</style>
 
-<div class="row">
+<div class="container-fluid">
+	<form:form action="" method="POST"  cssClass="form-horizontal">
+	
+	   
+	    <div class="col-md-6">
+            <div class="row">
+                <fieldset>
+                    <legend>User details</legend>
+       
+				    <h:formEntry label="E-Mail"  command="command" path="email">
+				        <form:input path="email" cssClass="form-control" type="email"/>
+				    </h:formEntry>
+				    
+				    <h:formEntry label="Real Name"  command="command" path="name">
+				        <form:input path="name" cssClass="form-control" placeholder="Optional real name"/>
+				    </h:formEntry>
+			    </fieldset>
+		    </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="row">
+                <fieldset>
+                    <legend>Security</legend>
+                    <h:formEntry label="Roles" path="roles" command="command">
+	                    <form:select path="roles" cssClass="form-control" multiple="true">
+	                        <form:option value="ADMIN"/>
+	                        <form:option value="MANAGER"/>
+	                    </form:select>
+                    </h:formEntry>
+                    
+                </fieldset>
+            </div>
+        </div>
+        
+        <div class="row">
+			<div class="col-md-12" >
+				<input type="submit" value="Submit" class="btn btn-primary">
+				<input type="reset" value="Reset" class="btn btn-default">
+			</div>
+	    </div>
 
-<form:form action="" method="POST"  cssClass="form-horizontal">
-    
-    <h:formEntry label="E-Mail"  command="command" path="email">
-        <form:input path="email" cssClass="form-control" type="email"/>
-    </h:formEntry>
-    
-    <h:formEntry label="Real Name"  command="command" path="name">
-        <form:input path="name" cssClass="form-control" placeholder="Optional real name"/>
-    </h:formEntry>
-    
-    <input type="submit" value="Submit" class="btn btn-primary">
-    <input type="reset" value="Reset" class="btn btn-default">
-
-</form:form>
-
-</div></div>
+		</form:form>
+</div>
 
 </h:main>
