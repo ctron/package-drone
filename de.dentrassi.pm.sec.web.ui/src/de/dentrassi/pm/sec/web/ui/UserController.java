@@ -198,7 +198,7 @@ public class UserController extends AbstractUserCreationController implements In
     {
         final boolean you = userId.equals ( request.getRemoteUser () );
 
-        if ( !you )
+        if ( !you && !request.isUserInRole ( "ADMIN" ) )
         {
             return CommonController.createAccessDenied ();
         }
