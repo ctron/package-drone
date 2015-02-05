@@ -112,17 +112,17 @@
 										<group>pdrone</group>
 									</mapper>
 								</data>
-								
+
 								<data>
-								    <src>src/default/${project.artifactId}</src>
-								    <dst>etc/default/${project.artifactId}</dst>
-								    <type>file</type>
-								    <conffile>true</conffile>
-								    <mapper>
-								        <type>perm</type>
-								        <user>root</user>
-								        <group>root</group>
-								    </mapper>
+									<src>src/default/${project.artifactId}</src>
+									<dst>etc/default/${project.artifactId}</dst>
+									<type>file</type>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>root</user>
+										<group>root</group>
+									</mapper>
 								</data>
 
 								<data>
@@ -168,17 +168,25 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
 				<version>2.1.1</version>
+
+				<configuration>
+					<license>EPL</license>
+					<distribution>Package Drone</distribution>
+					<group>System Environment/Daemons</group>
+
+					<defaultUsername>root</defaultUsername>
+					<defaultGroupname>root</defaultGroupname>
+				</configuration>
+
 				<executions>
 					<execution>
-						<id>attach-rpm</id>
+						<id>attach-rpm-centos7</id>
 						<phase>package</phase>
 						<goals>
 							<goal>attached-rpm</goal>
 						</goals>
 						<configuration>
-							<license>EPL</license>
-							<distribution>Package Drone</distribution>
-							<group>System Environment/Daemons</group>
+
 
 							<requires>
 								<require>systemd</require>
@@ -200,10 +208,10 @@
 								<prereq>shadow-utils</prereq>
 							</prereqs>
 
-							<defaultUsername>root</defaultUsername>
-							<defaultGroupname>root</defaultGroupname>
+							<distribution>centos7</distribution>
 
 							<mappings>
+
 								<mapping>
 									<directory>/usr/lib/package-drone/instance</directory>
 									<username>pdrone</username>
@@ -217,18 +225,18 @@
 										</source>
 									</sources>
 								</mapping>
-								
+
 								<mapping>
-								    <directory>/etc/default</directory>
-								    <directoryIncluded>false</directoryIncluded>
-								    <configuration>true</configuration>
-								    <username>root</username>
-								    <groupname>root</groupname>
-								    <sources>
-								        <source>
-								            <location>src/default/${project.artifactId}</location>
-								        </source>
-								    </sources>
+									<directory>/etc/default</directory>
+									<directoryIncluded>false</directoryIncluded>
+									<configuration>true</configuration>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>src/default/${project.artifactId}</location>
+										</source>
+									</sources>
 								</mapping>
 
 								<mapping>
@@ -335,7 +343,7 @@ systemctl daemon-reload >/dev/null 2>&1 || true
 							<signPackage>true</signPackage>
 						</configuration>
 					</plugin>
-					
+
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
@@ -356,7 +364,7 @@ systemctl daemon-reload >/dev/null 2>&1 || true
 							</arguments>
 						</configuration>
 					</plugin>
-					
+
 				</plugins>
 			</build>
 
