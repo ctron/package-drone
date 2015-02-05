@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,7 +46,15 @@ public class MapBinder implements Binder
             final Object value = this.objects.get ( q );
             if ( value != null )
             {
-                return Binding.simpleBinding ( converter.convertTo ( value, type ) );
+                try
+                {
+                    final Object cvtValue = converter.convertTo ( value, type );
+                    return Binding.simpleBinding ( cvtValue );
+                }
+                catch ( final Exception e )
+                {
+                    return Binding.errorBinding ( e );
+                }
             }
         }
         else

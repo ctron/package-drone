@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,13 @@ public interface Binding
     public static Binding simpleBinding ( final Object value )
     {
         return new SimpleBinding ( value );
+    }
+
+    public static Binding errorBinding ( final Throwable error )
+    {
+        final SimpleBindingResult result = new SimpleBindingResult ();
+        result.addError ( new ExceptionError ( error ) );
+        return new SimpleBinding ( null, result );
     }
 
     public static Binding nullBinding ()

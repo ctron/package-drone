@@ -44,7 +44,7 @@ public class StringToIntegerConverter implements Converter
         }
         catch ( final NumberFormatException e )
         {
-            throw new ConversionException ( e );
+            throw new ConversionException ( String.format ( "'%s' is not a number", value ) );
         }
     }
 }
