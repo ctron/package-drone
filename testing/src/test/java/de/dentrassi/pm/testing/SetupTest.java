@@ -12,7 +12,6 @@ package de.dentrassi.pm.testing;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -99,29 +98,18 @@ public class SetupTest extends AbstractServerTest
             @Override
             public boolean apply ( final WebDriver input )
             {
-                return driver.findElementByTagName ( "h1" ).getText ().equalsIgnoreCase ( "Database Upgrade" );
+                // search for "success" button
+                return !driver.findElementsByClassName ( "btn-success" ).isEmpty ();
             }
         } );
 
         // click to go back
 
-        driver.findElementByCssSelector ( ".btn-default" ).click ();
+        driver.findElementByCssSelector ( ".btn-success" ).click ();
 
-        // storage service should be present
+        // should be back to /setup
 
-        new WebDriverWait ( driver, 5 ).until ( new Predicate<WebDriver> () {
-
-            @Override
-            public boolean apply ( final WebDriver input )
-            {
-                return driver.findElementById ( "storage-service-present" ).getText ().equals ( "true" );
-            }
-        } );
-
-        // install schema should be gone
-
-        final List<WebElement> buttons = driver.findElementsById ( "install-schema" );
-        Assert.assertTrue ( "Install schema should be gone", buttons.isEmpty () );
+        Assert.assertEquals ( resolve ( "/setup" ), driver.getCurrentUrl () );
     }
 
     private static String loadAdminToken ()
