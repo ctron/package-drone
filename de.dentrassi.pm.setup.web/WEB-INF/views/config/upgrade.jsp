@@ -23,9 +23,6 @@
 				    </table>
 			
 			</div>
-			
-			
-			
 <p>
 <c:choose>
     <c:when test="${mailServicePresent}">
