@@ -167,15 +167,19 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
-				<version>2.1.1</version>
+				<version>2.1.2</version>
 
 				<configuration>
 					<license>EPL</license>
 					<distribution>Package Drone</distribution>
+					<summary>An extensible software artifact repository</summary>
+					<url>http://packagedrone.org</url>
 					<group>System Environment/Daemons</group>
 
 					<defaultUsername>root</defaultUsername>
 					<defaultGroupname>root</defaultGroupname>
+
+					<release>1.%{?dist}</release>
 				</configuration>
 
 				<executions>
@@ -187,6 +191,11 @@
 						</goals>
 						<configuration>
 
+							<defineStatements>
+								<defineStatement>dist el7</defineStatement>
+							</defineStatements>
+
+							<workarea>${project.build.directory}/rpm.el7</workarea>
 
 							<requires>
 								<require>systemd</require>
@@ -320,6 +329,139 @@ systemctl daemon-reload >/dev/null 2>&1 || true
 
 						</configuration>
 					</execution>
+
+					<!-- centos 6 -->
+
+					<execution>
+						<id>attach-rpm-centos6</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+						<configuration>
+
+							<defineStatements>
+								<defineStatement>dist el6</defineStatement>
+							</defineStatements>
+
+							<workarea>${project.build.directory}/rpm.el6</workarea>
+
+							<requires>
+							</requires>
+
+							<prereqs>
+								<!-- for the command "getent" -->
+								<require>glibc-common</require>
+
+								<!-- for the "adduser" scripts -->
+								<prereq>shadow-utils</prereq>
+							</prereqs>
+							
+					           <requires>
+					               <require>lsb-core-noarch &gt;= 4.0</require>
+					           </requires>
+
+							<distribution>centos6</distribution>
+
+							<mappings>
+
+							    <mapping>
+                                    <directory>/etc/init.d</directory>
+                                    <configuration>true</configuration>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <filemode>07550</filemode>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>src/sysv/${project.artifactId}</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+								<mapping>
+									<directory>/usr/lib/${project.artifactId}/instance</directory>
+									<username>pdrone</username>
+									<groupname>pdrone</groupname>
+									<sources>
+										<source>
+											<location>target/products/de.dentrassi.package.drone.server/all/all/all</location>
+											<excludes>
+												<exclude>eclipse.ini</exclude><!-- not needed -->
+											</excludes>
+										</source>
+									</sources>
+								</mapping>
+								
+								<mapping>
+								    <directory>/var/run/package-drone-server</directory>
+								    <username>pdrone</username>
+                                    <groupname>pdrone</groupname>
+                                    <filemode>0750</filemode>
+								</mapping>
+
+								<mapping>
+									<directory>/etc/default</directory>
+									<directoryIncluded>false</directoryIncluded>
+									<configuration>true</configuration>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>src/default/${project.artifactId}</location>
+										</source>
+									</sources>
+								</mapping>
+
+							</mappings>
+
+							<preinstallScriptlet>
+								<script><![CDATA[
+if ! getent passwd pdrone >/dev/null; then
+    # create new user
+    useradd --system --user-group --home /var/lib/pdrone --comment "Package Drone Daemon User" pdrone
+fi
+mkdir -p /var/lib/pdrone
+chown -R pdrone:pdrone /var/lib/pdrone
+]]></script>
+							</preinstallScriptlet>
+
+							<postinstallScriptlet>
+								<script><![CDATA[
+if [ $1 -eq 1 ] ; then
+    chkconfig package-drone-server on >/dev/null || true
+else
+    /etc/init.d/package-drone-server condrestart
+fi
+]]></script>
+							</postinstallScriptlet>
+
+							<preremoveScriptlet>
+								<script><![CDATA[
+if [ $1 -eq 0 ] ; then
+    /etc/init.d/package-drone-server stop
+    chkconfig --del package-drone-server
+fi
+]]>
+								</script>
+							</preremoveScriptlet>
+
+							<postremoveScriptlet>
+								<script><![CDATA[
+if [ "$1" -eq 0 ]; then
+    # this is the final uninstall
+    if which userdel >/dev/null 2>&1; then
+        userdel pdrone > /dev/null || true
+    fi
+    # delete group if it still exists
+    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || true
+fi
+]]></script>
+							</postremoveScriptlet>
+
+						</configuration>
+					</execution>
+
 				</executions>
 			</plugin>
 
@@ -350,19 +492,35 @@ systemctl daemon-reload >/dev/null 2>&1 || true
 						<version>1.3.2</version>
 						<executions>
 							<execution>
+								<id>sign-el7</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<arguments>
+										<argument>-c</argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" && cp "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" ${project.build.directory}/]]></argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>sign-el6</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<arguments>
+										<argument>-c</argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" && cp "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" ${project.build.directory}/ ]]></argument>
+									</arguments>
+								</configuration>
 							</execution>
 						</executions>
-						<configuration>
-							<executable>bash</executable>
-							<arguments>
-								<argument>-c</argument>
-								<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.noarch.rpm"]]></argument>
-							</arguments>
-						</configuration>
+
 					</plugin>
 
 				</plugins>

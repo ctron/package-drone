@@ -1,0 +1,87 @@
+### BEGIN INIT INFO
+# Provides:          package-drone-server
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start package drone server
+# Description:       Package Drone server process
+### END INIT INFO
+
+. /etc/init.d/functions
+
+RETVAL=0
+PIDFILE=/var/run/package-drone-server/server.pid
+
+prog=package-drone-server
+exec=/usr/lib/package-drone-server/instance/server
+lockfile=/var/lock/subsys/$prog
+
+if [ -f  /etc/sysconfig/$prog ]; then
+    . /etc/sysconfig/$prog
+fi
+
+start () {
+    test -x $exec || exit 5
+    
+    echo -n $"Starting Package Drone: "
+    export PIDFILE
+    runuser -g pdrone -s /bin/bash pdrone -c "PIDFILE=/var/run/package-drone-server/server.pid $exec" &>/dev/null &
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop () {
+    echo -n $"Shutting down Package Drone: "
+    killproc -p "$PIDFILE" $exec
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+runstatus() {
+    status -p "$PIDFILE" -l $prog $exec
+}
+
+restart () {
+    stop
+    start
+}
+
+case $1 in
+    start)
+        start
+    ;;
+    
+    stop)
+        stop
+    ;;
+    
+    restart)
+        restart
+    ;;
+        
+    status)
+        runstatus
+    ;;
+    
+    reload)
+        exit 3
+    ;;
+    
+    force-reload)
+        restart
+    ;;
+    
+    condrestart)
+        runstatus >/dev/null 2&>1 || exit 0
+        restart
+    ;;
+    
+    *)
+        echo $"Usage: $0 {start|stop|restart|status|condrestart}"
+        exit 2
+    ;;
+esac
