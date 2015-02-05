@@ -51,7 +51,7 @@ public class SecuredControllerInterceptor extends AbstractSecurityControllerInte
         {
             // anonymous - but not allowed
 
-            return handleLoginRequired ( response );
+            return handleLoginRequired ( request, response );
         }
 
         return next.apply ( request, response );

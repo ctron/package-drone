@@ -106,6 +106,11 @@ public class SecurityHttpRequestWrapper extends HttpServletRequestWrapper
     {
         final UserInformation user = getUserDetails ( this.service, getSession ( false ) );
 
+        if ( user == null )
+        {
+            return false;
+        }
+
         final Set<String> roles = user.getRoles ();
         if ( roles == null )
         {

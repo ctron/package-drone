@@ -12,11 +12,12 @@ package de.dentrassi.pm.sec.web.controller;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.dentrassi.osgi.web.RedirectRequestHandler;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.controller.ControllerInterceptorProcessor;
-import de.dentrassi.osgi.web.controller.NoOpRequestHandler;
 import de.dentrassi.pm.common.web.CommonController;
 
 public abstract class AbstractSecurityControllerInterceptor implements ControllerInterceptorProcessor
@@ -26,12 +27,16 @@ public abstract class AbstractSecurityControllerInterceptor implements Controlle
         return CommonController.wrap ( CommonController::createAccessDenied );
     }
 
-    protected RequestHandler handleLoginRequired ( final HttpServletResponse response ) throws IOException
+    protected RequestHandler handleLoginRequired ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
-        response.getWriter ().write ( "Login required" );
-
-        return new NoOpRequestHandler ();
+        /*
+         * we could store the request here and unpack it later.
+         *
+         * however this turns out to be quite an effort. storing the request
+         * would not only mean storing the request, path and query, but also
+         * the cookies, headers and maybe more ...
+         */
+        return new RedirectRequestHandler ( "/login" );
     }
 
 }

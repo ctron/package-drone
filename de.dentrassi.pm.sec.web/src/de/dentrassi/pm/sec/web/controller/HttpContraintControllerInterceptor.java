@@ -44,27 +44,19 @@ public class HttpContraintControllerInterceptor extends AbstractSecurityControll
             return next.apply ( request, response );
         }
 
-        /*
-         * We do check the principal first, to give the user a chance to log in
-         */
-
-        final Principal p = request.getUserPrincipal ();
-
-        logger.trace ( "Principal: {}", p );
-
-        if ( p == null )
-        {
-            return handleLoginRequired ( response );
-        }
-
         if ( isAllowed ( s, request ) )
         {
             return next.apply ( request, response );
         }
-        else
+
+        final Principal p = request.getUserPrincipal ();
+        if ( p == null )
         {
-            return handleAccessDenied ( response );
+            // make a different when no one is logged in
+            return handleLoginRequired ( request, response );
         }
+
+        return handleAccessDenied ( response );
     }
 
     public static boolean isAllowed ( final HttpConstraint constraint, final HttpServletRequest request )
