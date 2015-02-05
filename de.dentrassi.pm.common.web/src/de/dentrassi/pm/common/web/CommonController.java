@@ -28,7 +28,7 @@ public class CommonController
 
     public static final String ERROR_VIEW = "common/error";
 
-    public static final String ERROR_VIEW_ACTION = "action";
+    public static final String ERROR_VIEW_TITLE = "title";
 
     public static final String ERROR_VIEW_RESULT = "result";
 
@@ -50,11 +50,11 @@ public class CommonController
         return result;
     }
 
-    public static ModelAndView createError ( final String action, final String result, final Throwable e )
+    public static ModelAndView createError ( final String title, final String result, final Throwable e )
     {
         final ModelAndView mav = new ModelAndView ( ERROR_VIEW );
 
-        mav.put ( ERROR_VIEW_ACTION, action );
+        mav.put ( ERROR_VIEW_TITLE, title );
         mav.put ( ERROR_VIEW_RESULT, result );
         mav.put ( ERROR_VIEW_EXCEPTION, e );
         if ( e != null )
