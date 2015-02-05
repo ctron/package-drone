@@ -18,6 +18,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.osgi.framework.FrameworkUtil;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -27,12 +29,14 @@ import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;
+import de.dentrassi.pm.mail.service.MailService;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.setup.web.internal.Activator;
@@ -130,14 +134,20 @@ public class ConfigController implements InterfaceExtender
 
         final boolean needUpgrade = fillData ( data, model );
 
-        if ( needUpgrade )
+        if ( needUpgrade || isMailServicePresent () )
         {
+            // either we still have something to do here, or we are fully set up
             return new ModelAndView ( "/config/index", model );
         }
         else
         {
             return new ModelAndView ( "redirect:/setup" );
         }
+    }
+
+    protected boolean isMailServicePresent ()
+    {
+        return FrameworkUtil.getBundle ( ConfigController.class ).getBundleContext ().getServiceReference ( MailService.class ) != null;
     }
 
     @RequestMapping ( value = "/databaseUpgrade", method = RequestMethod.POST )
@@ -157,13 +167,12 @@ public class ConfigController implements InterfaceExtender
                 fillData ( data, model );
             }
 
+            model.put ( "mailServicePresent", isMailServicePresent () );
             return new ModelAndView ( "/config/upgrade", model );
         }
         catch ( final Throwable e )
         {
-            model.clear ();
-            model.put ( "error", e );
-            return new ModelAndView ( "/config/upgradeFailed", model );
+            return CommonController.createError ( "Database schema", "Upgrade failed", e );
         }
     }
 }

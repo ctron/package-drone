@@ -15,7 +15,15 @@
 </table>
 
 <p>
-<a href="<c:url value="/config"/>" class="btn btn-default">Back</a>
+<c:choose>
+    <c:when test="${mailServicePresent}">
+        <a href="<c:url value="/config"/>" class="btn btn-default">Back</a>
+    </c:when>
+    <c:otherwise>
+        <a href="<c:url value="/setup"/>" class="btn btn-default">Back</a>
+    </c:otherwise>
+</c:choose>
+
 </p>
 
 </h:main>
