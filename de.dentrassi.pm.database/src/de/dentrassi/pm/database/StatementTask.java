@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,8 +17,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StatementTask extends AbstractUpgradeTask
 {
+    private final static Logger logger = LoggerFactory.getLogger ( StatementTask.class );
+
     private final List<String> sqls = new LinkedList<> ();
 
     public StatementTask ()
@@ -48,9 +53,37 @@ public class StatementTask extends AbstractUpgradeTask
     @Override
     protected void performRun ( final Connection connection, final UpgradeLog log ) throws SQLException
     {
-        for ( final String sql : this.sqls )
+        for ( String sql : this.sqls )
+        {
+            sql = performSql ( connection, sql );
+        }
+    }
+
+    protected String performSql ( final Connection connection, String sql ) throws SQLException
+    {
+        boolean ignoreError = false;
+
+        if ( sql.startsWith ( "@" ) )
+        {
+            ignoreError = true;
+            sql = sql.substring ( 1 );
+        }
+
+        if ( ignoreError )
+        {
+            try
+            {
+                executeUpgrade ( connection, sql );
+            }
+            catch ( final SQLException e )
+            {
+                logger.warn ( "Upgrade failed, but it can be ignored", e );
+            }
+        }
+        else
         {
             executeUpgrade ( connection, sql );
         }
+        return sql;
     }
 }
