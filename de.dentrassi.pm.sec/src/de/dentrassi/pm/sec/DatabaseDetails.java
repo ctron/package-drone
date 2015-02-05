@@ -11,6 +11,8 @@
 package de.dentrassi.pm.sec;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -34,6 +36,18 @@ public class DatabaseDetails
     private Date emailTokenDate;
 
     private String rememberMeToken;
+
+    private Set<String> roles = new HashSet<> ();
+
+    public void setRoles ( final Set<String> roles )
+    {
+        this.roles = roles;
+    }
+
+    public Set<String> getRoles ()
+    {
+        return this.roles;
+    }
 
     public void setRememberMeToken ( final String rememberMeToken )
     {

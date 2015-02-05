@@ -16,8 +16,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 
 import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.pm.sec.DatabaseDetails;
@@ -60,6 +62,13 @@ public final class Users
         }
 
         details.setRememberMeToken ( rememberMeToken );
+
+        final String roles = user.getRoles ();
+        if ( roles != null )
+        {
+            final String toks[] = roles.split ( "\\s*,\\s*" );
+            details.setRoles ( new HashSet<> ( Arrays.asList ( toks ) ) );
+        }
 
         return new DatabaseUserInformation ( user.getId (), Collections.emptySet (), details );
     }

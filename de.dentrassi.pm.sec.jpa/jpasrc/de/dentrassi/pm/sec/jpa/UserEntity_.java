@@ -5,7 +5,7 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-01-28T17:18:01.422+0100")
+@Generated(value="Dali", date="2015-02-05T10:53:21.261+0100")
 @StaticMetamodel(UserEntity.class)
 public class UserEntity_ {
 	public static volatile SingularAttribute<UserEntity, String> id;
@@ -22,4 +22,5 @@ public class UserEntity_ {
 	public static volatile SingularAttribute<UserEntity, Boolean> locked;
 	public static volatile SingularAttribute<UserEntity, String> rememberMeTokenHash;
 	public static volatile SingularAttribute<UserEntity, String> rememberMeTokenSalt;
+	public static volatile SingularAttribute<UserEntity, String> roles;
 }

@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManager;
@@ -36,6 +37,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.eclipse.scada.utils.ExceptionHelper;
+import org.eclipse.scada.utils.str.StringHelper;
 import org.eclipse.scada.utils.str.StringReplacer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -416,6 +418,16 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             user.setEmail ( data.getEmail () );
             user.setName ( data.getName () );
+
+            if ( data.getRoles () != null && !data.getRoles ().isEmpty () )
+            {
+                final TreeSet<String> sortedRoles = new TreeSet<> ( data.getRoles () );
+                user.setRoles ( StringHelper.join ( sortedRoles, "," ) );
+            }
+            else
+            {
+                user.setRoles ( null );
+            }
 
             em.persist ( user );
 

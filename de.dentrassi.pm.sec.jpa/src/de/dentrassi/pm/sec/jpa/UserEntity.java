@@ -16,6 +16,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -72,6 +73,20 @@ public class UserEntity
 
     @Column ( length = 128, name = "REM_TOKEN_SALT" )
     private String rememberMeTokenSalt;
+
+    @Column ( name = "ROLES" )
+    @Lob
+    private String roles;
+
+    public void setRoles ( final String roles )
+    {
+        this.roles = roles;
+    }
+
+    public String getRoles ()
+    {
+        return this.roles;
+    }
 
     public void setRememberMeTokenHash ( final String rememberMeTokenHash )
     {
