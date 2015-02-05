@@ -7,6 +7,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrass.de/pm/storage" prefix="storage" %>
 
+
+<%
+pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
+%>
+
 <h:main title="Channel" subtitle="${storage:channel(channel) }">
 
 <style type="text/css">
@@ -73,7 +78,7 @@ div.dz-error-message {
 
 <h:buttonbar menu="${menuManager.getActions(channel) }">
     <jsp:attribute name="after">
-        <c:if test="${not empty pageContext.request.userPrincipal }">
+        <c:if test="${manager }">
 		    <div class="btn-group" role="group">
 		        <div class="btn">
 		            <span id="dropzone" title="Drop files here for uploading"><span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Drop Artifacts</span>
@@ -120,7 +125,7 @@ div.dz-error-message {
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
         <td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
         <td>
-          <c:if test='${artifact.is("deletable") and not empty pageContext.request.userPrincipal}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+          <c:if test='${artifact.is("deletable") and manager}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
         </td>
         <td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
         <td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>

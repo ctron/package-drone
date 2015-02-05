@@ -10,11 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.core.web;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -32,9 +34,10 @@ import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.core.CoreService;
+import de.dentrassi.pm.sec.web.controller.HttpConstraints;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.system.SystemService;
 
 @Controller
@@ -42,11 +45,17 @@ import de.dentrassi.pm.system.SystemService;
 @Secured
 @RequestMapping ( "/config/core" )
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "ADMIN" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class CoreController implements InterfaceExtender
 {
     private CoreService coreService;
 
     private SystemService systemService;
+
+    private static final Method METHOD_LIST = LinkTarget.getControllerMethod ( CoreController.class, "list" );
+
+    private static final Method METHOD_SITE = LinkTarget.getControllerMethod ( CoreController.class, "site" );
 
     public void setCoreService ( final CoreService service )
     {
@@ -63,10 +72,13 @@ public class CoreController implements InterfaceExtender
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( SecurityFilter.isLoggedIn ( request ) )
+        if ( HttpConstraints.isCallAllowed ( METHOD_LIST, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 1000, "View properties", 1000, LinkTarget.createFromController ( CoreController.class, "list" ), null, null ) );
-            result.add ( new MenuEntry ( "Administration", 1000, "Site", 500, LinkTarget.createFromController ( CoreController.class, "site" ), null, null ) );
+            result.add ( new MenuEntry ( "Administration", 1000, "View properties", 1000, LinkTarget.createFromController ( METHOD_LIST ), null, null ) );
+        }
+        if ( HttpConstraints.isCallAllowed ( METHOD_SITE, request ) )
+        {
+            result.add ( new MenuEntry ( "Administration", 1000, "Site", 500, LinkTarget.createFromController ( METHOD_SITE ), null, null ) );
         }
 
         return result;

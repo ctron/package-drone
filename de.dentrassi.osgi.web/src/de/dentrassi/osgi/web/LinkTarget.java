@@ -112,6 +112,32 @@ public class LinkTarget
 
     public static LinkTarget createFromController ( final Class<?> controllerClazz, final String methodName )
     {
+        final Method m = getControllerMethod ( controllerClazz, methodName );
+
+        if ( m != null )
+        {
+            final Set<String> paths = getRawPaths ( m );
+            if ( !paths.isEmpty () )
+            {
+                return new LinkTarget ( paths.iterator ().next () );
+            }
+
+        }
+
+        throw new IllegalArgumentException ( String.format ( "Controller class '%s' has no request method '%s'", controllerClazz.getName (), methodName ) );
+    }
+
+    public static Method getControllerMethod ( final Object controller, final String methodName )
+    {
+        if ( controller == null )
+        {
+            return null;
+        }
+        return getControllerMethod ( controller.getClass (), methodName );
+    }
+
+    public static Method getControllerMethod ( final Class<?> controllerClazz, final String methodName )
+    {
         for ( final Method m : controllerClazz.getMethods () )
         {
             if ( !m.getName ().equals ( methodName ) )
@@ -119,20 +145,18 @@ public class LinkTarget
                 continue;
             }
 
-            final Set<String> paths = getRawPaths ( m );
-            if ( paths.isEmpty () )
-            {
-                continue;
-            }
-
-            return new LinkTarget ( paths.iterator ().next () );
+            return m;
         }
-
-        throw new IllegalArgumentException ( String.format ( "Controller class '%s' has no request method '%s'", controllerClazz.getName (), methodName ) );
+        return null;
     }
 
     public static LinkTarget createFromController ( final Method method )
     {
+        if ( method == null )
+        {
+            throw new IllegalStateException ( "No method provided" );
+        }
+
         final Set<String> paths = getRawPaths ( method );
         if ( paths.isEmpty () )
         {

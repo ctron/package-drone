@@ -13,6 +13,7 @@ package de.dentrassi.pm.mail.web;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -46,15 +48,18 @@ import de.dentrassi.pm.mail.service.java.DefaultMailService;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.UserInformationPrincipal;
+import de.dentrassi.pm.sec.web.controller.HttpConstraints;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 
 @Controller
 @RequestMapping ( "/default.mail/config" )
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "ADMIN" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
     private final static Logger logger = LoggerFactory.getLogger ( ConfigController.class );
@@ -62,6 +67,8 @@ public class ConfigController implements InterfaceExtender
     private ConfigurationAdmin admin;
 
     private volatile DefaultMailService mailService;
+
+    private static final Method METHOD_INDEX = LinkTarget.getControllerMethod ( ConfigController.class, "index" );
 
     public void setMailService ( final DefaultMailService mailService )
     {
@@ -234,9 +241,9 @@ public class ConfigController implements InterfaceExtender
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( SecurityFilter.isLoggedIn ( request ) )
+        if ( HttpConstraints.isCallAllowed ( METHOD_INDEX, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 100, "Mail", 700, LinkTarget.createFromController ( ConfigController.class, "index" ), null, null ) );
+            result.add ( new MenuEntry ( "Administration", 100, "Mail", 700, LinkTarget.createFromController ( METHOD_INDEX ), null, null ) );
         }
 
         return result;

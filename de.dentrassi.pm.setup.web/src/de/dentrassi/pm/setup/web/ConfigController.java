@@ -10,11 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.setup.web;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -37,6 +39,8 @@ import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;
 import de.dentrassi.pm.mail.service.MailService;
+import de.dentrassi.pm.sec.web.controller.HttpConstraints;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.setup.web.internal.Activator;
@@ -46,16 +50,20 @@ import de.dentrassi.pm.setup.web.internal.Activator;
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "ADMIN" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
+    private final static Method METHOD_MAIN = LinkTarget.getControllerMethod ( ConfigController.class, "main" );
+
     @Override
     public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( request.getUserPrincipal () != null )
+        if ( HttpConstraints.isCallAllowed ( METHOD_MAIN, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, LinkTarget.createFromController ( ConfigController.class, "main" ), Modifier.DEFAULT, null, false ) );
+            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, LinkTarget.createFromController ( METHOD_MAIN ), Modifier.DEFAULT, null, false ) );
         }
 
         return result;

@@ -10,11 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.pm.sec.web.ui;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -38,6 +41,8 @@ import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
 import de.dentrassi.pm.sec.UserStorage;
+import de.dentrassi.pm.sec.web.controller.HttpConstraints;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
@@ -49,17 +54,22 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @RequestMapping ( "/user" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "ADMIN" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class UserController extends AbstractUserCreationController implements InterfaceExtender
 {
+    private static final Method METHOD_LIST = LinkTarget.getControllerMethod ( UserController.class, "list" );
+
+    private static final Method METHOD_ADD_USER = LinkTarget.getControllerMethod ( UserController.class, "addUser" );
 
     @Override
     public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( SecurityFilter.isLoggedIn ( request ) )
+        if ( HttpConstraints.isCallAllowed ( METHOD_LIST, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 10_000, "Users", 1_000, LinkTarget.createFromController ( UserController.class, "list" ), null, null ) );
+            result.add ( new MenuEntry ( "Administration", 10_000, "Users", 1_000, LinkTarget.createFromController ( METHOD_LIST ), null, null ) );
         }
 
         return result;
@@ -72,9 +82,9 @@ public class UserController extends AbstractUserCreationController implements In
         {
             final List<MenuEntry> result = new LinkedList<MenuEntry> ();
 
-            if ( SecurityFilter.isLoggedIn ( request ) )
+            if ( HttpConstraints.isCallAllowed ( METHOD_ADD_USER, request ) )
             {
-                result.add ( new MenuEntry ( "Add user", 100, LinkTarget.createFromController ( UserController.class, "addUser" ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Add user", 100, LinkTarget.createFromController ( METHOD_ADD_USER ), Modifier.PRIMARY, null ) );
             }
 
             return result;
@@ -92,7 +102,8 @@ public class UserController extends AbstractUserCreationController implements In
 
                 final boolean you = userId.equals ( request.getRemoteUser () );
 
-                if ( SecurityFilter.isLoggedIn ( request ) )
+                // TODO: check explicity for methods
+                if ( HttpConstraints.isCallAllowed ( METHOD_ADD_USER, request ) )
                 {
                     result.add ( new MenuEntry ( "Edit user", 100, LinkTarget.createFromController ( UserController.class, "editUser" ).expand ( model ), Modifier.PRIMARY, null ) );
 
@@ -182,8 +193,16 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( value = "/{userId}/view", method = RequestMethod.GET )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
     public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
     {
+        final boolean you = userId.equals ( request.getRemoteUser () );
+
+        if ( !you )
+        {
+            return CommonController.createAccessDenied ();
+        }
+
         final DatabaseUserInformation user = this.storage.getUserDetails ( userId );
 
         if ( user == null || user.getDetails ( DatabaseDetails.class ) == null )
@@ -193,7 +212,7 @@ public class UserController extends AbstractUserCreationController implements In
 
         final ModelAndView model = new ModelAndView ( "user/view" );
         model.put ( "user", user );
-        model.put ( "you", userId.equals ( request.getRemoteUser () ) );
+        model.put ( "you", you );
         return model;
     }
 

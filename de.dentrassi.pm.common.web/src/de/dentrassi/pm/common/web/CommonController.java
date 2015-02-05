@@ -10,11 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.web;
 
+import java.util.function.Supplier;
+
 import org.eclipse.scada.utils.ExceptionHelper;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ModelAndViewRequestHandler;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -37,6 +40,8 @@ public class CommonController
     public static final String ERROR_VIEW_STACKTRACE = "stacktrace";
 
     public static final String ERROR_VIEW_EXCEPTION = "exception";
+
+    public static final String ACCESS_DENIED_VIEW = "common/accessDenied";
 
     public static ModelAndView createNotFound ( final String type, final String id )
     {
@@ -66,5 +71,19 @@ public class CommonController
         mav.setAlternateViewResolver ( CommonController.class );
 
         return mav;
+    }
+
+    public static ModelAndView createAccessDenied ()
+    {
+        final ModelAndView mav = new ModelAndView ( ACCESS_DENIED_VIEW );
+
+        mav.setAlternateViewResolver ( CommonController.class );
+
+        return mav;
+    }
+
+    public static ModelAndViewRequestHandler wrap ( final Supplier<ModelAndView> supplier )
+    {
+        return new ModelAndViewRequestHandler ( supplier.get (), CommonController.class, null );
     }
 }

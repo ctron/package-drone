@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.channel;
 
+import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -46,6 +49,7 @@ import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
@@ -62,6 +66,8 @@ import de.dentrassi.pm.storage.web.internal.Activator;
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "MANAGER" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
 
@@ -103,6 +109,7 @@ public class ChannelController implements InterfaceExtender
 
     @Secured ( false )
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
     public ModelAndView list ()
     {
         final ModelAndView result = new ModelAndView ( "channel/list" );
@@ -126,6 +133,7 @@ public class ChannelController implements InterfaceExtender
 
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/view", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
     public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView result = new ModelAndView ( "channel/view" );
@@ -147,6 +155,7 @@ public class ChannelController implements InterfaceExtender
 
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/details", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
     public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView result = new ModelAndView ( "channel/details" );
@@ -294,6 +303,7 @@ public class ChannelController implements InterfaceExtender
 
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
     public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
     {
         final Channel channel = this.service.getChannel ( channelId );
@@ -385,13 +395,17 @@ public class ChannelController implements InterfaceExtender
 
             final List<MenuEntry> result = new LinkedList<> ();
 
-            if ( SecurityFilter.isLoggedIn ( request ) )
+            if ( request.isUserInRole ( "MANAGER" ) )
             {
                 result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
                 result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
                 result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
 
                 result.add ( new MenuEntry ( "Edit", 150, "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
+            }
+
+            if ( SecurityFilter.isLoggedIn ( request ) )
+            {
                 result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
             }
 
@@ -401,7 +415,7 @@ public class ChannelController implements InterfaceExtender
         {
             final List<MenuEntry> result = new LinkedList<> ();
 
-            if ( SecurityFilter.isLoggedIn ( request ) )
+            if ( request.isUserInRole ( "MANAGER" ) )
             {
                 result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "create" ), Modifier.PRIMARY, null ) );
             }
@@ -425,7 +439,11 @@ public class ChannelController implements InterfaceExtender
 
             result.add ( new MenuEntry ( "List", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
             result.add ( new MenuEntry ( "Details", 200, LinkTarget.createFromController ( ChannelController.class, "details" ).expand ( model ), Modifier.DEFAULT, null ) );
-            result.add ( new MenuEntry ( "Deploy Keys", 1000, LinkTarget.createFromController ( ChannelController.class, "deployKeys" ).expand ( model ), Modifier.DEFAULT, null ) );
+
+            if ( request.isUserInRole ( "MANAGER" ) )
+            {
+                result.add ( new MenuEntry ( "Deploy Keys", 1000, LinkTarget.createFromController ( ChannelController.class, "deployKeys" ).expand ( model ), Modifier.DEFAULT, null ) );
+            }
 
             return result;
         }

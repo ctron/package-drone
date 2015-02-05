@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.sec.web.controller;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.function.BiFunction;
@@ -68,7 +67,7 @@ public class HttpContraintControllerInterceptor extends AbstractSecurityControll
         }
     }
 
-    public static boolean isAllowed ( final HttpConstraint constraint, final HttpServletRequest request ) throws IOException
+    public static boolean isAllowed ( final HttpConstraint constraint, final HttpServletRequest request )
     {
         final EmptyRoleSemantic empty = constraint.value ();
         final String[] allowedRoles = constraint.rolesAllowed ();

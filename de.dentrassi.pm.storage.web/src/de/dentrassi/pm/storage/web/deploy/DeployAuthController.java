@@ -10,12 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.deploy;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -34,9 +36,10 @@ import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.sec.web.controller.HttpConstraints;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.DeployAuthService;
@@ -48,11 +51,17 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @ViewResolver ( "/WEB-INF/views/deploy/auth/%s.jsp" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "MANAGER" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class DeployAuthController implements InterfaceExtender
 {
     public final static Object GROUP_ACTION_TAG = new Object ();
 
     private static final int PAGE_SIZE = 25;
+
+    private static final Method METHOD_LIST_GROUPS = LinkTarget.getControllerMethod ( DeployAuthController.class, "listGroups" );
+
+    private static final Method METHOD_ADD_GROUP = LinkTarget.getControllerMethod ( DeployAuthController.class, "addGroup" );
 
     private DeployAuthService service;
 
@@ -66,9 +75,9 @@ public class DeployAuthController implements InterfaceExtender
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( SecurityFilter.isLoggedIn ( request ) )
+        if ( HttpConstraints.isCallAllowed ( METHOD_LIST_GROUPS, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 10_000, "Deploy Keys", 2_000, LinkTarget.createFromController ( DeployAuthController.class, "listGroups" ), null, null ) );
+            result.add ( new MenuEntry ( "Administration", 10_000, "Deploy Keys", 2_000, LinkTarget.createFromController ( METHOD_LIST_GROUPS ), null, null ) );
         }
 
         return result;
@@ -79,11 +88,13 @@ public class DeployAuthController implements InterfaceExtender
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( SecurityFilter.isLoggedIn ( request ) )
+        if ( HttpConstraints.isCallAllowed ( METHOD_ADD_GROUP, request ) )
         {
+            // TODO: check for explicit methods
+
             if ( GROUP_ACTION_TAG.equals ( object ) )
             {
-                result.add ( new MenuEntry ( "Add group", 2_000, LinkTarget.createFromController ( DeployAuthController.class, "addGroup" ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Add group", 2_000, LinkTarget.createFromController ( METHOD_ADD_GROUP ), Modifier.PRIMARY, null ) );
             }
             else if ( object instanceof DeployGroup )
             {

@@ -10,10 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.web;
 
+import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 
+import javax.servlet.annotation.HttpConstraint;
 import javax.validation.Valid;
 
 import de.dentrassi.osgi.web.Controller;
@@ -21,12 +24,16 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
+import de.dentrassi.pm.sec.web.controller.Secured;
+import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
@@ -35,6 +42,10 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @Controller
 @RequestMapping ( value = "/p2.repo" )
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
+@Secured
+@ControllerInterceptor ( SecuredControllerInterceptor.class )
+@HttpConstraint ( rolesAllowed = "MANAGER" )
+@ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class P2Controller
 {
     private StorageService service;
@@ -45,6 +56,8 @@ public class P2Controller
     }
 
     @RequestMapping ( value = "/{channelId}/info" )
+    @Secured ( false )
+    @HttpConstraint ( PERMIT )
     public ModelAndView info ( @PathVariable ( "channelId" ) final String channelId ) throws Exception
     {
         final Map<String, Object> model = new HashMap<> ();

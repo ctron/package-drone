@@ -35,7 +35,7 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
 
         result.add ( new MenuEntry ( null, 0, "P2 Repository", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
 
-        if ( request.getUserPrincipal () != null )
+        if ( request.isUserInRole ( "MANAGER" ) )
         {
             result.add ( new MenuEntry ( "Edit", Integer.MAX_VALUE, "P2 Repository Information", 10_000, new LinkTarget ( "/p2.repo/{channelId}/edit" ).expand ( model ), Modifier.DEFAULT, null, false ) );
         }
@@ -51,7 +51,6 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
 
         final List<MenuEntry> result = new LinkedList<> ();
         result.add ( new MenuEntry ( null, 0, "P2", 1000, new LinkTarget ( "/p2.repo/{channelId}/info" ).expand ( model ), Modifier.INFO, null, false ) );
-        // result.add ( new MenuEntry ( "P2", 10_000, "Details", 200, new LinkTarget ( "/p2.repo/{channelId}/details" ).expand ( model ), Modifier.DEFAULT, null, false ) );
         return result;
     }
 }

@@ -10,6 +10,7 @@ Export-Package: de.dentrassi.pm.sec.web.controller;version="1.0.0",
  de.dentrassi.pm.sec.web.tags;version="1.0.0";uses:="javax.servlet.jsp.tagext"
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.osgi.web.controller;version="1.0.0",
+ de.dentrassi.pm.common.web;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  de.dentrassi.pm.sec.service;version="1.0.0",
  javax.servlet;version="3.1.0",

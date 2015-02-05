@@ -17,21 +17,18 @@ import javax.servlet.http.HttpServletResponse;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.controller.ControllerInterceptorProcessor;
 import de.dentrassi.osgi.web.controller.NoOpRequestHandler;
+import de.dentrassi.pm.common.web.CommonController;
 
 public abstract class AbstractSecurityControllerInterceptor implements ControllerInterceptorProcessor
 {
-
     protected RequestHandler handleAccessDenied ( final HttpServletResponse response ) throws IOException
     {
-        response.setStatus ( HttpServletResponse.SC_FORBIDDEN );
-        response.getWriter ().write ( "Access denied" );
-
-        return new NoOpRequestHandler ();
+        return CommonController.wrap ( CommonController::createAccessDenied );
     }
 
     protected RequestHandler handleLoginRequired ( final HttpServletResponse response ) throws IOException
     {
-        response.setStatus ( HttpServletResponse.SC_FORBIDDEN );
+        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
         response.getWriter ().write ( "Login required" );
 
         return new NoOpRequestHandler ();

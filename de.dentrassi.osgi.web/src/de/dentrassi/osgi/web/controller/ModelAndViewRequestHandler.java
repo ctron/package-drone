@@ -62,12 +62,12 @@ public class ModelAndViewRequestHandler implements RequestHandler
             resourceClazz = this.modelAndView.getAlternateViewResolver ();
         }
 
-        if ( viewResolver == null )
+        if ( viewResolver == null && this.method != null )
         {
             viewResolver = this.method.getAnnotation ( ViewResolver.class );
         }
 
-        if ( viewResolver == null )
+        if ( viewResolver == null && this.controllerClazz != null )
         {
             viewResolver = this.controllerClazz.getAnnotation ( ViewResolver.class );
         }

@@ -1,17 +1,27 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 
+<%@ tag import="de.dentrassi.pm.sec.UserInformationPrincipal"%>
+<%@ tag import="java.security.Principal"%>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
-<%@ taglib uri="http://dentrassi.de/osgi/web/security" prefix="sec" %>
 
-<%@attribute name="title" required="true" %>
-<%@attribute name="subtitle" %>
+<%@ attribute name="title" required="true" %>
+<%@ attribute name="subtitle" %>
 
 <!DOCTYPE html>
 <html>
+
+<%
+Principal p = request.getUserPrincipal ();
+if ( p instanceof UserInformationPrincipal )
+{
+    jspContext.setAttribute ( "principal", ((UserInformationPrincipal)p).getUserInformation() ); 
+}
+%>
 
 <c:set var="bootstrap" value="${pageContext.request.contextPath}/resources/bootstrap/3.3.1"/>
 <c:set var="jquery" value="${pageContext.request.contextPath}/resources/jquery"/>
