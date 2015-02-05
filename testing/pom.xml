@@ -51,6 +51,8 @@
 						<mysql.test.user>${mysql.test.user}</mysql.test.user>
 						<mysql.test.password>${mysql.test.password}</mysql.test.password>
 						<mysql.test.database>${mysql.test.database}</mysql.test.database>
+						<sauce.username>${sauce.username}</sauce.username>
+						<sauce.accessKey>${sauce.accessKey}</sauce.accessKey>
 					</systemPropertyVariables>
 					<includes>
                         <include>**/TestSuite.java</include>
