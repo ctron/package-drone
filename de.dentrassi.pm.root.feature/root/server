@@ -10,6 +10,6 @@ fi
 
 echo "Using Java: $JAVA"
 
-test -f /etc/default/package-drone-server ] && . /etc/default/package-drone-server
+test -f /etc/default/package-drone-server && . /etc/default/package-drone-server
 
 exec "$JAVA" $JAVA_OPTS -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog
