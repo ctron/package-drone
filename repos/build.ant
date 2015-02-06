@@ -92,30 +92,61 @@
           target: yumrepo.build
          - - - - - - - - - - - - - - - - - -->
 	<target name="yumrepo.build">
-		<mkdir dir="yum" />
-		<copy todir="yum">
+		<mkdir dir="yum/centos/6" />
+		<mkdir dir="yum/centos/7" />
+		
+		<copy todir="yum/centos/7">
 			<fileset dir="download">
-				<include name="*.rpm" />
+				<include name="*-1.noarch.rpm" />
+				<include name="*.el7.noarch.rpm" />
 			</fileset>
 		</copy>
-		<exec executable="createrepo" dir="yum" failifexecutionfails="true" failonerror="true">
+		
+		<copy todir="yum/centos/6">
+            <fileset dir="download">
+                <include name="*.el6.noarch.rpm" />
+            </fileset>
+        </copy>
+		
+		<exec executable="createrepo" dir="yum/centos/6" failifexecutionfails="true" failonerror="true">
+			<arg value="--deltas"/>
+			<arg value="--oldpackagedirs"/>
+			<arg file="yum/centos/6"/>
 			<arg value="." />
 		</exec>
+		<exec executable="createrepo" dir="yum/centos/7" failifexecutionfails="true" failonerror="true">
+            <arg value="--deltas"/>
+			<arg value="--oldpackagedirs"/>
+			<arg file="yum/centos/7"/>
+            <arg value="." />
+        </exec>
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - - 
           target: yumrepo.sign
          - - - - - - - - - - - - - - - - - -->
 	<target name="yumrepo.sign" if="signKey" depends="exportkey">
-		<exec executable="gpg" dir="yum" failifexecutionfails="true" failonerror="true">
-			<arg value="--detach-sign" />
-			<arg value="--batch" />
-			<arg value="--use-agent" />
-			<arg value="-u" />
-			<arg value="${signKey}" />
-			<arg value="--armor" />
-			<arg value="repodata/repomd.xml" />
-		</exec>
+		<yumsign dir="yum/centos/6"/>
+		<yumsign dir="yum/centos/7"/>
 	</target>
+		
+    <!-- = = = = = = = = = = = = = = = = =
+          macrodef: yumsign
+         = = = = = = = = = = = = = = = = = -->
+    <macrodef name="yumsign">
+        <attribute name="dir" />
+        <sequential>
+        	<exec executable="gpg" dir="@{dir}" failifexecutionfails="true" failonerror="true">
+	            <arg value="--detach-sign" />
+	            <arg value="--batch" />
+	            <arg value="--use-agent" />
+	            <arg value="-u" />
+	            <arg value="${signKey}" />
+	            <arg value="--armor" />
+	            <arg value="repodata/repomd.xml" />
+	        </exec>
+        </sequential>
+    </macrodef>
+
 
 </project>
