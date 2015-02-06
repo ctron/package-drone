@@ -24,6 +24,7 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
@@ -33,6 +34,8 @@ import de.dentrassi.pm.osgi.feature.FeatureInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
+import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 
 @Controller
 @RequestMapping ( "/osgi.info" )
@@ -70,6 +73,36 @@ public class OsgiController implements InterfaceExtender
         return result;
     }
 
+    public static class ArtifactBundleInformation extends BundleInformation
+    {
+        private String artifactId;
+
+        public void setArtifactId ( final String artifactId )
+        {
+            this.artifactId = artifactId;
+        }
+
+        public String getArtifactId ()
+        {
+            return this.artifactId;
+        }
+    }
+
+    public static class ArtifactFeatureInformation extends FeatureInformation
+    {
+        private String artifactId;
+
+        public void setArtifactId ( final String artifactId )
+        {
+            this.artifactId = artifactId;
+        }
+
+        public String getArtifactId ()
+        {
+            return this.artifactId;
+        }
+    }
+
     @RequestMapping ( "/channel/{channelId}/infoBundles" )
     public ModelAndView infoBundles ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -82,13 +115,14 @@ public class OsgiController implements InterfaceExtender
         final Map<String, Object> model = new HashMap<> ();
         model.put ( "channel", channel );
 
-        final List<BundleInformation> bundles = new LinkedList<> ();
+        final List<ArtifactBundleInformation> bundles = new LinkedList<> ();
 
         for ( final Artifact art : channel.getArtifacts () )
         {
-            final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getInformation ().getMetaData () );
+            final ArtifactBundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getInformation ().getMetaData (), ArtifactBundleInformation.class );
             if ( bi != null )
             {
+                bi.setArtifactId ( art.getId () );
                 bundles.add ( bi );
             }
         }
@@ -98,6 +132,58 @@ public class OsgiController implements InterfaceExtender
         model.put ( "bundles", bundles );
 
         return new ModelAndView ( "infoBundles", model );
+    }
+
+    @RequestMapping ( "/artifact/{artifactId}/viewBundle" )
+    public ModelAndView viewBundle ( @PathVariable ( "artifactId" ) final String artifactId )
+    {
+        final Artifact artifact = this.service.getArtifact ( artifactId );
+        if ( artifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+        model.put ( "artifact", artifact );
+
+        final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( artifact.getInformation ().getMetaData () );
+        model.put ( "bundle", bi );
+
+        final List<Entry> breadcrumbs = new LinkedList<> ();
+        breadcrumbs.add ( new Entry ( "Home", "/" ) );
+        breadcrumbs.add ( new Entry ( "Channel", "/osgi.info/channel/" + artifact.getChannel ().getId () + "/infoBundles" ) );
+        breadcrumbs.add ( new Entry ( "Artifact", "/artifact/" + artifact.getId () + "/view" ) );
+        breadcrumbs.add ( new Entry ( "Bundle Information" ) );
+        model.put ( "breadcrumbs", new Breadcrumbs ( breadcrumbs ) );
+
+        model.put ( "fullManifest", artifact.getInformation ().getMetaData ().get ( new MetaKey ( "osgi", "fullManifest" ) ) );
+
+        return new ModelAndView ( "viewBundle", model );
+    }
+
+    @RequestMapping ( "/artifact/{artifactId}/viewFeature" )
+    public ModelAndView viewFeature ( @PathVariable ( "artifactId" ) final String artifactId )
+    {
+        final Artifact artifact = this.service.getArtifact ( artifactId );
+        if ( artifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+        model.put ( "artifact", artifact );
+
+        final FeatureInformation bi = OsgiAspectFactory.fetchFeatureInformation ( artifact.getInformation ().getMetaData () );
+        model.put ( "feature", bi );
+
+        final List<Entry> breadcrumbs = new LinkedList<> ();
+        breadcrumbs.add ( new Entry ( "Home", "/" ) );
+        breadcrumbs.add ( new Entry ( "Channel", "/osgi.info/channel/" + artifact.getChannel ().getId () + "/infoBundles" ) );
+        breadcrumbs.add ( new Entry ( "Artifact", "/artifact/" + artifact.getId () + "/view" ) );
+        breadcrumbs.add ( new Entry ( "Feature Information" ) );
+        model.put ( "breadcrumbs", new Breadcrumbs ( breadcrumbs ) );
+
+        return new ModelAndView ( "viewFeature", model );
     }
 
     @RequestMapping ( "/channel/{channelId}/infoFeatures" )
@@ -116,9 +202,10 @@ public class OsgiController implements InterfaceExtender
 
         for ( final Artifact art : channel.getArtifacts () )
         {
-            final FeatureInformation fi = OsgiAspectFactory.fetchFeatureInformation ( art.getInformation ().getMetaData () );
+            final ArtifactFeatureInformation fi = OsgiAspectFactory.fetchFeatureInformation ( art.getInformation ().getMetaData (), ArtifactFeatureInformation.class );
             if ( fi != null )
             {
+                fi.setArtifactId ( art.getId () );
                 features.add ( fi );
             }
         }

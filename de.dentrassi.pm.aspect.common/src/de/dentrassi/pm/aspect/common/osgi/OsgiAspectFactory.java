@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,7 @@ public class OsgiAspectFactory implements ChannelAspectFactory
         return new ChannelAspectImpl ();
     }
 
-    public static BundleInformation fetchBundleInformation ( final Map<MetaKey, String> metadata )
+    public static <T extends BundleInformation> T fetchBundleInformation ( final Map<MetaKey, String> metadata, final Class<T> clazz )
     {
         final String string = metadata.get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
         if ( string == null )
@@ -57,10 +57,10 @@ public class OsgiAspectFactory implements ChannelAspectFactory
 
         final GsonBuilder gb = new GsonBuilder ();
         final Gson gson = gb.create ();
-        return gson.fromJson ( string, BundleInformation.class );
+        return gson.fromJson ( string, clazz );
     }
 
-    public static FeatureInformation fetchFeatureInformation ( final Map<MetaKey, String> metadata )
+    public static <T extends FeatureInformation> T fetchFeatureInformation ( final Map<MetaKey, String> metadata, final Class<T> clazz )
     {
         final String string = metadata.get ( new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_FEATURE_INFORMATION ) );
         if ( string == null )
@@ -70,7 +70,17 @@ public class OsgiAspectFactory implements ChannelAspectFactory
 
         final GsonBuilder gb = new GsonBuilder ();
         final Gson gson = gb.create ();
-        return gson.fromJson ( string, FeatureInformation.class );
+        return gson.fromJson ( string, clazz );
+    }
+
+    public static BundleInformation fetchBundleInformation ( final Map<MetaKey, String> metadata )
+    {
+        return fetchBundleInformation ( metadata, BundleInformation.class );
+    }
+
+    public static FeatureInformation fetchFeatureInformation ( final Map<MetaKey, String> metadata )
+    {
+        return fetchFeatureInformation ( metadata, FeatureInformation.class );
     }
 
 }

@@ -1,5 +1,5 @@
 CREATE TABLE PROPERTIES ("KEY" VARCHAR(255) NOT NULL, "VALUE" TEXT, PRIMARY KEY("KEY"));
-INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '6' );
+INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '7' );
 
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE EXT_CHAN_PROPS (
     CHANNEL_ID    VARCHAR(36) NOT NULL,
     "NS"          VARCHAR(255) NOT NULL,
     "KEY"         VARCHAR(255) NOT NULL,
-    "VALUE"       TEXT,
+    "VALUE"       LONGTEXT,
     
     PRIMARY KEY (CHANNEL_ID, "NS", "KEY" ),
     
@@ -23,7 +23,7 @@ CREATE TABLE PROV_CHAN_PROPS (
     CHANNEL_ID    VARCHAR(36) NOT NULL,
     "NS"          VARCHAR(255) NOT NULL,
     "KEY"         VARCHAR(255) NOT NULL,
-    "VALUE"       TEXT,
+    "VALUE"       LONGTEXT,
     
     PRIMARY KEY ( CHANNEL_ID, "NS", "KEY" ),
     
@@ -72,7 +72,7 @@ CREATE TABLE EXT_ART_PROPS (
     ART_ID        VARCHAR(36) NOT NULL,
     "NS"          VARCHAR(255) NOT NULL,
     "KEY"         VARCHAR(255) NOT NULL,
-    "VALUE"       TEXT,
+    "VALUE"       LONGTEXT,
     
     PRIMARY KEY (ART_ID, "NS", "KEY" ),
     
@@ -83,7 +83,7 @@ CREATE TABLE PROV_ART_PROPS (
     ART_ID        VARCHAR(36) NOT NULL,
     "NS"          VARCHAR(255) NOT NULL,
     "KEY"         VARCHAR(255) NOT NULL,
-    "VALUE"       TEXT,
+    "VALUE"       LONGTEXT,
     
     PRIMARY KEY ( ART_ID, "NS", "KEY" ),
     
@@ -124,7 +124,7 @@ CREATE TABLE USERS (
     REM_TOKEN_HASH  VARCHAR(64),
     REM_TOKEN_SALT  VARCHAR(64),
     
-    ROLES           TEXT,
+    ROLES           LONGTEXT,
     
     PRIMARY KEY ( ID ),
     

@@ -28,7 +28,9 @@
 <tbody>
     <c:forEach var="feature" items="${features }">
     <tr>
-        <td>${fn:escapeXml(feature.id) }</td>
+        <td>
+            <a href="<c:url value="/osgi.info/artifact/${feature.artifactId }/viewFeature"/>">${fn:escapeXml(feature.id) }</a>
+        </td>
         <td>${feature.version }</td>
         
         <td>

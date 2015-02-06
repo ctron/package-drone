@@ -184,7 +184,7 @@ public class ArtifactController implements InterfaceExtender
                 {
                     result.add ( new MenuEntry ( "Attach Artifact", 200, LinkTarget.createFromController ( ArtifactController.class, "attach" ).expand ( model ), Modifier.PRIMARY, null ) );
                 }
-                if ( ai.is ( "deleteable" ) )
+                if ( ai.is ( "deletable" ) )
                 {
                     result.add ( new MenuEntry ( "Delete", 1000, LinkTarget.createFromController ( ArtifactController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
                 }

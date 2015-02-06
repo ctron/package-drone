@@ -171,7 +171,7 @@ public class FeatureInformationParser
             }
 
             Requirement req;
-            if ( feature != null )
+            if ( feature != null && !feature.isEmpty () )
             {
                 req = new Requirement ( Requirement.Type.FEATURE, feature, version, match );
             }
@@ -206,7 +206,11 @@ public class FeatureInformationParser
         final String id = ele.getAttribute ( "id" );
         final String vs = ele.getAttribute ( "version" );
         final Version version = new Version ( vs == null ? "0.0.0" : vs );
-        final boolean unpack = Boolean.parseBoolean ( ele.getAttribute ( "unpack" ) );
+
+        final String unpackAttr = ele.getAttribute ( "unpack" );
+
+        final boolean unpack = unpackAttr == null || unpackAttr.isEmpty () ? true : Boolean.parseBoolean ( unpackAttr );
+
         final Qualifiers q = Qualifiers.parse ( ele );
 
         result.getIncludedPlugins ().add ( new PluginInclude ( id, version, unpack, q ) );

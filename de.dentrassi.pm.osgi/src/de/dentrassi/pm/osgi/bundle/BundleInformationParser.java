@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -34,16 +35,34 @@ public class BundleInformationParser
 {
     private final ZipFile file;
 
+    private final Manifest manifest;
+
     public BundleInformationParser ( final ZipFile file )
     {
         this.file = file;
+        this.manifest = null;
+    }
+
+    public BundleInformationParser ( final ZipFile file, final Manifest manifest )
+    {
+        this.file = file;
+        this.manifest = manifest;
     }
 
     public BundleInformation parse () throws IOException
     {
         final BundleInformation result = new BundleInformation ();
 
-        final Manifest m = getManifest ();
+        Manifest m = null;
+        if ( this.manifest != null )
+        {
+            m = this.manifest;
+        }
+        else if ( this.file != null )
+        {
+            m = getManifest ( this.file );
+        }
+
         if ( m == null )
         {
             return null;
@@ -152,14 +171,14 @@ public class BundleInformationParser
         result.setLocalization ( ParserHelper.loadLocalization ( this.file, loc ) );
     }
 
-    private Manifest getManifest () throws IOException
+    public static Manifest getManifest ( final ZipFile file ) throws IOException
     {
-        final ZipEntry m = this.file.getEntry ( "META-INF/MANIFEST.MF" );
+        final ZipEntry m = file.getEntry ( JarFile.MANIFEST_NAME );
         if ( m == null )
         {
             return null;
         }
-        try ( InputStream is = this.file.getInputStream ( m ) )
+        try ( InputStream is = file.getInputStream ( m ) )
         {
             return new Manifest ( is );
         }

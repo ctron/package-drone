@@ -29,7 +29,7 @@
 <tbody>
     <c:forEach var="bundle" items="${bundles }">
     <tr>
-        <td>${fn:escapeXml(bundle.id) }</td>
+        <td><a href="<c:url value="/osgi.info/artifact/${bundle.artifactId }/viewBundle"/>">${fn:escapeXml(bundle.id) }</a></td>
         <td>${bundle.version }</td>
         
         <td>

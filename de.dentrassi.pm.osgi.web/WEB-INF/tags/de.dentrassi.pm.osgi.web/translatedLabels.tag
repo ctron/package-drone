@@ -7,5 +7,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <c:if test="${not empty data[property] and data[property].startsWith('%') }">
-    &nbsp;<span class="label label-info">${fn:escapeXml(data[property]) }</span>
+    <small>&nbsp;<span class="label label-info">${fn:escapeXml(data[property]) }</span></small>
 </c:if>

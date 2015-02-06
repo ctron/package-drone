@@ -166,7 +166,7 @@ public class FeatureInformation implements TranslatedInformation
         }
     }
 
-    public static class PluginInclude
+    public static class PluginInclude implements Comparable<PluginInclude>
     {
         private String id;
 
@@ -275,9 +275,19 @@ public class FeatureInformation implements TranslatedInformation
             return true;
         }
 
+        @Override
+        public int compareTo ( final PluginInclude o )
+        {
+            int rc;
+
+            rc = this.id.compareTo ( o.id );
+
+            return rc;
+        }
+
     }
 
-    public static class FeatureInclude
+    public static class FeatureInclude implements Comparable<FeatureInclude>
     {
         private final String id;
 
@@ -374,9 +384,18 @@ public class FeatureInformation implements TranslatedInformation
             }
         }
 
+        @Override
+        public int compareTo ( final FeatureInclude o )
+        {
+            int rc;
+
+            rc = this.id.compareTo ( o.id );
+
+            return rc;
+        }
     }
 
-    public static class Requirement
+    public static class Requirement implements Comparable<Requirement>
     {
         public static enum Type
         {
@@ -492,6 +511,15 @@ public class FeatureInformation implements TranslatedInformation
             return this.matchRule;
         }
 
+        @Override
+        public int compareTo ( final Requirement o )
+        {
+            int rc;
+
+            rc = this.id.compareTo ( o.id );
+
+            return rc;
+        }
     }
 
     private Qualifiers qualifiers;

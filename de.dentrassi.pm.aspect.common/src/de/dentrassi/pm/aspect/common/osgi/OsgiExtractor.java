@@ -11,12 +11,21 @@
 package de.dentrassi.pm.aspect.common.osgi;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import org.osgi.framework.Constants;
+
+import com.google.common.io.ByteStreams;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
@@ -31,6 +40,8 @@ public class OsgiExtractor implements Extractor
     public static final String KEY_CLASSIFIER = "classifier";
 
     public static final String KEY_MANIFEST = "manifest";
+
+    public static final String KEY_FULL_MANIFEST = "fullManifest";
 
     public static final String KEY_VERSION = "version";
 
@@ -93,7 +104,30 @@ public class OsgiExtractor implements Extractor
         final BundleInformation bi;
         try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
         {
-            bi = new BundleInformationParser ( zipFile ).parse ();
+
+            final ZipEntry m = zipFile.getEntry ( JarFile.MANIFEST_NAME );
+            if ( m == null )
+            {
+                return;
+            }
+
+            // store full manifest
+
+            try ( InputStream is = zipFile.getInputStream ( m ) )
+            {
+                final byte[] data = ByteStreams.toByteArray ( is );
+                metadata.put ( KEY_FULL_MANIFEST, StandardCharsets.UTF_8.decode ( ByteBuffer.wrap ( data ) ).toString () );
+            }
+
+            // parse bundle information
+
+            Manifest manifest;
+            try ( InputStream is = zipFile.getInputStream ( m ) )
+            {
+                manifest = new Manifest ( is );
+            }
+
+            bi = new BundleInformationParser ( zipFile, manifest ).parse ();
             if ( bi == null )
             {
                 return;
@@ -112,6 +146,9 @@ public class OsgiExtractor implements Extractor
         // serialize manifest
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
         final Manifest mf = new Manifest ();
+        mf.getMainAttributes ().putValue ( Constants.BUNDLE_SYMBOLICNAME, bi.getId () );
+        mf.getMainAttributes ().putValue ( Constants.BUNDLE_VERSION, bi.getVersion () );
+        mf.getMainAttributes ().put ( Attributes.Name.MANIFEST_VERSION, "1.0" );
         mf.write ( bos );
         bos.close ();
         metadata.put ( KEY_MANIFEST, bos.toString ( "UTF-8" ) );
@@ -121,5 +158,4 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_BUNDLE_INFORMATION, gb.create ().toJson ( bi ) );
 
     }
-
 }
