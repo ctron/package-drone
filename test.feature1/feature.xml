@@ -20,7 +20,8 @@
 
    <includes
          id="test.feature2"
-         version="0.0.0"/>
+         version="0.0.0"
+         name="Feature Name"/>
 
    <requires>
       <import plugin="org.apache.commons.io" version="0.0.0"/>
