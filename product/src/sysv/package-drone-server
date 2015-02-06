@@ -1,14 +1,17 @@
+#!/bin/bash
+
 ### BEGIN INIT INFO
 # Provides:          package-drone-server
 # Required-Start:    $remote_fs $syslog $network
 # Required-Stop:     $remote_fs $syslog $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start package drone server
-# Description:       Package Drone server process
+# Short-Description: Start and stop package drone server
+# Description:       Package Drone is a software artifact repository system.
 ### END INIT INFO
 
-. /etc/init.d/functions
+. /etc/rc.d/init.d/functions
+. /etc/sysconfig/network
 
 RETVAL=0
 PIDFILE=/var/run/package-drone-server/server.pid
@@ -22,11 +25,17 @@ if [ -f  /etc/sysconfig/$prog ]; then
 fi
 
 start () {
-    test -x $exec || exit 5
+    [ -x $exec ] || exit 5
+    [ "$EUID" != "0" ] && exit 4
+    [ ${NETWORKING} = "no" ] && exit 1
     
     echo -n $"Starting Package Drone: "
-    export PIDFILE
-    runuser -g pdrone -s /bin/bash pdrone -c "PIDFILE=/var/run/package-drone-server/server.pid $exec" &>/dev/null &
+    if [ ! -e "$PIDFILE" ]; then
+        export PIDFILE
+        runuser -g pdrone -s /bin/bash pdrone -c "export PIDFILE=/var/run/package-drone-server/server.pid ; exec $exec" &>/dev/null &
+    fi
+    
+    success
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile
@@ -34,10 +43,14 @@ start () {
 }
 
 stop () {
+    [ "$EUID" != "0" ] && exit 4
+    
     echo -n $"Shutting down Package Drone: "
     killproc -p "$PIDFILE" $exec
+    # killproc will call success/failure for us
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $lockfile $PIDFILE
     echo
-    [ $RETVAL -eq 0 ] && rm -f $lockfile
     return $RETVAL
 }
 
