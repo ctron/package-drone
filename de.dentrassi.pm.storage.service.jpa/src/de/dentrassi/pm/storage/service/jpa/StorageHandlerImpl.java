@@ -38,7 +38,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -60,6 +59,7 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
+import de.dentrassi.pm.common.utils.ThrowingRunnable;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.StorageAccessor;
@@ -158,10 +158,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private final ChannelAspectProcessor channelAspectProcessor = Activator.getChannelAspects ();
 
-    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor )
+    private final LockManager<ChannelEntity, String> lockManager;
+
+    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<ChannelEntity, String> lockManager )
     {
         this.em = em;
         this.generatorProcessor = generatorProcessor;
+        this.lockManager = lockManager;
     }
 
     protected ChannelEntity getCheckedChannel ( final String channelId )
@@ -222,24 +225,29 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     public void regenerateArtifact ( final GeneratorArtifactEntity ae ) throws Exception
     {
         doStreamed ( this.em, ae, ( file ) -> {
-
-            this.em.setProperty ( "javax.persistence.lock.timeout", 60_000 );
-            this.em.lock ( ae, LockModeType.PESSIMISTIC_WRITE );
-
-            try
-            {
+            doLocked ( ae.getChannel (), ( ) -> {
                 // first clear old generated artifacts
+
                 deleteGeneratedChildren ( ae );
                 this.em.flush ();
 
                 generateArtifact ( ae.getChannel (), ae, file );
                 this.em.flush ();
-            }
-            finally
-            {
-                this.em.lock ( ae, LockModeType.NONE );
-            }
+            } );
         } );
+    }
+
+    protected void doLocked ( final ChannelEntity channel, final ThrowingRunnable t ) throws Exception
+    {
+        this.lockManager.writeLock ( channel );
+        try
+        {
+            t.run ();
+        }
+        finally
+        {
+            this.lockManager.writeUnlock ( channel );
+        }
     }
 
     protected void deleteGeneratedChildren ( final GeneratorArtifactEntity ae )
@@ -297,25 +305,34 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
             final SortedMap<MetaKey, String> metadata = extractMetaData ( em, channel, file );
 
-            ArtifactEntity ae;
-            try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+            this.lockManager.writeLock ( channel );
+
+            try
             {
-                ae = storeBlob ( entityCreator, em, channel, name, in, metadata, providedMetaData );
-            }
+                ArtifactEntity ae;
+                try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+                {
+                    ae = storeBlob ( entityCreator, em, channel, name, in, metadata, providedMetaData );
+                }
 
-            if ( ae instanceof GeneratorArtifactEntity )
+                if ( ae instanceof GeneratorArtifactEntity )
+                {
+                    generateArtifact ( channel, (GeneratorArtifactEntity)ae, file );
+                }
+
+                createVirtualArtifacts ( channel, ae, file );
+
+                runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
+
+                // now run the channel aggregator
+                runChannelAggregators ( channel );
+
+                return ae;
+            }
+            finally
             {
-                generateArtifact ( channel, (GeneratorArtifactEntity)ae, file );
+                this.lockManager.writeUnlock ( channel );
             }
-
-            createVirtualArtifacts ( channel, ae, file );
-
-            runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
-
-            // now run the channel aggregator
-            runChannelAggregators ( channel );
-
-            return ae;
         }
         finally
         {
@@ -535,17 +552,26 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         // clear
 
-        channel.getExtractedProperties ().clear ();
+        this.lockManager.writeLock ( channel );
+        try
+        {
 
-        this.em.persist ( channel );
-        this.em.flush ();
+            channel.getExtractedProperties ().clear ();
 
-        // set
+            this.em.persist ( channel );
+            this.em.flush ();
 
-        Helper.convertExtractedProperties ( metadata, channel, channel.getExtractedProperties () );
+            // set
 
-        this.em.persist ( channel );
-        this.em.flush ();
+            Helper.convertExtractedProperties ( metadata, channel, channel.getExtractedProperties () );
+
+            this.em.persist ( channel );
+            this.em.flush ();
+        }
+        finally
+        {
+            this.lockManager.writeUnlock ( channel );
+        }
     }
 
     private AggregationContext createAggregationContext ( final ChannelEntity channel )

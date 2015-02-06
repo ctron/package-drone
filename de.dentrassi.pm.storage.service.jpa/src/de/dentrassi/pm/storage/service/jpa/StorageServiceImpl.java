@@ -69,6 +69,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
 
+    private final LockManager<ChannelEntity, String> lockManager;
+
+    public StorageServiceImpl ()
+    {
+        this.lockManager = new LockManager<> ( ChannelEntity::getId );
+    }
+
     public void start ()
     {
         this.generatorProcessor.open ();
@@ -152,7 +159,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     private Artifact internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         return doWithTransaction ( ( em ) -> {
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
             final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData );
 
             return convert ( convert ( artifact.getChannel () ), artifact );
@@ -173,7 +180,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithTransaction ( em -> {
 
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
             final ChannelEntity ce = hi.getCheckedChannel ( channelId );
             final ChannelImpl channel = convert ( ce );
             return hi.<Artifact> listArtifacts ( channelId, ( ae ) -> convert ( channel, ae ) );
@@ -184,7 +191,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithTransaction ( em -> {
 
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
             return hi.<SimpleArtifactInformation> listArtifacts ( channelId, ( ae ) -> convertSimple ( ae ) );
         } );
     }
@@ -282,7 +289,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public SimpleArtifactInformation deleteArtifact ( final String artifactId )
     {
         return doWithTransaction ( em -> {
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
             return hi.deleteArtifact ( artifactId );
         } );
     }
@@ -305,7 +312,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             em.persist ( channel );
             em.flush ();
 
-            new StorageHandlerImpl ( em, this.generatorProcessor ).reprocessAspect ( channel, aspectFactoryId );
+            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspect ( channel, aspectFactoryId );
         } );
     }
 
@@ -314,48 +321,58 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         doWithTransactionVoid ( em -> {
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
-            channel.getAspects ().remove ( aspectFactoryId );
-            em.persist ( channel );
-            em.flush ();
 
+            this.lockManager.writeLock ( channel );
+            try
             {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
-                q.setParameter ( "factoryId", aspectFactoryId );
-                q.setParameter ( "channelId", channelId );
-                q.executeUpdate ();
-            }
 
+                channel.getAspects ().remove ( aspectFactoryId );
+                em.persist ( channel );
+                em.flush ();
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ProvidedArtifactPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ProvidedChannelPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+                hi.recreateAllVirtualArtifacts ( channel );
+                hi.runChannelAggregators ( channel );
+            }
+            finally
             {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ProvidedArtifactPropertyEntity.class.getSimpleName () ) );
-                q.setParameter ( "factoryId", aspectFactoryId );
-                q.setParameter ( "channelId", channelId );
-                q.executeUpdate ();
+                this.lockManager.writeUnlock ( channel );
             }
-
-            {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
-                q.setParameter ( "factoryId", aspectFactoryId );
-                q.setParameter ( "channelId", channelId );
-                q.executeUpdate ();
-            }
-
-            {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ProvidedChannelPropertyEntity.class.getSimpleName () ) );
-                q.setParameter ( "factoryId", aspectFactoryId );
-                q.setParameter ( "channelId", channelId );
-                q.executeUpdate ();
-            }
-
-            {
-                final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
-                q.setParameter ( "factoryId", aspectFactoryId );
-                q.setParameter ( "channelId", channelId );
-                q.executeUpdate ();
-            }
-
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
-            hi.recreateAllVirtualArtifacts ( channel );
-            hi.runChannelAggregators ( channel );
         } );
     }
 
@@ -417,7 +434,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public Map<MetaKey, String> applyMetaData ( final String artifactId, final Map<MetaKey, String> metadata )
     {
         return doWithTransaction ( em -> {
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
 
             final ArtifactEntity artifact = getCheckedArtifact ( em, artifactId );
             final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
@@ -460,36 +477,45 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public Map<MetaKey, String> applyChannelMetaData ( final String channelId, final Map<MetaKey, String> metadata )
     {
         return doWithTransaction ( em -> {
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
 
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
-            final Map<MetaKey, String> result = convert ( channel.getProvidedProperties () );
 
-            // merge
+            this.lockManager.writeLock ( channel );
+            try
+            {
+                final Map<MetaKey, String> result = convert ( channel.getProvidedProperties () );
 
-            mergeMetaData ( metadata, result );
+                // merge
 
-            // first clear all
+                mergeMetaData ( metadata, result );
 
-            channel.getProvidedProperties ().clear ();
+                // first clear all
 
-            em.persist ( channel );
-            em.flush ();
+                channel.getProvidedProperties ().clear ();
 
-            // now add the new set
+                em.persist ( channel );
+                em.flush ();
 
-            Helper.convertProvidedProperties ( result, channel, channel.getProvidedProperties () );
+                // now add the new set
 
-            // store
+                Helper.convertProvidedProperties ( result, channel, channel.getProvidedProperties () );
 
-            em.persist ( channel );
-            em.flush ();
+                // store
 
-            // re-run channel aggregators
+                em.persist ( channel );
+                em.flush ();
 
-            hi.runChannelAggregators ( channel );
+                // re-run channel aggregators
 
-            return result;
+                hi.runChannelAggregators ( channel );
+
+                return result;
+            }
+            finally
+            {
+                this.lockManager.writeUnlock ( channel );
+            }
         } );
     }
 
@@ -510,12 +536,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public SortedMap<MetaKey, String> getChannelMetaData ( final String id )
     {
-        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor ).getChannelMetaData ( id ) );
+        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).getChannelMetaData ( id ) );
     }
 
     public SortedMap<MetaKey, String> getChannelProvidedMetaData ( final String id )
     {
-        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor ).getChannelProvidedMetaData ( id ) );
+        return doWithTransaction ( ( em ) -> new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).getChannelProvidedMetaData ( id ) );
     }
 
     private Map<MetaKey, String> convert ( final Collection<? extends PropertyEntity> properties )
@@ -556,10 +582,20 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void clearChannel ( final String channelId )
     {
         doWithTransactionVoid ( em -> {
-            final Query q = em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
-            q.setParameter ( "channelId", channelId );
-            q.executeUpdate ();
-            new StorageHandlerImpl ( em, this.generatorProcessor ).runChannelAggregators ( channelId );
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            this.lockManager.writeLock ( channel );
+            try
+            {
+                final Query q = em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
+                q.setParameter ( "channelId", channelId );
+                q.executeUpdate ();
+                new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).runChannelAggregators ( channelId );
+            }
+            finally
+            {
+                this.lockManager.writeUnlock ( channel );
+            }
         } );
     }
 
@@ -567,14 +603,14 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void updateChannel ( final String channelId, final String name )
     {
         doWithTransactionVoid ( em -> {
-            new StorageHandlerImpl ( em, this.generatorProcessor ).updateChannel ( channelId, name );
+            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).updateChannel ( channelId, name );
         } );
     }
 
     public void generateArtifact ( final String id )
     {
         doWithTransactionVoid ( ( em ) -> {
-            new StorageHandlerImpl ( em, this.generatorProcessor ).generateArtifact ( id );
+            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).generateArtifact ( id );
         } );
     }
 
@@ -582,7 +618,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public Artifact createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         return doWithTransaction ( ( em ) -> {
-            final ArtifactEntity artifact = new StorageHandlerImpl ( em, this.generatorProcessor ).createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
+            final ArtifactEntity artifact = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
             return convert ( convert ( artifact.getChannel () ), artifact );
         } );
     }
