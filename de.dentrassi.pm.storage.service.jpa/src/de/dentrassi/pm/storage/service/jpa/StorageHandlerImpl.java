@@ -38,6 +38,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -222,12 +223,22 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         doStreamed ( this.em, ae, ( file ) -> {
 
-            // first clear old generated artifacts
-            deleteGeneratedChildren ( ae );
-            this.em.flush ();
+            this.em.setProperty ( "javax.persistence.lock.timeout", 60_000 );
+            this.em.lock ( ae, LockModeType.PESSIMISTIC_WRITE );
 
-            generateArtifact ( ae.getChannel (), ae, file );
-            this.em.flush ();
+            try
+            {
+                // first clear old generated artifacts
+                deleteGeneratedChildren ( ae );
+                this.em.flush ();
+
+                generateArtifact ( ae.getChannel (), ae, file );
+                this.em.flush ();
+            }
+            finally
+            {
+                this.em.lock ( ae, LockModeType.NONE );
+            }
         } );
     }
 
