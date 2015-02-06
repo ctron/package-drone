@@ -419,7 +419,7 @@ systemctl daemon-reload >/dev/null 2>&1 || true
 								<script><![CDATA[
 if ! getent passwd pdrone >/dev/null; then
     # create new user
-    useradd --system --user-group --home /var/lib/pdrone --comment "Package Drone Daemon User" pdrone
+    useradd --system --user-group --shell /sbin/nologin --home /var/lib/pdrone --comment "Package Drone Daemon User" pdrone
 fi
 mkdir -p /var/lib/pdrone
 chown -R pdrone:pdrone /var/lib/pdrone
