@@ -20,6 +20,7 @@
 		<class>de.dentrassi.pm.storage.jpa.DeployKeyEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="true"/>
+			<property name="eclipselink.cache.type.default" value="NONE"/>
 		</properties>
 	</persistence-unit>
 </persistence>
