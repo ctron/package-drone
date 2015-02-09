@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,8 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -112,7 +114,7 @@ public class MavenServlet extends HttpServlet
                 return;
             }
 
-            if ( !authenicate ( channel, request, response ) )
+            if ( !authenticate ( channel, request, response ) )
             {
                 return;
             }
@@ -121,11 +123,23 @@ public class MavenServlet extends HttpServlet
             {
                 final Map<MetaKey, String> metadata = new HashMap<> ();
 
-                metadata.put ( new MetaKey ( "mvn", "groupId" ), getGroupId ( toks ) );
-                metadata.put ( new MetaKey ( "mvn", "artifactId" ), getArtifactId ( toks ) );
-                metadata.put ( new MetaKey ( "mvn", "version" ), getVersionId ( toks ) );
+                final String groupId = getGroupId ( toks );
+                final String artifactId = getArtifactId ( toks );
+                final String version = getVersion ( toks );
 
-                channel.createArtifact ( artifactName, request.getInputStream (), metadata );
+                metadata.put ( new MetaKey ( "mvn", "groupId" ), groupId );
+                metadata.put ( new MetaKey ( "mvn", "artifactId" ), artifactId );
+                metadata.put ( new MetaKey ( "mvn", "version" ), version );
+
+                final Artifact parent = getParent ( channel, artifactName );
+                if ( parent != null )
+                {
+                    parent.attachArtifact ( artifactName, request.getInputStream (), metadata );
+                }
+                else
+                {
+                    channel.createArtifact ( artifactName, request.getInputStream (), metadata );
+                }
             }
             else if ( isMetaData ( toks, artifactName ) )
             {
@@ -137,13 +151,36 @@ public class MavenServlet extends HttpServlet
             }
             response.setStatus ( HttpServletResponse.SC_OK );
         }
+        catch ( final IOException e )
+        {
+            throw e;
+        }
         catch ( final Exception e )
         {
             throw new ServletException ( e );
         }
     }
 
-    private boolean authenicate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response )
+    private final Pattern SOURCE_PATTERN = Pattern.compile ( "(.*)-sources\\.jar$" );
+
+    private Artifact getParent ( final Channel channel, final String artifactName )
+    {
+        final Matcher m = this.SOURCE_PATTERN.matcher ( artifactName );
+        if ( m.matches () )
+        {
+            final String parentName = m.group ( 1 ) + ".jar";
+            logger.debug ( "Looking for parent as: '{}'", parentName );
+            final Collection<Artifact> result = channel.findByName ( parentName );
+            if ( result != null && result.size () == 1 )
+            {
+                return result.iterator ().next ();
+            }
+        }
+
+        return null;
+    }
+
+    private boolean authenticate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         if ( isAuthenticated ( channel, request ) )
         {
@@ -152,6 +189,8 @@ public class MavenServlet extends HttpServlet
 
         response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
         response.setHeader ( "WWW-Authenticate", "Basic realm=\"channel-" + channel.getId () + "\"" );
+
+        response.getWriter ().write ( "Please authenticate" );
 
         return false;
     }
@@ -322,7 +361,7 @@ public class MavenServlet extends HttpServlet
         return toks[toks.length - 3];
     }
 
-    private String getVersionId ( final String[] toks )
+    private String getVersion ( final String[] toks )
     {
         return toks[toks.length - 2];
     }

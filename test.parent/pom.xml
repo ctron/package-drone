@@ -29,7 +29,7 @@
 	<distributionManagement>
 		<repository>
 			<id>pdrone.test</id>
-			<url>http://localhost:8080/maven/test</url>
+			<url>http://localhost:8080/maven/m2test</url>
 		</repository>
 	</distributionManagement>
 

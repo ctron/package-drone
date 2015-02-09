@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
@@ -31,6 +32,12 @@ public class ArtifactImpl implements Artifact
         this.id = id;
         this.channel = channel;
         this.information = information;
+    }
+
+    @Override
+    public Artifact attachArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return this.channel.getService ().createAttachedArtifact ( this.id, name, stream, providedMetaData );
     }
 
     @Override

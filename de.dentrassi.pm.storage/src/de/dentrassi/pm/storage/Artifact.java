@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage;
 
+import java.io.InputStream;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -29,6 +30,8 @@ public interface Artifact extends Comparable<Artifact>
     public Artifact getParent ();
 
     public ArtifactInformation getInformation ();
+
+    public Artifact attachArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
     @Override
     default public int compareTo ( final Artifact o )
