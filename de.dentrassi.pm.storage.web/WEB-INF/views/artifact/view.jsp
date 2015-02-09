@@ -5,7 +5,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<h:main title="Artifact" subtitle="${fn:escapeXml(artifact.id) }">
+<h:main title="Artifact" subtitle="${fn:escapeXml(artifact.information.name) } (${fn:escapeXml(artifact.id) })">
 
 <h:buttonbar menu="${menuManager.getActions(artifact) }" />
 
