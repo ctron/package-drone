@@ -6,6 +6,6 @@
 
 <h:main title="Welcome to the Package Drone!">
 
-<img class="center-block" src="<c:url value="/resources/images/logo.png"/>"/>
+<img class="center-block img-responsive" src="<c:url value="/resources/images/logo.png"/>"/>
 
 </h:main>
