@@ -10,5 +10,7 @@ Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  org.osgi.framework;version="1.8.0",
  org.slf4j;version="1.7.2"
-Export-Package: de.dentrassi.pm.sec.service;version="1.0.0",
- de.dentrassi.pm.sec.service.common;version="1.0.0"
+Export-Package: de.dentrassi.pm.sec.service;version="1.0.0";uses:="de.dentrassi.pm.sec",
+ de.dentrassi.pm.sec.service.common;version="1.0.0",
+ de.dentrassi.pm.sec.service.password;version="1.0.0"
+Service-Component: OSGI-INF/coreCheck.xml

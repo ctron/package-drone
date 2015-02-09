@@ -43,12 +43,18 @@
 			    <dd>${fn:escapeXml(user.details.name) }</dd>
 			    
 			    <dt>E-Mail</dt>
-			    
 			    <dd>${fn:escapeXml(user.details.email) }
 				    <small>
 				    <c:if test="${user.details.emailVerified }">&nbsp;<span class="label label-success">Verified</span></c:if>
 				    <c:if test="${not user.details.emailVerified }">&nbsp;<span class="label label-warning">Not Verified</span></c:if>
 				    </small>
+			    </dd>
+			    
+			    <dt><dt>
+			    <dd>
+			        <c:if test="${you or pageContext.request.isUserInRole('ADMIN') }">
+                        <a href="<c:url value="/user/${user.id }/newPassword"/>">Change password</a>
+                    </c:if>
 			    </dd>
 			</dl>
 		</div>

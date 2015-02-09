@@ -6,4 +6,5 @@
    </service>
    <reference bind="setStorage" cardinality="1..1" interface="de.dentrassi.pm.sec.UserStorage" name="UserStorage" policy="static"/>
    <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+   <reference bind="setPasswordChecker" cardinality="1..1" interface="de.dentrassi.pm.sec.service.password.PasswordChecker" name="PasswordChecker" policy="static"/>
 </scr:component>

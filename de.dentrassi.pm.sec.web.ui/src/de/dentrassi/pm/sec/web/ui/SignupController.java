@@ -163,7 +163,6 @@ public class SignupController extends AbstractUserCreationController
     {
         if ( binding.hasErrors () )
         {
-            System.out.println ( binding.getErrors () );
             return new ModelAndView ( "signup/newPassword" );
         }
 

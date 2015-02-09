@@ -27,6 +27,8 @@ public class NewPassword
     @NotEmpty
     private String passwordRepeat;
 
+    private String currentPassword;
+
     public void setToken ( final String token )
     {
         this.token = token;
@@ -65,6 +67,16 @@ public class NewPassword
     public String getPasswordRepeat ()
     {
         return this.passwordRepeat;
+    }
+
+    public void setCurrentPassword ( final String currentPassword )
+    {
+        this.currentPassword = currentPassword;
+    }
+
+    public String getCurrentPassword ()
+    {
+        return this.currentPassword;
     }
 
     @DataValidator

@@ -100,7 +100,7 @@ public class UserController extends AbstractUserCreationController implements In
                 final String userId = ( (DatabaseUserInformation)object ).getId ();
                 model.put ( "userId", userId );
 
-                final boolean you = userId.equals ( request.getRemoteUser () );
+                final boolean you = isYou ( userId, request );
 
                 // TODO: check explicity for methods
                 if ( HttpConstraints.isCallAllowed ( METHOD_ADD_USER, request ) )
@@ -196,7 +196,7 @@ public class UserController extends AbstractUserCreationController implements In
     @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
     public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
     {
-        final boolean you = userId.equals ( request.getRemoteUser () );
+        final boolean you = isYou ( userId, request );
 
         if ( !you && !request.isUserInRole ( "ADMIN" ) )
         {
@@ -214,6 +214,11 @@ public class UserController extends AbstractUserCreationController implements In
         model.put ( "user", user );
         model.put ( "you", you );
         return model;
+    }
+
+    protected boolean isYou ( final String userId, final HttpServletRequest request )
+    {
+        return userId.equals ( request.getRemoteUser () );
     }
 
     protected void addBreadcrumbs ( final String action, final String userId, final Map<String, Object> model )
@@ -289,5 +294,78 @@ public class UserController extends AbstractUserCreationController implements In
     {
         this.storage.deleteUser ( userId );
         return new ModelAndView ( "redirect:/user/" + userId + "/view" );
+    }
+
+    @RequestMapping ( "/{userId}/newPassword" )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
+    public ModelAndView changePassword ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final boolean you = isYou ( userId, request );
+        if ( !you && !request.isUserInRole ( "ADMIN" ) )
+        {
+            return CommonController.createAccessDenied ();
+        }
+
+        final DatabaseUserInformation user = this.storage.getUserDetails ( userId );
+        if ( user == null )
+        {
+            return CommonController.createNotFound ( "user", userId );
+        }
+
+        final DatabaseDetails details = user.getDetails ( DatabaseDetails.class );
+
+        if ( details == null )
+        {
+            return CommonController.createNotFound ( "details", userId );
+        }
+
+        final NewPassword data = new NewPassword ();
+        data.setEmail ( details.getEmail () );
+
+        model.put ( "you", you );
+        model.put ( "command", data );
+
+        return new ModelAndView ( "user/newPassword", model );
+    }
+
+    @RequestMapping ( value = "/{userId}/newPassword", method = RequestMethod.POST )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
+    public ModelAndView changePasswordPost ( @PathVariable ( "userId" ) final String userId, @Valid @FormData ( "command" ) final NewPassword data, final BindingResult result, final HttpServletRequest request )
+    {
+        final boolean you = isYou ( userId, request );
+
+        if ( !you && !request.isUserInRole ( "ADMIN" ) )
+        {
+            return CommonController.createAccessDenied ();
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+        model.put ( "you", you );
+
+        if ( result.hasErrors () )
+        {
+            model.put ( "command", data );
+            return new ModelAndView ( "user/newPassword", model );
+        }
+
+        try
+        {
+            if ( !you /* but we are ADMIN */)
+            {
+                this.storage.updatePassword ( userId, null, data.getPassword () );
+            }
+            else
+            {
+                this.storage.updatePassword ( userId, data.getCurrentPassword (), data.getPassword () );
+            }
+
+            return new ModelAndView ( "redirect:/user/" + userId + "/view" );
+        }
+        catch ( final Exception e )
+        {
+            return CommonController.createError ( "Error", "Failed to change password", e );
+        }
     }
 }

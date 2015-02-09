@@ -39,4 +39,6 @@ public interface UserStorage
     public void unlockUser ( String userId );
 
     public void deleteUser ( String userId );
+
+    public void updatePassword ( String userId, String currentPassword, String newPassword );
 }

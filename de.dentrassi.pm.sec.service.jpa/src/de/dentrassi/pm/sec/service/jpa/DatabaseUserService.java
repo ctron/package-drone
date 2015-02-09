@@ -55,6 +55,8 @@ import de.dentrassi.pm.sec.jpa.UserEntity;
 import de.dentrassi.pm.sec.jpa.UserEntity_;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.UserService;
+import de.dentrassi.pm.sec.service.password.BadPasswordException;
+import de.dentrassi.pm.sec.service.password.PasswordChecker;
 import de.dentrassi.pm.system.SystemService;
 
 public class DatabaseUserService extends AbstractDatabaseUserService implements UserService, UserStorage
@@ -68,6 +70,13 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     private CoreService coreService;
 
     private SystemService systemService;
+
+    private PasswordChecker passwordChecker;
+
+    public void setPasswordChecker ( final PasswordChecker passwordChecker )
+    {
+        this.passwordChecker = passwordChecker;
+    }
 
     public void setSystemService ( final SystemService systemService )
     {
@@ -217,6 +226,8 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     @Override
     public DatabaseUserInformation createUser ( final CreateUser data, final boolean emailVerified )
     {
+        checkPassword ( data.getPassword () );
+
         return doWithTransaction ( ( em ) -> {
 
             final Date now = new Date ();
@@ -551,6 +562,41 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     }
 
     @Override
+    public void updatePassword ( final String userId, final String currentPassword, final String newPassword )
+    {
+        doWithTransactionVoid ( ( em ) -> processUpdatePassword ( em, userId, currentPassword, newPassword ) );
+    }
+
+    private void processUpdatePassword ( final EntityManager em, final String userId, final String currentPassword, final String newPassword )
+    {
+        logger.debug ( "Process password update - userId: {},  currentPassword: {},  newPassword: {}", userId, currentPassword != null ? "***" : null, newPassword != null ? "***" : null );
+        final UserEntity user = getUserChecked ( em, userId );
+
+        if ( user.isLocked () )
+        {
+            throw new RuntimeException ( "User is locked" );
+        }
+
+        final String currentSalt = user.getPasswordSalt ();
+        final String currentHash = user.getPasswordHash ();
+
+        checkPassword ( newPassword );
+
+        if ( currentPassword != null && currentSalt != null && currentHash != null )
+        {
+            final String checkHash = hashIt ( currentSalt, currentPassword );
+            if ( !currentHash.equals ( checkHash ) )
+            {
+                throw new RuntimeException ( "Current password is incorrect" );
+            }
+        }
+
+        applyPassword ( user, newPassword );
+
+        em.persist ( user );
+    }
+
+    @Override
     public void changePassword ( final String email, final String token, final String password )
     {
         doWithTransactionVoid ( ( em ) -> processPasswordChange ( em, email, token, password ) );
@@ -590,6 +636,8 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             throw new RuntimeException ( "User is locked" );
         }
 
+        checkPassword ( password );
+
         applyPassword ( user, password );
 
         user.setEmailToken ( null );
@@ -597,6 +645,18 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         user.setEmailTokenSalt ( null );
 
         em.persist ( user );
+    }
+
+    private void checkPassword ( final String password )
+    {
+        try
+        {
+            this.passwordChecker.checkPassword ( password );
+        }
+        catch ( final BadPasswordException e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     private UserEntity getUserChecked ( final EntityManager em, final String userId )
