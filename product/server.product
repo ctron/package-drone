@@ -52,6 +52,7 @@
       <plugin id="de.dentrassi.pm.sec.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service.admin" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.sec.service.core" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.web.ui" autoStart="true" startLevel="0" />
