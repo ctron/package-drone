@@ -26,4 +26,10 @@ public class ExceptionError implements BindingError
     {
         return ExceptionHelper.getMessage ( this.ex );
     }
+
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[ExceptionError: %s]", getMessage () );
+    }
 }

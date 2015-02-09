@@ -484,6 +484,8 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         user.setEmailTokenDate ( new Date () );
         user.setEmailToken ( resetTokenHash );
 
+        em.persist ( user );
+
         // we don't touch the password for now, could be anybody
 
         sendResetEmail ( email, resetToken );
@@ -549,35 +551,43 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     }
 
     @Override
-    public String changePassword ( final String email, final String token, final String password )
+    public void changePassword ( final String email, final String token, final String password )
     {
-        return doWithTransaction ( ( em ) -> processPasswordChange ( em, email, token, password ) );
+        doWithTransactionVoid ( ( em ) -> processPasswordChange ( em, email, token, password ) );
     }
 
-    private String processPasswordChange ( final EntityManager em, final String email, final String token, final String password )
+    private void processPasswordChange ( final EntityManager em, final String email, final String token, final String password )
     {
+        logger.debug ( "Process password change - email: {}, token: {}, password: {}", email, token, password != null ? "***" : null );
+
         final UserEntity user = findByEmail ( em, email );
 
         if ( user == null )
         {
-            return "User not found";
+            throw new RuntimeException ( "User not found" );
         }
 
         // validate token
 
         final String salt = user.getEmailTokenSalt ();
+
+        if ( salt == null )
+        {
+            throw new RuntimeException ( "No token" );
+        }
+
         final String hashedToken = hashIt ( salt, token );
 
         if ( !hashedToken.equals ( user.getEmailToken () ) )
         {
-            return "Invalid token";
+            throw new RuntimeException ( "Invalid token" );
         }
 
         // check for "locked" after the token was validated
 
         if ( user.isLocked () )
         {
-            return "User is locked";
+            throw new RuntimeException ( "User is locked" );
         }
 
         applyPassword ( user, password );
@@ -587,8 +597,6 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         user.setEmailTokenSalt ( null );
 
         em.persist ( user );
-
-        return null;
     }
 
     private UserEntity getUserChecked ( final EntityManager em, final String userId )

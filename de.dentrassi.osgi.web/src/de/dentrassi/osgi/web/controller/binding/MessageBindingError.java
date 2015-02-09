@@ -25,4 +25,10 @@ public class MessageBindingError implements BindingError
     {
         return this.errorMessage;
     }
+
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[MessageError: %s]", this.errorMessage );
+    }
 }

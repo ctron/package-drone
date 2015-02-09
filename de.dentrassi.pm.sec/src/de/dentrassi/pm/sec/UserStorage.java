@@ -32,7 +32,7 @@ public interface UserStorage
 
     public String resetPassword ( String email );
 
-    public String changePassword ( String email, String token, String password );
+    public void changePassword ( String email, String token, String password );
 
     public void lockUser ( String userId );
 

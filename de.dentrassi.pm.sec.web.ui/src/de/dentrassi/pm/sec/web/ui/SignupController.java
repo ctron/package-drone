@@ -23,6 +23,7 @@ import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
@@ -162,16 +163,17 @@ public class SignupController extends AbstractUserCreationController
     {
         if ( binding.hasErrors () )
         {
+            System.out.println ( binding.getErrors () );
             return new ModelAndView ( "signup/newPassword" );
         }
 
-        final String error = this.storage.changePassword ( data.getEmail (), data.getToken (), data.getPassword () );
-
-        if ( error != null )
+        try
         {
-            final Map<String, Object> model = new HashMap<> ();
-            model.put ( "error", error );
-            return new ModelAndView ( "signup/passwordChangeResult", model );
+            this.storage.changePassword ( data.getEmail (), data.getToken (), data.getPassword () );
+        }
+        catch ( final Exception e )
+        {
+            return CommonController.createError ( "Password change", "Failed to change password", e );
         }
 
         return new ModelAndView ( "signup/passwordChangeResult" );

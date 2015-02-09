@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <%@page import="de.dentrassi.pm.sec.UserStorage"%>
 
@@ -15,12 +15,13 @@
 
 	<div class="col-md-10 col-lg-9">
 
-	    <form:form action="" method="POST"  cssClass="form-horizontal">
+        <c:url var="action" value="/signup/newPassword" />
+	    <form:form action="${action }" method="POST"  cssClass="form-horizontal">
 	    
 	        <form:hidden path="token"/>
 	    	   
 		    <h:formEntry label="E-Mail"  command="command" path="email">
-		        <form:input path="email" cssClass="form-control" type="email" disabled="true"/>
+		        <form:input path="email" cssClass="form-control" type="email" readonly="true"/>
 		    </h:formEntry>
 		    
 		    <h:formEntry label="Password"  command="command" path="password">

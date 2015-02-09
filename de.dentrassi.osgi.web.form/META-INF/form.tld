@@ -16,16 +16,19 @@
 		<attribute>
 			<name>cssClass</name>
 			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
 		</attribute>
 
 		<attribute>
 			<name>action</name>
 			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
 		</attribute>
 
 		<attribute>
 			<name>method</name>
 			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
 		</attribute>
 
 		<attribute>
@@ -74,6 +77,12 @@
 		
 		<attribute>
 		  <name>disabled</name>
+		  <rtexprvalue>true</rtexprvalue>
+		  <type>boolean</type>
+		</attribute>
+		
+		<attribute>
+		  <name>readonly</name>
 		  <rtexprvalue>true</rtexprvalue>
 		  <type>boolean</type>
 		</attribute>
