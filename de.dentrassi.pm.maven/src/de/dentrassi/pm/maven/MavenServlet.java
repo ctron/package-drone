@@ -35,6 +35,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
@@ -145,6 +146,10 @@ public class MavenServlet extends HttpServlet
             {
                 processMetaData ( channel, toks, request );
             }
+            else if ( isChecksum ( toks, artifactName ) )
+            {
+                validateChecksum ( channel, toks, artifactName, request, response );
+            }
             else
             {
                 dumpSkip ( request );
@@ -159,6 +164,65 @@ public class MavenServlet extends HttpServlet
         {
             throw new ServletException ( e );
         }
+    }
+
+    private void validateChecksum ( final Channel channel, final String[] toks, final String artifactName, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        if ( !channel.hasAspect ( "hasher" ) )
+        {
+            logger.debug ( "Ignoring checksum on channel: {}", channel.getId () );
+            return;
+        }
+
+        final String hash = CharStreams.toString ( request.getReader () );
+
+        final String parentName = artifactName.substring ( 0, artifactName.length () - ".sha1".length () );
+
+        logger.info ( "Validate checksum - {} ({} -> {})", hash, artifactName, parentName );
+
+        if ( validHash ( channel, hash, parentName ) )
+        {
+            logger.debug ( "Checksum valid" );
+            return;
+        }
+
+        logger.info ( "Invalid checksum" );
+        response.setStatus ( HttpServletResponse.SC_CONFLICT );
+        response.getWriter ().write ( "Invalid checksum" );
+    }
+
+    private boolean validHash ( final Channel channel, final String hash, final String parentName )
+    {
+        final Collection<Artifact> result = channel.findByName ( parentName );
+        for ( final Artifact art : result )
+        {
+            final String artHash = getHash ( art );
+            if ( artHash == null )
+            {
+                continue;
+            }
+            logger.debug ( "Checking hash - {} = {}, vs {}", art.getId (), artHash, hash );
+            if ( artHash.equalsIgnoreCase ( hash ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String getHash ( final Artifact art )
+    {
+        return art.getInformation ().getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) );
+    }
+
+    private boolean isChecksum ( final String[] toks, final String artifactName )
+    {
+        if ( artifactName.endsWith ( ".sha1" ) )
+        {
+            return true;
+        }
+        return false;
     }
 
     private final Pattern SOURCE_PATTERN = Pattern.compile ( "(.*)-sources\\.jar$" );

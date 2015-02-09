@@ -685,4 +685,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             em.persist ( channel );
         } );
     }
+
+    public Set<String> getChannelAspects ( final String channelId )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            return new HashSet<> ( channel.getAspects () );
+        } );
+    }
 }

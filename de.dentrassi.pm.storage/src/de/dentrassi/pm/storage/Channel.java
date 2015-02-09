@@ -31,6 +31,8 @@ public interface Channel
 
     public List<ChannelAspectInformation> getAspects ();
 
+    public boolean hasAspect ( String id );
+
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
     public Collection<Artifact> findByName ( String artifactName );

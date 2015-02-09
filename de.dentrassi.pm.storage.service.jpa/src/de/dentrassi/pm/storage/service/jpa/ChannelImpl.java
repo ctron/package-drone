@@ -42,6 +42,13 @@ public class ChannelImpl implements Channel
     }
 
     @Override
+    public boolean hasAspect ( final String id )
+    {
+        final Set<String> result = this.service.getChannelAspects ( this.id );
+        return result.contains ( id );
+    }
+
+    @Override
     public Artifact createArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         return this.service.createArtifact ( this.id, name, stream, providedMetaData );
