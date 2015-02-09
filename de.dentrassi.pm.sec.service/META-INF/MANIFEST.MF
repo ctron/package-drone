@@ -13,4 +13,3 @@ Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
 Export-Package: de.dentrassi.pm.sec.service;version="1.0.0";uses:="de.dentrassi.pm.sec",
  de.dentrassi.pm.sec.service.common;version="1.0.0",
  de.dentrassi.pm.sec.service.password;version="1.0.0"
-Service-Component: OSGI-INF/coreCheck.xml
