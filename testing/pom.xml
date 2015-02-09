@@ -8,11 +8,12 @@
 	<name>Automated tests for Package Drone</name>
 
 	<properties>
-		<mysql.admin.user>root</mysql.admin.user>
-		<mysql.admin.password>admin12</mysql.admin.password>
-		<mysql.test.database>pdtest</mysql.test.database>
-		<mysql.test.user>pd</mysql.test.user>
-		<mysql.test.password>pd</mysql.test.password>
+        <!-- Put these in ~.m2/settings.xml -->
+        <!-- <mysql.admin.user>user</mysql.admin.user> -->
+        <!-- <mysql.admin.password>password</mysql.admin.password> -->
+        <!-- <mysql.test.database>database</mysql.test.database> -->
+        <!-- <mysql.test.user>user</mysql.test.user> -->
+        <!-- <mysql.test.password>password</mysql.test.password> -->
 	</properties>
 
 	<build>
