@@ -1,0 +1,9 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: jdk (>= 1.5)
+Maintainer: Jens Reimann <ctron@dentrassi.de>
+Description: Just a test
+Distribution: development
