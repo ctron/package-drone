@@ -10,21 +10,30 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven;
 
+import de.dentrassi.pm.common.MetaKeyBinding;
+
 public class MavenInformation
 {
+    @MetaKeyBinding ( namespace = "mvn", key = "groupId" )
     private String groupId;
 
+    @MetaKeyBinding ( namespace = "mvn", key = "artifactId" )
     private String artifactId;
 
+    @MetaKeyBinding ( namespace = "mvn", key = "version" )
     private String version;
 
+    @MetaKeyBinding ( namespace = "mvn", key = "classifier" )
     private String classifier;
 
+    @MetaKeyBinding ( namespace = "mvn", key = "extension" )
     private String extension;
 
+    @MetaKeyBinding ( namespace = "mvn", key = "snapshotVersion" )
     private String snapshotVersion;
 
-    private Integer buildNumber;
+    @MetaKeyBinding ( namespace = "mvn", key = "buildNumber" )
+    private Long buildNumber;
 
     public String getGroupId ()
     {
@@ -86,13 +95,70 @@ public class MavenInformation
         this.snapshotVersion = snapshotVersion;
     }
 
-    public void setBuildNumber ( final Integer buildNumber )
+    public void setBuildNumber ( final Long buildNumber )
     {
         this.buildNumber = buildNumber;
     }
 
-    public Integer getBuildNumber ()
+    public Long getBuildNumber ()
     {
         return this.buildNumber;
+    }
+
+    public String makePath ()
+    {
+        final StringBuilder sb = new StringBuilder ();
+
+        appendPath ( sb );
+        sb.append ( '/' );
+        appendFile ( sb, false );
+
+        return sb.toString ();
+    }
+
+    public String makeName ()
+    {
+        final StringBuilder sb = new StringBuilder ();
+        appendFile ( sb, false );
+        return sb.toString ();
+    }
+
+    public String makePlainName ()
+    {
+        final StringBuilder sb = new StringBuilder ();
+        appendFile ( sb, true );
+        return sb.toString ();
+    }
+
+    protected void appendFile ( final StringBuilder sb, final boolean ignoreClassifier )
+    {
+        sb.append ( this.artifactId );
+        sb.append ( '-' );
+
+        if ( this.snapshotVersion != null )
+        {
+            sb.append ( this.snapshotVersion );
+        }
+        else
+        {
+            sb.append ( this.version );
+        }
+
+        if ( this.classifier != null && !ignoreClassifier )
+        {
+            sb.append ( '-' );
+            sb.append ( this.classifier );
+        }
+        sb.append ( '.' );
+        sb.append ( this.extension );
+    }
+
+    protected void appendPath ( final StringBuilder sb )
+    {
+        sb.append ( this.groupId );
+        sb.append ( '/' );
+        sb.append ( this.artifactId );
+        sb.append ( '/' );
+        sb.append ( this.version );
     }
 }

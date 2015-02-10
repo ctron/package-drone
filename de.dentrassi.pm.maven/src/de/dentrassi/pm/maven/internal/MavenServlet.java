@@ -10,13 +10,24 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -38,7 +50,9 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.maven.MavenInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployKey;
@@ -54,10 +68,21 @@ public class MavenServlet extends HttpServlet
 
     private XmlHelper xml;
 
+    private Path tempRoot;
+
     @Override
     public void init () throws ServletException
     {
         super.init ();
+
+        try
+        {
+            this.tempRoot = Files.createTempDirectory ( "m2-upload" );
+        }
+        catch ( final IOException e )
+        {
+            throw new ServletException ( "Failed to create temp root", e );
+        }
 
         this.xml = new XmlHelper ();
 
@@ -69,8 +94,23 @@ public class MavenServlet extends HttpServlet
     @Override
     public void destroy ()
     {
+        try
+        {
+            deleteTemp ();
+        }
+        catch ( final IOException e )
+        {
+            logger.warn ( "Failed to clean up temp directory: " + this.tempRoot, e );
+        }
+
         this.tracker.close ();
         super.destroy ();
+    }
+
+    private void deleteTemp () throws IOException
+    {
+        Files.walkFileTree ( this.tempRoot, new RecursiveDeleteVisitor () );
+        Files.deleteIfExists ( this.tempRoot );
     }
 
     @Override
@@ -101,60 +141,7 @@ public class MavenServlet extends HttpServlet
 
             logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
 
-            final String[] toks = request.getPathInfo ().split ( "/" );
-            final String channelId = toks[1];
-            final String artifactName = toks[toks.length - 1];
-
-            logger.debug ( "Channel: {}, Artifact: {}", channelId, artifactName );
-
-            final Channel channel = service.getChannelWithAlias ( channelId );
-            if ( channel == null )
-            {
-                response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-                response.getWriter ().format ( "Channel %s not found", channelId );
-                return;
-            }
-
-            if ( !authenticate ( channel, request, response ) )
-            {
-                return;
-            }
-
-            if ( isUpload ( toks, artifactName ) )
-            {
-                final Map<MetaKey, String> metadata = new HashMap<> ();
-
-                final String groupId = getGroupId ( toks );
-                final String artifactId = getArtifactId ( toks );
-                final String version = getVersion ( toks );
-
-                metadata.put ( new MetaKey ( "mvn", "groupId" ), groupId );
-                metadata.put ( new MetaKey ( "mvn", "artifactId" ), artifactId );
-                metadata.put ( new MetaKey ( "mvn", "version" ), version );
-
-                final Artifact parent = getParent ( channel, artifactName );
-                if ( parent != null )
-                {
-                    parent.attachArtifact ( artifactName, request.getInputStream (), metadata );
-                }
-                else
-                {
-                    channel.createArtifact ( artifactName, request.getInputStream (), metadata );
-                }
-            }
-            else if ( isMetaData ( toks, artifactName ) )
-            {
-                processMetaData ( channel, toks, request );
-            }
-            else if ( isChecksum ( toks, artifactName ) )
-            {
-                validateChecksum ( channel, toks, artifactName, request, response );
-            }
-            else
-            {
-                dumpSkip ( request );
-            }
-            response.setStatus ( HttpServletResponse.SC_OK );
+            processPut ( request, response, service );
         }
         catch ( final IOException e )
         {
@@ -163,6 +150,85 @@ public class MavenServlet extends HttpServlet
         catch ( final Exception e )
         {
             throw new ServletException ( e );
+        }
+    }
+
+    private void processPut ( final HttpServletRequest request, final HttpServletResponse response, final StorageService service ) throws Exception
+    {
+        final String[] toks = request.getPathInfo ().split ( "/" );
+        final String channelId = toks[1];
+        final String artifactName = toks[toks.length - 1];
+
+        logger.debug ( "Channel: {}, Artifact: {}", channelId, artifactName );
+
+        final Channel channel = service.getChannelWithAlias ( channelId );
+        if ( channel == null )
+        {
+            response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.getWriter ().format ( "Channel %s not found", channelId );
+            return;
+        }
+
+        if ( !authenticate ( channel, request, response ) )
+        {
+            return;
+        }
+
+        if ( isUpload ( toks, artifactName ) )
+        {
+            processUpload ( request, toks, artifactName, channel );
+        }
+        else if ( isMetaData ( toks, artifactName ) )
+        {
+            processMetaData ( channel, toks, request );
+        }
+        else if ( isChecksum ( toks, artifactName ) )
+        {
+            //  validateChecksum ( channel, toks, artifactName, request, response );
+        }
+        else
+        {
+            dumpSkip ( request );
+        }
+        response.setStatus ( HttpServletResponse.SC_OK );
+    }
+
+    protected void processUpload ( final HttpServletRequest request, final String[] toks, final String artifactName, final Channel channel ) throws Exception
+    {
+        final String groupId = getGroupId ( toks );
+        final String artifactId = getArtifactId ( toks );
+        final String version = getVersion ( toks );
+
+        if ( version.endsWith ( "-SNAPSHOT" ) )
+        {
+            storeTmp ( channel.getId (), groupId, artifactId, version, artifactName, request );
+        }
+        else
+        {
+            final MavenInformation info = detect ( groupId, artifactId, version, artifactName );
+
+            if ( info == null )
+            {
+                logger.debug ( "Ignoring: {}", request.getPathInfo () );
+                return;
+            }
+
+            final Artifact parent = getParent ( channel, info.makePlainName () );
+            storeArtifact ( channel, info, parent, request.getInputStream () );
+        }
+    }
+
+    private void storeTmp ( final String channelId, final String groupId, final String artifactId, final String version, final String artifactName, final HttpServletRequest request ) throws IOException
+    {
+        final File file = new File ( this.tempRoot.toFile (), String.format ( "%s/%s/%s/%s/%s", channelId, groupId, artifactId, version, artifactName ) );
+        logger.debug ( "Temp store artifact: {}", file );
+
+        file.delete ();
+        file.getParentFile ().mkdirs ();
+
+        try ( OutputStream os = new BufferedOutputStream ( new FileOutputStream ( file ) ) )
+        {
+            ByteStreams.copy ( request.getInputStream (), os );
         }
     }
 
@@ -225,86 +291,16 @@ public class MavenServlet extends HttpServlet
         return false;
     }
 
-    private final Pattern SOURCE_PATTERN = Pattern.compile ( "(.*)-sources\\.jar$" );
-
-    private Artifact getParent ( final Channel channel, final String artifactName )
+    private Artifact getParent ( final Channel channel, final String parentName )
     {
-        final Matcher m = this.SOURCE_PATTERN.matcher ( artifactName );
-        if ( m.matches () )
+        logger.debug ( "Looking for parent as: '{}'", parentName );
+        final Collection<Artifact> result = channel.findByName ( parentName );
+        if ( result != null && result.size () == 1 )
         {
-            final String parentName = m.group ( 1 ) + ".jar";
-            logger.debug ( "Looking for parent as: '{}'", parentName );
-            final Collection<Artifact> result = channel.findByName ( parentName );
-            if ( result != null && result.size () == 1 )
-            {
-                return result.iterator ().next ();
-            }
+            return result.iterator ().next ();
         }
 
         return null;
-    }
-
-    private boolean authenticate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
-    {
-        if ( isAuthenticated ( channel, request ) )
-        {
-            return true;
-        }
-
-        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
-        response.setHeader ( "WWW-Authenticate", "Basic realm=\"channel-" + channel.getId () + "\"" );
-
-        response.getWriter ().write ( "Please authenticate" );
-
-        return false;
-    }
-
-    private boolean isAuthenticated ( final Channel channel, final HttpServletRequest request )
-    {
-        final String auth = request.getHeader ( "Authorization" );
-        logger.debug ( "Auth header: {}", auth );
-
-        if ( auth == null || auth.isEmpty () )
-        {
-            return false;
-        }
-
-        final String[] toks = auth.split ( "\\s" );
-        if ( toks.length < 2 )
-        {
-            return false;
-        }
-
-        if ( !"Basic".equalsIgnoreCase ( toks[0] ) )
-        {
-            return false;
-        }
-
-        final byte[] authData = Base64.getDecoder ().decode ( toks[1] );
-        String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
-
-        logger.debug ( "Auth String: {}", authStr );
-
-        if ( authStr.startsWith ( ":" ) )
-        {
-            authStr = authStr.substring ( 1 );
-        }
-        if ( authStr.endsWith ( ":" ) )
-        {
-            authStr = authStr.substring ( 0, authStr.length () - 1 );
-        }
-
-        logger.debug ( "Auth String (cleaned): {}", authStr );
-
-        for ( final DeployKey key : channel.getAllDeployKeys () )
-        {
-            if ( key.getKey ().equals ( authStr ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception
@@ -312,8 +308,6 @@ public class MavenServlet extends HttpServlet
         final String groupId = join ( toks, 2, -3 );
         final String artifactId = toks[toks.length - 3];
         final String version = toks[toks.length - 2];
-
-        System.out.format ( "Process metadata: %s - %s - %s%n", groupId, artifactId, version );
 
         final Document doc = this.xml.parse ( request.getInputStream () );
 
@@ -328,59 +322,163 @@ public class MavenServlet extends HttpServlet
             return;
         }
 
-        final String groupIdXml = this.xml.getElementValue ( de, "groupId" );
-        final String artifactIdXml = this.xml.getElementValue ( de, "artifactId" );
-        final String versionXml = this.xml.getElementValue ( de, "version" );
+        final String releaseVersion = this.xml.getElementValue ( de, "versioning/release" );
 
-        System.out.format ( "%s - %s - %s%n", groupIdXml, artifactIdXml, versionXml );
-
-        final String snapshotTimestamp = this.xml.getElementValue ( de, "versioning/snapshot/timestamp" );
-        final String snapshotBuildNumber = this.xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
-
-        if ( snapshotTimestamp != null && snapshotBuildNumber != null )
+        if ( releaseVersion != null )
         {
-            // snapshot version
-            System.out.format ( "\t%s %s%n", snapshotTimestamp, snapshotBuildNumber );
+            // we don't handle metadata for releases
+            return;
+        }
+        else
+        {
+            final String snapshotTimestamp = this.xml.getElementValue ( de, "versioning/snapshot/timestamp" );
+            final String snapshotBuildNumber = this.xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
 
-            for ( final Node node : XmlHelper.iter ( this.xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
+            Long buildNumber = null;
+            if ( snapshotBuildNumber != null )
             {
-                final String extension = this.xml.getElementValue ( node, "extension" );
-                final String value = this.xml.getElementValue ( node, "value" );
-                final String classifier = this.xml.getElementValue ( node, "classifier" );
-                System.out.format ( "\t\t%s %s %s%n", extension, value, classifier );
+                buildNumber = Long.parseLong ( snapshotBuildNumber );
+            }
 
-                final Map<MetaKey, String> md = new HashMap<> ();
-                if ( classifier != null )
-                {
-                    md.put ( new MetaKey ( "mvn", "classifier" ), classifier );
-                }
-                if ( extension != null )
-                {
-                    md.put ( new MetaKey ( "mvn", "extension" ), extension );
-                }
-                md.put ( new MetaKey ( "mvn", "snapshotVersion" ), value );
+            if ( snapshotTimestamp != null && snapshotBuildNumber != null )
+            {
+                // snapshot version
+                System.out.format ( "\t%s %s%n", snapshotTimestamp, snapshotBuildNumber );
 
-                final Collection<Artifact> artifacts = channel.findByName ( String.format ( "%s-%s%s.%s", artifactId, value, classifier != null ? "-" + classifier : "", extension ) );
-                for ( final Artifact artifact : artifacts )
-                {
-                    final Map<MetaKey, String> amd = artifact.getInformation ().getMetaData ();
+                final List<MavenInformation> plain = new LinkedList<> ();
+                final List<MavenInformation> classified = new LinkedList<> ();
 
-                    // check for group id
-                    if ( !isSameGroupId ( amd, groupIdXml ) )
+                for ( final Node node : XmlHelper.iter ( this.xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
+                {
+                    final MavenInformation info = new MavenInformation ();
+                    info.setGroupId ( groupId );
+                    info.setArtifactId ( artifactId );
+                    info.setVersion ( version );
+                    info.setExtension ( this.xml.getElementValue ( node, "extension" ) );
+                    info.setClassifier ( this.xml.getElementValue ( node, "classifier" ) );
+                    info.setSnapshotVersion ( this.xml.getElementValue ( node, "value" ) );
+                    info.setBuildNumber ( buildNumber );
+
+                    if ( info.getClassifier () != null )
                     {
-                        continue;
+                        classified.add ( info );
                     }
-
-                    artifact.applyMetaData ( md );
+                    else
+                    {
+                        plain.add ( info );
+                    }
                 }
+
+                store ( channel, plain, classified );
             }
         }
     }
 
-    private boolean isSameGroupId ( final Map<MetaKey, String> metadata, final String groupId )
+    private MavenInformation detect ( final String groupId, final String artifactId, final String version, final String name )
     {
-        final String gid = metadata.get ( new MetaKey ( "mvn", "groupId" ) );
-        return groupId.equals ( gid );
+        final StringBuilder sb = new StringBuilder ();
+
+        sb.append ( Pattern.quote ( artifactId ) );
+        sb.append ( "-" );
+        sb.append ( Pattern.quote ( version ) );
+        sb.append ( "(|-(?<cl>[^\\.]+))" );
+        sb.append ( "(|\\.(?<ext>.*+))" );
+
+        final Pattern p = Pattern.compile ( sb.toString () );
+
+        final Matcher m = p.matcher ( name );
+        if ( m.matches () )
+        {
+            final String extension = m.group ( "ext" );
+            final String classifier = m.group ( "cl" );
+            final MavenInformation result = new MavenInformation ();
+
+            result.setGroupId ( groupId );
+            result.setArtifactId ( artifactId );
+            result.setVersion ( version );
+            result.setClassifier ( classifier );
+            result.setExtension ( extension );
+
+            return result;
+        }
+        return null;
+    }
+
+    private void store ( final Channel channel, final List<MavenInformation> plain, final List<MavenInformation> classified ) throws Exception
+    {
+        for ( final MavenInformation info : plain )
+        {
+            store ( channel, info, null );
+        }
+        for ( final MavenInformation info : classified )
+        {
+            final Artifact parent = getParent ( channel, info.makePlainName () );
+            store ( channel, info, parent );
+        }
+    }
+
+    private Artifact store ( final Channel channel, final MavenInformation info, final Artifact parent ) throws Exception
+    {
+        return pullFromTemp ( channel, info, ( is ) -> storeArtifact ( channel, info, parent, is ) );
+    }
+
+    protected Artifact storeArtifact ( final Channel channel, final MavenInformation info, final Artifact parent, final InputStream is )
+    {
+        Map<MetaKey, String> md;
+        try
+        {
+            md = MetaKeys.unbind ( info );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
+        if ( parent != null )
+        {
+            return parent.attachArtifact ( info.makeName (), is, md );
+        }
+        else
+        {
+            return channel.createArtifact ( info.makeName (), is, md );
+        }
+    }
+
+    private Artifact pullFromTemp ( final Channel channel, final MavenInformation info, final Function<InputStream, Artifact> func ) throws IOException
+    {
+        final File file = new File ( this.tempRoot.toFile (), String.format ( "%s/%s/%s/%s/%s", channel.getId (), info.getGroupId (), info.getArtifactId (), info.getVersion (), info.makeName () ) );
+
+        logger.debug ( "Pulling in: {}", file );
+
+        if ( !file.exists () )
+        {
+            return null;
+        }
+
+        logger.debug ( "File exists" );
+
+        try ( InputStream is = new BufferedInputStream ( new FileInputStream ( file ) ) )
+        {
+            return func.apply ( is );
+        }
+        finally
+        {
+            // clean up if possible
+            file.delete ();
+            cleanup ( file );
+        }
+    }
+
+    protected void cleanup ( final File file )
+    {
+        logger.debug ( "Cleanup: {}", file );
+
+        File current = file.getParentFile ();
+        final File tmp = this.tempRoot.toFile ();
+        while ( !current.equals ( tmp ) && current.isDirectory () )
+        {
+            current.delete ();
+            current = current.getParentFile ();
+        }
     }
 
     private boolean isMetaData ( final String[] toks, final String artifactName )
@@ -445,5 +543,68 @@ public class MavenServlet extends HttpServlet
             return false;
         }
         return true;
+    }
+
+    private boolean authenticate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        if ( isAuthenticated ( channel, request ) )
+        {
+            return true;
+        }
+
+        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
+        response.setHeader ( "WWW-Authenticate", "Basic realm=\"channel-" + channel.getId () + "\"" );
+
+        response.getWriter ().write ( "Please authenticate" );
+
+        return false;
+    }
+
+    private boolean isAuthenticated ( final Channel channel, final HttpServletRequest request )
+    {
+        final String auth = request.getHeader ( "Authorization" );
+        logger.debug ( "Auth header: {}", auth );
+
+        if ( auth == null || auth.isEmpty () )
+        {
+            return false;
+        }
+
+        final String[] toks = auth.split ( "\\s" );
+        if ( toks.length < 2 )
+        {
+            return false;
+        }
+
+        if ( !"Basic".equalsIgnoreCase ( toks[0] ) )
+        {
+            return false;
+        }
+
+        final byte[] authData = Base64.getDecoder ().decode ( toks[1] );
+        String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
+
+        logger.debug ( "Auth String: {}", authStr );
+
+        if ( authStr.startsWith ( ":" ) )
+        {
+            authStr = authStr.substring ( 1 );
+        }
+        if ( authStr.endsWith ( ":" ) )
+        {
+            authStr = authStr.substring ( 0, authStr.length () - 1 );
+        }
+
+        logger.debug ( "Auth String (cleaned): {}", authStr );
+
+        for ( final DeployKey key : channel.getAllDeployKeys () )
+        {
+            if ( key.getKey ().equals ( authStr ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -16,9 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import de.dentrassi.osgi.converter.ConverterManager;
 
 public final class MetaKeys
@@ -48,8 +45,6 @@ public final class MetaKeys
         final List<Field> fields = new LinkedList<> ();
         findFields ( data.getClass (), fields );
 
-        final Gson gson = null;
-
         for ( final Field field : fields )
         {
             final MetaKeyBinding mkb = field.getAnnotation ( MetaKeyBinding.class );
@@ -69,14 +64,6 @@ public final class MetaKeys
         }
 
         return data;
-    }
-
-    protected static Gson createGson ()
-    {
-        Gson gson;
-        final GsonBuilder builder = new GsonBuilder ();
-        gson = builder.create ();
-        return gson;
     }
 
     public static final Map<MetaKey, String> unbind ( final Object data ) throws Exception

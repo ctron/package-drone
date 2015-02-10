@@ -13,7 +13,6 @@ package de.dentrassi.pm.storage.service.jpa;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
@@ -32,11 +31,19 @@ public final class Helper
     {
     }
 
+    protected static <T extends PropertyEntity> void add ( final Collection<T> col, final T value )
+    {
+        if ( value != null && value.getValue () != null )
+        {
+            col.add ( value );
+        }
+    }
+
     public static void convertProvidedProperties ( final Map<MetaKey, String> metadata, final ArtifactEntity artifact, final Collection<ProvidedArtifactPropertyEntity> props )
     {
         if ( metadata != null )
         {
-            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ProvidedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ProvidedArtifactPropertyEntity::new ) ).forEach ( ( i ) -> add ( props, i ) );
         }
     }
 
@@ -44,7 +51,7 @@ public final class Helper
     {
         if ( metadata != null )
         {
-            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ExtractedArtifactPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( artifact, entry, ExtractedArtifactPropertyEntity::new ) ).forEach ( ( i ) -> add ( props, i ) );
         }
     }
 
@@ -52,7 +59,7 @@ public final class Helper
     {
         if ( metadata != null )
         {
-            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( channel, entry, ProvidedChannelPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( channel, entry, ProvidedChannelPropertyEntity::new ) ).forEach ( ( i ) -> add ( props, i ) );
         }
     }
 
@@ -60,7 +67,7 @@ public final class Helper
     {
         if ( metadata != null )
         {
-            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( channel, entry, ExtractedChannelPropertyEntity::new ) ).collect ( Collectors.toCollection ( ( ) -> props ) );
+            metadata.entrySet ().stream ().map ( entry -> fillPropertyEntry ( channel, entry, ExtractedChannelPropertyEntity::new ) ).forEach ( ( i ) -> add ( props, i ) );
         }
     }
 
