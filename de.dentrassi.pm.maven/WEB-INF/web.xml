@@ -6,7 +6,7 @@
 	
 	<servlet>
 		<servlet-name>main</servlet-name>
-		<servlet-class>de.dentrassi.pm.maven.MavenServlet</servlet-class>
+		<servlet-class>de.dentrassi.pm.maven.internal.MavenServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		
 		<multipart-config>

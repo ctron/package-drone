@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.maven;
+package de.dentrassi.pm.maven.internal;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
