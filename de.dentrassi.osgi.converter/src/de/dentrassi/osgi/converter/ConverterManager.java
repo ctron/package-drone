@@ -30,6 +30,8 @@ public class ConverterManager
         result.addConverter ( StringToSetConverter.INSTANCE );
         result.addConverter ( StringToJsonConverter.INSTANCE );
         result.addConverter ( JsonToStringConverter.INSTANCE );
+        result.addConverter ( LongToStringConverter.INSTANCE );
+        result.addConverter ( StringToLongConverter.INSTANCE );
 
         return result;
     }
