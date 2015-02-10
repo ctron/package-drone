@@ -16,6 +16,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.osgi.converter.ConverterManager;
 
 public final class MetaKeys
@@ -33,25 +36,47 @@ public final class MetaKeys
         return metadata.get ( new MetaKey ( ns, key ) );
     }
 
-    public static void bind ( final Object data, final Map<MetaKey, String> metadata ) throws Exception
+    public static <T> T bind ( final T data, final Map<MetaKey, String> metadata ) throws Exception
     {
         final ConverterManager converter = ConverterManager.create ();
 
         if ( data == null )
         {
-            return;
+            return null;
         }
 
         final List<Field> fields = new LinkedList<> ();
         findFields ( data.getClass (), fields );
 
+        final Gson gson = null;
+
         for ( final Field field : fields )
         {
             final MetaKeyBinding mkb = field.getAnnotation ( MetaKeyBinding.class );
             final String stringValue = metadata.get ( new MetaKey ( mkb.namespace (), mkb.key () ) );
-            final Object value = converter.convertTo ( stringValue, field.getType () );
+
+            final Object value;
+            if ( stringValue == null )
+            {
+                value = null;
+            }
+            else
+            {
+                value = converter.convertTo ( stringValue, field.getType () );
+            }
+
             setValue ( field, data, value );
         }
+
+        return data;
+    }
+
+    protected static Gson createGson ()
+    {
+        Gson gson;
+        final GsonBuilder builder = new GsonBuilder ();
+        gson = builder.create ();
+        return gson;
     }
 
     public static final Map<MetaKey, String> unbind ( final Object data ) throws Exception

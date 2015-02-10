@@ -25,7 +25,7 @@ public class StringToPrimitiveBooleanConverter implements Converter
     }
 
     @Override
-    public Object convertTo ( final Object value )
+    public Object convertTo ( final Object value, final Class<?> clazz )
     {
         if ( value == null )
         {

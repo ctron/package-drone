@@ -25,7 +25,7 @@ public class StringToBooleanConverter implements Converter
     }
 
     @Override
-    public Boolean convertTo ( final Object value )
+    public Boolean convertTo ( final Object value, final Class<?> clazz )
     {
         if ( value == null )
         {

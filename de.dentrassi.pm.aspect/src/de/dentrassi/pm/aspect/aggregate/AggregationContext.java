@@ -11,10 +11,14 @@
 package de.dentrassi.pm.aspect.aggregate;
 
 import java.util.Collection;
+import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 
 public interface AggregationContext
 {
     public Collection<ArtifactInformation> getArtifacts ();
+
+    public Map<MetaKey, String> getChannelMetaData ();
 }

@@ -24,8 +24,12 @@ public class ConverterManager
         result.addConverter ( StringToIntegerConverter.INSTANCE );
         result.addConverter ( StringToBooleanConverter.INSTANCE );
         result.addConverter ( StringToPrimitiveBooleanConverter.INSTANCE );
+        result.addConverter ( StringToPrimitiveIntegerConverter.INSTANCE );
         result.addConverter ( BooleanToStringConverter.INSTANCE );
+        result.addConverter ( IntegerToStringConverter.INSTANCE );
         result.addConverter ( StringToSetConverter.INSTANCE );
+        result.addConverter ( StringToJsonConverter.INSTANCE );
+        result.addConverter ( JsonToStringConverter.INSTANCE );
 
         return result;
     }
@@ -58,7 +62,7 @@ public class ConverterManager
         {
             if ( cvt.canConvert ( from, clazz ) )
             {
-                final Object o = cvt.convertTo ( value );
+                final Object o = cvt.convertTo ( value, clazz );
                 if ( o == null )
                 {
                     return null;

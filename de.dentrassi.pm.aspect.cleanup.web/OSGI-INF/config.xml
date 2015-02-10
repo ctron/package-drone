@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.aspect.cleanup.web.config">
+   <implementation class="de.dentrassi.pm.aspect.cleanup.web.ConfigController"/>
+   <service>
+      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
+   </service>
+   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
+   <reference bind="setTester" cardinality="1..1" interface="de.dentrassi.pm.aspect.cleanup.CleanupTester" name="CleanupTester" policy="static"/>
+</scr:component>

@@ -3,7 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
-<%@attribute name="command" required="true" %>
+<%@attribute name="command" required="false" %>
 <%@attribute name="path" required="true" %>
 <%@attribute name="label" required="true" %>
 

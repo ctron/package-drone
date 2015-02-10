@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Cleanup Aspect
+Bundle-SymbolicName: de.dentrassi.pm.aspect.cleanup
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.google.gson;version="2.3.1",
+ de.dentrassi.osgi.converter;version="1.0.0",
+ de.dentrassi.pm.aspect,
+ de.dentrassi.pm.aspect.aggregate;version="1.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.storage;version="1.0.0",
+ org.eclipse.scada.utils.str;version="0.2.0",
+ org.slf4j;version="1.7.2"
+Service-Component: OSGI-INF/cleanup.xml,
+ OSGI-INF/tester.xml
+Export-Package: de.dentrassi.pm.aspect.cleanup;version="1.0.0"

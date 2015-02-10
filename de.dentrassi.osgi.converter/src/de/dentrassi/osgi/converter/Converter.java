@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,7 @@ package de.dentrassi.osgi.converter;
 
 public interface Converter
 {
-    public Object convertTo ( Object value ) throws ConversionException;
+    public Object convertTo ( Object value, Class<?> clazz ) throws ConversionException;
 
     public boolean canConvert ( Class<?> from, Class<?> to );
 }

@@ -25,7 +25,7 @@ public class StringToIntegerConverter implements Converter
     }
 
     @Override
-    public Integer convertTo ( final Object value )
+    public Integer convertTo ( final Object value, final Class<?> clazz )
     {
         if ( value == null )
         {

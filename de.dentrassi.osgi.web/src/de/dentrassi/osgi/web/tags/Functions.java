@@ -16,6 +16,9 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.osgi.utils.Strings;
 
 public class Functions
@@ -75,5 +78,11 @@ public class Functions
         {
             return null;
         }
+    }
+
+    public static String json ( final Object object )
+    {
+        final Gson gson = new GsonBuilder ().create ();
+        return gson.toJson ( object );
     }
 }

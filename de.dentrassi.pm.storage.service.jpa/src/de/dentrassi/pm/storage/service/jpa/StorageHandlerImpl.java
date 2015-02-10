@@ -577,12 +577,20 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     private AggregationContext createAggregationContext ( final ChannelEntity channel )
     {
         final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
+        final SortedMap<MetaKey, String> metaData = convertMetaData ( channel );
+
         return new AggregationContext () {
 
             @Override
             public Collection<ArtifactInformation> getArtifacts ()
             {
                 return artifacts;
+            }
+
+            @Override
+            public Map<MetaKey, String> getChannelMetaData ()
+            {
+                return metaData;
             }
         };
     }
