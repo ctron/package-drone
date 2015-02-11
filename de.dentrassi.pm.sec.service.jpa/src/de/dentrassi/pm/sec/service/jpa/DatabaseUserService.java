@@ -226,7 +226,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     @Override
     public DatabaseUserInformation createUser ( final CreateUser data, final boolean emailVerified )
     {
-        checkPassword ( data.getPassword () );
+        if ( !emailVerified )
+        {
+            // check only for external signup
+            checkPassword ( data.getPassword () );
+        }
 
         return doWithTransaction ( ( em ) -> {
 

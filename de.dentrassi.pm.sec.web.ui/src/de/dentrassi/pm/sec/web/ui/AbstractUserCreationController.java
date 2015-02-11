@@ -45,7 +45,10 @@ public class AbstractUserCreationController
             context.setMarker ( "duplicateEmail" );
         }
 
-        checkPassword ( createUser.getPassword (), context );
+        if ( createUser.getPassword () != null && !createUser.getPassword ().isEmpty () )
+        {
+            checkPassword ( createUser.getPassword (), context );
+        }
     }
 
     @ControllerValidator ( formDataClass = NewPassword.class )
