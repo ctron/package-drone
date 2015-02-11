@@ -322,6 +322,9 @@ public class ChannelController implements InterfaceExtender
             infos.remove ( ca.getFactoryId () );
         }
 
+        final ArrayList<ChannelAspectInformation> addAspects = new ArrayList<> ( infos.values () );
+        Collections.sort ( addAspects, ( o1, o2 ) -> o1.getLabel ().compareTo ( o2.getLabel () ) );
+
         model.put ( "channel", channel );
         model.put ( "addAspects", infos.values () );
 
