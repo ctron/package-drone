@@ -17,9 +17,12 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +78,9 @@ public class MavenHandler
         }
         else if ( node instanceof DataNode )
         {
-            response.getOutputStream ().write ( ( (DataNode)node ).getData () );
+            final DataNode dataNode = (DataNode)node;
+            response.getOutputStream ().write ( dataNode.getData () );
+            response.setContentType ( dataNode.getMimeType () );
         }
         else if ( node instanceof ArtifactNode )
         {
@@ -113,10 +118,15 @@ public class MavenHandler
         private void render ( final PrintWriter pw )
         {
             pw.write ( "<ul>\n" );
+
             pw.write ( "<li><a href=\"..\">..</a></li>" );
-            for ( final Map.Entry<String, Node> entry : this.dir.getNodes ().entrySet () )
+
+            final List<String> dirs = new ArrayList<> ( this.dir.getNodes ().keySet () );
+            Collections.sort ( dirs );
+
+            for ( final String entry : dirs )
             {
-                final String esc = HtmlEscapers.htmlEscaper ().escape ( entry.getKey () );
+                final String esc = HtmlEscapers.htmlEscaper ().escape ( entry );
                 pw.write ( "<li><a href=\"" );
                 pw.write ( esc );
                 pw.write ( "\">" );

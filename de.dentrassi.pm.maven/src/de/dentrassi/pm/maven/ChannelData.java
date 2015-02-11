@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 
 public class ChannelData
 {
@@ -40,7 +42,26 @@ public class ChannelData
 
     public static class DataNode extends Node
     {
-        private byte[] data;
+        private final byte[] data;
+
+        private final String mimeType;
+
+        public DataNode ( final byte[] data, final String mimeType )
+        {
+            this.data = data;
+            this.mimeType = mimeType;
+        }
+
+        public DataNode ( final String data, final String mimeType )
+        {
+            this.data = data.getBytes ( StandardCharsets.UTF_8 );
+            this.mimeType = mimeType;
+        }
+
+        public String getMimeType ()
+        {
+            return this.mimeType;
+        }
 
         public byte[] getData ()
         {
@@ -74,6 +95,20 @@ public class ChannelData
         final DirectoryNode versionNode = addDirNode ( artifactBase, info.getVersion () );
 
         addNode ( versionNode, info.makeName (), new ArtifactNode ( art.getId () ) );
+
+        addCheckSum ( versionNode, info.makeName (), art, "md5" );
+        addCheckSum ( versionNode, info.makeName (), art, "sha1" );
+    }
+
+    private void addCheckSum ( final DirectoryNode versionNode, final String name, final ArtifactInformation art, final String string )
+    {
+        final String data = art.getMetaData ().get ( new MetaKey ( "hasher", string ) );
+        if ( data == null )
+        {
+            return;
+        }
+
+        addNode ( versionNode, name + "." + string, new DataNode ( data, "text/plain" ) );
     }
 
     private DirectoryNode getGroup ( final String[] gn )
