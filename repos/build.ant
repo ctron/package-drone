@@ -22,15 +22,28 @@
 		<get-release version="0.0.7"/>
 		<get-release version="0.0.8"/>
 		<get-release version="0.0.9"/>
+		<get-release-2 version="0.1.0"/>
 	</target>
 	
 	<!-- = = = = = = = = = = = = = = = = =
-          macrodef: get-release          
+          macrodef: get-release
          = = = = = = = = = = = = = = = = = -->
     <macrodef name="get-release">
         <attribute name="version"/>
         <sequential>
         	<get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server-@{version}-1.noarch.rpm" dest="download" usetimestamp="true"/>
+            <get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server_@{version}_all.deb" dest="download" usetimestamp="true"/>
+        </sequential>
+    </macrodef>
+	
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: get-release-2
+         = = = = = = = = = = = = = = = = = -->
+    <macrodef name="get-release-2">
+        <attribute name="version"/>
+        <sequential>
+            <get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server-@{version}-1.el6.noarch.rpm" dest="download" usetimestamp="true"/>
+        	<get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server-@{version}-1.el7.noarch.rpm" dest="download" usetimestamp="true"/>
             <get src="https://github.com/ctron/package-drone/releases/download/v@{version}/package-drone-server_@{version}_all.deb" dest="download" usetimestamp="true"/>
         </sequential>
     </macrodef>
@@ -60,6 +73,7 @@
 		<adddeb src="download/package-drone-server_0.0.8_all.deb" />
 		<adddeb src="download/package-drone-server_0.0.9_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.0_all.deb" />
+		<adddeb src="download/package-drone-server_0.1.1_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
