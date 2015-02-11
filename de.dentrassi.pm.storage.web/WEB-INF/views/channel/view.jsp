@@ -103,7 +103,7 @@ div.dz-error-message {
 <%--<h:channelNav channel="${channel}"/> --%>
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table id="artifacts" class="table table-striped table-condensed">
+<table id="artifacts" class="table table-striped table-condensed table-hover">
 
 <thead>
     <tr>
