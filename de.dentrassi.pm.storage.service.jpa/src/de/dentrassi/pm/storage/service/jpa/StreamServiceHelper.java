@@ -13,8 +13,10 @@ package de.dentrassi.pm.storage.service.jpa;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Blob;
@@ -45,9 +47,18 @@ import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 
 public interface StreamServiceHelper
 {
+    default Path createTempFile ( String name ) throws IOException
+    {
+        if ( name != null )
+        {
+            name = URLEncoder.encode ( name, "UTF-8" );
+        }
+        return Files.createTempFile ( "blob-", "-" + name );
+    }
+
     default void doStreamed ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<Path> fileConsumer ) throws Exception
     {
-        final Path tmp = Files.createTempFile ( "streamed", null );
+        final Path tmp = createTempFile ( ae.getName () );
 
         try
         {

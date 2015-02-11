@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +53,7 @@ import com.google.common.io.CharStreams;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
@@ -114,15 +116,71 @@ public class MavenServlet extends HttpServlet
     }
 
     @Override
-    protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
+    protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
-        if ( "/".equals ( req.getPathInfo () ) )
+        if ( "/".equals ( request.getPathInfo () ) )
         {
-            resp.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
-            resp.setStatus ( HttpServletResponse.SC_OK );
+            response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
+            response.setStatus ( HttpServletResponse.SC_OK );
             return;
         }
-        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+
+        String pathString = request.getPathInfo ();
+        if ( !pathString.endsWith ( "/" ) )
+        {
+            response.sendRedirect ( request.getContextPath () + pathString + "/" );
+            return;
+        }
+
+        final StorageService service = this.tracker.getService ();
+
+        if ( service == null )
+        {
+            response.getWriter ().write ( "System not operational" );
+            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+            return;
+        }
+
+        pathString = pathString.replaceAll ( "^/+", "" );
+        pathString = pathString.replaceAll ( "/+$", "" );
+
+        final String[] toks = pathString.split ( "/", 2 );
+        final String channelId = toks[0];
+
+        final Channel channel = service.getChannelWithAlias ( channelId );
+        if ( channel == null )
+        {
+            response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.getWriter ().format ( "Channel %s not found", channelId );
+            return;
+        }
+
+        final SortedMap<MetaKey, String> md = channel.getMetaData ();
+        final String str = md.get ( new MetaKey ( "maven.repo", "channel" ) );
+        if ( str == null )
+        {
+            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+            response.getWriter ().format ( "Channel %s is not configured for providing a Maven 2 repository. Add the Maven Repository aspect!", channelId );
+        }
+
+        final ChannelData channelData;
+        try
+        {
+            channelData = ChannelData.fromJson ( str );
+        }
+        catch ( final Exception e )
+        {
+            logger.debug ( "Failed to load maven channel data", e );
+
+            response.getWriter ().write ( "Corrupt channel data" );
+            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+
+            return;
+        }
+
+        new MavenHandler ( service, channelData ).handle ( toks.length > 1 ? toks[1] : null, request, response );
+
+        response.setStatus ( HttpServletResponse.SC_OK );
     }
 
     @Override

@@ -283,7 +283,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData ) throws Exception
     {
-        final Path file = Files.createTempFile ( "blob-", null );
+        final Path file = createTempFile ( name );
 
         try
         {
