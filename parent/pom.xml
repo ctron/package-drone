@@ -80,6 +80,8 @@
 		<module>../de.dentrassi.osgi.web.servlet</module>
 		
 		<module>../de.dentrassi.pm.aspect</module>
+		<module>../de.dentrassi.pm.aspect.cleanup</module>
+		<module>../de.dentrassi.pm.aspect.cleanup.web</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
 		
 		<module>../de.dentrassi.pm.common</module>

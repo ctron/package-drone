@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.1.0" useFeatures="true" includeLaunchers="false">
+<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.1.1" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -38,6 +38,8 @@
    <configurations>
       <plugin id="de.dentrassi.osgi.validation.hibernate" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.osgi.web.servlet" autoStart="true" startLevel="10" />
+      <plugin id="de.dentrassi.pm.aspect.cleanup" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.aspect.cleanup.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.web" autoStart="true" startLevel="0" />
