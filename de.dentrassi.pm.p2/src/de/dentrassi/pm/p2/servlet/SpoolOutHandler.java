@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,14 +8,15 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.common.servlet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+package de.dentrassi.pm.p2.servlet;
 
-public interface Handler
+import java.io.IOException;
+import java.io.OutputStream;
+
+import de.dentrassi.pm.common.servlet.Handler;
+
+public interface SpoolOutHandler extends Handler
 {
-    public void prepare () throws Exception;
-
-    public void process ( HttpServletRequest req, HttpServletResponse resp ) throws Exception;
+    public void process ( OutputStream out ) throws IOException;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -29,7 +30,7 @@ import org.w3c.dom.ProcessingInstruction;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.Channel;
 
-public abstract class AbstractRepositoryHandler extends AbstractChannelHandler
+public abstract class AbstractRepositoryHandler extends AbstractChannelHandler implements SpoolOutHandler
 {
     protected final Map<String, String> properties = new HashMap<> ();
 
@@ -68,6 +69,12 @@ public abstract class AbstractRepositoryHandler extends AbstractChannelHandler
         {
             this.data = this.xml.toData ( doc );
         }
+    }
+
+    @Override
+    public void process ( final OutputStream out ) throws IOException
+    {
+        out.write ( this.data );
     }
 
     private byte[] compress ( final String name, final byte[] data ) throws IOException

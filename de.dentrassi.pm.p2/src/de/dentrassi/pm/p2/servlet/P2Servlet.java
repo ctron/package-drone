@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -106,6 +106,10 @@ public class P2Servlet extends HttpServlet
         else if ( "artifacts.jar".equals ( paths[2] ) && paths.length == 3 )
         {
             process ( req, resp, new ArtifactsHandler ( channel, true ) );
+        }
+        else if ( "repo.zip".equals ( paths[2] ) && paths.length == 3 )
+        {
+            process ( req, resp, new ZippedHandler ( channel ) );
         }
         else if ( "plugins".equals ( paths[2] ) )
         {
