@@ -38,7 +38,7 @@ import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.ChannelData.ArtifactNode;
-import de.dentrassi.pm.maven.ChannelData.DataNode;
+import de.dentrassi.pm.maven.ChannelData.ContentNode;
 import de.dentrassi.pm.maven.ChannelData.DirectoryNode;
 import de.dentrassi.pm.maven.ChannelData.Node;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -65,8 +65,9 @@ public class MavenHandler
         final Node node = this.channelData.findNode ( segs );
         if ( node == null )
         {
-            response.getWriter ().format ( "Unable to find: '%s'", path == null ? "" : path );
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.setContentType ( "text/plain" );
+            response.getWriter ().format ( "Unable to find: '%s'", path == null ? "" : path );
             return;
         }
 
@@ -74,11 +75,16 @@ public class MavenHandler
 
         if ( node instanceof DirectoryNode )
         {
+            if ( !request.getPathInfo ().endsWith ( "/" ) )
+            {
+                response.sendRedirect ( request.getContextPath () + request.getPathInfo () + "/" );
+                return;
+            }
             renderDir ( response, (DirectoryNode)node, path );
         }
-        else if ( node instanceof DataNode )
+        else if ( node instanceof ContentNode )
         {
-            final DataNode dataNode = (DataNode)node;
+            final ContentNode dataNode = (ContentNode)node;
             response.getOutputStream ().write ( dataNode.getData () );
             response.setContentType ( dataNode.getMimeType () );
         }
@@ -86,7 +92,8 @@ public class MavenHandler
         {
             download ( response, (ArtifactNode)node );
         }
-        // FIXME: right here right now
+
+        response.setStatus ( HttpServletResponse.SC_OK );
     }
 
     private void download ( final HttpServletResponse response, final ArtifactNode node )

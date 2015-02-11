@@ -228,6 +228,23 @@ public class XmlHelper
         return ele;
     }
 
+    public static Element addElement ( final Element parent, final String name, final Object value )
+    {
+        final Element ele = addElement ( parent, name );
+        if ( value != null )
+        {
+            ele.setTextContent ( value.toString () );
+        }
+        return ele;
+    }
+
+    public static Element addElementFirst ( final Element parent, final String name )
+    {
+        final Element ele = parent.getOwnerDocument ().createElement ( name );
+        parent.insertBefore ( ele, null );
+        return ele;
+    }
+
     public static void fixSize ( final Element element )
     {
         final int len = element.getChildNodes ().getLength ();

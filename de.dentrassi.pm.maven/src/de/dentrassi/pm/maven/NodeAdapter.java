@@ -22,6 +22,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import de.dentrassi.pm.maven.ChannelData.ArtifactNode;
+import de.dentrassi.pm.maven.ChannelData.ContentNode;
 import de.dentrassi.pm.maven.ChannelData.DataNode;
 import de.dentrassi.pm.maven.ChannelData.DirectoryNode;
 import de.dentrassi.pm.maven.ChannelData.Node;
@@ -39,8 +40,17 @@ public class NodeAdapter implements JsonSerializer<Node>, JsonDeserializer<Node>
 
         final JsonObject o = new JsonObject ();
 
-        o.addProperty ( "type", node.getClass ().getSimpleName () );
-        o.add ( "node", ctx.serialize ( node ) );
+        if ( node instanceof ContentNode && ! ( node instanceof DataNode ) )
+        {
+            final ContentNode cnode = (ContentNode)node;
+            o.addProperty ( "type", DataNode.class.getSimpleName () );
+            o.add ( "node", ctx.serialize ( new DataNode ( cnode.getData (), cnode.getMimeType () ) ) );
+        }
+        else
+        {
+            o.addProperty ( "type", node.getClass ().getSimpleName () );
+            o.add ( "node", ctx.serialize ( node ) );
+        }
 
         return o;
     }

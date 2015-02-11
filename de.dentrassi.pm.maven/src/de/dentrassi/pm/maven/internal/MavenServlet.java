@@ -126,11 +126,6 @@ public class MavenServlet extends HttpServlet
         }
 
         String pathString = request.getPathInfo ();
-        if ( !pathString.endsWith ( "/" ) )
-        {
-            response.sendRedirect ( request.getContextPath () + pathString + "/" );
-            return;
-        }
 
         final StorageService service = this.tracker.getService ();
 
@@ -179,8 +174,6 @@ public class MavenServlet extends HttpServlet
         }
 
         new MavenHandler ( service, channelData ).handle ( toks.length > 1 ? toks[1] : null, request, response );
-
-        response.setStatus ( HttpServletResponse.SC_OK );
     }
 
     @Override

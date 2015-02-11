@@ -161,4 +161,9 @@ public class MavenInformation
         sb.append ( '/' );
         sb.append ( this.version );
     }
+
+    public boolean isSnapshot ()
+    {
+        return this.version != null && this.version.endsWith ( "-SNAPSHOT" );
+    }
 }
