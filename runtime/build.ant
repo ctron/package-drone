@@ -111,6 +111,10 @@
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish.source_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
         	
+        	<!-- compress -->
+        	
+        	<get src="http://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.9/commons-compress-1.9.jar" dest="download/bundles" usetimestamp="true"/>
+        	
         </parallel>
 
     </target>
