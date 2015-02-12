@@ -692,6 +692,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         // query.setParameter ( "channel", ce );
 
+        logger.trace ( "Pre get" );
+
         final List<ArtifactEntity> list = query.getResultList ();
 
         logger.trace ( "Got result" );

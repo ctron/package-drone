@@ -183,16 +183,11 @@ public interface StreamServiceHelper
 
     default String getParentId ( final ArtifactEntity ae )
     {
-        String parentId = null;
         if ( ae instanceof ChildArtifactEntity )
         {
-            final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
-            if ( parent != null )
-            {
-                parentId = parent.getId ();
-            }
+            return ( (ChildArtifactEntity)ae ).getParentId ();
         }
-        return parentId;
+        return null;
     }
 
 }
