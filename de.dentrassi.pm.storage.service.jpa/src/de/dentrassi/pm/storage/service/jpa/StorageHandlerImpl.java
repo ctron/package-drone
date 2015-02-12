@@ -678,8 +678,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         // fetch
         // root.fetch ( ArtifactEntity_.channel );
-        // root.fetch ( ArtifactEntity_.providedProperties, JoinType.LEFT );
-        // root.fetch ( ArtifactEntity_.extractedProperties, JoinType.LEFT );
+        // root.fetch ( ArtifactEntity_.providedProperties );
+        // root.fetch ( ArtifactEntity_.extractedProperties );
 
         // select
 
@@ -688,6 +688,15 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // convert
 
         final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
+
+        /*
+            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
+            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
+            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
+
+            query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
+            query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
+        */
 
         // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         // query.setParameter ( "channel", ce );

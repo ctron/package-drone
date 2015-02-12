@@ -224,9 +224,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             return null;
         }
 
+        logger.debug ( "Converting entity: {} / {}", ae.getId (), ae.getClass () );
+
         if ( logger.isTraceEnabled () )
         {
-            logger.trace ( "Converting entity: {}", ae.getClass () );
             final Class<?>[] clsArray = ae.getClass ().getInterfaces ();
             for ( final Class<?> cls : clsArray )
             {

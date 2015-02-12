@@ -146,9 +146,9 @@ public interface StreamServiceHelper
         }
 
         final SortedSet<String> childIds = new TreeSet<> ();
-        for ( final ArtifactEntity child : ae.getChildArtifacts () )
+        for ( final String childId : ae.getChildIds () )
         {
-            childIds.add ( child.getId () );
+            childIds.add ( childId );
         }
 
         return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), convertMetaData ( ae ), childIds );
