@@ -103,6 +103,8 @@
 		
 		<module>../de.dentrassi.pm.maven</module>
 		
+		<module>../de.dentrassi.pm.npm</module>
+		
 		<module>../de.dentrassi.pm.osgi</module>
 		<module>../de.dentrassi.pm.osgi.web</module>
 		
