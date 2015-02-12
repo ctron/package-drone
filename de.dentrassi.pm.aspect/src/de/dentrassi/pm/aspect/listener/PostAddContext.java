@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,11 +10,17 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.listener;
 
-public class ChannelListenerAdapter implements ChannelListener
-{
+import java.util.Collection;
+import java.util.Map;
 
-    @Override
-    public void artifactPreAdd ( final PreAddContext context )
-    {
-    }
+import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
+
+public interface PostAddContext
+{
+    public Collection<ArtifactInformation> getChannelArtifacts ();
+
+    public Map<MetaKey, String> getChannelMetaData ();
+
+    public void deleteArtifact ( String artifactId );
 }

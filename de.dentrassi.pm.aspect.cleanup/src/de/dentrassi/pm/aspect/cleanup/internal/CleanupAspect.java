@@ -11,7 +11,7 @@
 package de.dentrassi.pm.aspect.cleanup.internal;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
-import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
+import de.dentrassi.pm.aspect.listener.ChannelListener;
 
 public class CleanupAspect implements ChannelAspect
 {
@@ -24,8 +24,8 @@ public class CleanupAspect implements ChannelAspect
     }
 
     @Override
-    public ChannelAggregator getChannelAggregator ()
+    public ChannelListener getChannelListener ()
     {
-        return new CleanupAggregator ();
+        return new CleanupListener ();
     }
 }

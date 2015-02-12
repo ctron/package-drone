@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
-import de.dentrassi.pm.aspect.listener.ChannelListenerAdapter;
 import de.dentrassi.pm.aspect.listener.PreAddContext;
 
 public class TychoCleanerFactory implements ChannelAspectFactory
@@ -46,7 +45,7 @@ public class TychoCleanerFactory implements ChannelAspectFactory
             @Override
             public ChannelListener getChannelListener ()
             {
-                return new ChannelListenerAdapter () {
+                return new ChannelListener () {
 
                     @Override
                     public void artifactPreAdd ( final PreAddContext context )

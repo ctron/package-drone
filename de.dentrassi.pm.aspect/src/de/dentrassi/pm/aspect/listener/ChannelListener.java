@@ -12,5 +12,19 @@ package de.dentrassi.pm.aspect.listener;
 
 public interface ChannelListener
 {
-    public void artifactPreAdd ( PreAddContext context );
+    /**
+     * Process a request to add an artifact <br/>
+     * In general it is possible to check an incoming (not stored yet) artifact
+     * and veto its creation.
+     *
+     * @param context
+     *            the context information
+     */
+    public default void artifactPreAdd ( final PreAddContext context ) throws Exception
+    {
+    }
+
+    public default void artifactAdded ( final PostAddContext context ) throws Exception
+    {
+    }
 }

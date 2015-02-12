@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -54,6 +53,7 @@ import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
+import de.dentrassi.pm.aspect.listener.PostAddContext;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -320,9 +320,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                     generateArtifact ( channel, (GeneratorArtifactEntity)ae, file );
                 }
 
+                final AddedEvent event = new AddedEvent ( ae.getId (), metadata );
+                runChannelTriggers ( channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), event );
+
                 createVirtualArtifacts ( channel, ae, file );
 
-                runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
+                // runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
 
                 // now run the channel aggregator
                 runChannelAggregators ( channel );
@@ -349,9 +352,23 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    protected void runChannelTriggers ( final ChannelEntity channel, final Consumer<ChannelListener> listener, final Object event )
+    private PostAddContext createPostAddContext ( final String channelId )
     {
-        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, listener );
+        return new PostAddContentImpl ( this, channelId );
+    }
+
+    protected void runChannelTriggers ( final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
+    {
+        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, ( t ) -> {
+            try
+            {
+                listener.accept ( t );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+        } );
         if ( event != null )
         {
             runGeneratorTriggers ( channel, event );
@@ -481,6 +498,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     public ArtifactInformation deleteArtifact ( final String artifactId )
     {
+        logger.debug ( "Request to delete artifact: {}", artifactId );
+
         final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
         if ( ae == null )
         {
@@ -496,6 +515,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         this.em.remove ( ae );
         this.em.flush ();
+
+        logger.info ( "Artifact deleted: {}", artifactId );
 
         runGeneratorTriggers ( ae.getChannel (), new RemovedEvent ( ae.getId (), md ) );
 

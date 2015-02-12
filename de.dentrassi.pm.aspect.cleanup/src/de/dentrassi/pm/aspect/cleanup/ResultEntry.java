@@ -10,20 +10,28 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.cleanup;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedMap;
-
+import de.dentrassi.pm.aspect.cleanup.CleanupTester.Action;
 import de.dentrassi.pm.common.ArtifactInformation;
 
-public interface CleanupTester
+public class ResultEntry
 {
+    private final ArtifactInformation artifact;
 
-    public static enum Action
+    private final Action action;
+
+    public ResultEntry ( final ArtifactInformation artifact, final Action action )
     {
-        KEEP,
-        DELETE;
+        this.artifact = artifact;
+        this.action = action;
     }
 
-    public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<ArtifactInformation> artifacts, CleanupConfiguration configuration );
+    public Action getAction ()
+    {
+        return this.action;
+    }
+
+    public ArtifactInformation getArtifact ()
+    {
+        return this.artifact;
+    }
 }
