@@ -27,8 +27,9 @@ import javax.persistence.ManyToOne;
 public abstract class ArtifactPropertyEntity implements PropertyEntity
 {
     @Id
-    @Column ( name = "ART_ID", insertable = false, updatable = false )
-    private String artifactId;
+    @ManyToOne ( fetch = LAZY )
+    @JoinColumn ( name = "ART_ID", referencedColumnName = "ID" )
+    private ArtifactEntity artifact;
 
     @Id
     @Column ( name = "NS" )
@@ -40,10 +41,6 @@ public abstract class ArtifactPropertyEntity implements PropertyEntity
 
     @Column ( name = "\"VALUE\"" )
     private String value;
-
-    @ManyToOne ( fetch = LAZY )
-    @JoinColumn ( name = "ART_ID", referencedColumnName = "ID" )
-    private ArtifactEntity artifact;
 
     public void setArtifact ( final ArtifactEntity artifact )
     {

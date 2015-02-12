@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.REMOVE;
+import static org.eclipse.persistence.annotations.JoinFetchType.INNER;
 
 import java.util.Collection;
 import java.util.Date;
@@ -31,6 +32,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
 @Entity ( name = "ARTIFACTS" )
@@ -46,6 +48,7 @@ public abstract class ArtifactEntity
 
     @ManyToOne
     @JoinColumn ( name = "CHANNEL_ID" )
+    @JoinFetch ( INNER )
     private ChannelEntity channel;
 
     @Basic

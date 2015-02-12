@@ -16,20 +16,20 @@ public class ArtifactPropertyKey implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    private String artifactId;
+    private String artifact;
 
     private String namespace;
 
     private String key;
 
-    public void setArtifactId ( final String artifactId )
+    public void setArtifactId ( final String artifact )
     {
-        this.artifactId = artifactId;
+        this.artifact = artifact;
     }
 
-    public String getArtifactId ()
+    public String getArtifact ()
     {
-        return this.artifactId;
+        return this.artifact;
     }
 
     public void setNamespace ( final String namespace )
@@ -57,7 +57,7 @@ public class ArtifactPropertyKey implements Serializable
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( this.artifactId == null ? 0 : this.artifactId.hashCode () );
+        result = prime * result + ( this.artifact == null ? 0 : this.artifact.hashCode () );
         result = prime * result + ( this.key == null ? 0 : this.key.hashCode () );
         result = prime * result + ( this.namespace == null ? 0 : this.namespace.hashCode () );
         return result;
@@ -79,14 +79,14 @@ public class ArtifactPropertyKey implements Serializable
             return false;
         }
         final ArtifactPropertyKey other = (ArtifactPropertyKey)obj;
-        if ( this.artifactId == null )
+        if ( this.artifact == null )
         {
-            if ( other.artifactId != null )
+            if ( other.artifact != null )
             {
                 return false;
             }
         }
-        else if ( !this.artifactId.equals ( other.artifactId ) )
+        else if ( !this.artifact.equals ( other.artifact ) )
         {
             return false;
         }
