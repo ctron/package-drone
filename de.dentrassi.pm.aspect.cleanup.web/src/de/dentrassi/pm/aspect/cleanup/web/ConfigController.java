@@ -80,7 +80,8 @@ public class ConfigController implements InterfaceExtender
 
         if ( object instanceof Channel )
         {
-            if ( request.isUserInRole ( "MANAGER" ) )
+            final Channel channel = (Channel)object;
+            if ( channel.hasAspect ( "cleanup" ) && request.isUserInRole ( "MANAGER" ) )
             {
                 final Map<String, String> model = new HashMap<> ();
                 model.put ( "channelId", ( (Channel)object ).getId () );
