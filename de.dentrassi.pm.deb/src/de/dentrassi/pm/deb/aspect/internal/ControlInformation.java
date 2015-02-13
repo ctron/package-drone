@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.deb.aspect;
+package de.dentrassi.pm.deb.aspect.internal;
 
 import java.util.Map;
 

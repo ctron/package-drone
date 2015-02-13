@@ -37,7 +37,7 @@ public class LinkTarget
 
     public String render ( final ServletRequest request )
     {
-        return expand ( new ReplaceSource () {
+        return expandSource ( new ReplaceSource () {
 
             @Override
             public String replace ( final String context, final String key )
@@ -76,15 +76,15 @@ public class LinkTarget
 
     public String render ( final Map<String, ?> model )
     {
-        return expand ( StringReplacer.newExtendedSource ( model ) ).getUrl ();
+        return expandSource ( StringReplacer.newExtendedSource ( model ) ).getUrl ();
     }
 
     public LinkTarget expand ( final Map<String, ?> model )
     {
-        return expand ( StringReplacer.newExtendedSource ( model ) );
+        return expandSource ( StringReplacer.newExtendedSource ( model ) );
     }
 
-    public LinkTarget expand ( final ReplaceSource source )
+    public LinkTarget expandSource ( final ReplaceSource source )
     {
         if ( this.url == null || source == null )
         {

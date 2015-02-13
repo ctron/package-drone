@@ -57,6 +57,7 @@ public class Entry
         final String keyring = (String)properties.get ( "keyring" );
         final String keyId = (String)properties.get ( "key.id" );
         final String passphrase = (String)properties.get ( "key.passphrase" );
+        final Object description = properties.get ( "description" );
 
         PgpSigningService service;
         try
@@ -74,6 +75,7 @@ public class Entry
         final Dictionary<String, Object> serviceProperties = new Hashtable<> ();
 
         serviceProperties.put ( Constants.SERVICE_PID, this.pid );
+        serviceProperties.put ( Constants.SERVICE_DESCRIPTION, description );
 
         this.handle = this.context.registerService ( SigningService.class, service, serviceProperties );
     }

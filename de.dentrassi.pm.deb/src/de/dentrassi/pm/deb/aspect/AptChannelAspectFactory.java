@@ -13,6 +13,7 @@ package de.dentrassi.pm.deb.aspect;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
+import de.dentrassi.pm.deb.aspect.internal.AptAggregator;
 
 public class AptChannelAspectFactory implements ChannelAspectFactory
 {

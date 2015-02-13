@@ -5,7 +5,7 @@
 
 	<tlib-version>1.0</tlib-version>
 	<short-name>storage</short-name>
-	<uri>http://dentrass.de/pm/storage</uri>
+	<uri>http://dentrassi.de/pm/storage</uri>
 
 	<function>
 		<name>channel</name>

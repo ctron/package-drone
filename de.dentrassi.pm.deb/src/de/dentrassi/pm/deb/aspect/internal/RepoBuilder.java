@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.deb.aspect;
+package de.dentrassi.pm.deb.aspect.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +38,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
 import de.dentrassi.pm.common.utils.HashHelper;
+import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.utils.deb.Packages;
 
 /**

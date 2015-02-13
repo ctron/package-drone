@@ -34,7 +34,7 @@ public class ChannelConfiguration
     @MetaKeyBinding ( namespace = "apt", key = "codename" )
     private String codename;
 
-    @MetaKeyBinding ( namespace = "apt", key = "components" )
+    @MetaKeyBinding ( namespace = "apt", key = "components", converterClass = SpaceJoiner.class )
     private Set<String> components = new HashSet<> ();
 
     @MetaKeyBinding ( namespace = "apt", key = "defaultComponent" )
@@ -43,7 +43,7 @@ public class ChannelConfiguration
     @MetaKeyBinding ( namespace = "apt", key = "description" )
     private String description;
 
-    @MetaKeyBinding ( namespace = "apt", key = "architectures" )
+    @MetaKeyBinding ( namespace = "apt", key = "architectures", converterClass = SpaceJoiner.class )
     private Set<String> architectures = new HashSet<> ();
 
     @MetaKeyBinding ( namespace = "apt", key = "distribution" )

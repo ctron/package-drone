@@ -12,8 +12,9 @@ package de.dentrassi.osgi.converter;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class StringToSetConverter implements Converter
 {
@@ -22,7 +23,7 @@ public class StringToSetConverter implements Converter
     @Override
     public boolean canConvert ( final Class<?> from, final Class<?> to )
     {
-        if ( ( from.equals ( String[].class ) || from.equals ( String.class ) ) && to.equals ( Set.class ) )
+        if ( ( from.equals ( String[].class ) || from.equals ( String.class ) ) && ( to.equals ( Set.class ) || to.equals ( SortedSet.class ) ) )
         {
             return true;
         }
@@ -30,7 +31,7 @@ public class StringToSetConverter implements Converter
     }
 
     @Override
-    public Set<?> convertTo ( final Object value, final Class<?> clazz )
+    public SortedSet<?> convertTo ( final Object value, final Class<?> clazz )
     {
         if ( value == null )
         {
@@ -47,13 +48,13 @@ public class StringToSetConverter implements Converter
         }
     }
 
-    private Set<?> convertFromValue ( final String string )
+    private SortedSet<?> convertFromValue ( final String string )
     {
-        return Collections.singleton ( string );
+        return new TreeSet<> ( Collections.singleton ( string ) );
     }
 
-    private Set<?> convertFromArray ( final String[] value )
+    private SortedSet<?> convertFromArray ( final String[] value )
     {
-        return new HashSet<> ( Arrays.asList ( value ) );
+        return new TreeSet<> ( Arrays.asList ( value ) );
     }
 }

@@ -31,9 +31,12 @@ public class OptionList extends OptionTagSupport
     {
         final WriterHelper writer = new WriterHelper ( this.pageContext );
 
-        for ( final Object o : this.items )
+        if ( this.items != null )
         {
-            renderOption ( writer, o );
+            for ( final Object o : this.items )
+            {
+                renderOption ( writer, o );
+            }
         }
 
         return SKIP_BODY;

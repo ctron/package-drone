@@ -1,0 +1,114 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+    
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://dentrassi.de/pm/storage" prefix="pm" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
+
+<h:main title="APT Repository Configuration" subtitle="${pm:channel(channel) }">
+
+<h:buttonbar menu="${menuManager.getActions(channel) }"/>
+
+<h:nav menu="${menuManager.getViews(channel) }"/>
+
+<div class="container-fluid form-padding">
+
+	 <form:form action="" method="POST" cssClass="form-horizontal">
+	
+	    <div class="row">
+	    
+	        <div class="col-md-6">
+	        
+	            <fieldset>
+	               <legend>Distribution</legend>
+	               
+	               <h:formEntry label="Distribution" path="distribution" command="command">
+	                   <form:input path="distribution" cssClass="form-control"/>
+	               </h:formEntry>
+	               
+	               <h:formEntry label="Origin" path="origin" command="command">
+                       <form:input path="origin" cssClass="form-control"/>
+                   </h:formEntry>
+                   
+                   <h:formEntry label="Label" path="label" command="command">
+                       <form:input path="label" cssClass="form-control"/>
+                   </h:formEntry>
+                   
+                   <h:formEntry label="Version" path="version" command="command">
+                       <form:input path="version" cssClass="form-control"/>
+                   </h:formEntry>
+                   
+                    <h:formEntry label="Suite" path="suite" command="command">
+                       <form:input path="suite" cssClass="form-control"/>
+                   </h:formEntry>
+                   
+                   <h:formEntry label="Codename" path="codename" command="command">
+                       <form:input path="codename" cssClass="form-control"/>
+                   </h:formEntry>
+                   
+                    
+                   <h:formEntry label="Description" path="description" command="command">
+                       <form:input path="description" cssClass="form-control"/>
+                   </h:formEntry>
+	            
+	            </fieldset>
+	            
+	        </div>
+	        
+	        <div class="col-md-6">
+	        
+	           <fieldset>
+	               <legend>Content</legend>
+	               
+	               <h:formEntry label="Components" path="components">
+	                   <form:select path="components" cssClass="form-control" multiple="true">
+	                       <form:option value="main"/>
+	                   </form:select>
+	               </h:formEntry>
+	               
+	               <h:formEntry label="Architectures" path="architectures">
+	                   <form:select path="architectures" cssClass="form-control"  multiple="true">
+	                       <form:option value="i386"/>
+	                       <form:option value="amd64"/>
+	                   </form:select>
+                   </h:formEntry>
+	               
+	           </fieldset>
+	           
+	           <fieldset>
+                   <legend>Signing</legend>
+                   
+                    <h:formEntry label="Service" path="signingService">
+                       <form:select path="signingService" cssClass="form-control">
+                           <form:option value="" label="Don't sign"/>
+                           <form:optionList items="${signingServices }" itemValue="id"/>
+                       </form:select>
+                   </h:formEntry>
+               </fieldset>
+	        
+	        </div>
+	    
+	    </div>
+	    
+	    <div class="row">
+            <div class="col-md-6">
+	            <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="reset" class="btn btn-default">Reset</button>
+                    </div>
+                </div>
+            </div> 
+	    </div>
+	    
+	</form:form>    
+
+</div>
+
+
+
+</h:main>

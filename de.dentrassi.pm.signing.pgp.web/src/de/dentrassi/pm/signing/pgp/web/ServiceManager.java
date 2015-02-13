@@ -84,7 +84,7 @@ public class ServiceManager
 
     public void add ( final AddEntry data ) throws IOException
     {
-        final Configuration cfg = this.configAdmin.createFactoryConfiguration ( ID );
+        final Configuration cfg = this.configAdmin.createFactoryConfiguration ( ID, null );
         final Dictionary<String, Object> properties = new Hashtable<> ();
 
         properties.put ( "keyring", data.getKeyring () );

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 import de.dentrassi.pm.storage.Channel;
 
 public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtender
@@ -28,6 +29,11 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
     @Override
     protected List<MenuEntry> getChannelAction ( final HttpServletRequest request, final Channel channel )
     {
+        if ( !channel.hasAspect ( P2RepositoryAspect.ID ) )
+        {
+            return null;
+        }
+
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "channelId", channel.getId () );
 
@@ -46,6 +52,11 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
     @Override
     protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
     {
+        if ( !channel.hasAspect ( P2RepositoryAspect.ID ) )
+        {
+            return null;
+        }
+
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "channelId", channel.getId () );
 
