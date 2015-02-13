@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,20 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.common;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention ( RetentionPolicy.RUNTIME )
-@Target ( { ElementType.FIELD } )
-public @interface MetaKeyBinding
+public interface BindingConverter
 {
-    public String namespace ();
+    public String encode ( Object value );
 
-    public String key ();
-
-    public boolean emptyAsNull () default true;
-
-    public Class<? extends BindingConverter> converterClass () default BindingConverter.class;
+    public Object decode ( String string );
 }

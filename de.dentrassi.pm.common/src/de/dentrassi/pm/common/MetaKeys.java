@@ -57,7 +57,14 @@ public final class MetaKeys
             }
             else
             {
-                value = converter.convertTo ( stringValue, field.getType () );
+                if ( !mkb.converterClass ().isInterface () )
+                {
+                    value = mkb.converterClass ().newInstance ().decode ( stringValue );
+                }
+                else
+                {
+                    value = converter.convertTo ( stringValue, field.getType () );
+                }
             }
 
             setValue ( field, data, value );
@@ -84,7 +91,19 @@ public final class MetaKeys
         {
             final MetaKeyBinding mkb = field.getAnnotation ( MetaKeyBinding.class );
             final Object value = getValue ( field, data );
-            final String stringValue = converter.convertTo ( value, String.class );
+
+            final String stringValue;
+
+            if ( !mkb.converterClass ().isInterface () )
+            {
+                final BindingConverter cvt = mkb.converterClass ().newInstance ();
+                stringValue = cvt.encode ( value );
+            }
+            else
+            {
+                stringValue = converter.convertTo ( value, String.class );
+            }
+
             if ( ( stringValue == null || stringValue.isEmpty () ) && mkb.emptyAsNull () )
             {
                 result.put ( new MetaKey ( mkb.namespace (), mkb.key () ), null );
