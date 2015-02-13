@@ -13,7 +13,11 @@ package de.dentrassi.pm.utils.deb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.SortedMap;
@@ -25,7 +29,9 @@ import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.vafer.jdeb.debian.BinaryPackageControlFile;
+import org.vafer.jdeb.debian.ControlField;
 
+import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.pm.utils.deb.internal.BinarySectionPackagesFile;
 
 public class Packages
@@ -50,12 +56,17 @@ public class Packages
                         {
                             continue;
                         }
-                        return convert ( new BinaryPackageControlFile ( inputStream ) );
+                        return parseControlFile ( inputStream );
                     }
                 }
             }
         }
         return null;
+    }
+
+    public static SortedMap<String, String> parseControlFile ( final InputStream inputStream ) throws IOException, ParseException
+    {
+        return convert ( new BinaryPackageControlFile ( inputStream ) );
     }
 
     private static SortedMap<String, String> convert ( final BinaryPackageControlFile controlFile )
@@ -72,5 +83,34 @@ public class Packages
         }
 
         writer.print ( file.toString () );
+    }
+
+    private static final ControlField DESC = new ControlField ( "Description", false, ControlField.Type.MULTILINE );
+
+    private static MessageDigest MD5;
+
+    static
+    {
+        try
+        {
+            MD5 = MessageDigest.getInstance ( "MD5" );
+        }
+        catch ( final NoSuchAlgorithmException e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
+    public static String makeDescriptionMd5 ( final String string )
+    {
+        if ( string == null )
+        {
+            return null;
+        }
+
+        final String result = DESC.format ( string ).substring ( "Description: ".length () );
+
+        final byte[] data = MD5.digest ( result.getBytes ( StandardCharsets.UTF_8 ) );
+        return Strings.hex ( data );
     }
 }

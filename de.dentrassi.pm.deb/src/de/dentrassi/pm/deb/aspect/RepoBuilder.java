@@ -192,6 +192,22 @@ public class RepoBuilder
             values.put ( "Filename", packageInfo.getPoolName () );
             values.put ( "Size", "" + packageInfo.getFileSize () );
 
+            if ( !values.containsKey ( "Description-md5" ) )
+            {
+                values.put ( "Description-md5", Packages.makeDescriptionMd5 ( values.get ( "Description" ) ) );
+            }
+
+            // add checksum entries
+
+            for ( final Map.Entry<String, String> entry : packageInfo.getChecksums ().entrySet () )
+            {
+                final String v = entry.getValue ();
+                if ( v != null )
+                {
+                    values.put ( entry.getKey (), v );
+                }
+            }
+
             Packages.writeBinaryPackageValues ( this.pw, values );
 
             this.pw.print ( "\n" );
@@ -228,11 +244,14 @@ public class RepoBuilder
 
         private final long fileSize;
 
-        public PackageInformation ( final String poolName, final long fileSize, final Map<String, String> control )
+        private final Map<String, String> checksums;
+
+        public PackageInformation ( final String poolName, final long fileSize, final Map<String, String> control, final Map<String, String> checksums )
         {
             this.poolName = poolName;
             this.fileSize = fileSize;
             this.control = control;
+            this.checksums = checksums;
         }
 
         public long getFileSize ()
@@ -248,6 +267,11 @@ public class RepoBuilder
         public String getPoolName ()
         {
             return this.poolName;
+        }
+
+        public Map<String, String> getChecksums ()
+        {
+            return this.checksums;
         }
     }
 

@@ -39,6 +39,7 @@ public final class BinarySectionPackagesFile extends ControlFile
     new ControlField ( "Installed-Size" ), //
     new ControlField ( "Maintainer", true ), //
     new ControlField ( "Description", true, ControlField.Type.MULTILINE ),//
+    new ControlField ( "Description-md5" ),//
     new ControlField ( "Homepage" ), //
     new ControlField ( "Installed-Size" ), //
     new ControlField ( "SHA256" ), //

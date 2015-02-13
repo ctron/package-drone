@@ -74,6 +74,15 @@ public class AptAggregator implements ChannelAggregator
             final String version = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "version" ) );
             final String controlJson = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "control.json" ) );
 
+            final String md5 = art.getMetaData ().get ( new MetaKey ( "hasher", "md5" ) );
+            final String sha1 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) );
+            final String sha256 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha256" ) );
+
+            final Map<String, String> checksums = new HashMap<> ( 3 );
+            checksums.put ( "MD5sum", md5 );
+            checksums.put ( "SHA1", sha1 );
+            checksums.put ( "SHA256", sha256 );
+
             if ( arch == null || version == null || packageName == null || controlJson == null )
             {
                 continue;
@@ -81,7 +90,7 @@ public class AptAggregator implements ChannelAggregator
 
             final ControlInformation control = gson.fromJson ( controlJson, ControlInformation.class );
 
-            final PackageInformation packageInfo = new PackageInformation ( makePoolName ( art, packageName, version, arch ), art.getSize (), control.getValues () );
+            final PackageInformation packageInfo = new PackageInformation ( makePoolName ( art, packageName, version, arch ), art.getSize (), control.getValues (), checksums );
             repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo );
         }
 

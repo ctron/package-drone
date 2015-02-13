@@ -5,7 +5,8 @@ Bundle-SymbolicName: de.dentrassi.pm.utils.deb
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: org.apache.commons.compress.archivers;version="1.9.0",
+Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
+ org.apache.commons.compress.archivers;version="1.9.0",
  org.apache.commons.compress.archivers.ar;version="1.9.0",
  org.apache.commons.compress.archivers.tar;version="1.9.0",
  org.apache.commons.compress.archivers.zip;version="1.9.0",
