@@ -8,22 +8,16 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.aggregate;
+package de.dentrassi.pm.deb;
 
-import java.util.Collection;
-import java.util.Map;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.common.MetaKey;
+import javax.servlet.http.HttpServletResponse;
 
-public interface AggregationContext
+public interface Handler
 {
-    public Collection<ArtifactInformation> getArtifacts ();
+    public void process ( OutputStream stream ) throws IOException;
 
-    /**
-     * Get the provided channel meta data
-     * 
-     * @return the provided channel meta data
-     */
-    public Map<MetaKey, String> getChannelMetaData ();
+    public void process ( HttpServletResponse response ) throws IOException;
 }

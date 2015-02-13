@@ -93,6 +93,8 @@
 		
 		<module>../de.dentrassi.pm.database</module>
 		
+		<module>../de.dentrassi.pm.deb</module>
+		
 		<module>../de.dentrassi.pm.generator</module>
 		<module>../de.dentrassi.pm.generator.p2</module>
 		
@@ -132,6 +134,8 @@
 		<module>../de.dentrassi.pm.storage.web</module>
 		
 		<module>../de.dentrassi.pm.system</module>
+		
+		<module>../de.dentrassi.pm.utils.deb</module>
 		
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>

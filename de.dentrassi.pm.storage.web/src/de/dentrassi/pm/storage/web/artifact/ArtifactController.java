@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -66,7 +66,7 @@ public class ArtifactController implements InterfaceExtender
     @Secured ( false )
     @HttpConstraint ( PERMIT )
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
-    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
+    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId ) throws IOException
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
@@ -74,7 +74,7 @@ public class ArtifactController implements InterfaceExtender
     @Secured ( false )
     @HttpConstraint ( PERMIT )
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
-    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId )
+    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId ) throws IOException
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, null, false );
     }

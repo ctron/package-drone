@@ -48,6 +48,13 @@ public class P2Servlet extends HttpServlet
     }
 
     @Override
+    public void destroy ()
+    {
+        this.tracker.close ();
+        super.destroy ();
+    }
+
+    @Override
     protected void service ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
         logger.debug ( "Request: {} / {}", req.getMethod (), req.getPathInfo () );
@@ -156,10 +163,4 @@ public class P2Servlet extends HttpServlet
         }
     }
 
-    @Override
-    public void destroy ()
-    {
-        this.tracker.close ();
-        super.destroy ();
-    }
 }

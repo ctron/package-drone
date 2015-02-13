@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.util;
 
+import java.io.IOException;
+import java.util.function.Function;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -31,19 +35,31 @@ public final class DownloadHelper
 
     public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
-    public static void streamArtifact ( final HttpServletResponse response, final StorageService storageService, final String artifactId, final String mimetype, final boolean download )
+    public static void streamArtifact ( final HttpServletResponse response, final StorageService storageService, final String artifactId, final String mimetype, final boolean download ) throws IOException
+    {
+        streamArtifact ( response, storageService, artifactId, mimetype, download, ArtifactInformation::getName );
+    }
+
+    public static void streamArtifact ( final HttpServletResponse response, final StorageService storageService, final String artifactId, final String mimetype, final boolean download, final Function<ArtifactInformation, String> nameProvider ) throws IOException
     {
         final Artifact artifact = storageService.getArtifact ( artifactId );
         if ( artifact == null )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.setContentType ( "text/plain" );
+            response.getWriter ().format ( "Artifact '%s' could not be found", artifactId );
             return;
         }
 
-        streamArtifact ( response, artifact, mimetype, download );
+        streamArtifact ( response, artifact, mimetype, download, nameProvider );
     }
 
-    public static void streamArtifact ( final HttpServletResponse response, final Artifact artifact, final String mimetype, final boolean download )
+    public static void streamArtifact ( final HttpServletResponse response, final Artifact artifact, final String mimetype, final boolean download ) throws IOException
+    {
+        streamArtifact ( response, artifact, mimetype, download, ArtifactInformation::getName );
+    }
+
+    public static void streamArtifact ( final HttpServletResponse response, final Artifact artifact, final String mimetype, final boolean download, final Function<ArtifactInformation, String> nameProvider ) throws IOException
     {
         artifact.streamData ( ( info, stream ) -> {
 

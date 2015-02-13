@@ -8,22 +8,26 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.aggregate;
+package de.dentrassi.pm.deb.aspect;
 
-import java.util.Collection;
 import java.util.Map;
 
-import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.common.MetaKey;
-
-public interface AggregationContext
+public class ControlInformation
 {
-    public Collection<ArtifactInformation> getArtifacts ();
+    private Map<String, String> values;
 
-    /**
-     * Get the provided channel meta data
-     * 
-     * @return the provided channel meta data
-     */
-    public Map<MetaKey, String> getChannelMetaData ();
+    public ControlInformation ( final Map<String, String> values )
+    {
+        this.values = values;
+    }
+
+    public void setValues ( final Map<String, String> values )
+    {
+        this.values = values;
+    }
+
+    public Map<String, String> getValues ()
+    {
+        return this.values;
+    }
 }

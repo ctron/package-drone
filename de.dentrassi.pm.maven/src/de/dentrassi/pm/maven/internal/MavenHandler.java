@@ -96,7 +96,7 @@ public class MavenHandler
         response.setStatus ( HttpServletResponse.SC_OK );
     }
 
-    private void download ( final HttpServletResponse response, final ArtifactNode node )
+    private void download ( final HttpServletResponse response, final ArtifactNode node ) throws IOException
     {
         DownloadHelper.streamArtifact ( response, this.service, node.getArtifactId (), null, false );
     }

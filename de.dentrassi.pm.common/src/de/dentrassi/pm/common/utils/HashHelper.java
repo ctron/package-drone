@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,11 +8,12 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.common;
+package de.dentrassi.pm.common.utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,19 @@ public final class HashHelper
             return Collections.emptyMap ();
         }
 
+        try ( BufferedInputStream is = new BufferedInputStream ( new FileInputStream ( file.toString () ) ) )
+        {
+            return createChecksums ( is, functions );
+        }
+    }
+
+    public static Map<String, HashCode> createChecksums ( final InputStream stream, final Map<String, HashFunction> functions ) throws IOException
+    {
+        if ( functions.isEmpty () )
+        {
+            return Collections.emptyMap ();
+        }
+
         // init hashers
 
         final Map<String, Hasher> hasherMap = new HashMap<> ();
@@ -49,16 +63,13 @@ public final class HashHelper
 
         // read data
 
-        try ( BufferedInputStream is = new BufferedInputStream ( new FileInputStream ( file.toString () ) ) )
+        final byte[] buffer = new byte[4096];
+        int len;
+        while ( ( len = stream.read ( buffer ) ) >= 0 )
         {
-            final byte[] buffer = new byte[4096];
-            int len;
-            while ( ( len = is.read ( buffer ) ) >= 0 )
+            for ( final Hasher hasher : hashers )
             {
-                for ( final Hasher hasher : hashers )
-                {
-                    hasher.putBytes ( buffer, 0, len );
-                }
+                hasher.putBytes ( buffer, 0, len );
             }
         }
 
