@@ -35,7 +35,7 @@ public class CompDirGenerator
             }
         }
 
-        sb.append ( "<li><a href=\"source\">source</a></li>" );
+        // sb.append ( "<li><a href=\"source\">source</a></li>" );
 
         return sb.toString ();
     }

@@ -189,19 +189,26 @@ public class AptServlet extends HttpServlet
             return new ContentHandler ( AptServlet.class.getResource ( "content/dist-index.html" ), model );
         }
 
-        if ( toks.length == 3 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) && "Release".equals ( toks[2] ) )
-        {
-            return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/Release", cfg.getDistribution () ) ), "text/plain" );
-        }
-
         if ( toks.length == 3 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) )
         {
+            final String component = toks[2];
+
+            switch ( component )
+            {
+                case "Release":
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/Release", cfg.getDistribution () ) ), "text/plain" );
+            }
+
+            if ( !cfg.getComponents ().contains ( component ) )
+            {
+                return null;
+            }
+
             if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
                 return new RedirectHandler ( request );
             }
 
-            final String component = toks[2];
             model.put ( "component", component );
             model.put ( "dir", new CompDirGenerator ( cfg ) );
             return new ContentHandler ( AptServlet.class.getResource ( "content/comp-index.html" ), model );
