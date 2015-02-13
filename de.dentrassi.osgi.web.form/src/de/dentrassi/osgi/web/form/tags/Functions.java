@@ -30,10 +30,13 @@ public class Functions
             return "";
         }
 
-        result = result.getChild ( path );
-        if ( result == null )
+        if ( path != null && !path.isEmpty () )
         {
-            return "";
+            result = result.getChild ( path );
+            if ( result == null )
+            {
+                return "";
+            }
         }
 
         return result.hasErrors () ? errorCssClass : okCssClass;

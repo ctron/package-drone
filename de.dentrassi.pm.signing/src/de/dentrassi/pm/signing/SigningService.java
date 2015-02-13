@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,19 +8,12 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.osgi.web.controller.form;
+package de.dentrassi.pm.signing;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-@Retention ( RetentionPolicy.RUNTIME )
-@Target ( { ElementType.PARAMETER } )
-/**
- * Annotate a parameter to bind the form data to this object
- */
-public @interface FormData
+public interface SigningService
 {
-    String value () default "";
+    public void sign ( InputStream in, OutputStream out ) throws Exception;
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.signing.pgp.web.controller">
+   <implementation class="de.dentrassi.pm.signing.pgp.web.ServiceController"/>
+   <service>
+      <provide interface="de.dentrassi.pm.signing.pgp.web.ServiceController"/>
+      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
+   </service>
+   <reference bind="setManager" cardinality="1..1" interface="de.dentrassi.pm.signing.pgp.web.ServiceManager" name="ServiceManager" policy="static"/>
+</scr:component>

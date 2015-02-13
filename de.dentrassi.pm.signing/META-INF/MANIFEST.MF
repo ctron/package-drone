@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Signing Service
+Bundle-SymbolicName: de.dentrassi.pm.signing
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jens Reimann
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: de.dentrassi.pm.signing;version="1.0.0"

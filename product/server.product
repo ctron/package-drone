@@ -43,6 +43,7 @@
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.deb.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.generator.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.logging.jul" autoStart="true" startLevel="1" />
       <plugin id="de.dentrassi.pm.mail.service" autoStart="true" startLevel="0" />
@@ -60,6 +61,9 @@
       <plugin id="de.dentrassi.pm.sec.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.web.ui" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.setup.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.signing" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.signing.pgp" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.signing.pgp.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system" autoStart="true" startLevel="0" />

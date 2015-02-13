@@ -127,6 +127,10 @@
 		
 		<module>../de.dentrassi.pm.setup.web</module>
 		
+		<module>../de.dentrassi.pm.signing</module>
+		<module>../de.dentrassi.pm.signing.pgp</module>
+		<module>../de.dentrassi.pm.signing.pgp.web</module>
+		
 		<module>../de.dentrassi.pm.storage</module>
 		<module>../de.dentrassi.pm.storage.jpa</module>
 		<module>../de.dentrassi.pm.storage.service</module>
