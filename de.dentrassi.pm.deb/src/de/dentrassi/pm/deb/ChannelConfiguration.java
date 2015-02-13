@@ -49,6 +49,19 @@ public class ChannelConfiguration
     @MetaKeyBinding ( namespace = "apt", key = "distribution" )
     private String distribution;
 
+    @MetaKeyBinding ( namespace = "apt", key = "signingService" )
+    private String signingService;
+
+    public void setSigningService ( final String signingService )
+    {
+        this.signingService = signingService;
+    }
+
+    public String getSigningService ()
+    {
+        return this.signingService;
+    }
+
     public String getOrigin ()
     {
         return this.origin;
