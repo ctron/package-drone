@@ -115,6 +115,12 @@
         	
         	<get src="http://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.9/commons-compress-1.9.jar" dest="download/bundles" usetimestamp="true"/>
         	
+        	<!-- for jdeb -->
+        	
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.ant_1.9.2.v201404171502.jar" dest="download/bundles" usetimestamp="true"/>
+        	<get src="http://www.bouncycastle.org/download/bcprov-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
+        	<get src="http://www.bouncycastle.org/download/bcpg-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
+        	
         </parallel>
 
     </target>
