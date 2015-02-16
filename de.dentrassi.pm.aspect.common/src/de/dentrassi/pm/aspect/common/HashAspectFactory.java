@@ -68,12 +68,6 @@ public class HashAspectFactory implements ChannelAspectFactory
         }
 
         @Override
-        public Virtualizer getArtifactVirtualizer ()
-        {
-            return new VirtualizerImpl ();
-        }
-
-        @Override
         public String getId ()
         {
             return ID;
