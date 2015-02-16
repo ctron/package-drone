@@ -7,7 +7,7 @@ import javax.persistence.metamodel.SetAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-02-12T10:37:11.022+0100")
+@Generated(value="Dali", date="2015-02-16T16:33:59.555+0100")
 @StaticMetamodel(ArtifactEntity.class)
 public class ArtifactEntity_ {
 	public static volatile SingularAttribute<ArtifactEntity, String> id;

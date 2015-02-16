@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
@@ -76,9 +77,14 @@ public abstract class ArtifactEntity
     private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
 
     @ElementCollection
-    @CollectionTable ( name = "ARTIFACTS", joinColumns = @JoinColumn ( name = "PARENT", referencedColumnName = "ID" ) )
-    @Column ( name = "ID" )
+    @CollectionTable ( name = "ARTIFACTS", joinColumns = @JoinColumn ( name = "PARENT",
+            referencedColumnName = "ID",
+            insertable = false,
+            updatable = false ) )
+    @Column ( name = "ID", updatable = false, insertable = false )
     @JoinFetch ( OUTER )
+    /* let the database deal with this */
+    @CascadeOnDelete
     private final Set<String> childIds = new HashSet<> ();
 
     public Set<String> getChildIds ()
