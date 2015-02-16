@@ -41,6 +41,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
+import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.deb.ChannelConfiguration;
 import de.dentrassi.pm.deb.aspect.AptChannelAspectFactory;
@@ -68,24 +69,51 @@ public class ConfigController implements InterfaceExtender
     }
 
     @Override
-    public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
+    public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
-        final List<MenuEntry> result = new LinkedList<> ();
-
-        if ( object instanceof Channel && request.isUserInRole ( "MANAGER" ) )
+        if ( object instanceof Channel )
         {
+            final List<MenuEntry> result = new LinkedList<> ();
             final Channel channel = (Channel)object;
-
-            final Map<String, String> model = new HashMap<> ();
-            model.put ( "channelId", channel.getId () );
 
             if ( channel.hasAspect ( AptChannelAspectFactory.ID ) )
             {
-                result.add ( new MenuEntry ( "APT", 1_500, LinkTarget.createFromController ( ConfigController.class, "edit" ).expand ( model ), null, null ) );
+                final Map<String, String> model = new HashMap<> ();
+                model.put ( "channelId", channel.getId () );
+
+                result.add ( new MenuEntry ( "APT Repository", 1_500, new LinkTarget ( "/apt/" + channel.getId () ), Modifier.LINK, null ) );
             }
+
+            return result;
         }
 
-        return result;
+        return null;
+    }
+
+    @Override
+    public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
+    {
+        if ( object instanceof Channel )
+        {
+            final List<MenuEntry> result = new LinkedList<> ();
+
+            final Channel channel = (Channel)object;
+
+            if ( channel.hasAspect ( AptChannelAspectFactory.ID ) )
+            {
+                final Map<String, String> model = new HashMap<> ();
+                model.put ( "channelId", channel.getId () );
+
+                if ( request.isUserInRole ( "MANAGER" ) )
+                {
+                    result.add ( new MenuEntry ( "APT", 1_500, LinkTarget.createFromController ( ConfigController.class, "edit" ).expand ( model ), null, null ) );
+                }
+            }
+
+            return result;
+        }
+
+        return null;
     }
 
     public static class SigningServiceEntry implements Comparable<SigningServiceEntry>
