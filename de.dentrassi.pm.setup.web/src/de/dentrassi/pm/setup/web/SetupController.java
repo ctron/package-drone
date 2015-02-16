@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
@@ -35,10 +37,12 @@ import de.dentrassi.pm.database.DatabaseSetup;
 @RequestMapping ( "/setup" )
 public class SetupController
 {
+    private final static Logger logger = LoggerFactory.getLogger ( SetupController.class );
+
     private List<Task> getTasks ( final HttpServletRequest request )
     {
-        boolean needUpgrade;
-        boolean configured;
+        boolean needUpgrade = false;
+        boolean configured = false;
 
         try ( Configurator cfg = Configurator.create () )
         {
@@ -47,6 +51,10 @@ public class SetupController
                 needUpgrade = db.isNeedUpgrade ();
                 configured = db.isConfigured ();
             }
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to load tasks", e );
         }
 
         final List<Task> result = new LinkedList<> ();
