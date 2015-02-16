@@ -290,12 +290,12 @@ chown -R pdrone:pdrone /var/lib/pdrone
 							<postinstallScriptlet>
 								<script><![CDATA[
 if [ $1 -eq 1 ] ; then
-    systemctl preset package-drone.service >/dev/null 2>&1 || true
-    /usr/bin/firewall-cmd --reload >/dev/null || true
-    /usr/bin/firewall-cmd --permanent --add-service=package-drone-server >/dev/null || true
-    /usr/bin/firewall-cmd --reload >/dev/null || true
+    systemctl preset package-drone.service >/dev/null 2>&1 || :
+    /usr/bin/firewall-cmd --reload >/dev/null || :
+    /usr/bin/firewall-cmd --permanent --add-service=package-drone-server >/dev/null || :
+    /usr/bin/firewall-cmd --reload >/dev/null || :
 else
-    systemctl try-restart package-drone-server >/dev/null || true
+    systemctl try-restart package-drone-server >/dev/null || :
 fi
 ]]></script>
 							</postinstallScriptlet>
@@ -303,7 +303,7 @@ fi
 							<preremoveScriptlet>
 								<script><![CDATA[
 if [ $1 -eq 0 ] ; then
-    systemctl --no-reload --user --global disable package-drone.service > /dev/null 2>&1 || true
+    systemctl --no-reload --user --global disable package-drone.service > /dev/null 2>&1 || :
 fi
 ]]>
 								</script>
@@ -314,16 +314,16 @@ fi
 if [ "$1" -eq 0 ]; then
     # this is the final uninstall
     if which userdel >/dev/null 2>&1; then
-        userdel pdrone > /dev/null || true
+        userdel pdrone > /dev/null || :
     fi
     # delete group if it still exists
-    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || true
+    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || :
     
-    /usr/bin/firewall-cmd --permanent --remove-service=package-drone-server > /dev/null || true
-    /usr/bin/firewall-cmd --reload > /dev/null || true
+    /usr/bin/firewall-cmd --permanent --remove-service=package-drone-server > /dev/null || :
+    /usr/bin/firewall-cmd --reload > /dev/null || :
 fi
 
-systemctl daemon-reload >/dev/null 2>&1 || true
+systemctl daemon-reload >/dev/null 2>&1 || :
 ]]></script>
 							</postremoveScriptlet>
 
@@ -424,24 +424,24 @@ fi
 mkdir -p /var/lib/pdrone
 chown -R pdrone:pdrone /var/lib/pdrone
 
-test -x /etc/init.d/package-drone-server && /etc/init.d/package-drone-server stop || true
+test -x /etc/init.d/package-drone-server && /etc/init.d/package-drone-server stop || :
 ]]></script>
 							</preinstallScriptlet>
 
 							<postinstallScriptlet>
 								<script><![CDATA[
 if [ $1 -eq 1 ] ; then
-    chkconfig package-drone-server on >/dev/null || true
+    chkconfig package-drone-server on >/dev/null || :
 fi
-/etc/init.d/package-drone-server start || true
+/etc/init.d/package-drone-server start || :
 ]]></script>
 							</postinstallScriptlet>
 
 							<preremoveScriptlet>
 								<script><![CDATA[
+/etc/init.d/package-drone-server stop || :
 if [ $1 -eq 0 ] ; then
-    /etc/init.d/package-drone-server stop || true
-    chkconfig --del package-drone-server || true
+    chkconfig --del package-drone-server || :
 fi
 ]]>
 								</script>
@@ -452,10 +452,10 @@ fi
 if [ "$1" -eq 0 ]; then
     # this is the final uninstall
     if which userdel >/dev/null 2>&1; then
-        userdel pdrone > /dev/null || true
+        userdel pdrone > /dev/null || :
     fi
     # delete group if it still exists
-    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || true
+    getent group pdrone>/dev/null && groupdel pdrone > /dev/null || :
 fi
 ]]></script>
 							</postremoveScriptlet>
