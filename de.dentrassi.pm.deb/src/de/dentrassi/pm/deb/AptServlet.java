@@ -81,7 +81,7 @@ public class AptServlet extends HttpServlet
         if ( path.isEmpty () || toks.length == 0 )
         {
             response.setContentType ( "text/plain" );
-            response.getWriter ().write ( "PackageInformation Drone - APT repository adapter" );
+            response.getWriter ().write ( "Package Drone - APT repository adapter" );
             return;
         }
 
