@@ -25,10 +25,13 @@ public class ContentHandler implements Handler
 
     private final Map<String, Object> model;
 
-    public ContentHandler ( final URL resource, final Map<String, Object> model )
+    private final String title;
+
+    public ContentHandler ( final URL resource, final String title, final Map<String, Object> model )
     {
         this.resource = resource;
         this.model = model;
+        this.title = title;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class ContentHandler implements Handler
     @Override
     public void process ( final HttpServletResponse response ) throws IOException
     {
-        Helper.render ( response, this.resource, this.model );
+        Helper.render ( response, this.resource, this.title, this.model );
     }
 
 }

@@ -108,7 +108,7 @@ public class AptServlet extends HttpServlet
             final Map<String, Object> model = new HashMap<> ();
             model.put ( "name", channel.getName () );
             model.put ( "id", channel.getId () );
-            Helper.render ( response, AptServlet.class.getResource ( "content/index.html" ), model );
+            Helper.render ( response, Helper.class.getResource ( "content/index.html" ), makeDefaultTitle ( channel ), model );
             return;
         }
 
@@ -153,7 +153,7 @@ public class AptServlet extends HttpServlet
             model.put ( "distribution", cfg.getDistribution () );
             model.put ( "name", channel.getName () );
             model.put ( "id", channel.getId () );
-            Helper.render ( response, AptServlet.class.getResource ( "content/dists.html" ), model );
+            Helper.render ( response, Helper.class.getResource ( "content/dists.html" ), makeDefaultTitle ( channel ), model );
             return;
         }
 
@@ -167,6 +167,20 @@ public class AptServlet extends HttpServlet
         {
             handler.process ( response );
         }
+    }
+
+    protected String makeDefaultTitle ( final Channel channel )
+    {
+        return String.format ( "APT Repository | %s", makeChannelName ( channel ) );
+    }
+
+    private String makeChannelName ( final Channel channel )
+    {
+        if ( channel.getName () != null )
+        {
+            return channel.getName ();
+        }
+        return channel.getId ();
     }
 
     private Handler makeHandler ( final HttpServletRequest request, final Channel channel, final String channelPath, final ChannelConfiguration cfg )
@@ -186,7 +200,7 @@ public class AptServlet extends HttpServlet
             }
 
             model.put ( "dir", new DistDirGenerator ( cfg ) );
-            return new ContentHandler ( AptServlet.class.getResource ( "content/dist-index.html" ), model );
+            return new ContentHandler ( DistDirGenerator.class.getResource ( "content/dist-index.html" ), makeDefaultTitle ( channel ), model );
         }
 
         if ( toks.length == 3 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) )
@@ -195,8 +209,10 @@ public class AptServlet extends HttpServlet
 
             switch ( component )
             {
+                case "InRelease":
                 case "Release":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/Release", cfg.getDistribution () ) ), "text/plain" );
+                case "Release.gpg":
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ), "text/plain" );
             }
 
             if ( !cfg.getComponents ().contains ( component ) )
@@ -211,7 +227,7 @@ public class AptServlet extends HttpServlet
 
             model.put ( "component", component );
             model.put ( "dir", new CompDirGenerator ( cfg ) );
-            return new ContentHandler ( AptServlet.class.getResource ( "content/comp-index.html" ), model );
+            return new ContentHandler ( CompDirGenerator.class.getResource ( "content/comp-index.html" ), makeDefaultTitle ( channel ), model );
         }
 
         if ( toks.length == 4 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) )
@@ -225,7 +241,7 @@ public class AptServlet extends HttpServlet
             if ( "source".equals ( file ) )
             {
                 model.put ( "dir", new TypeDirGenerator ( cfg ) );
-                return new ContentHandler ( AptServlet.class.getResource ( "content/type-index.html" ), model );
+                return new ContentHandler ( TypeDirGenerator.class.getResource ( "content/type-index.html" ), makeDefaultTitle ( channel ), model );
             }
 
             for ( final String arch : cfg.getArchitectures () )
@@ -233,7 +249,7 @@ public class AptServlet extends HttpServlet
                 if ( file.equals ( "binary-" + arch ) )
                 {
                     model.put ( "dir", new TypeDirGenerator ( cfg ) );
-                    return new ContentHandler ( AptServlet.class.getResource ( "content/type-index.html" ), model );
+                    return new ContentHandler ( TypeDirGenerator.class.getResource ( "content/type-index.html" ), makeDefaultTitle ( channel ), model );
                 }
             }
         }

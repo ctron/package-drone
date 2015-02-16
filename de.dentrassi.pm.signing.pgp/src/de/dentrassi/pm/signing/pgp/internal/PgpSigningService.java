@@ -56,21 +56,28 @@ public class PgpSigningService implements SigningService
     }
 
     @Override
-    public void sign ( final InputStream in, final OutputStream out ) throws Exception
+    public void sign ( final InputStream in, final OutputStream out, final boolean inline ) throws Exception
     {
         final int digest = HashAlgorithmTags.SHA1;
         final PGPSignatureGenerator signatureGenerator = new PGPSignatureGenerator ( new BcPGPContentSignerBuilder ( this.privateKey.getPublicKeyPacket ().getAlgorithm (), digest ) );
         signatureGenerator.init ( PGPSignature.BINARY_DOCUMENT, this.privateKey );
 
         final ArmoredOutputStream armoredOutput = new ArmoredOutputStream ( out );
-        armoredOutput.beginClearText ( digest );
+
+        if ( inline )
+        {
+            armoredOutput.beginClearText ( digest );
+        }
 
         final byte[] buffer = new byte[4096];
 
         int rc;
         while ( ( rc = in.read ( buffer ) ) >= 0 )
         {
-            armoredOutput.write ( buffer, 0, rc );
+            if ( inline )
+            {
+                armoredOutput.write ( buffer, 0, rc );
+            }
             signatureGenerator.update ( buffer, 0, rc );
         }
 
@@ -78,6 +85,8 @@ public class PgpSigningService implements SigningService
 
         final PGPSignature signature = signatureGenerator.generate ();
         signature.encode ( new BCPGOutputStream ( armoredOutput ) );
+
+        armoredOutput.close ();
     }
 
 }

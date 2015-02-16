@@ -39,6 +39,7 @@ import com.google.common.hash.Hashing;
 
 import de.dentrassi.pm.common.utils.HashHelper;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
+import de.dentrassi.pm.signing.SigningService;
 import de.dentrassi.pm.utils.deb.Packages;
 
 /**
@@ -278,6 +279,13 @@ public class RepoBuilder
 
     private final Map<String, Distribution> distributions = new HashMap<> ();
 
+    private final SigningService signingService;
+
+    public RepoBuilder ( final SigningService signingService )
+    {
+        this.signingService = signingService;
+    }
+
     public void addDistribution ( final String name, final DistributionInformation information )
     {
         this.distributions.put ( name, new Distribution ( name, information ) );
@@ -416,6 +424,31 @@ public class RepoBuilder
 
         final byte[] data = sw.toString ().getBytes ( StandardCharsets.UTF_8 );
         handler.spoolOut ( String.format ( "dists/%s/Release", dist.getName () ), "text/plain", new ByteArrayInputStream ( data ) );
+
+        if ( this.signingService != null )
+        {
+            handler.spoolOut ( String.format ( "dists/%s/Release.gpg", dist.getName () ), "text/plain", new ByteArrayInputStream ( sign ( data, false ) ) );
+            handler.spoolOut ( String.format ( "dists/%s/InRelease", dist.getName () ), "text/plain", new ByteArrayInputStream ( sign ( data, true ) ) );
+        }
+    }
+
+    private byte[] sign ( final byte[] data, final boolean inline ) throws IOException
+    {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        try
+        {
+            this.signingService.sign ( new ByteArrayInputStream ( data ), bos, inline );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( "Failed to sign", e );
+        }
+        finally
+        {
+            bos.close ();
+        }
+
+        return bos.toByteArray ();
     }
 
     private void addChecksum ( final PrintWriter writer, final String name, final Checksums chk, final String alg )

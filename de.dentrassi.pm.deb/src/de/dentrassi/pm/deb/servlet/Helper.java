@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,11 +30,18 @@ import com.google.common.io.CharStreams;
 public class Helper
 {
 
-    public static void render ( final HttpServletResponse response, final URL url, final Map<String, Object> model ) throws IOException
+    public static void render ( final HttpServletResponse response, final URL url, final String title, final Map<String, Object> model ) throws IOException
     {
         final PrintWriter w = response.getWriter ();
         response.setContentType ( "text/html" );
-        w.write ( StringReplacer.replace ( loadResource ( url ), new ExtendedPropertiesReplacer ( model ), StringReplacer.DEFAULT_PATTERN, true ) );
+        final String content = StringReplacer.replace ( loadResource ( url ), new ExtendedPropertiesReplacer ( model ), StringReplacer.DEFAULT_PATTERN, true );
+
+        final Map<String, Object> m2 = new HashMap<> ( 2 );
+        m2.put ( "content", content );
+        m2.put ( "title", title );
+        final String fo = StringReplacer.replace ( loadResource ( Helper.class.getResource ( "content/base.html" ) ), new ExtendedPropertiesReplacer ( m2 ), StringReplacer.DEFAULT_PATTERN, true );
+
+        w.write ( fo );
     }
 
     private static String loadResource ( final URL url ) throws IOException

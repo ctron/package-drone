@@ -15,5 +15,5 @@ import java.io.OutputStream;
 
 public interface SigningService
 {
-    public void sign ( InputStream in, OutputStream out ) throws Exception;
+    public void sign ( InputStream in, OutputStream out, boolean inline ) throws Exception;
 }

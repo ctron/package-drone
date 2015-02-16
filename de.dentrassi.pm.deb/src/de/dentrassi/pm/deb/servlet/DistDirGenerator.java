@@ -27,7 +27,11 @@ public class DistDirGenerator
     {
         final StringBuilder sb = new StringBuilder ();
 
-        sb.append ( "<li><a href=\"Release\">Release</a></li>" );
+        if ( this.cfg.getSigningService () != null )
+        {
+            sb.append ( "<li><a href=\"InRelease\">InRelease</a></li>" );
+            sb.append ( "<li><a href=\"Release\">Release</a></li>" );
+        }
         sb.append ( "<li><a href=\"Release.gpg\">Release.gpg</a></li>" );
 
         for ( final String comp : this.cfg.getComponents () )

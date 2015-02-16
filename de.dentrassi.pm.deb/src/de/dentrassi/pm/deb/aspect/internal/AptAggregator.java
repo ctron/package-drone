@@ -13,9 +13,15 @@ package de.dentrassi.pm.deb.aspect.internal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
@@ -30,9 +36,17 @@ import de.dentrassi.pm.deb.ChannelConfiguration;
 import de.dentrassi.pm.deb.aspect.AptChannelAspectFactory;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.deb.aspect.internal.RepoBuilder.PackageInformation;
+import de.dentrassi.pm.signing.SigningService;
 
 public class AptAggregator implements ChannelAggregator
 {
+    private final BundleContext context;
+
+    public AptAggregator ()
+    {
+        this.context = FrameworkUtil.getBundle ( AptAggregator.class ).getBundleContext ();
+    }
+
     @Override
     public String getId ()
     {
@@ -55,50 +69,77 @@ public class AptAggregator implements ChannelAggregator
 
         final Gson gson = new GsonBuilder ().create ();
 
-        final RepoBuilder repo = new RepoBuilder ();
-
-        final DistributionInformation info = new DistributionInformation ();
-        info.setArchitectures ( new TreeSet<> ( cfg.getArchitectures () ) );
-        info.setComponents ( new TreeSet<> ( cfg.getComponents () ) );
-        info.setVersion ( cfg.getVersion () );
-        info.setDescription ( cfg.getDescription () );
-        info.setLabel ( cfg.getLabel () );
-        info.setSuite ( cfg.getSuite () );
-        info.setCodename ( cfg.getCodename () );
-        info.setOrigin ( cfg.getOrigin () );
-
-        repo.addDistribution ( cfg.getDistribution (), info );
-
-        for ( final ArtifactInformation art : context.getArtifacts () )
+        ServiceReference<SigningService> serviceRef = null;
+        SigningService signingService;
+        if ( cfg.getSigningService () != null )
         {
-            final String arch = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "architecture" ) );
-            final String packageName = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "package" ) );
-            final String version = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "version" ) );
-            final String controlJson = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "control.json" ) );
-
-            final String md5 = art.getMetaData ().get ( new MetaKey ( "hasher", "md5" ) );
-            final String sha1 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) );
-            final String sha256 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha256" ) );
-
-            final Map<String, String> checksums = new HashMap<> ( 3 );
-            checksums.put ( "MD5sum", md5 );
-            checksums.put ( "SHA1", sha1 );
-            checksums.put ( "SHA256", sha256 );
-
-            if ( arch == null || version == null || packageName == null || controlJson == null )
+            final Collection<ServiceReference<SigningService>> refs = this.context.getServiceReferences ( SigningService.class, String.format ( "(%s=%s)", Constants.SERVICE_PID, cfg.getSigningService () ) );
+            if ( refs == null || refs.isEmpty () )
             {
-                continue;
+                throw new IllegalStateException ( String.format ( "Signing service %s could not be found", cfg.getSigningService () ) );
             }
-
-            final ControlInformation control = gson.fromJson ( controlJson, ControlInformation.class );
-
-            final PackageInformation packageInfo = new PackageInformation ( makePoolName ( art, packageName, version, arch ), art.getSize (), control.getValues (), checksums );
-            repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo );
+            serviceRef = refs.iterator ().next ();
+            signingService = this.context.getService ( serviceRef );
+        }
+        else
+        {
+            signingService = null;
         }
 
-        repo.spoolOut ( ( name, mimeType, stream ) -> {
-            addDistFile ( result, name, mimeType, ByteStreams.toByteArray ( stream ) );
-        } );
+        try
+        {
+            final RepoBuilder repo = new RepoBuilder ( signingService );
+
+            final DistributionInformation info = new DistributionInformation ();
+            info.setArchitectures ( new TreeSet<> ( cfg.getArchitectures () ) );
+            info.setComponents ( new TreeSet<> ( cfg.getComponents () ) );
+            info.setVersion ( cfg.getVersion () );
+            info.setDescription ( cfg.getDescription () );
+            info.setLabel ( cfg.getLabel () );
+            info.setSuite ( cfg.getSuite () );
+            info.setCodename ( cfg.getCodename () );
+            info.setOrigin ( cfg.getOrigin () );
+
+            repo.addDistribution ( cfg.getDistribution (), info );
+
+            for ( final ArtifactInformation art : context.getArtifacts () )
+            {
+                final String arch = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "architecture" ) );
+                final String packageName = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "package" ) );
+                final String version = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "version" ) );
+                final String controlJson = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "control.json" ) );
+
+                final String md5 = art.getMetaData ().get ( new MetaKey ( "hasher", "md5" ) );
+                final String sha1 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) );
+                final String sha256 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha256" ) );
+
+                final Map<String, String> checksums = new HashMap<> ( 3 );
+                checksums.put ( "MD5sum", md5 );
+                checksums.put ( "SHA1", sha1 );
+                checksums.put ( "SHA256", sha256 );
+
+                if ( arch == null || version == null || packageName == null || controlJson == null )
+                {
+                    continue;
+                }
+
+                final ControlInformation control = gson.fromJson ( controlJson, ControlInformation.class );
+
+                final PackageInformation packageInfo = new PackageInformation ( makePoolName ( art, packageName, version, arch ), art.getSize (), control.getValues (), checksums );
+                repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo );
+            }
+
+            repo.spoolOut ( ( name, mimeType, stream ) -> {
+                addDistFile ( result, name, mimeType, ByteStreams.toByteArray ( stream ) );
+            } );
+        }
+        finally
+        {
+            if ( serviceRef != null )
+            {
+                this.context.ungetService ( serviceRef );
+            }
+        }
 
         return result;
     }
