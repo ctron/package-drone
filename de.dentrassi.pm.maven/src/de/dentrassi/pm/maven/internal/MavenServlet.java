@@ -154,8 +154,8 @@ public class MavenServlet extends HttpServlet
         final String str = md.get ( new MetaKey ( "maven.repo", "channel" ) );
         if ( str == null )
         {
-            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
-            response.getWriter ().format ( "Channel %s is not configured for providing a Maven 2 repository. Add the Maven Repository aspect!", channelId );
+            commitNotConfigured ( response, channelId );
+            return;
         }
 
         final ChannelData channelData;
@@ -173,7 +173,20 @@ public class MavenServlet extends HttpServlet
             return;
         }
 
+        if ( channelData == null )
+        {
+            logger.debug ( "No maven channel data: {}", channel.getId () );
+            commitNotConfigured ( response, channelId );
+            return;
+        }
+
         new MavenHandler ( service, channelData ).handle ( toks.length > 1 ? toks[1] : null, request, response );
+    }
+
+    protected void commitNotConfigured ( final HttpServletResponse response, final String channelId ) throws IOException
+    {
+        response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+        response.getWriter ().format ( "Channel %s is not configured for providing a Maven 2 repository. Add the Maven Repository aspect!", channelId );
     }
 
     @Override
