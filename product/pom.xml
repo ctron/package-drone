@@ -221,8 +221,14 @@
 
 							<mappings>
 
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
+                                    <username>pdrone</username>
+                                    <groupname>pdrone</groupname>
+                                </mapping>
+
 								<mapping>
-									<directory>/usr/lib/package-drone/instance</directory>
+									<directory>/usr/lib/${project.artifactId}/instance</directory>
 									<username>pdrone</username>
 									<groupname>pdrone</groupname>
 									<sources>
@@ -357,9 +363,9 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 								<prereq>shadow-utils</prereq>
 							</prereqs>
 							
-					           <requires>
-					               <require>lsb-core-noarch &gt;= 4.0</require>
-					           </requires>
+				            <requires>
+				                <require>lsb-core-noarch &gt;= 4.0</require>
+				            </requires>
 
 							<distribution>centos6</distribution>
 
@@ -377,6 +383,12 @@ systemctl daemon-reload >/dev/null 2>&1 || :
                                             <location>src/sysv/${project.artifactId}</location>
                                         </source>
                                     </sources>
+                                </mapping>
+                                
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
+                                    <username>pdrone</username>
+                                    <groupname>pdrone</groupname>
                                 </mapping>
 
 								<mapping>
@@ -430,18 +442,15 @@ test -x /etc/init.d/package-drone-server && /etc/init.d/package-drone-server sto
 
 							<postinstallScriptlet>
 								<script><![CDATA[
-if [ $1 -eq 1 ] ; then
-    chkconfig package-drone-server on >/dev/null || :
-fi
-/etc/init.d/package-drone-server start || :
+/sbin/chkconfig --add package-drone-server
 ]]></script>
 							</postinstallScriptlet>
 
 							<preremoveScriptlet>
 								<script><![CDATA[
-/etc/init.d/package-drone-server stop || :
-if [ $1 -eq 0 ] ; then
+if [ "$1" -eq 0 ] ; then
     chkconfig --del package-drone-server || :
+    /etc/init.d/package-drone-server stop || :
 fi
 ]]>
 								</script>
