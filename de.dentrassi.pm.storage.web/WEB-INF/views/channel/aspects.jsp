@@ -8,6 +8,16 @@
 
 <h:main title="Channel aspects" subtitle="${pm:channel(channel) }">
 
+<script type="text/javascript">
+function doAction ( action )
+{
+    var form = $('#form');
+    form.attr("action", action);
+    form.submit ();
+    return false;
+}
+</script>
+
 <h:breadcrumbs />
 
 <div class="container-fluid">
@@ -28,7 +38,13 @@
     </div>
     <div class="panel-body">
     <p>${fn:escapeXml(aspect.description) }</p>
-    <p><form action="removeAspect" method="POST"><input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>"><input type="submit" value="Remove" class="btn btn-default" /></form>
+    <p>
+    
+    <form id="form" action="removeAspect" method="POST">
+        <input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>">
+        <button class="btn btn-default" type="submit" name="command" value="remove">Remove</button>
+        <button onclick="doAction('refreshAspect');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+    </form>
     </div>
 </div>
 

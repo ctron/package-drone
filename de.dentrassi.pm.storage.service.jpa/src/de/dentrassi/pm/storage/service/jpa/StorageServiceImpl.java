@@ -318,6 +318,20 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
+    public void refreshChannelAspect ( final String channelId, final String aspectFactoryId )
+    {
+        doWithTransactionVoid ( em -> {
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            if ( channel.getAspects ().contains ( aspectFactoryId ) )
+            {
+                new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspect ( channel, aspectFactoryId );
+            }
+        } );
+    }
+
+    @Override
     public void removeChannelAspect ( final String channelId, final String aspectFactoryId )
     {
         doWithTransactionVoid ( em -> {
