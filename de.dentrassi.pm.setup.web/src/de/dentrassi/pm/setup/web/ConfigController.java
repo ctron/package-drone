@@ -184,7 +184,7 @@ public class ConfigController implements InterfaceExtender
 
         final boolean needUpgrade = fillData ( data, model );
 
-        if ( needUpgrade || isMailServicePresent () )
+        if ( needUpgrade || isMailServicePresent () || result.hasErrors () )
         {
             // either we still have something to do here, or we are fully set up
             return new ModelAndView ( "/config/index", model );
