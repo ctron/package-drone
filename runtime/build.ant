@@ -183,6 +183,12 @@
 
             <fileset dir="unpack/equinox/plugins">
 
+            	<!-- Exclude the CM for now.
+                     since we provide a fixed version until we have
+                     the fix in Mars M6
+                -->
+            	<exclude name="org.eclipse.equinox.cm_*.jar"/>
+            	
                 <include name="org.apache.felix.gogo.command_*.jar" />
                 <include name="org.apache.felix.gogo.runtime_*.jar" />
                 <include name="org.apache.felix.gogo.shell_*.jar" />
