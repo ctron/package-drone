@@ -81,7 +81,14 @@ public class DatabaseSetup implements AutoCloseable
 
     public Long getSchemaVersion ()
     {
-        return doWithConnection ( ( con ) -> loadSchemaVersion ( con ) );
+        try
+        {
+            return doWithConnection ( ( con ) -> loadSchemaVersion ( con ) );
+        }
+        catch ( final Exception e )
+        {
+            return null;
+        }
     }
 
     @FunctionalInterface
