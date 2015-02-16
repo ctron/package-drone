@@ -224,7 +224,11 @@ public class DatabaseSetup implements AutoCloseable
 
     public boolean isConfigured ()
     {
-        return this.data.getJdbcDriver () != null && !this.data.getJdbcDriver ().isEmpty ();
+        if ( this.data.getJdbcDriver () == null || this.data.getJdbcDriver ().isEmpty () )
+        {
+            return false;
+        }
+        return true;
     }
 
     public boolean isNeedUpgrade ()
@@ -246,6 +250,11 @@ public class DatabaseSetup implements AutoCloseable
      */
     public Exception testConnection ()
     {
+        if ( !isConfigured () )
+        {
+            return null;
+        }
+
         try
         {
             return doWithConnection ( ( t ) -> null, 5 );
