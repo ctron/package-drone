@@ -28,6 +28,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.deb.ChannelConfiguration;
+import de.dentrassi.pm.deb.aspect.AptChannelAspectFactory;
 import de.dentrassi.pm.deb.servlet.handler.ContentHandler;
 import de.dentrassi.pm.deb.servlet.handler.Handler;
 import de.dentrassi.pm.deb.servlet.handler.MetaDataHandler;
@@ -97,6 +98,23 @@ public class AptServlet extends HttpServlet
             return;
         }
 
+        if ( !channel.hasAspect ( AptChannelAspectFactory.ID ) )
+        {
+            response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.getWriter ().format ( "Channel '%s' is not configured as APT repository. Add the \"APT Repository\" channel aspect.", channelId );
+            return;
+        }
+
+        final ChannelConfiguration cfg = new ChannelConfiguration ();
+        try
+        {
+            MetaKeys.bind ( cfg, channel.getMetaData () );
+        }
+        catch ( final Exception e )
+        {
+            // do nothing
+        }
+
         final String channelPath = toks.length > 1 ? toks[1] : null;
 
         if ( channelPath == null || channelPath.isEmpty () )
@@ -108,9 +126,8 @@ public class AptServlet extends HttpServlet
             }
 
             final Map<String, Object> model = new HashMap<> ();
-            model.put ( "name", channel.getName () );
-            model.put ( "id", channel.getId () );
-            Helper.render ( response, Helper.class.getResource ( "content/index.html" ), makeDefaultTitle ( channel ), model );
+            model.put ( "dir", new IndexDirGenerator ( cfg ) );
+            Helper.render ( response, IndexDirGenerator.class.getResource ( "content/index.html" ), makeDefaultTitle ( channel ), model );
             return;
         }
 
@@ -127,22 +144,13 @@ public class AptServlet extends HttpServlet
             return;
         }
 
-        final ChannelConfiguration cfg = new ChannelConfiguration ();
-        try
-        {
-            MetaKeys.bind ( cfg, channel.getMetaData () );
-        }
-        catch ( final Exception e )
-        {
-            // do nothing
-        }
-
         if ( cfg == null || !cfg.isValid () )
         {
             response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
-            response.getWriter ().format ( "APT configuration not found or not valid. Please ensure the 'APT' aspect is added to this channel and the configuration is valid." );
+            response.getWriter ().format ( "APT configuration not found or not valid. Please ensure the 'APT Repository' aspect is added to this channel and the configuration is valid." );
             return;
         }
+
         if ( channelPath.equals ( "dists" ) )
         {
             if ( !request.getPathInfo ().endsWith ( "/" ) )
@@ -194,6 +202,11 @@ public class AptServlet extends HttpServlet
 
         final String toks[] = channelPath.split ( "/" );
 
+        if ( toks.length == 1 && "GPG-KEY".equals ( toks[0] ) )
+        {
+            return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, "GPG-KEY" ), "text/plain" );
+        }
+
         if ( toks.length == 2 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) )
         {
             if ( !request.getPathInfo ().endsWith ( "/" ) )
@@ -214,7 +227,7 @@ public class AptServlet extends HttpServlet
                 case "InRelease":
                 case "Release":
                 case "Release.gpg":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ), "text/plain" );
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ), "text/plain" );
             }
 
             if ( !cfg.getComponents ().contains ( component ) )
@@ -265,11 +278,11 @@ public class AptServlet extends HttpServlet
             {
                 case "Release":
                 case "Packages":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "text/plain" );
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "text/plain" );
                 case "Packages.gz":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-gzip" );
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-gzip" );
                 case "Packages.bz2":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( "apt", String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-bzip2" );
+                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-bzip2" );
             }
         }
 

@@ -12,12 +12,12 @@ package de.dentrassi.pm.deb.servlet;
 
 import de.dentrassi.pm.deb.ChannelConfiguration;
 
-public class DistDirGenerator
+public class IndexDirGenerator
 {
 
     private final ChannelConfiguration cfg;
 
-    public DistDirGenerator ( final ChannelConfiguration cfg )
+    public IndexDirGenerator ( final ChannelConfiguration cfg )
     {
         this.cfg = cfg;
     }
@@ -29,14 +29,7 @@ public class DistDirGenerator
 
         if ( this.cfg.getSigningService () != null )
         {
-            sb.append ( "<li><a href=\"InRelease\">InRelease</a></li>" );
-            sb.append ( "<li><a href=\"Release.gpg\">Release.gpg</a></li>" );
-        }
-        sb.append ( "<li><a href=\"Release\">Release</a></li>" );
-
-        for ( final String comp : this.cfg.getComponents () )
-        {
-            sb.append ( "<li><a href=\"" + comp + "\">" + comp + "</li>" );
+            sb.append ( "<li><a href=\"GPG-KEY\">GPG-KEY</a></li>" );
         }
 
         return sb.toString ();

@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.PublicKeyPacket;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPSecretKey;
@@ -53,6 +54,15 @@ public class PgpSigningService implements SigningService
             throw new IllegalStateException ( String.format ( "Signing key '%08X' could not be found", keyId ) );
         }
         this.privateKey = this.secretKey.extractPrivateKey ( new BcPBESecretKeyDecryptorBuilder ( new BcPGPDigestCalculatorProvider () ).build ( passphrase.toCharArray () ) );
+    }
+
+    @Override
+    public void printPublicKey ( final OutputStream out ) throws IOException
+    {
+        final ArmoredOutputStream armoredOutput = new ArmoredOutputStream ( out );
+        final PublicKeyPacket pubKey = this.privateKey.getPublicKeyPacket ();
+        pubKey.encode ( new BCPGOutputStream ( armoredOutput ) );
+        armoredOutput.close ();
     }
 
     @Override

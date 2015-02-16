@@ -13,7 +13,6 @@ package de.dentrassi.pm.deb.aspect.internal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -429,6 +428,12 @@ public class RepoBuilder
         {
             handler.spoolOut ( String.format ( "dists/%s/Release.gpg", dist.getName () ), "text/plain", new ByteArrayInputStream ( sign ( data, false ) ) );
             handler.spoolOut ( String.format ( "dists/%s/InRelease", dist.getName () ), "text/plain", new ByteArrayInputStream ( sign ( data, true ) ) );
+
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+            this.signingService.printPublicKey ( bos );
+            bos.close ();
+
+            handler.spoolOut ( "GPG-KEY", "text/plain", new ByteArrayInputStream ( bos.toByteArray () ) );
         }
     }
 
@@ -457,18 +462,22 @@ public class RepoBuilder
         writer.format ( "\n %s %16d %s", hashCode.toString (), chk.getSize (), name );
     }
 
-    @FunctionalInterface
-    public interface SpoolOutHandler
-    {
-        public void spoolOut ( String fileName, String mimeType, InputStream stream ) throws IOException;
-    }
-
     private void spoolOutFile ( final Map<String, Checksums> checksums, final String prefix, final String fileName, final String mimeType, final byte[] data, final SpoolOutHandler handler ) throws IOException
     {
         checksums.put ( fileName, Checksums.create ( data ) );
         handler.spoolOut ( prefix + "/" + fileName, mimeType, new ByteArrayInputStream ( data ) );
     }
 
+    /**
+     * Write field only when the value is set
+     *
+     * @param writer
+     *            the writer to use
+     * @param fieldName
+     *            the name of field
+     * @param value
+     *            the value
+     */
     protected static void writeOptional ( final StringWriter writer, final String fieldName, final String value )
     {
         if ( value != null )
@@ -477,6 +486,17 @@ public class RepoBuilder
         }
     }
 
+    /**
+     * Write a field
+     *
+     * @param writer
+     *            the writer to use
+     * @param fieldName
+     *            the field name
+     * @param value
+     *            the value, should not be <code>null</code> since this would
+     *            cause the string <q>null</q> in the file.
+     */
     protected static void write ( final StringWriter writer, final String fieldName, final String value )
     {
         writer.write ( fieldName + ": " + value + "\n" );

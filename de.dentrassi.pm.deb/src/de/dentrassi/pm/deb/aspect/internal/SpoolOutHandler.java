@@ -8,15 +8,13 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.signing;
+package de.dentrassi.pm.deb.aspect.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
-public interface SigningService
+@FunctionalInterface
+public interface SpoolOutHandler
 {
-    public void sign ( InputStream in, OutputStream out, boolean inline ) throws Exception;
-
-    public void printPublicKey ( OutputStream out ) throws IOException;
+    public void spoolOut ( String fileName, String mimeType, InputStream stream ) throws IOException;
 }
