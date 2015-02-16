@@ -16,6 +16,8 @@ public interface ValidationContext
 {
     public void error ( String errorMessage );
 
+    public void error ( BindingError error );
+
     public void error ( String path, String errorMessage );
 
     public void error ( String path, BindingError error );

@@ -92,6 +92,11 @@ public class DatabaseSetup implements AutoCloseable
 
     public <T> T doWithConnection ( final SqlFunction<T> func )
     {
+        return doWithConnection ( func, null );
+    }
+
+    public <T> T doWithConnection ( final SqlFunction<T> func, final Integer login )
+    {
         final DataSourceFactory factory = this.tracker.getService ();
         if ( factory == null )
         {
@@ -102,14 +107,21 @@ public class DatabaseSetup implements AutoCloseable
         {
             final Properties props = new Properties ();
 
-            props.put ( DataSourceFactory.JDBC_PASSWORD, this.data.getPassword () );
-            props.put ( DataSourceFactory.JDBC_USER, this.data.getUser () );
             props.put ( DataSourceFactory.JDBC_URL, this.data.getUrl () );
 
             props.putAll ( makeAdditional ( this.data.getAdditionalProperties () ) );
 
             final DataSource ds = factory.createDataSource ( props );
-            try ( Connection con = ds.getConnection () )
+
+            // TODO: since we use an URL based connection, Gemini does not allow us to set the login timeout
+            /*
+            if ( login != null )
+            {
+                ds.setLoginTimeout ( login );
+            }
+            */
+
+            try ( Connection con = ds.getConnection ( this.data.getUser (), this.data.getPassword () ) )
             {
                 initConnection ( con );
                 return func.apply ( con );
@@ -224,6 +236,23 @@ public class DatabaseSetup implements AutoCloseable
         else
         {
             return false;
+        }
+    }
+
+    /**
+     * Test if the database connection is valid <br/>
+     *
+     * @return the connection error or <code>null</code>
+     */
+    public Exception testConnection ()
+    {
+        try
+        {
+            return doWithConnection ( ( t ) -> null, 5 );
+        }
+        catch ( final Exception e )
+        {
+            return e;
         }
     }
 }

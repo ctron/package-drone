@@ -20,6 +20,7 @@ import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 
 import de.dentrassi.osgi.web.Controller;
@@ -69,7 +70,7 @@ public class ConfigController implements InterfaceExtender
         return result;
     }
 
-    @RequestMapping ( method = RequestMethod.GET )
+    @RequestMapping
     public ModelAndView main ()
     {
         final Map<String, Object> model = new HashMap<> ();
@@ -86,15 +87,52 @@ public class ConfigController implements InterfaceExtender
         return new ModelAndView ( "/config/index", model );
     }
 
+    @RequestMapping ( value = "/testConnection", method = RequestMethod.POST )
+    public ModelAndView testConnection ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result )
+    {
+        if ( result.hasErrors () )
+        {
+            return testMessageResult ( "warning", "Invalid configuration!", "The configuration has validation errors. Please fix them first!" );
+        }
+
+        Exception testResult;
+
+        try ( DatabaseSetup setup = new DatabaseSetup ( data ) )
+        {
+            testResult = setup.testConnection ();
+        }
+
+        if ( testResult != null )
+        {
+            return CommonController.createError ( "Database connection test", "Connection test failed", testResult );
+        }
+
+        return testMessageResult ( "success", "Success!", "The connection test was successful!" );
+    }
+
+    private ModelAndView testMessageResult ( final String type, final String shortMessage, final String message )
+    {
+        final Map<String, Object> model = new HashMap<> ( 2 );
+
+        model.put ( "type", type );
+        model.put ( "shortMessage", shortMessage );
+        model.put ( "message", message );
+
+        return new ModelAndView ( "config/testMessage", model );
+    }
+
     private boolean fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
     {
         model.put ( "configured", Boolean.FALSE );
 
         boolean needUpdate = false;
+        Exception testResult = null;
         try
         {
             try ( DatabaseSetup setup = new DatabaseSetup ( command ) )
             {
+                testResult = setup.testConnection ();
+
                 model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
                 model.put ( "currentVersion", setup.getCurrentVersion () );
                 model.put ( "configured", setup.isConfigured () );
@@ -106,8 +144,14 @@ public class ConfigController implements InterfaceExtender
         }
 
         model.put ( "storageServicePresent", Activator.getTracker ().getService () != null );
-
         model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
+
+        if ( testResult != null )
+        {
+            final Throwable root = ExceptionHelper.getRootCause ( testResult );
+            model.put ( "testResultMessage", ExceptionHelper.extractMessage ( root ) );
+            model.put ( "testStackTrace", ExceptionHelper.formatted ( root ) );
+        }
 
         return needUpdate;
     }
@@ -117,8 +161,6 @@ public class ConfigController implements InterfaceExtender
     {
         final Map<String, Object> model = new HashMap<> ();
         model.put ( "command", data );
-
-        model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
 
         if ( !result.hasErrors () )
         {

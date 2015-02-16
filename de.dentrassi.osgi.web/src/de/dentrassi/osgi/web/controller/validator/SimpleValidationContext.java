@@ -27,6 +27,11 @@ public class SimpleValidationContext implements ValidationContext
 
     private final Set<String> markers = new HashSet<> ();
 
+    public Set<String> getMarkers ()
+    {
+        return this.markers;
+    }
+
     @Override
     public void error ( String path, final BindingError error )
     {
@@ -44,9 +49,10 @@ public class SimpleValidationContext implements ValidationContext
         pos.add ( error );
     }
 
-    public Set<String> getMarkers ()
+    @Override
+    public void error ( final BindingError error )
     {
-        return this.markers;
+        error ( null, error );
     }
 
     @Override
