@@ -106,7 +106,14 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             return null;
         }
 
-        return doWithTransaction ( ( em ) -> processRefresh ( em, (DatabaseUserInformation)user ) );
+        try
+        {
+            return doWithTransaction ( ( em ) -> processRefresh ( em, (DatabaseUserInformation)user ) );
+        }
+        catch ( final Exception e )
+        {
+            return null;
+        }
     }
 
     private UserInformation processRefresh ( final EntityManager em, final DatabaseUserInformation user )
