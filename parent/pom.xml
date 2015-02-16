@@ -94,6 +94,7 @@
 		<module>../de.dentrassi.pm.database</module>
 		
 		<module>../de.dentrassi.pm.deb</module>
+		<module>../de.dentrassi.pm.deb.web</module>
 		
 		<module>../de.dentrassi.pm.generator</module>
 		<module>../de.dentrassi.pm.generator.p2</module>
