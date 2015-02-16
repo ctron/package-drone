@@ -8,22 +8,30 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.deb;
+package de.dentrassi.pm.deb.servlet.handler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
+import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class RedirectHandler implements Handler
+import de.dentrassi.pm.deb.servlet.Helper;
+
+public class ContentHandler implements Handler
 {
+    private final URL resource;
 
-    private final HttpServletRequest request;
+    private final Map<String, Object> model;
 
-    public RedirectHandler ( final HttpServletRequest request )
+    private final String title;
+
+    public ContentHandler ( final URL resource, final String title, final Map<String, Object> model )
     {
-        this.request = request;
+        this.resource = resource;
+        this.model = model;
+        this.title = title;
     }
 
     @Override
@@ -34,7 +42,7 @@ public class RedirectHandler implements Handler
     @Override
     public void process ( final HttpServletResponse response ) throws IOException
     {
-        response.sendRedirect ( this.request.getContextPath () + this.request.getPathInfo () + "/" );
+        Helper.render ( response, this.resource, this.title, this.model );
     }
 
 }

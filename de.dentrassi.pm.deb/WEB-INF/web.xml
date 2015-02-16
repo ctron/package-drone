@@ -6,7 +6,7 @@
 	
 	<servlet>
 		<servlet-name>main</servlet-name>
-		<servlet-class>de.dentrassi.pm.deb.AptServlet</servlet-class>
+		<servlet-class>de.dentrassi.pm.deb.servlet.AptServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	

@@ -8,7 +8,7 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.deb;
+package de.dentrassi.pm.deb.servlet;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,10 +27,12 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
-import de.dentrassi.pm.deb.servlet.CompDirGenerator;
-import de.dentrassi.pm.deb.servlet.DistDirGenerator;
-import de.dentrassi.pm.deb.servlet.Helper;
-import de.dentrassi.pm.deb.servlet.TypeDirGenerator;
+import de.dentrassi.pm.deb.ChannelConfiguration;
+import de.dentrassi.pm.deb.servlet.handler.ContentHandler;
+import de.dentrassi.pm.deb.servlet.handler.Handler;
+import de.dentrassi.pm.deb.servlet.handler.MetaDataHandler;
+import de.dentrassi.pm.deb.servlet.handler.PoolHandler;
+import de.dentrassi.pm.deb.servlet.handler.RedirectHandler;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
