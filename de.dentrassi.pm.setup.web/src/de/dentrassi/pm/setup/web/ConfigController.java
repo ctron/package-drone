@@ -104,7 +104,7 @@ public class ConfigController implements InterfaceExtender
 
         if ( testResult != null )
         {
-            return CommonController.createError ( "Database connection test", "Connection test failed", testResult );
+            return CommonController.createError ( "Database connection test", "Connection test failed", testResult, true );
         }
 
         return testMessageResult ( "success", "Success!", "The connection test was successful!" );

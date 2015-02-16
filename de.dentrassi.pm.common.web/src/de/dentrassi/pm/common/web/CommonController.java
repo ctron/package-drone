@@ -55,9 +55,11 @@ public class CommonController
         return result;
     }
 
-    public static ModelAndView createError ( final String title, final String result, final Throwable e )
+    public static ModelAndView createError ( final String title, final String result, final Throwable e, final boolean showStackTrace )
     {
         final ModelAndView mav = new ModelAndView ( ERROR_VIEW );
+
+        mav.put ( "showStackTrace", showStackTrace );
 
         mav.put ( ERROR_VIEW_TITLE, title );
         mav.put ( ERROR_VIEW_RESULT, result );
@@ -71,6 +73,11 @@ public class CommonController
         mav.setAlternateViewResolver ( CommonController.class );
 
         return mav;
+    }
+
+    public static ModelAndView createError ( final String title, final String result, final Throwable e )
+    {
+        return createError ( title, result, e, Boolean.getBoolean ( "package.drone.showStackTrace" ) );
     }
 
     public static ModelAndView createAccessDenied ()
