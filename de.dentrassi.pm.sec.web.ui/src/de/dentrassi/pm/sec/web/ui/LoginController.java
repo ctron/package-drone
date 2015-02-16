@@ -21,6 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.scada.utils.ExceptionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -38,6 +40,8 @@ import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 @RequestMapping ( "/login" )
 public class LoginController
 {
+    private final static Logger logger = LoggerFactory.getLogger ( LoginController.class );
+
     @RequestMapping ( method = RequestMethod.GET )
     public ModelAndView login ( final HttpServletRequest request )
     {
@@ -98,17 +102,22 @@ public class LoginController
         }
         catch ( final ServletException e )
         {
-            final long failures = Sessions.incrementLoginFailCounter ( request.getSession () );
-
             final Map<String, Object> model = new HashMap<> ();
-            model.put ( "errorTitle", e.getMessage () );
-            model.put ( "failureCount", failures );
 
             final Throwable root = ExceptionHelper.getRootCause ( e );
             if ( root instanceof LoginException )
             {
                 model.put ( "errorTitle", root.getMessage () );
                 model.put ( "details", ( (LoginException)root ).getDetails () );
+
+                final long failures = Sessions.incrementLoginFailCounter ( request.getSession () );
+                model.put ( "failureCount", failures );
+            }
+            else
+            {
+                logger.warn ( "Login error", e );
+                model.put ( "errorTitle", "Internal error!" );
+                model.put ( "details", String.format ( "Failed to log in: %s", root.getClass ().getSimpleName () ) );
             }
 
             return new ModelAndView ( "login/form", model );
