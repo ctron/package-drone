@@ -37,6 +37,12 @@ public class BasicTest extends AbstractServerTest
     }
 
     @Test
+    public void testApt () throws Exception
+    {
+        testUrl ( "/apt" );
+    }
+
+    @Test
     public void testMaven () throws Exception
     {
         testUrl ( "/maven" );
