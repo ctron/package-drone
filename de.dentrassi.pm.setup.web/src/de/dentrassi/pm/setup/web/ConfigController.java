@@ -79,7 +79,10 @@ public class ConfigController implements InterfaceExtender
         {
             final DatabaseConnectionData command = cfg.getDatabaseSettings ();
 
-            fillData ( command, model );
+            try ( DatabaseSetup db = new DatabaseSetup ( command ) )
+            {
+                fillData ( db, model );
+            }
 
             model.put ( "command", command );
         }
@@ -121,23 +124,18 @@ public class ConfigController implements InterfaceExtender
         return new ModelAndView ( "config/testMessage", model );
     }
 
-    private boolean fillData ( final DatabaseConnectionData command, final Map<String, Object> model )
+    private void fillData ( final DatabaseSetup setup, final Map<String, Object> model )
     {
         model.put ( "configured", Boolean.FALSE );
 
-        boolean needUpdate = false;
         Exception testResult = null;
         try
         {
-            try ( DatabaseSetup setup = new DatabaseSetup ( command ) )
-            {
-                testResult = setup.testConnection ();
+            testResult = setup.testConnection ();
 
-                model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
-                model.put ( "currentVersion", setup.getCurrentVersion () );
-                model.put ( "configured", setup.isConfigured () );
-                needUpdate = setup.isNeedUpgrade ();
-            }
+            model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
+            model.put ( "currentVersion", setup.getCurrentVersion () );
+            model.put ( "configured", setup.isConfigured () );
         }
         catch ( final Exception e )
         {
@@ -152,8 +150,6 @@ public class ConfigController implements InterfaceExtender
             model.put ( "testResultMessage", ExceptionHelper.extractMessage ( root ) );
             model.put ( "testStackTrace", ExceptionHelper.formatted ( root ) );
         }
-
-        return needUpdate;
     }
 
     @RequestMapping ( method = RequestMethod.POST )
@@ -182,9 +178,16 @@ public class ConfigController implements InterfaceExtender
             }
         }
 
-        final boolean needUpgrade = fillData ( data, model );
+        Exception testConnection;
+        boolean needUpgrade;
+        try ( DatabaseSetup db = new DatabaseSetup ( data ) )
+        {
+            needUpgrade = db.isNeedUpgrade ();
+            testConnection = db.testConnection ();
+            fillData ( db, model );
+        }
 
-        if ( needUpgrade || isMailServicePresent () || result.hasErrors () )
+        if ( needUpgrade || isMailServicePresent () || result.hasErrors () || testConnection != null )
         {
             // either we still have something to do here, or we are fully set up
             return new ModelAndView ( "/config/index", model );
@@ -213,8 +216,8 @@ public class ConfigController implements InterfaceExtender
                 try ( DatabaseSetup setup = new DatabaseSetup ( data ) )
                 {
                     setup.performUpgrade ();
+                    fillData ( setup, model );
                 }
-                fillData ( data, model );
             }
 
             model.put ( "mailServicePresent", isMailServicePresent () );
