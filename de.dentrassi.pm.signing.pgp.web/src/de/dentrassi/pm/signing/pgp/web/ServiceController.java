@@ -73,7 +73,7 @@ public class ServiceController implements InterfaceExtender
 
         if ( request.isUserInRole ( "ADMIN" ) )
         {
-            result.add ( new MenuEntry ( "Signing", 4_000, "PGP Signers", 1_000, LinkTarget.createFromController ( ServiceController.class, "index" ), null, null ) );
+            result.add ( new MenuEntry ( "Signing", 4_100, "PGP Signers", 1_000, LinkTarget.createFromController ( ServiceController.class, "index" ), null, null ) );
         }
 
         return result;
