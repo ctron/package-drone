@@ -61,6 +61,11 @@ public class OsgiController implements InterfaceExtender
 
     private List<MenuEntry> getChannelViews ( final Channel channel )
     {
+        if ( !channel.hasAspect ( "osgi" ) )
+        {
+            return null;
+        }
+
         final List<MenuEntry> result = new LinkedList<> ();
 
         final Map<String, Object> model = new HashMap<> ( 1 );
