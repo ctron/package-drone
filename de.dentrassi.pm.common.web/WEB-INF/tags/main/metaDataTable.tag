@@ -5,6 +5,8 @@
 
 <%@attribute name="metaData" required="true" type="java.util.Map"%>
 
+<% jspContext.setAttribute("nl", "\n"); %>
+
 <table class="table table-condensed">
 
 <tr>
@@ -17,7 +19,24 @@
     <tr>
         <td>${fn:escapeXml(entry.key.namespace) }</td>
         <td style="white-space: nowrap;">${fn:escapeXml(entry.key.key) }</td>
-        <td style="white-space: pre;"><code>${fn:escapeXml(entry.value) }</code></td>
+        <td>
+            <c:choose>
+                <c:when test="${fn:contains(entry.value, nl) }">
+                    <pre>${fn:escapeXml(entry.value) }</pre>
+                </c:when>
+                <c:otherwise>
+                    <c:choose>
+                        <c:when test="${fn:length(entry.value) > 120 }">
+                            <code>${fn:escapeXml(fn:substring(entry.value, 0, 120)) }</code>…
+                        </c:when>
+                        <c:otherwise>
+                            <code>${fn:escapeXml(entry.value) }</code>
+                        </c:otherwise>
+                    </c:choose>
+                </c:otherwise>
+            </c:choose>
+            
+        </td>
     </tr>
 </c:forEach>
 
