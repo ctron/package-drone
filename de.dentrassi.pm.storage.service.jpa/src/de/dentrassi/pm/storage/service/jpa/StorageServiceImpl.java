@@ -481,7 +481,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             if ( artifact instanceof GeneratorArtifactEntity )
             {
-                hi.regenerateArtifact ( (GeneratorArtifactEntity)artifact );
+                hi.regenerateArtifact ( (GeneratorArtifactEntity)artifact, true );
             }
 
             return result;

@@ -87,7 +87,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         private ArtifactInformation info;
 
-        private ArtifactContextImpl ( final ChannelEntity channel, final boolean runAggregator, final Path file, final Supplier<ArtifactInformation> infoSupplier, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
+        private final RegenerateTracker tracker;
+
+        private ArtifactContextImpl ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator, final Path file, final Supplier<ArtifactInformation> infoSupplier, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
         {
             this.channel = channel;
             this.file = file;
@@ -95,6 +97,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             this.em = em;
             this.entitySupplier = entitySupplier;
             this.runAggregator = runAggregator;
+            this.tracker = tracker;
         }
 
         @Override
@@ -129,7 +132,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             try
             {
-                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData, this.runAggregator );
+                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData, this.tracker, this.runAggregator );
             }
             catch ( final Exception e )
             {
@@ -215,7 +218,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             {
                 try
                 {
-                    regenerateArtifact ( (GeneratorArtifactEntity)ae );
+                    regenerateArtifact ( (GeneratorArtifactEntity)ae, true );
                 }
                 catch ( final Exception e )
                 {
@@ -225,7 +228,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         } );
     }
 
-    public void regenerateArtifact ( final GeneratorArtifactEntity ae ) throws Exception
+    public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
         doStreamed ( this.em, ae, ( file ) -> {
             doLocked ( ae.getChannel (), ( ) -> {
@@ -234,7 +237,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 deleteGeneratedChildren ( ae );
                 this.em.flush ();
 
-                generateArtifact ( ae.getChannel (), ae, file );
+                generateArtifact ( ae.getChannel (), ae, file, runAggregator );
                 this.em.flush ();
             } );
         } );
@@ -267,23 +270,28 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         q.executeUpdate ();
     }
 
-    public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file ) throws Exception
+    public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file, final boolean runAggregator ) throws Exception
     {
         final String generatorId = ae.getGeneratorId ();
-        final ArtifactContextImpl ctx = createGeneratedContext ( this.em, channel, ae, file );
+
+        final RegenerateTracker tracker = new RegenerateTracker ( this );
+
+        final ArtifactContextImpl ctx = createGeneratedContext ( tracker, this.em, channel, ae, file, runAggregator );
         this.generatorProcessor.process ( generatorId, ctx );
+
+        tracker.process ( runAggregator );
     }
 
-    private ArtifactContextImpl createGeneratedContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
+    private ArtifactContextImpl createGeneratedContext ( final RegenerateTracker tracker, final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final boolean runAggregator )
     {
-        return new ArtifactContextImpl ( channel, true, file, ( ) -> convert ( artifact ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
             final GeneratedArtifactEntity ge = new GeneratedArtifactEntity ();
             ge.setParent ( artifact );
             return ge;
         } );
     }
 
-    public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData, final boolean runAggregator ) throws Exception
+    public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData, final RegenerateTracker tracker, final boolean runAggregator ) throws Exception
     {
         final Path file = createTempFile ( name );
 
@@ -297,7 +305,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
             {
                 final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId () );
-                runChannelTriggers ( channel, listener -> listener.artifactPreAdd ( context ), null );
+                runChannelTriggers ( tracker, channel, listener -> listener.artifactPreAdd ( context ), null );
                 if ( context.isVeto () )
                 {
                     logger.info ( "Veto add artifact {} to channel {}", name, channel.getId () );
@@ -319,13 +327,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
                 if ( ae instanceof GeneratorArtifactEntity )
                 {
-                    generateArtifact ( channel, (GeneratorArtifactEntity)ae, file );
+                    generateArtifact ( channel, (GeneratorArtifactEntity)ae, file, runAggregator );
                 }
 
                 final AddedEvent event = new AddedEvent ( ae.getId (), metadata );
-                runChannelTriggers ( channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), event );
+                runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), event );
 
-                createVirtualArtifacts ( channel, ae, file, runAggregator );
+                createVirtualArtifacts ( channel, ae, file, tracker, runAggregator );
 
                 // runGeneratorTriggers ( channel, new AddedEvent ( ae.getId (), metadata ) );
 
@@ -362,7 +370,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return new PostAddContentImpl ( this, channelId );
     }
 
-    protected void runChannelTriggers ( final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
+    protected void runChannelTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
     {
         Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, ( t ) -> {
             try
@@ -374,9 +382,10 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 throw new RuntimeException ( e );
             }
         } );
+
         if ( event != null )
         {
-            runGeneratorTriggers ( channel, event );
+            runGeneratorTriggers ( tracker, channel, event );
         }
     }
 
@@ -414,18 +423,18 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    private void createVirtualArtifacts ( final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final boolean runAggregator )
+    private void createVirtualArtifacts ( final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final RegenerateTracker tracker, final boolean runAggregator )
     {
         logger.debug ( "Creating virtual artifacts for - channel: {}, artifact: {}, runAggregator: {}", channel.getId (), artifact.getId (), runAggregator );
 
-        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), runAggregator ) ) );
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), tracker, runAggregator ) ) );
     }
 
-    private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace, final boolean runAggregator )
+    private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace, final RegenerateTracker tracker, final boolean runAggregator )
     {
         logger.debug ( "Creating virtual artifact context for: {}", namespace );
 
-        return new ArtifactContextImpl ( channel, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
             final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
             ve.setParent ( artifact );
             ve.setNamespace ( namespace );
@@ -447,7 +456,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 throw new IllegalArgumentException ( String.format ( "Artifact '%s' is not a generator artifact.", id ) );
             }
 
-            regenerateArtifact ( (GeneratorArtifactEntity)ae );
+            regenerateArtifact ( (GeneratorArtifactEntity)ae, false );
             runChannelAggregators ( ae.getChannel () );
         }
         catch ( final Exception e )
@@ -480,7 +489,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         final ChannelEntity channel = ae.getChannel ();
 
-        runGeneratorTriggers ( channel, new RemovedEvent ( ae.getId (), md ) );
+        final RegenerateTracker tracker = new RegenerateTracker ( this );
+        runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
+        tracker.process ( false );
 
         // now run the channel aggregator
         runChannelAggregators ( channel );
@@ -488,28 +499,28 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return convert ( ae );
     }
 
-    private void runGeneratorTriggers ( final ChannelEntity channel, final Object event )
+    private void runGeneratorTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final Object event )
     {
         scanArtifacts ( channel, ae -> {
-            if ( ae instanceof GeneratorArtifactEntity )
+
+            // TODO: scanArtifacts should allow us to search for a specific artifact type
+
+            if ( ! ( ae instanceof GeneratorArtifactEntity ) )
             {
-                final String gid = ( (GeneratorArtifactEntity)ae ).getGeneratorId ();
-                logger.debug ( "Checking generator artifact {} / {} if regeneration is required", ae.getId (), gid );
-                this.generatorProcessor.process ( gid, ( generator ) -> {
-                    if ( generator.shouldRegenerate ( event ) )
-                    {
-                        logger.debug ( "Need to re-generate artifact {} with generator {}", ae.getId (), gid );
-                        try
-                        {
-                            regenerateArtifact ( (GeneratorArtifactEntity)ae );
-                        }
-                        catch ( final Exception e )
-                        {
-                            throw new RuntimeException ( e );
-                        }
-                    };
-                } );
+                return;
             }
+
+            final String gid = ( (GeneratorArtifactEntity)ae ).getGeneratorId ();
+
+            logger.debug ( "Checking generator artifact {} / {} if regeneration is required", ae.getId (), gid );
+
+            this.generatorProcessor.process ( gid, ( generator ) -> {
+                if ( generator.shouldRegenerate ( event ) )
+                {
+                    logger.debug ( "Need to re-generate artifact {} with generator {}", ae.getId (), gid );
+                    tracker.add ( (GeneratorArtifactEntity)ae );
+                };
+            } );
         } );
     }
 
@@ -587,6 +598,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.info ( "Reprocessing aspect - channelId: {}, aspect: {}", channel.getId (), aspectFactoryId );
 
+        final RegenerateTracker tracker = new RegenerateTracker ( this );
+
         // first delete all virtual artifacts
 
         deleteAllVirtualArtifacts ( channel );
@@ -633,7 +646,10 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         // re-create virtual artifacts
 
-        createAllVirtualArtifacts ( channel, false );
+        createAllVirtualArtifacts ( channel, tracker, false );
+
+        tracker.process ( false );
+
         runChannelAggregators ( channel );
     }
 
@@ -744,9 +760,11 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         final ChannelEntity channel = artifact.getChannel ();
 
+        final RegenerateTracker tracker = new RegenerateTracker ( this );
+
         try
         {
-            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, false ) );
+            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, false ) );
         }
         catch ( final Exception e )
         {
@@ -755,14 +773,21 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         this.em.flush ();
 
+        tracker.process ( false );
+
         // run aggregator after all artifacts have been created
         runChannelAggregators ( channel );
     }
 
     public void recreateAllVirtualArtifacts ( final ChannelEntity channel )
     {
+        final RegenerateTracker tracker = new RegenerateTracker ( this );
+
         deleteAllVirtualArtifacts ( channel );
-        createAllVirtualArtifacts ( channel, false );
+        createAllVirtualArtifacts ( channel, tracker, false );
+
+        tracker.process ( false );
+
         runChannelAggregators ( channel );
     }
 
@@ -775,9 +800,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
      *            whether to run the channel aggregators when an artifact is
      *            created or not
      */
-    private void createAllVirtualArtifacts ( final ChannelEntity channel, final boolean runAggregator )
+    private void createAllVirtualArtifacts ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator )
     {
-        scanArtifacts ( channel, ( artifact ) -> doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, runAggregator ) ) );
+        scanArtifacts ( channel, ( artifact ) -> doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
     }
 
     private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
@@ -796,7 +821,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         try
         {
             final ChannelEntity channel = getCheckedChannel ( channelId );
-            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, true );
+            final RegenerateTracker tracker = new RegenerateTracker ( this );
+            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, tracker, true );
+            tracker.process ( true );
             return ae;
         }
         catch ( final Exception e )
