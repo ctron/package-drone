@@ -443,6 +443,7 @@ test -x /etc/init.d/package-drone-server && /etc/init.d/package-drone-server sto
 							<postinstallScriptlet>
 								<script><![CDATA[
 /sbin/chkconfig --add package-drone-server
+/sbin/chkconfig package-drone-server && /etc/init.d/package-drone-server start || :
 ]]></script>
 							</postinstallScriptlet>
 
