@@ -646,24 +646,31 @@ public class MavenServlet extends HttpServlet
         }
 
         final byte[] authData = Base64.getDecoder ().decode ( toks[1] );
-        String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
+        final String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
 
         logger.debug ( "Auth String: {}", authStr );
 
-        if ( authStr.startsWith ( ":" ) )
+        final String[] authToks = authStr.split ( ":", 2 );
+
+        logger.debug ( "Auth tokens: {}", new Object[] { authToks } );
+
+        if ( authToks.length != 2 )
         {
-            authStr = authStr.substring ( 1 );
-        }
-        if ( authStr.endsWith ( ":" ) )
-        {
-            authStr = authStr.substring ( 0, authStr.length () - 1 );
+            return false;
         }
 
-        logger.debug ( "Auth String (cleaned): {}", authStr );
+        if ( !authToks[0].equals ( "deploy" ) )
+        {
+            return false;
+        }
+
+        final String deployKey = authToks[1];
+
+        logger.debug ( "Deploy key: '{}'", deployKey );
 
         for ( final DeployKey key : channel.getAllDeployKeys () )
         {
-            if ( key.getKey ().equals ( authStr ) )
+            if ( key.getKey ().equals ( deployKey ) )
             {
                 return true;
             }
