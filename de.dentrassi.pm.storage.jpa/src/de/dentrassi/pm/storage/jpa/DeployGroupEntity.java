@@ -23,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
 @Entity
@@ -39,6 +40,7 @@ public class DeployGroupEntity
     private String name;
 
     @OneToMany ( fetch = EAGER, orphanRemoval = true, cascade = ALL, mappedBy = "group" )
+    @CascadeOnDelete
     private Collection<DeployKeyEntity> keys = new LinkedList<> ();
 
     public void setId ( final String id )

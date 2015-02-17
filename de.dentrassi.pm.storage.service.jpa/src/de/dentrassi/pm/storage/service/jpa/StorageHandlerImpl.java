@@ -77,7 +77,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         private final Path file;
 
-        private final ArtifactInformation info;
+        private final Supplier<ArtifactInformation> infoSupplier;
 
         private final EntityManager em;
 
@@ -85,11 +85,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         private final boolean runAggregator;
 
-        private ArtifactContextImpl ( final ChannelEntity channel, final boolean runAggregator, final Path file, final ArtifactInformation info, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
+        private ArtifactInformation info;
+
+        private ArtifactContextImpl ( final ChannelEntity channel, final boolean runAggregator, final Path file, final Supplier<ArtifactInformation> infoSupplier, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
         {
             this.channel = channel;
             this.file = file;
-            this.info = info;
+            this.infoSupplier = infoSupplier;
             this.em = em;
             this.entitySupplier = entitySupplier;
             this.runAggregator = runAggregator;
@@ -109,6 +111,10 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         @Override
         public ArtifactInformation getArtifactInformation ()
         {
+            if ( this.info == null )
+            {
+                this.info = this.infoSupplier.get ();
+            }
             return this.info;
         }
 
@@ -270,8 +276,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private ArtifactContextImpl createGeneratedContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file )
     {
-        final ArtifactInformation info = convert ( artifact );
-        return new ArtifactContextImpl ( channel, true, file, info, em, ( ) -> {
+        return new ArtifactContextImpl ( channel, true, file, ( ) -> convert ( artifact ), em, ( ) -> {
             final GeneratedArtifactEntity ge = new GeneratedArtifactEntity ();
             ge.setParent ( artifact );
             return ge;
@@ -420,8 +425,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.debug ( "Creating virtual artifact context for: {}", namespace );
 
-        final ArtifactInformation info = convert ( artifact );
-        return new ArtifactContextImpl ( channel, runAggregator, file, info, em, ( ) -> {
+        return new ArtifactContextImpl ( channel, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
             final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
             ve.setParent ( artifact );
             ve.setNamespace ( namespace );
@@ -740,7 +744,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         try
         {
-            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, true ) );
+            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, false ) );
         }
         catch ( final Exception e )
         {
@@ -748,6 +752,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
 
         this.em.flush ();
+
+        // run aggregator after all artifacts have been created
+        runChannelAggregators ( channel );
     }
 
     public void recreateAllVirtualArtifacts ( final ChannelEntity channel )
