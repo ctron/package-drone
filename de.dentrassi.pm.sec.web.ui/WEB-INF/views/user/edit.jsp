@@ -49,6 +49,9 @@ fieldset {
 	                        <form:option value="ADMIN"/>
 	                        <form:option value="MANAGER"/>
 	                    </form:select>
+	                    <span class="help-block">
+	                       This is a multi select list. The user will only have the roles which are selected/highlighted.
+	                    </span>
                     </h:formEntry>
                     
                 </fieldset>
