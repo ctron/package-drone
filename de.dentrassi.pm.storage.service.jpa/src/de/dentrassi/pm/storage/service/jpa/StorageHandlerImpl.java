@@ -478,10 +478,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
         logger.info ( "Artifact deleted: {}", artifactId );
 
-        runGeneratorTriggers ( ae.getChannel (), new RemovedEvent ( ae.getId (), md ) );
+        final ChannelEntity channel = ae.getChannel ();
+
+        runGeneratorTriggers ( channel, new RemovedEvent ( ae.getId (), md ) );
 
         // now run the channel aggregator
-        runChannelAggregators ( ae.getChannel () );
+        runChannelAggregators ( channel );
 
         return convert ( ae );
     }
