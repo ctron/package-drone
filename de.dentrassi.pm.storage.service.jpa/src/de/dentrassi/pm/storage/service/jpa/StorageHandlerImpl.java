@@ -16,16 +16,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -413,50 +407,6 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             metadata.put ( new MetaKey ( namespace, mde.getKey () ), mde.getValue () );
         }
-    }
-
-    protected ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> extractedMetaData, final Map<MetaKey, String> providedMetaData ) throws SQLException, IOException
-    {
-        final ArtifactEntity artifact = artifactSupplier.get ();
-        artifact.setName ( name );
-        artifact.setChannel ( channel );
-        artifact.setCreationTimestamp ( new Date () );
-
-        Helper.convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
-        Helper.convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
-
-        // set the blob
-
-        final Connection c = em.unwrap ( Connection.class );
-
-        long size;
-
-        final Blob blob = c.createBlob ();
-        try
-        {
-            try ( OutputStream s = blob.setBinaryStream ( 1 ) )
-            {
-                size = ByteStreams.copy ( stream, s );
-            }
-
-            // we can only set it now, since we only have the size
-            artifact.setSize ( size );
-            em.persist ( artifact );
-            em.flush ();
-
-            try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=? where id=?" ) )
-            {
-                ps.setBlob ( 1, blob );
-                ps.setString ( 2, artifact.getId () );
-                ps.executeUpdate ();
-            }
-        }
-        finally
-        {
-            blob.free ();
-        }
-
-        return artifact;
     }
 
     private void createVirtualArtifacts ( final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final boolean runAggregator )

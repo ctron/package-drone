@@ -23,12 +23,16 @@ import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
 
@@ -103,6 +107,50 @@ public interface StreamServiceHelper
                 }
             }
         }
+    }
+
+    default ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> extractedMetaData, final Map<MetaKey, String> providedMetaData ) throws SQLException, IOException
+    {
+        final ArtifactEntity artifact = artifactSupplier.get ();
+        artifact.setName ( name );
+        artifact.setChannel ( channel );
+        artifact.setCreationTimestamp ( new Date () );
+
+        Helper.convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
+        Helper.convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
+
+        // set the blob
+
+        final Connection c = em.unwrap ( Connection.class );
+
+        long size;
+
+        final Blob blob = c.createBlob ();
+        try
+        {
+            try ( OutputStream s = blob.setBinaryStream ( 1 ) )
+            {
+                size = ByteStreams.copy ( stream, s );
+            }
+
+            // we can only set it now, since we only have the size
+            artifact.setSize ( size );
+            em.persist ( artifact );
+            em.flush ();
+
+            try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=? where id=?" ) )
+            {
+                ps.setBlob ( 1, blob );
+                ps.setString ( 2, artifact.getId () );
+                ps.executeUpdate ();
+            }
+        }
+        finally
+        {
+            blob.free ();
+        }
+
+        return artifact;
     }
 
     default SortedMap<MetaKey, String> convertMetaData ( final ArtifactEntity ae )
