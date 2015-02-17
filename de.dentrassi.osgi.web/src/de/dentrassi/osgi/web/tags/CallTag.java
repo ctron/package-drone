@@ -46,8 +46,11 @@ public class CallTag extends SimpleTagSupport implements DynamicAttributes
 
         // set attributes to body context
 
+        final Map<String, Object> oldEntries = new HashMap<> ( this.data.size () );
+
         for ( final Map.Entry<String, Object> entry : this.data.entrySet () )
         {
+            oldEntries.put ( entry.getKey (), ctx.getAttribute ( entry.getKey (), PageContext.PAGE_SCOPE ) );
             ctx.setAttribute ( entry.getKey (), entry.getValue (), PageContext.PAGE_SCOPE );
         }
 
@@ -55,11 +58,19 @@ public class CallTag extends SimpleTagSupport implements DynamicAttributes
 
         body.invoke ( getJspContext ().getOut () );
 
-        // remove everything that was set here, so we don't clutter up the context for the next caller
+        // set old values, so we don't clutter up the context for the next caller
 
         for ( final String key : this.data.keySet () )
         {
-            ctx.removeAttribute ( key, PageContext.PAGE_SCOPE );
+            final Object val = oldEntries.get ( key );
+            if ( val == null )
+            {
+                ctx.removeAttribute ( key, PageContext.PAGE_SCOPE );
+            }
+            else
+            {
+                ctx.setAttribute ( key, val, PageContext.PAGE_SCOPE );
+            }
         }
     }
 
