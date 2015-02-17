@@ -20,7 +20,8 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table class="table table-bordered table-responsive table-condensed table-hover">
+<div class="table-responsive">
+<table class="table table-bordered table-condensed table-hover">
 
     <thead>
         <tr>
@@ -72,6 +73,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
     </tbody>
 
 </table>
+</div>
 
 <div class="container-fluid">
 
