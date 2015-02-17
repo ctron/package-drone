@@ -14,7 +14,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 %>
 
 <web:define name="list">
-	<c:forEach var="artifact" items="${artifacts }">
+	<c:forEach var="artifact" items="${storage:nameSorted ( artifacts ) }">
 		<tr data-level="${level }">
 		    <td style="padding-left: ${level*2}em;">
 		      <a href="<c:url value="/artifact/${artifact.id}/view"/>">${fn:escapeXml(artifact.name) }</a>

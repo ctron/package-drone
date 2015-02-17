@@ -12,5 +12,11 @@
 		<function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
 		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.Channel)</function-signature>
 	</function>
+	
+    <function>
+        <name>nameSorted</name>
+        <function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
+        <function-signature>java.util.List nameSorted(java.util.Collection)</function-signature>
+    </function>
 
 </taglib>

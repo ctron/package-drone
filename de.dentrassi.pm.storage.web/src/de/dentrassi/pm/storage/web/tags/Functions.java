@@ -10,6 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.tags;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Channel;
 
 public class Functions
@@ -29,5 +35,19 @@ public class Functions
         {
             return String.format ( "%s (%s)", channel.getName (), channel.getId () );
         }
+    }
+
+    public static List<SimpleArtifactInformation> nameSorted ( final Collection<SimpleArtifactInformation> artifacts )
+    {
+        if ( artifacts == null )
+        {
+            return null;
+        }
+
+        final List<SimpleArtifactInformation> result = new ArrayList<> ( artifacts );
+
+        Collections.sort ( result, SimpleArtifactInformation.NAME_COMPARATOR );
+
+        return result;
     }
 }
