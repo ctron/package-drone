@@ -102,7 +102,7 @@ pageContext.setAttribute ( "groups", groups );
                 
                     <c:choose>
                 
-                        <c:when test="${empty deployGroups }">
+                        <c:when test="${empty deployGroups and empty groups}">
 	                        <div class="alert alert-warning">
 	                            <strong>No deploy groups!</strong> You did not set up any deploy group.
 	                            
