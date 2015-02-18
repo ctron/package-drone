@@ -70,7 +70,6 @@ import de.dentrassi.pm.storage.web.internal.Activator;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
-
     private StorageService service;
 
     private DeployAuthService deployAuthService;
