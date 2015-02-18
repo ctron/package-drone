@@ -54,7 +54,7 @@ public class SiteInformationInterceptor extends ModelAndViewInterceptorAdapter
         }
         catch ( final Exception e )
         {
-            logger.warn ( "Faield to get site information", e );
+            logger.warn ( "Failed to get site information", e );
             return null;
         }
     }
