@@ -68,6 +68,9 @@
 	<modules>
 		<module>../de.dentrassi.osgi.converter</module>
 		
+		<module>../de.dentrassi.osgi.job</module>
+		<module>../de.dentrassi.osgi.job.web</module>
+		
 		<module>../de.dentrassi.osgi.scheduler</module>
 		<module>../de.dentrassi.osgi.scheduler.simple</module>
 		
@@ -98,6 +101,10 @@
 		
 		<module>../de.dentrassi.pm.generator</module>
 		<module>../de.dentrassi.pm.generator.p2</module>
+		
+		<module>../de.dentrassi.pm.importer</module>
+		<module>../de.dentrassi.pm.importer.http</module>
+		<module>../de.dentrassi.pm.importer.http.web</module>
 		
 		<module>../de.dentrassi.pm.logging.jul</module>
 		

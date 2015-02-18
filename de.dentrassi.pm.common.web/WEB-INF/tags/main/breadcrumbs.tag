@@ -2,7 +2,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="http://dentrass.de/pm" prefix="pm" %>
+<%@ taglib uri="http://dentrassi.de/pm" prefix="pm" %>
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 

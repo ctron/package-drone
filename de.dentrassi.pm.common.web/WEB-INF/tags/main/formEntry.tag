@@ -3,11 +3,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
-<%@attribute name="command" required="false" %>
+<%@attribute name="command" required="false" type="java.lang.String"%>
 <%@attribute name="path" required="true" %>
 <%@attribute name="label" required="true" %>
 
-<div class='form-group ${form:validationState(pageContext,command,path, "", "has-error")}'>
+<div class='form-group ${form:validationState(pageContext,(command eq null) ? "command" : command ,path, "", "has-error")}'>
     <form:label path="${path }" cssClass="col-sm-2 control-label">${fn:escapeXml(label) }</form:label>
     
     <div class="col-sm-10">

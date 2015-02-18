@@ -5,12 +5,11 @@
 
 	<tlib-version>1.0</tlib-version>
 	<short-name>pm</short-name>
-	<uri>http://dentrass.de/pm</uri>
+	<uri>http://dentrassi.de/pm</uri>
 
 	<function>
         <name>modifier</name>
         <function-class>de.dentrassi.pm.common.web.tags.Functions</function-class>
         <function-signature>java.lang.String modifier(java.lang.String,de.dentrassi.pm.common.web.Modifier)</function-signature>
     </function>
-    
 </taglib>
