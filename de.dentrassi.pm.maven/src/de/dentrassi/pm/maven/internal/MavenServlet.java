@@ -121,6 +121,7 @@ public class MavenServlet extends HttpServlet
         if ( "/".equals ( request.getPathInfo () ) )
         {
             response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
+            response.setContentType ( "text/plain" );
             response.setStatus ( HttpServletResponse.SC_OK );
             return;
         }
@@ -132,6 +133,7 @@ public class MavenServlet extends HttpServlet
         if ( service == null )
         {
             response.getWriter ().write ( "System not operational" );
+            response.setContentType ( "text/plain" );
             response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
             return;
         }
@@ -146,6 +148,7 @@ public class MavenServlet extends HttpServlet
         if ( channel == null )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            response.setContentType ( "text/plain" );
             response.getWriter ().format ( "Channel %s not found", channelId );
             return;
         }
@@ -185,7 +188,8 @@ public class MavenServlet extends HttpServlet
 
     protected void commitNotConfigured ( final HttpServletResponse response, final String channelId ) throws IOException
     {
-        response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+        response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+        response.setContentType ( "text/plain" );
         response.getWriter ().format ( "Channel %s is not configured for providing a Maven 2 repository. Add the Maven Repository aspect!", channelId );
     }
 
