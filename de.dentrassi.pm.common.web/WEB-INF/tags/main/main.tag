@@ -29,7 +29,7 @@ if ( p instanceof UserInformationPrincipal )
 <c:set var="respond" value="${pageContext.request.contextPath}/resources/respond/1.4.2"/>
 
 <head>
-    <title><%=title %> | Package Drone</title>
+    <title>${fn:escapeXml(title) } | Package Drone</title>
     
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
