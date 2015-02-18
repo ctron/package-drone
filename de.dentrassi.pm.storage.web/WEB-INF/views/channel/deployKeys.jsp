@@ -40,49 +40,57 @@ pageContext.setAttribute ( "groups", groups );
 	<div class="row">
 	   <div class="col-md-8">
 	   
-	       <h3>Deploy Groups</h3>
+	       <c:choose>
 	       
-	       <table class="table table-condensed table-hover">
-	       
-	           <thead>
-	           </thead>
-	           
-	           <tbody>
-		           <c:forEach var="dg" items="${groups }">
-		              <tr>
-	                  <td><a href="<c:url value="/deploy/auth/group/${dg.id}/view"/>"><web:call name="named" named="${dg }"/></a></td>
-	                  <td>
-	                    <ul>
-	                          <c:forEach var="dk" items="${dg.keys}">
-	                            <li>
-	                               <a
-	                                   href="#"
-	                                   role="button"
-	                                   data-toggle="modal"
-	                                   data-target="#settings-modal"
-	                                   data-token="${dk.key}"
-	                                   data-channel="${channel.id }"
-	                                   >
-	                                   <web:call name="named" named="${dk }"/>
-	                               </a>
-	                            </li>
-	                        </c:forEach>
-	                    </ul>
-	                    </td>
-	                    <td>
-	                    <form action="removeDeployGroup" method="post">
-	                       <input type="hidden" name="groupId" value="${fn:escapeXml(dg.id) }"/>
-	                       <button title="Unassign deploy group" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-	                    </form>
-	                    </td>
-	                   </tr>
-	               </c:forEach>       
-	           </tbody>
-	       </table>
-	   
-			<ul>
-			
-			</ul>
+	           <c:when test="${empty groups}">
+	               <div class="well well-lg">
+	                   <p>There are no deploy keys assigned to this channel. It will not be possible to deploy to this channel using <code>mvn deploy</code>.
+	                   Select deploy groups on the right side and assign them to this channel.
+	               </div>
+	           </c:when>
+
+	           <c:otherwise>
+			       <h3>Deploy Groups</h3>
+			       
+			       <table class="table table-condensed table-hover">
+			       
+			           <thead>
+			           </thead>
+			           
+			           <tbody>
+				           <c:forEach var="dg" items="${groups }">
+				              <tr>
+			                  <td><a href="<c:url value="/deploy/auth/group/${dg.id}/view"/>"><web:call name="named" named="${dg }"/></a></td>
+			                  <td>
+			                    <ul>
+			                          <c:forEach var="dk" items="${dg.keys}">
+			                            <li>
+			                               <a
+			                                   href="#"
+			                                   role="button"
+			                                   data-toggle="modal"
+			                                   data-target="#settings-modal"
+			                                   data-token="${dk.key}"
+			                                   data-channel="${channel.id }"
+			                                   >
+			                                   <web:call name="named" named="${dk }"/>
+			                               </a>
+			                            </li>
+			                        </c:forEach>
+			                    </ul>
+			                    </td>
+			                    <td>
+			                    <form action="removeDeployGroup" method="post">
+			                       <input type="hidden" name="groupId" value="${fn:escapeXml(dg.id) }"/>
+			                       <button title="Unassign deploy group" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+			                    </form>
+			                    </td>
+			                   </tr>
+			               </c:forEach>       
+			           </tbody>
+			       </table>
+	           </c:otherwise>
+           </c:choose>
 		</div>
 		
 		<div class="col-md-4">
@@ -91,27 +99,43 @@ pageContext.setAttribute ( "groups", groups );
             
                 <div class="panel-heading"><h3 class="panel-title">Add Deploy Group</h3></div>
                 <div class="panel-body">
-	                <form class="form-horizontal" method="post" action="addDeployGroup">
-	    
-				        <div class="form-group">
-				            <label class="col-sm-2 control-label" for="groupId">Group</label>
-				            <div class="col-sm-10">
-					            <select name="groupId" class="form-control" id="groupId">
-					                <c:forEach var="dg" items="${deployGroups }">
-					                    <option value="${dg.id }">
-					                       <web:call name="named" named="${dg }"/>
-					                    </option>
-					                </c:forEach>    
-					            </select>
-				            </div>
-				        </div>
-				        
-				        <div class="form-group">
-						    <div class="col-sm-offset-2 col-sm-10">
-						      <button type="submit" class="btn btn-primary" ${ ( empty deployGroups ) ? 'disabled="disabled"': '' } >Add</button>
-						    </div>
-						  </div>
-				    </form>
+                
+                    <c:choose>
+                
+                        <c:when test="${empty deployGroups }">
+	                        <div class="alert alert-warning">
+	                            <strong>No deploy groups!</strong> You did not set up any deploy group.
+	                            
+	                            <a href="<c:url value="/deploy/auth/addGroup"/>" class="alert-link">Create a deploy group now</a>. 
+	                        </div>
+                        </c:when>
+                        
+                        <c:otherwise>
+			                <form class="form-horizontal" method="post" action="addDeployGroup">
+			    
+						        <div class="form-group">
+						            <label class="col-sm-2 control-label" for="groupId">Group</label>
+						            <div class="col-sm-10">
+							            <select name="groupId" class="form-control" id="groupId">
+							                <c:forEach var="dg" items="${deployGroups }">
+							                    <option value="${dg.id }">
+							                       <web:call name="named" named="${dg }"/>
+							                    </option>
+							                </c:forEach>    
+							            </select>
+						            </div>
+						        </div>
+						        
+						        <div class="form-group">
+								    <div class="col-sm-offset-2 col-sm-10">
+								      <button type="submit" class="btn btn-primary" ${ ( empty deployGroups ) ? 'disabled="disabled"': '' } >Add</button>
+								    </div>
+								  </div>
+						    </form>
+					    </c:otherwise>
+				    
+                    </c:choose>
+				    
                 </div>
 		  </div>
 		  
