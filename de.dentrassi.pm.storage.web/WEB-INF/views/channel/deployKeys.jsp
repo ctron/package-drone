@@ -54,7 +54,18 @@ pageContext.setAttribute ( "groups", groups );
 	                  <td>
 	                    <ul>
 	                          <c:forEach var="dk" items="${dg.keys}">
-	                            <li><a href="<c:url value="/deploy/auth/key/${dk.id }/edit"/>"><web:call name="named" named="${dk }"/></a></li>
+	                            <li>
+	                               <a
+	                                   href="#"
+	                                   role="button"
+	                                   data-toggle="modal"
+	                                   data-target="#settings-modal"
+	                                   data-token="${dk.key}"
+	                                   data-channel="${channel.id }"
+	                                   >
+	                                   <web:call name="named" named="${dk }"/>
+	                               </a>
+	                            </li>
 	                        </c:forEach>
 	                    </ul>
 	                    </td>
@@ -108,5 +119,64 @@ pageContext.setAttribute ( "groups", groups );
 	</div>
 
 </div>
+
+<div class="modal" tabindex="-1" id="settings-modal" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Deploy settings</h4>
+      </div>
+      <div class="modal-body">
+      
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">pom.xml</h4>
+            </div>
+            <div>
+        <pre>…
+&lt;distributionManagement&gt;
+    &lt;repository&gt;
+        &lt;id&gt;pdrone.<span class="data-channel"></span>&lt;/id&gt;
+        &lt;url&gt;http://localhost:8080/maven/<span class="data-channel"></span>&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/distributionManagement&gt;
+…</pre>
+            </div>
+        </div>
+        
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">settings.xml</h4>
+            </div>
+            <div>
+        <pre>…
+&lt;server&gt;
+    &lt;id&gt;pdrone.<span class="data-channel"></span>&lt;/id&gt;
+    &lt;username&gt;deploy&lt;/username&gt;
+    &lt;password&gt;<span class="data-token"></span>&lt;/password&gt;
+&lt;/server&gt;
+…</pre>
+            </div>
+        </div>
+        
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div><%-- /.modal-content --%>
+  </div><%-- /.modal-dialog --%>
+</div><%-- /.modal --%>
+
+<script type="text/javascript">
+$('#settings-modal').on('show.bs.modal', function (event) {
+	  var button = $(event.relatedTarget);
+
+	  var modal = $(this)
+	  modal.find('.data-token').text(button.data('token'));
+	  modal.find('.data-channel').text(button.data('channel'));
+	});
+</script>
 
 </h:main>

@@ -95,3 +95,11 @@ img.gravatar {
 	margin-left: .5em;
 	margin-right: .5em;
 }
+
+/* panel */
+
+.panel pre {
+	border: none;
+	background: white;
+	margin-bottom: 0;
+}

@@ -24,6 +24,10 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
 
 </h:buttonbar>
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+
 <section>
     <h2>Information</h2>
     
@@ -37,6 +41,11 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
 	</dl>
     
 </section>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
 
 <section>
     <h2>Deploy keys</h2>
@@ -69,7 +78,13 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
                 </tr>
                 <tr class="table-row-additional">
                     <td colspan="3" style="padding-left: 3em;">
-                        <code>${fn:escapeXml(key.key) }</code>
+                        <pre>
+&lt;server&gt;
+    &lt;id&gt;server.id&lt;/id&gt;&lt;-- id of your repository element --&gt;
+    &lt;username&gt;deploy&lt;/username&gt;
+    &lt;password&gt;${fn:escapeXml(key.key) }&lt;/password&gt;
+&lt;/server&gt;
+</pre>
                     </td>
                 </tr>
             </c:forEach>
@@ -79,6 +94,11 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
     </div>
     
 </section>
+
+        </div>
+    </div>
+</div>
+
 
 <div class="modal" id="dlg-delete" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
