@@ -53,6 +53,14 @@ public class ModelAndViewRequestHandler implements RequestHandler
     @Override
     public void process ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException, ServletException
     {
+        final String redir = this.modelAndView.getRedirect ();
+        if ( redir != null )
+        {
+            logger.debug ( "Processed redirect: {}", redir );
+            response.sendRedirect ( redir );
+            return;
+        }
+
         ViewResolver viewResolver = null;
         Class<?> resourceClazz = this.controllerClazz;
 
@@ -77,33 +85,24 @@ public class ModelAndViewRequestHandler implements RequestHandler
             throw new IllegalStateException ( String.format ( "View resolver for %s not declared. Missing @%s annotation?", this.controllerClazz.getName (), ViewResolver.class.getSimpleName () ) );
         }
 
-        if ( this.modelAndView.isRedirect () )
+        final Bundle bundle = FrameworkUtil.getBundle ( resourceClazz );
+
+        final String resolvedView = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
+        final String path = String.format ( "/bundle/%s/%s", bundle.getBundleId (), resolvedView );
+
+        logger.debug ( "Render: {}", path );
+
+        setModelAsRequestAttributes ( request, this.modelAndView.getModel () );
+
+        final RequestDispatcher rd = request.getRequestDispatcher ( path );
+
+        if ( response.isCommitted () )
         {
-            final String redir = this.modelAndView.getRedirect ();
-            logger.debug ( "Processed redirect: {}", redir );
-            response.sendRedirect ( redir );
+            rd.forward ( request, response );
         }
         else
         {
-            final Bundle bundle = FrameworkUtil.getBundle ( resourceClazz );
-
-            final String resolvedView = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
-            final String path = String.format ( "/bundle/%s/%s", bundle.getBundleId (), resolvedView );
-
-            logger.debug ( "Render: {}", path );
-
-            setModelAsRequestAttributes ( request, this.modelAndView.getModel () );
-
-            final RequestDispatcher rd = request.getRequestDispatcher ( path );
-
-            if ( response.isCommitted () )
-            {
-                rd.forward ( request, response );
-            }
-            else
-            {
-                rd.include ( request, response );
-            }
+            rd.include ( request, response );
         }
     }
 
