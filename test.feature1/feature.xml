@@ -32,6 +32,7 @@
       <import plugin="com.google.inject" version="2.0.0" match="compatible"/>
       <import plugin="com.google.guava" version="11.0.2" match="greaterOrEqual"/>
       <import plugin="com.jcraft.jsch" version="0.1.50.v201403120620" match="perfect"/>
+      <import feature="test.feature2"/>
    </requires>
 
    <plugin
