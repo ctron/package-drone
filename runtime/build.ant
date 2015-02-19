@@ -124,6 +124,9 @@
         	<!-- aether -->
         	
         	<get src="http://eclipse.org/downloads/download.php?file=/aether/aether-core/1.0.1/dist/aether-1.0.1-bin.zip&amp;r=1" dest="download/aether-bin.zip" usetimestamp="true"/>
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
         	
         </parallel>
 
@@ -248,7 +251,8 @@
             </fileset>
         	
         	<fileset dir="unpack/aether">
-        	   <include name="*/*.jar"/>
+        	    <exclude name="**/*-wagon-*.jar"/>
+        	    <include name="*/*.jar"/>
         	</fileset>
             
             <fileset dir="download/bundles" />
