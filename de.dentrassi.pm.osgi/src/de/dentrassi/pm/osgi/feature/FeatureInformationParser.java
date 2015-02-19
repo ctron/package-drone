@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.osgi.framework.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -31,6 +33,8 @@ import de.dentrassi.pm.osgi.feature.FeatureInformation.Requirement.MatchRule;
 
 public class FeatureInformationParser
 {
+    private final static Logger logger = LoggerFactory.getLogger ( FeatureInformationParser.class );
+
     private final ZipFile file;
 
     private final XmlHelper xml;
@@ -46,6 +50,7 @@ public class FeatureInformationParser
         final ZipEntry ze = this.file.getEntry ( "feature.xml" );
         if ( ze == null )
         {
+            logger.debug ( "There is no feature.xml in the archive" );
             return null;
         }
 
@@ -58,21 +63,24 @@ public class FeatureInformationParser
             }
             catch ( final Exception e )
             {
+                logger.info ( "Failed to parse feature.xml", e );
                 return null;
             }
         }
 
         final Element root = doc.getDocumentElement ();
 
-        final String id = root.getAttribute ( "id" );
+        final String id = makeNull ( root.getAttribute ( "id" ) );
         if ( id == null )
         {
+            logger.info ( "Feature ID is not set" );
             return null;
         }
 
-        final String version = root.getAttribute ( "version" );
+        final String version = makeNull ( root.getAttribute ( "version" ) );
         if ( version == null )
         {
+            logger.info ( "Feature version is not set" );
             return null;
         }
 
@@ -161,7 +169,7 @@ public class FeatureInformationParser
         {
             final String feature = im.getAttribute ( "feature" );
             final String plugin = im.getAttribute ( "plugin" );
-            final String vs = im.getAttribute ( "version" );
+            final String vs = makeNull ( im.getAttribute ( "version" ) );
             final MatchRule match = makeMatch ( im.getAttribute ( "match" ) );
 
             Version version = null;
@@ -204,7 +212,7 @@ public class FeatureInformationParser
     private void processPluginInclude ( final FeatureInformation result, final Element ele )
     {
         final String id = ele.getAttribute ( "id" );
-        final String vs = ele.getAttribute ( "version" );
+        final String vs = makeNull ( ele.getAttribute ( "version" ) );
         final Version version = new Version ( vs == null ? "0.0.0" : vs );
 
         final String unpackAttr = ele.getAttribute ( "unpack" );
@@ -219,7 +227,7 @@ public class FeatureInformationParser
     private void processFeatureInclude ( final FeatureInformation result, final Element ele )
     {
         final String id = ele.getAttribute ( "id" );
-        final String vs = ele.getAttribute ( "version" );
+        final String vs = makeNull ( ele.getAttribute ( "version" ) );
         final Version version = new Version ( vs == null ? "0.0.0" : vs );
         final String name = makeNull ( ele.getAttribute ( "name" ) );
         final boolean optional = Boolean.parseBoolean ( ele.getAttribute ( "optional" ) );

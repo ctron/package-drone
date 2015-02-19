@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -494,7 +494,15 @@ public class InstallableUnit
                 default:
                     throw new IllegalStateException ( String.format ( "Feature requirement type %s is unknown", ri.getType () ) );
             }
-            reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", id ), new Requirement ( ri.getMatchRule ().makeRange ( ri.getVersion () ), false, null, null ) );
+
+            Version v = ri.getVersion ();
+            if ( v == null )
+            {
+                // fall back to empty version
+                v = Version.emptyVersion;
+            }
+
+            reqs.put ( new Key ( "org.eclipse.equinox.p2.iu", id ), new Requirement ( ri.getMatchRule ().makeRange ( v ), false, null, null ) );
         }
 
         // filter
