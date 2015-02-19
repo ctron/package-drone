@@ -10,10 +10,13 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
- de.dentrassi.pm.sec.web;bundle-version="1.0.0"
+ de.dentrassi.pm.sec.web;bundle-version="1.0.0",
+ de.dentrassi.osgi.job.web;bundle-version="1.0.0"
 Eclipse-BundleShape: dir
 Web-Export-Taglib: WEB-INF/tags/storage/storage.tld
 Import-Package: com.google.common.io;version="18.0.0",
+ com.google.gson;version="2.3.1",
+ de.dentrassi.osgi.job;version="1.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0",
@@ -23,6 +26,7 @@ Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.database;version="1.0.0",
  de.dentrassi.pm.generator;version="1.0.0",
  de.dentrassi.pm.importer;version="1.0.0",
+ de.dentrassi.pm.importer.job;version="1.0.0",
  de.dentrassi.pm.importer.web;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",

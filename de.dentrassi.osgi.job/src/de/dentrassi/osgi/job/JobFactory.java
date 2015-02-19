@@ -8,22 +8,17 @@
  * Contributors:
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.importer;
+package de.dentrassi.osgi.job;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class ImporterConfiguration
+public interface JobFactory
 {
-    private Map<String, String> properties = new HashMap<> ();
+    public static final String FACTORY_ID = "package.drone.job.factoryId";
 
-    public Map<String, String> getProperties ()
-    {
-        return this.properties;
-    }
+    public JobInstance createInstance ( String data ) throws Exception;
 
-    public void setProperties ( final Map<String, String> properties )
-    {
-        this.properties = properties;
-    }
+    public String encodeConfiguration ( Object data );
+
+    public String makeLabel ( String data );
+
+    public JobFactoryDescriptor getDescriptor ();
 }

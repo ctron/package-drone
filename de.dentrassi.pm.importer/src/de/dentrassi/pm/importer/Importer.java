@@ -15,24 +15,15 @@ public interface Importer
     public static final String IMPORTER_ID = "package.drone.importer.id";
 
     /**
-     * Import one or more artifacts into a channel
+     * Import one or more artifacts into package drone
      *
-     * @param channelId
-     *            the channel to import to
-     * @param properties
-     *            the properties for the import
+     * @param context
+     *            The context used for importing
+     * @param configuration
+     *            The importer specific configuration. This could be JSON, XML
+     *            or just plain text.
      */
-    public void importForChannel ( String channelId, ImporterConfiguration configuration );
-
-    /**
-     * Import one ore more artifacts as children of another artifact
-     *
-     * @param parentArtifactId
-     *            the artifact which should be used as parent
-     * @param properties
-     *            the properties for the import
-     */
-    public void importForArtifact ( String parentArtifactId, ImporterConfiguration configuration );
+    public void runImport ( ImportContext context, String configuration ) throws Exception;
 
     public ImporterDescription getDescription ();
 }

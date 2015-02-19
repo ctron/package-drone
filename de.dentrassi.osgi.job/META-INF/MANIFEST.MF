@@ -6,4 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: de.dentrassi.osgi.job;version="1.0.0"
-Service-Component: OSGI-INF/manager.xml
+Import-Package: com.google.gson,
+ de.dentrassi.osgi.web;version="1.0.0",
+ org.eclipse.scada.utils;version="0.2.0"

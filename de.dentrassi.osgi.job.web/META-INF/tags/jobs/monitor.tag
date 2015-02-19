@@ -10,7 +10,7 @@
 <script type="text/javascript">
 
 function reload () {
-	$('#job-${job.id}').load ("<c:url value="/job/${job.id}/view"/>");
+	$('#job-${job.id}').load ("<c:url value="/job/${job.id}/monitor"/>");
 }
 
 reload ();
@@ -20,5 +20,10 @@ reload ();
 <c:if test="${not empty oncomplete }">
 <script>
 $('#job-${job.id}').on("job.complete", function(event) {  ${oncomplete} });
+</script>
+</c:if>
+<c:if test="${empty oncomplete }">
+<script>
+$('#job-${job.id}').on("job.complete", function(event) { document.location.href='<c:url value="/job/${job.id}/result"/>' });
 </script>
 </c:if>

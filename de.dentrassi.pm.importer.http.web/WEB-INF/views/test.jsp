@@ -13,7 +13,15 @@
 
 <div class="container-fluid form-padding">
 
-<job:monitor job="${job }" oncomplete="alert('Complete');"/>
+<form action="testComplete" id="form" method="POST">
+    <input type="hidden" name="jobId" value="${job.id }"/>
+</form>
+
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <job:monitor job="${job }" oncomplete="$('#form').submit();"/>
+    </div>
+</div>
 
 </div>
 

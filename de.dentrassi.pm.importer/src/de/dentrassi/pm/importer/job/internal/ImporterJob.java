@@ -1,0 +1,130 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
+package de.dentrassi.pm.importer.job.internal;
+
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
+
+import de.dentrassi.osgi.job.AbstractJsonJobFactory;
+import de.dentrassi.osgi.job.JobFactoryDescriptor;
+import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.importer.Importer;
+import de.dentrassi.pm.importer.job.ImporterJobConfiguration;
+import de.dentrassi.pm.importer.job.ImporterResult;
+import de.dentrassi.pm.storage.service.StorageService;
+
+public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration, ImporterResult>
+{
+    private static final LinkTarget TARGET = new LinkTarget ( "/import/job/{id}/result" );
+
+    private static final JobFactoryDescriptor DESCRIPTOR = new JobFactoryDescriptor () {
+
+        @Override
+        public LinkTarget getResultTarget ()
+        {
+            return TARGET;
+        }
+    };
+
+    private StorageService service;
+
+    private final ServiceTracker<Importer, Importer> tracker;
+
+    public void setService ( final StorageService service )
+    {
+        this.service = service;
+    }
+
+    public ImporterJob ()
+    {
+        super ( ImporterJobConfiguration.class );
+
+        this.tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( Importer.class ).getBundleContext (), Importer.class, null );
+    }
+
+    public void start ()
+    {
+        this.tracker.open ();
+    }
+
+    public void stop ()
+    {
+        this.tracker.close ();
+    }
+
+    @Override
+    protected ImporterResult process ( final ImporterJobConfiguration cfg ) throws Exception
+    {
+        final Importer imp = getImporter ( cfg.getImporterId () );
+
+        if ( imp == null )
+        {
+            throw new IllegalArgumentException ( String.format ( "Importer '%s' is unknown", cfg.getImporterId () ) );
+        }
+
+        final AbstractImportContext ctx;
+        switch ( cfg.getDescriptor ().getType () )
+        {
+            case "channel":
+                ctx = new ChannelImportContext ( this.service, cfg.getDescriptor ().getId () );
+                break;
+            case "artifact":
+                ctx = new ArtifactImportContext ( this.service, cfg.getDescriptor ().getId () );
+                break;
+            default:
+                throw new IllegalArgumentException ( String.format ( "Unknown import type: %s", cfg.getDescriptor ().getType () ) );
+        }
+
+        try
+        {
+            imp.runImport ( ctx, cfg.getConfiguration () );
+
+            return ctx.process ();
+        }
+        finally
+        {
+            ctx.close ();
+        }
+    }
+
+    private Importer getImporter ( final String importerId )
+    {
+        for ( final Importer importer : this.tracker.getTracked ().values () )
+        {
+            if ( importer.getDescription ().getId ().equals ( importerId ) )
+            {
+                return importer;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    protected String makeLabelFromData ( final ImporterJobConfiguration data )
+    {
+        final Importer importer = getImporter ( data.getImporterId () );
+        if ( importer != null )
+        {
+            return String.format ( "Import job - %s", importer.getDescription ().getLabel () );
+        }
+        else
+        {
+            return String.format ( "Import job: %s", data.getImporterId () );
+        }
+    }
+
+    @Override
+    public JobFactoryDescriptor getDescriptor ()
+    {
+        return DESCRIPTOR;
+    }
+}

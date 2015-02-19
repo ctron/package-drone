@@ -19,7 +19,7 @@ public class ModelAndView
 
     private String viewName;
 
-    private Map<String, Object> model;
+    private Map<String, Object> model = new HashMap<> ();
 
     private Class<?> alternateViewResolver;
 
@@ -98,6 +98,10 @@ public class ModelAndView
 
     public boolean isRedirect ()
     {
+        if ( this.viewName == null )
+        {
+            return false;
+        }
         return this.viewName.startsWith ( REDIRECT_PREFIX );
     }
 

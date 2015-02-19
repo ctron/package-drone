@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS JOBS;
+
+CREATE TABLE JOBS (
+    ID              VARCHAR(36) NOT NULL,
+    FACTORY_ID      VARCHAR(128) NOT NULL,
+    
+    LABEL           VARCHAR(255),
+    
+    STATE           TINYINT NOT NULL,
+    VERSION         BIGINT NOT NULL,
+    
+    DATA            LONGTEXT,
+    ERROR_INFO      LONGTEXT,
+    RESULT          LONGTEXT,
+    
+    PRIMARY KEY ( ID )
+);

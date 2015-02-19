@@ -4,4 +4,5 @@
    <service>
       <provide interface="de.dentrassi.pm.importer.http.web.ConfigurationController"/>
    </service>
+   <reference bind="setJobManager" cardinality="1..1" interface="de.dentrassi.osgi.job.JobManager" name="JobManager" policy="static"/>
 </scr:component>

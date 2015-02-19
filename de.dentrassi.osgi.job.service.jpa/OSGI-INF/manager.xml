@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.osgi.job.service.jpa.manager">
+   <implementation class="de.dentrassi.osgi.job.service.jpa.JobManagerImpl"/>
+   <service>
+      <provide interface="de.dentrassi.osgi.job.JobManager"/>
+   </service>
+   <reference bind="setEntityManagerFactory" cardinality="1..1" interface="javax.persistence.EntityManagerFactory" name="EntityManagerFactory" policy="static" target="(osgi.unit.name=de.dentrassi.osgi.job.jpa)"/>
+   <reference bind="addJobFactory" cardinality="0..n" interface="de.dentrassi.osgi.job.JobFactory" name="JobFactory" policy="dynamic" unbind="removeJobFactory"/>
+</scr:component>

@@ -12,7 +12,33 @@ package de.dentrassi.osgi.job;
 
 public enum State
 {
-    SCHEDULED,
-    RUNNING,
-    COMPLETE;
+    SCHEDULED ( 0 ),
+    RUNNING ( 1 ),
+    COMPLETE ( 2 );
+
+    private int id;
+
+    State ( final int id )
+    {
+        this.id = id;
+    }
+
+    public int getId ()
+    {
+        return this.id;
+    }
+
+    public static State fromId ( final int id )
+    {
+        switch ( id )
+        {
+            case 0:
+                return SCHEDULED;
+            case 1:
+                return RUNNING;
+            case 2:
+                return COMPLETE;
+        }
+        throw new IllegalArgumentException ( String.format ( "State %s is unknown", id ) );
+    }
 }

@@ -16,9 +16,13 @@ public interface JobHandle
 
     public State getState ();
 
-    public Throwable getError ();
+    public JobRequest getRequest ();
 
-    public Job getJob ();
+    public String getLabel ();
+
+    public ErrorInformation getError ();
+
+    public String getResult ();
 
     public default boolean isComplete ()
     {

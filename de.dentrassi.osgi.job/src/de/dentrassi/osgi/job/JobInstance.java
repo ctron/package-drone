@@ -10,9 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.osgi.job;
 
-public interface Job
+public interface JobInstance
 {
-    public String getLabel ();
+    public static interface Context
+    {
+        public void setResult ( String data );
+    }
 
-    public void run () throws Exception;
+    public void run ( Context context ) throws Exception;
 }

@@ -26,20 +26,28 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
+import com.google.gson.GsonBuilder;
+
+import de.dentrassi.osgi.job.JobHandle;
+import de.dentrassi.osgi.job.JobManager;
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.importer.Importer;
 import de.dentrassi.pm.importer.ImporterDescription;
+import de.dentrassi.pm.importer.job.ImporterResult;
 import de.dentrassi.pm.importer.web.ImportDescriptor;
+import de.dentrassi.pm.importer.web.ImportRequest;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
@@ -55,6 +63,10 @@ import de.dentrassi.pm.storage.service.StorageService;
 public class ImportController implements InterfaceExtender
 {
     private StorageService service;
+
+    private ImportManager impManager;
+
+    private JobManager jobManager;
 
     public static class ImporterDescriptionLabelComparator implements Comparator<ImporterDescription>
     {
@@ -123,6 +135,11 @@ public class ImportController implements InterfaceExtender
         }
     };
 
+    public void setJobManager ( final JobManager jobManager )
+    {
+        this.jobManager = jobManager;
+    }
+
     public void setService ( final StorageService service )
     {
         this.service = service;
@@ -130,13 +147,18 @@ public class ImportController implements InterfaceExtender
 
     public void start ()
     {
-        this.tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( ImportController.class ).getBundleContext (), Importer.class, this.customizer );
+        final BundleContext context = FrameworkUtil.getBundle ( ImportController.class ).getBundleContext ();
+
+        this.tracker = new ServiceTracker<> ( context, Importer.class, this.customizer );
         this.tracker.open ();
+
+        this.impManager = new ImportManager ( context, this.jobManager );
     }
 
     public void stop ()
     {
         this.tracker.close ();
+        this.impManager.dispose ();
     }
 
     @RequestMapping ( value = "/channel/{channelId}/import" )
@@ -159,6 +181,37 @@ public class ImportController implements InterfaceExtender
         model.put ( "token", desc.toBase64 () );
 
         return new ModelAndView ( "index", model );
+    }
+
+    @RequestMapping ( value = "/import/perform", method = RequestMethod.GET )
+    public ModelAndView perform ( @RequestParameter ( "token" ) final String token, @RequestParameter ( "request" ) final ImportRequest request )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final ImportDescriptor desc = ImportDescriptor.fromBase64 ( token );
+
+        final JobHandle job = this.impManager.perform ( desc, request );
+
+        model.put ( "job", job );
+
+        return new ModelAndView ( "perform", model );
+    }
+
+    @RequestMapping ( "/import/job/{id}/result" )
+    public ModelAndView viewResult ( @PathVariable ( "id" ) final String jobId )
+    {
+        final JobHandle job = this.jobManager.getJob ( jobId );
+
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "job", job );
+
+        final ImporterResult result = new GsonBuilder ().create ().fromJson ( job.getResult (), ImporterResult.class );
+        model.put ( "result", result );
+
+        model.put ( "channel", this.service.getChannel ( result.getChannelId () ) );
+
+        return new ModelAndView ( "result", model );
     }
 
     public ImporterDescription[] getDescriptions ()

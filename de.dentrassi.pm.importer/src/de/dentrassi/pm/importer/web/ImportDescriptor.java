@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.importer.web;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -17,6 +18,8 @@ import com.google.gson.GsonBuilder;
 
 public class ImportDescriptor
 {
+    private static GsonBuilder BUILDER = new GsonBuilder ();
+
     private String type;
 
     private String id;
@@ -43,11 +46,32 @@ public class ImportDescriptor
 
     public String toJson ()
     {
-        return new GsonBuilder ().create ().toJson ( this );
+        return BUILDER.create ().toJson ( this );
     }
 
     public String toBase64 ()
     {
         return Base64.getEncoder ().encodeToString ( toJson ().getBytes ( StandardCharsets.UTF_8 ) );
+    }
+
+    public static ImportDescriptor fromBase64 ( final String token )
+    {
+        if ( token == null )
+        {
+            return null;
+        }
+
+        final String str = StandardCharsets.UTF_8.decode ( ByteBuffer.wrap ( Base64.getDecoder ().decode ( token ) ) ).toString ();
+
+        return fromJson ( str );
+    }
+
+    public static ImportDescriptor fromJson ( final String json )
+    {
+        if ( json == null )
+        {
+            return null;
+        }
+        return BUILDER.create ().fromJson ( json, ImportDescriptor.class );
     }
 }

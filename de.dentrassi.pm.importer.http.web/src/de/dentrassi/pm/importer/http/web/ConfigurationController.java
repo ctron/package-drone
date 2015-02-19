@@ -10,23 +10,18 @@
  *******************************************************************************/
 package de.dentrassi.pm.importer.http.web;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import de.dentrassi.osgi.job.JobHandle;
-import de.dentrassi.osgi.job.web.Jobs;
+import de.dentrassi.osgi.job.JobManager;
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
@@ -34,8 +29,14 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
+import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.importer.http.Configuration;
+import de.dentrassi.pm.importer.http.HttpImporter;
+import de.dentrassi.pm.importer.web.ImportRequest;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
@@ -48,31 +49,41 @@ import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigurationController
 {
+
+    private JobManager jobManager;
+
+    private final Gson gson = new GsonBuilder ().create ();
+
+    public void setJobManager ( final JobManager jobManager )
+    {
+        this.jobManager = jobManager;
+    }
+
     @RequestMapping ( value = "/import/{token}/http/start", method = RequestMethod.GET )
-    public ModelAndView configure ()
+    public ModelAndView configure ( @RequestParameter ( value = "configuration", required = false ) final Configuration cfg )
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "command", new Configuration () );
+        if ( cfg != null )
+        {
+            model.put ( "command", cfg );
+        }
+        else
+        {
+            model.put ( "command", new Configuration () );
+        }
 
         return new ModelAndView ( "configure", model );
     }
 
     @RequestMapping ( value = "/import/{token}/http/start", method = RequestMethod.POST )
-    public ModelAndView configurePost ( @Valid @FormData ( "command" ) final Configuration data, final BindingResult result, final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
+    public ModelAndView configurePost ( @Valid @FormData ( "command" ) final Configuration data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        if ( !result.hasErrors () )
-        {
-            final RequestDispatcher rd = request.getRequestDispatcher ( "test" );
-            rd.forward ( request, response );
-            return null;
-        }
-        else
-        {
-            return new ModelAndView ( "configure", model );
-        }
+        model.put ( "ok", !result.hasErrors () );
+
+        return new ModelAndView ( "configure", model );
     }
 
     @RequestMapping ( value = "/import/{token}/http/test", method = RequestMethod.POST )
@@ -82,66 +93,45 @@ public class ConfigurationController
 
         model.put ( "command", data );
 
-        final JobHandle job = Jobs.start ( request, "Test Import", new Callable<Void> () {
-
-            @Override
-            public Void call () throws Exception
-            {
-                System.out.println ( "Job started" );
-                Thread.sleep ( 5_000 );
-                System.out.println ( "Job ending" );
-
-                final HttpURLConnection con = (HttpURLConnection)new URL ( data.getUrl () ).openConnection ();
-
-                con.setRequestMethod ( "HEAD" );
-
-                final boolean result = con.getResponseCode () == HttpURLConnection.HTTP_OK;
-
-                // throw new RuntimeException ();
-                return null;
-            }
-        } );
-
-        final HttpSession session = request.getSession ();
-        session.setAttribute ( ConfigurationController.class.getName () + "-" + job.getId (), job );
+        final JobHandle job = this.jobManager.startJob ( DownloadTester.ID, data );
 
         model.put ( "job", job );
 
         return new ModelAndView ( "test", model );
     }
 
-    @RequestMapping ( value = "/import/{token}/http/test", method = RequestMethod.POST )
-    public ModelAndView completeTest ( @Valid @FormData ( "command" ) final Configuration data, final BindingResult result, final HttpServletRequest request )
+    @RequestMapping ( value = "/import/{token}/http/testComplete", method = RequestMethod.POST )
+    public ModelAndView completeTest ( @RequestParameter ( "jobId" ) final String jobId, @PathVariable ( "token" ) final String token )
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "command", data );
-
-        final JobHandle job = Jobs.start ( request, "Test Import", new Callable<Void> () {
-
-            @Override
-            public Void call () throws Exception
-            {
-                System.out.println ( "Job started" );
-                Thread.sleep ( 5_000 );
-                System.out.println ( "Job ending" );
-
-                final HttpURLConnection con = (HttpURLConnection)new URL ( data.getUrl () ).openConnection ();
-
-                con.setRequestMethod ( "HEAD" );
-
-                final boolean result = con.getResponseCode () == HttpURLConnection.HTTP_OK;
-
-                // throw new RuntimeException ();
-                return null;
-            }
-        } );
-
-        final HttpSession session = request.getSession ();
-        session.setAttribute ( ConfigurationController.class.getName () + "-" + job.getId (), job );
-
+        final JobHandle job = this.jobManager.getJob ( jobId );
         model.put ( "job", job );
 
-        return new ModelAndView ( "test", model );
+        final String data = job.getRequest ().getData ();
+        final Configuration cfg = this.gson.fromJson ( data, Configuration.class );
+
+        model.put ( "configuration", cfg );
+        model.put ( "request", ImportRequest.toJson ( HttpImporter.ID, data ) );
+        model.put ( "cfgJson", job.getRequest ().getData () );
+        model.put ( "result", TestResult.fromJson ( job.getResult () ) );
+        model.put ( "token", token );
+
+        return new ModelAndView ( "testResult", model );
+    }
+
+    @ControllerValidator ( formDataClass = Configuration.class )
+    public void validateImport ( final Configuration cfg, final ValidationContext ctx )
+    {
+        final String url = cfg.getUrl ();
+        if ( url == null || url.isEmpty () )
+        {
+            return;
+        }
+
+        if ( !url.startsWith ( "http://" ) && !url.startsWith ( "https://" ) )
+        {
+            ctx.error ( "url", "Only 'http' or 'https' URLs are supported" );
+        }
     }
 }

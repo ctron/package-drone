@@ -1,0 +1,64 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Jens Reimann.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Jens Reimann - initial API and implementation
+ *******************************************************************************/
+package de.dentrassi.pm.importer.job;
+
+import de.dentrassi.pm.importer.web.ImportDescriptor;
+
+public class ImporterJobConfiguration
+{
+    private ImportDescriptor descriptor;
+
+    private String importerId;
+
+    private String configuration;
+
+    public ImporterJobConfiguration ()
+    {
+    }
+
+    public ImporterJobConfiguration ( final ImportDescriptor descriptor, final String importerId, final String configuration )
+    {
+        this.descriptor = descriptor;
+        this.importerId = importerId;
+        this.configuration = configuration;
+    }
+
+    public ImportDescriptor getDescriptor ()
+    {
+        return this.descriptor;
+    }
+
+    public void setDescriptor ( final ImportDescriptor descriptor )
+    {
+        this.descriptor = descriptor;
+    }
+
+    public String getImporterId ()
+    {
+        return this.importerId;
+    }
+
+    public void setImporterId ( final String importerId )
+    {
+        this.importerId = importerId;
+    }
+
+    public String getConfiguration ()
+    {
+        return this.configuration;
+    }
+
+    public void setConfiguration ( final String configuration )
+    {
+        this.configuration = configuration;
+    }
+
+}

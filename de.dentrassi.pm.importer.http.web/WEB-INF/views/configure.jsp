@@ -9,6 +9,15 @@
 
 <h:main title="Import" subtitle="From HTTP source">
 
+<script type="text/javascript">
+function doAction(action) {
+	var form = $('#command');
+	form.attr("action", action);
+	form.submit();
+	return false;
+} 
+</script>
+
 <div class="container-fluid form-padding">
 
 <div class="row">
@@ -30,6 +39,9 @@
 		    <div class="form-group">
 		        <div class="col-sm-offset-2 col-sm-10">
 		            <button type="submit" class="btn btn-primary">Proceed</button>
+		            <c:if test="${ok }">
+                        <button type="button" id="test" class="btn btn-info" onclick="doAction('<c:url value="test"/>');">Test</button>
+		            </c:if>
 		            <button type="reset" class="btn btn-default">Reset</button>
 		        </div>
 		    </div>

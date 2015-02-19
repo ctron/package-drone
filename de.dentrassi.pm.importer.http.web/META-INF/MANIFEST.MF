@@ -5,14 +5,17 @@ Bundle-SymbolicName: de.dentrassi.pm.importer.http.web
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Service-Component: OSGI-INF/controller.xml
+Service-Component: OSGI-INF/controller.xml,
+ OSGI-INF/jobTester.xml
 Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
  de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
  de.dentrassi.pm.sec.web;bundle-version="1.0.0",
  de.dentrassi.osgi.job.web;bundle-version="1.0.0"
-Import-Package: de.dentrassi.osgi.job;version="1.0.0",
+Import-Package: com.google.gson;version="2.3.1",
+ de.dentrassi.osgi.job;version="1.0.0",
  de.dentrassi.pm.importer.http;version="1.0.0",
+ de.dentrassi.pm.importer.web;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  javax.servlet;version="3.1.0",
  javax.servlet.annotation;version="3.1.0",

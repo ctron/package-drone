@@ -43,6 +43,7 @@ public class Configurator implements AutoCloseable
 
         set.add ( "de.dentrassi.pm.storage.jpa" );
         set.add ( "de.dentrassi.pm.sec.jpa" );
+        set.add ( "de.dentrassi.osgi.job.jpa" );
 
         JPA_UNITS = Collections.unmodifiableSet ( set );
     }
