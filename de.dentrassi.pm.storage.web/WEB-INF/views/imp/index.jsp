@@ -34,7 +34,7 @@
         <div class="jumbotron">
             <h1>Import Artifacts</h1>
             <p>
-                Start importing artifacts into Package Drone by selecting an importer on the right side.
+                Start importing artifacts into Package Drone by selecting an importer on the left side.
             </p>
         </div>
     
