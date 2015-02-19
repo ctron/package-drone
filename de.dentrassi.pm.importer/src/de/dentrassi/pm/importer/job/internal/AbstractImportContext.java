@@ -23,6 +23,7 @@ import de.dentrassi.osgi.job.ErrorInformation;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.importer.ImportContext;
+import de.dentrassi.pm.importer.ImportSubContext;
 import de.dentrassi.pm.importer.job.ImporterResult;
 import de.dentrassi.pm.importer.job.ImporterResult.Entry;
 import de.dentrassi.pm.storage.Artifact;
@@ -192,19 +193,21 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
 
     private final List<ImportEntry> entries = new LinkedList<> ();
 
+    private final List<CleanupTask> cleanup = new LinkedList<> ();
+
     @Override
-    public ImportContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    public ImportSubContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
         return scheduleStream ( this.entries, stream, name, providedMetaData );
     }
 
     @Override
-    public ImportContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+    public ImportSubContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
     {
         return scheduleFile ( this.entries, file, deleteAfterImport, name, providedMetaData );
     }
 
-    protected ImportContext scheduleFile ( final List<ImportEntry> entries, final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+    protected ImportSubContext scheduleFile ( final List<ImportEntry> entries, final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
     {
         final FileEntry entry = new FileEntry ( file, deleteAfterImport, name, providedMetaData );
         synchronized ( entries )
@@ -214,7 +217,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         return createSubContext ( entry );
     }
 
-    protected ImportContext scheduleStream ( final List<ImportEntry> entries, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    protected ImportSubContext scheduleStream ( final List<ImportEntry> entries, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
         final StreamEntry entry = new StreamEntry ( stream, name, providedMetaData );
         synchronized ( entries )
@@ -224,18 +227,18 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         return createSubContext ( entry );
     }
 
-    private ImportContext createSubContext ( final AbstractEntry parentEntry )
+    private ImportSubContext createSubContext ( final AbstractEntry parentEntry )
     {
-        return new ImportContext () {
+        return new ImportSubContext () {
 
             @Override
-            public ImportContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+            public ImportSubContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
             {
                 return scheduleFile ( parentEntry.getChildren (), file, deleteAfterImport, name, providedMetaData );
             }
 
             @Override
-            public ImportContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+            public ImportSubContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
             {
                 return scheduleStream ( parentEntry.getChildren (), stream, name, providedMetaData );
             }
@@ -324,7 +327,38 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
     @Override
     public void close () throws Exception
     {
-        closeEntries ( this.entries );
+        final LinkedList<Exception> errors = new LinkedList<> ();
+
+        try
+        {
+            closeEntries ( this.entries );
+        }
+        catch ( final Exception e )
+        {
+            errors.add ( e );
+        }
+
+        for ( final CleanupTask task : this.cleanup )
+        {
+            try
+            {
+                task.cleanup ();
+            }
+            catch ( final Exception e )
+            {
+                errors.add ( e );
+            }
+        }
+
+        final Exception first = errors.pollFirst ();
+        if ( first != null )
+        {
+            for ( final Exception e : errors )
+            {
+                first.addSuppressed ( e );
+            }
+            throw first;
+        }
     }
 
     protected static void closeEntries ( final List<ImportEntry> entries ) throws Exception
@@ -356,5 +390,11 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
             }
             throw first;
         }
+    }
+
+    @Override
+    public void addCleanupTask ( final CleanupTask cleanup )
+    {
+        this.cleanup.add ( cleanup );
     }
 }
