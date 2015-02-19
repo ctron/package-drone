@@ -29,6 +29,7 @@ public class TychoCleanerFactory implements ChannelAspectFactory
     {
         ignoredPatterns.add ( Pattern.compile ( ".*-p2content.xml$" ) );
         ignoredPatterns.add ( Pattern.compile ( ".*-p2artifacts.xml$" ) );
+        ignoredPatterns.add ( Pattern.compile ( ".*-p2metadata.xml$" ) );
     }
 
     @Override
@@ -50,6 +51,12 @@ public class TychoCleanerFactory implements ChannelAspectFactory
                     @Override
                     public void artifactPreAdd ( final PreAddContext context )
                     {
+                        if ( !context.isExternal () )
+                        {
+                            // we don't prevent internal artifacts from being added
+                            return;
+                        }
+
                         final String name = context.getName ();
                         for ( final Pattern pattern : ignoredPatterns )
                         {

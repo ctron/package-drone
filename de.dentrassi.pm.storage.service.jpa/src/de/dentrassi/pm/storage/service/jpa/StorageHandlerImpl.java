@@ -132,7 +132,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             try
             {
-                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData, this.tracker, this.runAggregator );
+                performStoreArtifact ( this.channel, name, stream, this.em, this.entitySupplier, providedMetaData, this.tracker, this.runAggregator, false );
             }
             catch ( final Exception e )
             {
@@ -291,7 +291,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         } );
     }
 
-    public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData, final RegenerateTracker tracker, final boolean runAggregator ) throws Exception
+    public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final EntityManager em, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData, final RegenerateTracker tracker, final boolean runAggregator, final boolean external ) throws Exception
     {
         final Path file = createTempFile ( name );
 
@@ -304,7 +304,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             }
 
             {
-                final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId () );
+                final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId (), external );
                 runChannelTriggers ( tracker, channel, listener -> listener.artifactPreAdd ( context ), null );
                 if ( context.isVeto () )
                 {
@@ -816,13 +816,13 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         this.em.flush ();
     }
 
-    public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
         try
         {
             final ChannelEntity channel = getCheckedChannel ( channelId );
             final RegenerateTracker tracker = new RegenerateTracker ( this );
-            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, tracker, true );
+            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, tracker, true, external );
             tracker.process ( true );
             return ae;
         }
@@ -857,7 +857,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             final AttachedArtifactEntity a = new AttachedArtifactEntity ();
             a.setParent ( parentArtifact );
             return a;
-        }, stream, providedMetaData );
+        }, stream, providedMetaData, true );
 
         return newArtifact;
     }

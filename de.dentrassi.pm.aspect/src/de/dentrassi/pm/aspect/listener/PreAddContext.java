@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,4 +21,9 @@ public interface PreAddContext
     public void vetoAdd ();
 
     public String getChannelId ();
+
+    /**
+     * A flag if this is an external or internal add operation
+     */
+    public boolean isExternal ();
 }

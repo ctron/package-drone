@@ -160,7 +160,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithTransaction ( ( em ) -> {
             final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
-            final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData );
+            final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData, true );
+
+            if ( artifact == null )
+            {
+                return null;
+            }
 
             return convert ( convert ( artifact.getChannel () ), artifact );
         } );

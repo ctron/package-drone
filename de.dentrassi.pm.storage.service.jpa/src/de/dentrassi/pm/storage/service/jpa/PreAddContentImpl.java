@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,11 +25,20 @@ public class PreAddContentImpl implements PreAddContext
 
     private final String channelId;
 
-    public PreAddContentImpl ( final String name, final Path file, final String channelId )
+    private final boolean external;
+
+    public PreAddContentImpl ( final String name, final Path file, final String channelId, final boolean external )
     {
         this.name = name;
         this.file = file;
         this.channelId = channelId;
+        this.external = external;
+    }
+
+    @Override
+    public boolean isExternal ()
+    {
+        return this.external;
     }
 
     @Override
