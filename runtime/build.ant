@@ -121,6 +121,10 @@
         	<get src="http://www.bouncycastle.org/download/bcprov-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
         	<get src="http://www.bouncycastle.org/download/bcpg-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
         	
+        	<!-- aether -->
+        	
+        	<get src="http://eclipse.org/downloads/download.php?file=/aether/aether-core/1.0.1/dist/aether-1.0.1-bin.zip&amp;r=1" dest="download/aether-bin.zip" usetimestamp="true"/>
+        	
         </parallel>
 
     </target>
@@ -144,6 +148,7 @@
         <unzip src="download/gemini-dbaccess.zip" dest="unpack/gemini-dbaccess" />
         <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
         <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
+    	<unzip src="download/aether-bin.zip" dest="unpack/aether" />
     </target>
 
     <!-- ================================= 
@@ -241,6 +246,10 @@
                 -->
 
             </fileset>
+        	
+        	<fileset dir="unpack/aether">
+        	   <include name="*/*.jar"/>
+        	</fileset>
             
             <fileset dir="download/bundles" />
         	<fileset dir="provided" />
