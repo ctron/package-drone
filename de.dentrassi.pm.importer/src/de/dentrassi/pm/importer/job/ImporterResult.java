@@ -29,6 +29,8 @@ public class ImporterResult
 
         private final ErrorInformation error;
 
+        private final List<Entry> children = new LinkedList<> ();
+
         /**
          * Successful entry
          */
@@ -96,6 +98,11 @@ public class ImporterResult
         {
             return this.error != null;
         }
+
+        public List<Entry> getChildren ()
+        {
+            return this.children;
+        }
     }
 
     private List<Entry> entries = new LinkedList<> ();
@@ -131,5 +138,4 @@ public class ImporterResult
     {
         this.entries = entries;
     }
-
 }

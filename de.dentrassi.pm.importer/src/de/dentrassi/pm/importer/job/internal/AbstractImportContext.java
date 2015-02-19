@@ -12,7 +12,6 @@ package de.dentrassi.pm.importer.job.internal;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +38,8 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         public String getName ();
 
         public InputStream openStream () throws Exception;
+
+        public List<ImportEntry> getChildren ();
     }
 
     private static abstract class AbstractEntry implements ImportEntry
@@ -48,10 +49,18 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
 
         private final Map<MetaKey, String> providedMetaData;
 
+        private final List<ImportEntry> children = new LinkedList<> ();
+
         public AbstractEntry ( final String name, final Map<MetaKey, String> providedMetaData )
         {
             this.name = name;
             this.providedMetaData = providedMetaData;
+        }
+
+        @Override
+        public List<ImportEntry> getChildren ()
+        {
+            return this.children;
         }
 
         @Override
@@ -64,6 +73,12 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         public Map<MetaKey, String> getProvidedMetaData ()
         {
             return this.providedMetaData;
+        }
+
+        @Override
+        public void close () throws Exception
+        {
+            closeEntries ( this.children );
         }
     }
 
@@ -84,9 +99,30 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         }
 
         @Override
-        public void close () throws IOException
+        public void close () throws Exception
         {
-            this.stream.close ();
+            Exception ex = null;
+            try
+            {
+                super.close ();
+            }
+            catch ( final Exception e )
+            {
+                ex = e;
+            }
+
+            try
+            {
+                this.stream.close ();
+            }
+            catch ( final Exception e )
+            {
+                if ( ex != null )
+                {
+                    e.addSuppressed ( ex );
+                }
+                throw e;
+            }
         }
     }
 
@@ -114,13 +150,34 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         }
 
         @Override
-        public void close () throws IOException
+        public void close () throws Exception
         {
+            Exception ex = null;
+            try
+            {
+                super.close ();
+            }
+            catch ( final Exception e )
+            {
+                ex = e;
+            }
+
             try
             {
                 if ( this.stream != null )
                 {
-                    this.stream.close ();
+                    try
+                    {
+                        this.stream.close ();
+                    }
+                    catch ( final Exception e )
+                    {
+                        if ( ex != null )
+                        {
+                            e.addSuppressed ( ex );
+                        }
+                        throw e;
+                    }
                 }
             }
             finally
@@ -136,21 +193,53 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
     private final List<ImportEntry> entries = new LinkedList<> ();
 
     @Override
-    public void scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    public ImportContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
-        synchronized ( this.entries )
-        {
-            this.entries.add ( new StreamEntry ( stream, name, providedMetaData ) );
-        }
+        return scheduleStream ( this.entries, stream, name, providedMetaData );
     }
 
     @Override
-    public void scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+    public ImportContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
     {
-        synchronized ( this.entries )
+        return scheduleFile ( this.entries, file, deleteAfterImport, name, providedMetaData );
+    }
+
+    protected ImportContext scheduleFile ( final List<ImportEntry> entries, final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+    {
+        final FileEntry entry = new FileEntry ( file, deleteAfterImport, name, providedMetaData );
+        synchronized ( entries )
         {
-            this.entries.add ( new FileEntry ( file, deleteAfterImport, name, providedMetaData ) );
+            entries.add ( entry );
         }
+        return createSubContext ( entry );
+    }
+
+    protected ImportContext scheduleStream ( final List<ImportEntry> entries, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    {
+        final StreamEntry entry = new StreamEntry ( stream, name, providedMetaData );
+        synchronized ( entries )
+        {
+            entries.add ( entry );
+        }
+        return createSubContext ( entry );
+    }
+
+    private ImportContext createSubContext ( final AbstractEntry parentEntry )
+    {
+        return new ImportContext () {
+
+            @Override
+            public ImportContext scheduleImport ( final Path file, final boolean deleteAfterImport, final String name, final Map<MetaKey, String> providedMetaData )
+            {
+                return scheduleFile ( parentEntry.getChildren (), file, deleteAfterImport, name, providedMetaData );
+            }
+
+            @Override
+            public ImportContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+            {
+                return scheduleStream ( parentEntry.getChildren (), stream, name, providedMetaData );
+            }
+        };
     }
 
     public ImporterResult process () throws Exception
@@ -158,32 +247,57 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         final ImporterResult result = new ImporterResult ();
 
         result.setChannelId ( getChannelId () );
+        result.setTotalBytes ( processChildren ( result, null, null, this.entries ) );
 
+        return result;
+    }
+
+    private long processChildren ( final ImporterResult result, final Artifact parent, final Entry parentEntry, final List<ImportEntry> children ) throws Exception
+    {
         Exception err = null;
         long bytes = 0;
 
-        for ( final ImportEntry entry : this.entries )
+        for ( final ImportEntry entry : children )
         {
             if ( err == null )
             {
                 try
                 {
-                    final Artifact art = performImport ( entry.openStream (), entry.getName (), entry.getProvidedMetaData () );
+                    final Artifact art;
+
+                    if ( parent == null )
+                    {
+                        art = performRootImport ( entry.openStream (), entry.getName (), entry.getProvidedMetaData () );
+                    }
+                    else
+                    {
+                        art = parent.attachArtifact ( entry.getName (), entry.openStream (), entry.getProvidedMetaData () );
+                    }
+
                     final ArtifactInformation info = art.getInformation ();
 
                     bytes += info.getSize ();
 
-                    result.getEntries ().add ( new Entry ( art.getId (), info.getName (), info.getSize () ) );
+                    final Entry newEntry = new Entry ( art.getId (), info.getName (), info.getSize () );
+                    result.getEntries ().add ( newEntry );
+
+                    bytes += processChildren ( result, art, newEntry, entry.getChildren () );
                 }
                 catch ( final Exception e )
                 {
                     err = e;
-                    result.getEntries ().add ( new Entry ( entry.getName (), ErrorInformation.createFrom ( e ) ) );
+                    final Entry newEntry = new Entry ( entry.getName (), ErrorInformation.createFrom ( e ) );
+                    result.getEntries ().add ( newEntry );
+
+                    skipChildren ( newEntry, entry.getChildren () );
                 }
             }
             else
             {
-                result.getEntries ().add ( new Entry ( entry.getName () ) );
+                final Entry newEntry = new Entry ( entry.getName () );
+                result.getEntries ().add ( newEntry );
+
+                skipChildren ( newEntry, entry.getChildren () );
             }
         }
 
@@ -192,23 +306,34 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
             throw err;
         }
 
-        result.setTotalBytes ( bytes );
+        return bytes;
+    }
 
-        return result;
+    private void skipChildren ( final Entry parentEntry, final List<ImportEntry> children )
+    {
+        for ( final ImportEntry entry : children )
+        {
+            parentEntry.getChildren ().add ( new Entry ( entry.getName () ) );
+        }
     }
 
     protected abstract String getChannelId ();
 
-    protected abstract Artifact performImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
+    protected abstract Artifact performRootImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
 
     @Override
     public void close () throws Exception
+    {
+        closeEntries ( this.entries );
+    }
+
+    protected static void closeEntries ( final List<ImportEntry> entries ) throws Exception
     {
         final LinkedList<Exception> errors = new LinkedList<> ();
 
         // close all
 
-        for ( final ImportEntry entry : this.entries )
+        for ( final ImportEntry entry : entries )
         {
             try
             {
@@ -229,6 +354,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
             {
                 first.addSuppressed ( ex );
             }
+            throw first;
         }
     }
 }

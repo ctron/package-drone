@@ -39,8 +39,11 @@ public interface ImportContext
      *            the name of the artifact
      * @param providedMetaData
      *            the provided meta data
+     * @return
+     *         A new context which will add artifacts below this scheduled
+     *         artifact
      */
-    public void scheduleImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
+    public ImportContext scheduleImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
 
     /**
      * Schedule the import of an artifact</br>
@@ -57,8 +60,11 @@ public interface ImportContext
      *            the name of the artifact
      * @param providedMetaData
      *            the provided meta data
+     * @return
+     *         A new context which will add artifacts below this scheduled
+     *         artifact
      */
-    public void scheduleImport ( Path file, boolean deleteAfterImport, String name, Map<MetaKey, String> providedMetaData );
+    public ImportContext scheduleImport ( Path file, boolean deleteAfterImport, String name, Map<MetaKey, String> providedMetaData );
 
     /**
      * Schedule the import of an artifact from a file <br/>
@@ -69,9 +75,12 @@ public interface ImportContext
      *            the file to import from
      * @param name
      *            the name of the artifact
+     * @return
+     *         A new context which will add artifacts below this scheduled
+     *         artifact
      */
-    public default void scheduleImport ( final Path file, final String name )
+    public default ImportContext scheduleImport ( final Path file, final String name )
     {
-        scheduleImport ( file, true, name, null );
+        return scheduleImport ( file, true, name, null );
     }
 }

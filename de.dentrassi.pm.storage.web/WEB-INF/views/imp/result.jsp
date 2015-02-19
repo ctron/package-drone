@@ -6,6 +6,21 @@
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 <%@ taglib uri="http://dentrassi.de/pm/storage" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/job" prefix="job"%>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web"%>
+
+<web:define name="entry">
+<c:forEach var="entry" items="${items }">
+    <tr>
+        <td style="padding-left: ${level/2}em;">
+           <a href="/artifact/${entry.id }/view">${entry.id }</a>
+        </td>
+        <td>${fn:escapeXml(entry.name) }</td>
+        <td>${entry.size }</td>
+    </tr>
+    
+    <web:call name="entry" items="${entry.children }" level="${level+1 }"/>
+</c:forEach>
+</web:define>
 
 <h:main title="Import complete">
 
@@ -52,15 +67,7 @@
                     </thead>
                     
                     <tbody>
-	                    <c:forEach var="entry" items="${result.entries }">
-	                        <tr>
-	                            <td>
-	                               <a href="/artifact/${entry.id }/view">${entry.id }</a>
-	                            </td>
-	                            <td>${fn:escapeXml(entry.name) }</td>
-	                            <td>${entry.size }</td>
-	                        </tr>
-	                    </c:forEach>
+	                   <web:call name="entry" items="${result.entries }" level="0"/>
                     </tbody>
                 
                 </table>

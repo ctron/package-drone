@@ -22,15 +22,12 @@ import de.dentrassi.pm.importer.web.ImportRequest;
 
 public class ImportManager
 {
-    private final BundleContext context;
-
     private final ServiceTracker<Importer, Importer> tracker;
 
     private final JobManager jobManager;
 
     public ImportManager ( final BundleContext context, final JobManager jobManager )
     {
-        this.context = context;
         this.tracker = new ServiceTracker<> ( context, Importer.class, null );
         this.tracker.open ();
 

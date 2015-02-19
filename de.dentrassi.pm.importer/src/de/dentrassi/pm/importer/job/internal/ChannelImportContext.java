@@ -38,7 +38,7 @@ public class ChannelImportContext extends AbstractImportContext
     }
 
     @Override
-    protected Artifact performImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    protected Artifact performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
         return this.channel.createArtifact ( name, stream, providedMetaData );
     }

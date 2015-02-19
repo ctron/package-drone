@@ -848,7 +848,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
 
-        if ( ! ( parentArtifact instanceof StoredArtifactEntity ) )
+        if ( parentArtifact instanceof GeneratorArtifactEntity )
+        {
+            throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is a generator artifact", parentArtifact ) );
+        }
+
+        if ( ! ( parentArtifact instanceof StoredArtifactEntity ) && ! ( parentArtifact instanceof AttachedArtifactEntity ) )
         {
             throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is not a normal stored artifact", parentArtifact ) );
         }

@@ -102,11 +102,6 @@ public class ImportController implements InterfaceExtender
             this.context.ungetService ( this.reference );
         }
 
-        public Importer getService ()
-        {
-            return this.service;
-        }
-
         public ImporterDescription getDescription ()
         {
             return this.description;
@@ -209,7 +204,10 @@ public class ImportController implements InterfaceExtender
         final ImporterResult result = new GsonBuilder ().create ().fromJson ( job.getResult (), ImporterResult.class );
         model.put ( "result", result );
 
-        model.put ( "channel", this.service.getChannel ( result.getChannelId () ) );
+        if ( result != null )
+        {
+            model.put ( "channel", this.service.getChannel ( result.getChannelId () ) );
+        }
 
         return new ModelAndView ( "result", model );
     }
@@ -228,6 +226,7 @@ public class ImportController implements InterfaceExtender
         {
             return null;
         }
+
         if ( !request.isUserInRole ( "MANAGER" ) )
         {
             return null;
