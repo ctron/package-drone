@@ -41,6 +41,7 @@ What it currently can do
 * Use "deploy keys" to allow deploying to a repository channel
 * Automatically clean up channels based on custom aggregation and sorting rules
 * Provide a Maven 2 Repository Layout for downloading artifacts
+* Extract meta data from ".deb" files and create a signed APT repository index
 
 Known bugs and limitation
 ----------------
