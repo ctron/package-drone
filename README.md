@@ -39,13 +39,13 @@ What it currently can do
 * Authorize users and optionally allow self-registration
 * Provide a very simple role based access model
 * Use "deploy keys" to allow deploying to a repository channel
+* Automatically clean up channels based on custom aggregation and sorting rules
+* Provide a Maven 2 Repository Layout for downloading artifacts
 
 Known bugs and limitation
 ----------------
 
 * The concept of P2 binaries is missing
-* Automatic cleanup is missing
-* There is deadlock in Equinox/EclipseLink when updating the JPA database settings. This is a bug in Equinox and will be fixed in Mars M6.
 * PostgreSQL is not supported, since PostgreSQL does not support Blobs in a sane way
 
 What it currently cannot do
@@ -56,7 +56,6 @@ A lot of things. If there is time it will be implemented. Or you can help by con
 Hopefully some time Package Drone can:
 
 * Provide access to bundles by an OBR layout (it can do R5)
-* Act as a fully functional Maven M2 repository
 
 What it is not designed to do
 -----------------
