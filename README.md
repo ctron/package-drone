@@ -1,7 +1,7 @@
 Package Drone
 =======
 
-A package manager repository for OSGi / Java (any maybe more).
+A package manager repository for OSGi, Java and more.
 
 This project was started to scratch the itch that Maven Tycho can compile OSGi bundles with Eclipse, but not deploy it "somewhere". Everything has to somehow copied around with B3, P2Director or other tools.
 
