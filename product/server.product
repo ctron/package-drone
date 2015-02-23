@@ -51,6 +51,7 @@
       <plugin id="de.dentrassi.pm.deb.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.generator.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.importer" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.importer.aether" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.importer.http" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.importer.http.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.logging.jul" autoStart="true" startLevel="1" />

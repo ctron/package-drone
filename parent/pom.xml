@@ -69,6 +69,8 @@
 		<module>../de.dentrassi.osgi.converter</module>
 		
 		<module>../de.dentrassi.osgi.job</module>
+		<module>../de.dentrassi.osgi.job.jpa</module>
+		<module>../de.dentrassi.osgi.job.service.jpa</module>
 		<module>../de.dentrassi.osgi.job.web</module>
 		
 		<module>../de.dentrassi.osgi.scheduler</module>
@@ -99,10 +101,13 @@
 		<module>../de.dentrassi.pm.deb</module>
 		<module>../de.dentrassi.pm.deb.web</module>
 		
+		<module>../de.dentrassi.pm.external.maven</module>
+		
 		<module>../de.dentrassi.pm.generator</module>
 		<module>../de.dentrassi.pm.generator.p2</module>
 		
 		<module>../de.dentrassi.pm.importer</module>
+		<module>../de.dentrassi.pm.importer.aether</module>
 		<module>../de.dentrassi.pm.importer.http</module>
 		<module>../de.dentrassi.pm.importer.http.web</module>
 		

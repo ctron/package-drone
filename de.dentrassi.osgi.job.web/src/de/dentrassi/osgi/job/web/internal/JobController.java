@@ -71,6 +71,12 @@ public class JobController
     {
         final JobHandle job = this.manager.getJob ( id );
 
+        if ( job != null && job.isComplete () && job.getError () != null )
+        {
+            // show default error page
+            return defaultResult ( job );
+        }
+
         final String factoryId = job.getRequest ().getFactoryId ();
         final JobFactoryDescriptor desc = this.manager.getFactory ( factoryId );
 

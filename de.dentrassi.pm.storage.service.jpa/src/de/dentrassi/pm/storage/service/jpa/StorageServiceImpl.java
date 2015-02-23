@@ -637,7 +637,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public Artifact createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         return doWithTransaction ( ( em ) -> {
-            final ArtifactEntity artifact = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
+            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+            final ArtifactEntity artifact = hi.createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
             if ( artifact == null )
             {
                 return null;

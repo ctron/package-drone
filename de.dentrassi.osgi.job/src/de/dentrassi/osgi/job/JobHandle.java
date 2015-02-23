@@ -28,4 +28,9 @@ public interface JobHandle
     {
         return getState () == State.COMPLETE;
     }
+
+    public default boolean isFailed ()
+    {
+        return isComplete () && getError () != null;
+    }
 }

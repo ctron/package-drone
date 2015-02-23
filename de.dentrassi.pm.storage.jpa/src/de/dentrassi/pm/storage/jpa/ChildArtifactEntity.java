@@ -30,6 +30,16 @@ public abstract class ChildArtifactEntity extends ArtifactEntity
     public void setParent ( final ArtifactEntity parent )
     {
         this.parent = parent;
+
+        // we need to extract the parent Id here in case we internally set the parent
+        if ( parent == null )
+        {
+            this.parentId = null;
+        }
+        else
+        {
+            this.parentId = parent.getId ();
+        }
     }
 
     public ArtifactEntity getParent ()

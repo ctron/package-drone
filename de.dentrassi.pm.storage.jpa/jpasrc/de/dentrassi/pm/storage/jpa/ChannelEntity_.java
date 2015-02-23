@@ -7,7 +7,7 @@ import javax.persistence.metamodel.SetAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-02-04T15:11:44.119+0100")
+@Generated(value="Dali", date="2015-02-23T11:22:30.857+0100")
 @StaticMetamodel(ChannelEntity.class)
 public class ChannelEntity_ {
 	public static volatile SingularAttribute<ChannelEntity, String> id;

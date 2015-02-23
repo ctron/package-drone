@@ -127,7 +127,6 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
-        	
         </parallel>
 
     </target>

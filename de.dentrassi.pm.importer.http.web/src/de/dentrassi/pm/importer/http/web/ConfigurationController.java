@@ -50,9 +50,9 @@ import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 public class ConfigurationController
 {
 
-    private JobManager jobManager;
-
     private final Gson gson = new GsonBuilder ().create ();
+
+    private JobManager jobManager;
 
     public void setJobManager ( final JobManager jobManager )
     {

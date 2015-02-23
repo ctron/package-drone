@@ -101,4 +101,10 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
         }
     };
 
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[Artifact: %s - %s]", this.name, this.id );
+    }
+
 }

@@ -3,6 +3,7 @@
 
 <%@page import="de.dentrassi.osgi.job.JobHandle"%>
 
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
@@ -17,21 +18,33 @@ else
     pageContext.setAttribute ( "type", "default");
 %>
 
-<c:choose>
-    <c:when test="${empty job }">Job not found!</c:when>
-    <c:otherwise>
+<h:main title="Job failed" subtitle="${fn:escapeXml(job.label) }">
 
-		<div class="panel panel-${type }">
-		    <div class="panel-heading">
-		        <h4 class="panel-title">${fn:escapeXml(job.label) }</h4>
-		    </div>
-		    
-		    <div class="panel-body">
-		        <c:if test="${not empty errorFormatted }">
-		            <pre>${fn:escapeXml(errorFormatted) }</pre>
-		        </c:if>
-		    </div>
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-12">
+		
+			<c:choose>
+			    <c:when test="${empty job }">Job not found!</c:when>
+			    <c:otherwise>
+			
+					<div class="panel panel-${type }">
+					    <div class="panel-heading">
+					        <h4 class="panel-title">${fn:escapeXml(job.error.message) }</h4>
+					    </div>
+					    
+					    <div class="panel-body">
+                            <pre>${fn:escapeXml(job.error.formatted) }</pre>
+					    </div>
+					</div>
+			
+			    </c:otherwise>
+			</c:choose>
+		
 		</div>
+	</div>
 
-    </c:otherwise>
-</c:choose>
+</div>
+
+</h:main>

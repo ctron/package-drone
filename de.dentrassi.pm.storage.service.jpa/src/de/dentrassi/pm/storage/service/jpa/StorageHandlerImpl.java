@@ -822,8 +822,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             final ChannelEntity channel = getCheckedChannel ( channelId );
             final RegenerateTracker tracker = new RegenerateTracker ( this );
-            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, tracker, true, external );
-            tracker.process ( true );
+            final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, this.em, entityCreator, providedMetaData, tracker, false, external );
+            tracker.process ( false );
+            runChannelAggregators ( channel );
             return ae;
         }
         catch ( final Exception e )
