@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Jens Reimann.
+ * Copyright (c) 2014, 2015 Jens Reimann.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.osgi.framework.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.GsonBuilder;
@@ -38,19 +40,29 @@ import de.dentrassi.pm.osgi.bundle.BundleInformation;
 
 public class MavenSourceBundleVirtualizer implements Virtualizer
 {
+    private final static Logger logger = LoggerFactory.getLogger ( MavenSourceBundleVirtualizer.class );
 
     @Override
     public void virtualize ( final Context context )
     {
         final ArtifactInformation ai = context.getArtifactInformation ();
+
+        if ( ai.getParentId () == null )
+        {
+            logger.debug ( "don't create - parent id is null" );
+            return;
+        }
+
         if ( !ai.getName ().endsWith ( "-sources.jar" ) )
         {
+            logger.debug ( "don't create - name does not match" );
             return;
         }
 
         final BundleInformation bi = findBundleInformation ( context );
         if ( bi == null )
         {
+            logger.debug ( "don't create - parent has no bundle information" );
             return;
         }
 
