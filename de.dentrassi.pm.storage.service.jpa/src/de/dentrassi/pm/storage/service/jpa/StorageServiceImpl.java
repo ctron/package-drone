@@ -725,9 +725,31 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public Set<String> getChannelAspects ( final String channelId )
     {
-        return doWithTransaction ( ( em ) -> {
+        return doWithTransaction ( em -> {
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
             return new HashSet<> ( channel.getAspects () );
         } );
     }
+
+    public void lockChannel ( final String channelId )
+    {
+        setChannelLock ( channelId, true );
+    }
+
+    public void unlockChannel ( final String channelId )
+    {
+        setChannelLock ( channelId, false );
+    }
+
+    private void setChannelLock ( final String channelId, final boolean state )
+    {
+        this.lockManager.modifyRun ( channelId, ( ) -> {
+            doWithTransactionVoid ( em -> {
+                final ChannelEntity channel = getCheckedChannel ( em, channelId );
+                channel.setLocked ( state );
+                em.persist ( channel );
+            } );
+        } );
+    }
+
 }

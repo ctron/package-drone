@@ -156,4 +156,16 @@ public class ChannelImpl implements Channel
         return this.service.getChannelProvidedMetaData ( this.id );
     }
 
+    @Override
+    public void lock ()
+    {
+        this.service.lockChannel ( this.id );
+    }
+
+    @Override
+    public void unlock ()
+    {
+        this.service.unlockChannel ( this.id );
+    }
+
 }

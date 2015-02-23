@@ -29,6 +29,26 @@ public interface Channel
 
     boolean isLocked ();
 
+    /**
+     * Lock the channel for further modifications <br/>
+     * Note that the channel can still be renamed and data can be accessed.
+     * However the channel cannot be deleted or any contained artifacts be
+     * modified.
+     * <p>
+     * If the channel is already locked nothing will happen.
+     * </p>
+     */
+    public void lock ();
+
+    /**
+     * Reverses a channel lock <br/>
+     * Undoes the effects of {@link #lock()}
+     * <p>
+     * If the channel is already unlocked nothing will happen.
+     * </p>
+     */
+    public void unlock ();
+
     public Set<Artifact> getArtifacts ();
 
     public List<ChannelAspectInformation> getAspects ();
