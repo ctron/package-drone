@@ -7,7 +7,7 @@ import javax.persistence.metamodel.SetAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-02-23T11:22:30.857+0100")
+@Generated(value="Dali", date="2015-02-23T11:42:53.883+0100")
 @StaticMetamodel(ChannelEntity.class)
 public class ChannelEntity_ {
 	public static volatile SingularAttribute<ChannelEntity, String> id;
@@ -17,4 +17,5 @@ public class ChannelEntity_ {
 	public static volatile CollectionAttribute<ChannelEntity, ExtractedChannelPropertyEntity> extractedProperties;
 	public static volatile CollectionAttribute<ChannelEntity, ProvidedChannelPropertyEntity> providedProperties;
 	public static volatile SetAttribute<ChannelEntity, DeployGroupEntity> deployGroups;
+	public static volatile SingularAttribute<ChannelEntity, Boolean> locked;
 }

@@ -62,6 +62,18 @@ public class ChannelEntity
             referencedColumnName = "id" ) )
     private Set<DeployGroupEntity> deployGroups = new HashSet<> ();
 
+    private boolean locked;
+
+    public void setLocked ( final boolean locked )
+    {
+        this.locked = locked;
+    }
+
+    public boolean isLocked ()
+    {
+        return this.locked;
+    }
+
     public void setDeployGroups ( final Set<DeployGroupEntity> deployGroups )
     {
         this.deployGroups = deployGroups;
