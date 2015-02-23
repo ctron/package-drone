@@ -30,15 +30,24 @@ public class ChannelImpl implements Channel
 {
     private final String id;
 
+    private final boolean locked;
+
     private final StorageServiceImpl service;
 
     private final String name;
 
-    public ChannelImpl ( final String id, final String name, final StorageServiceImpl service )
+    public ChannelImpl ( final String id, final String name, final boolean locked, final StorageServiceImpl service )
     {
         this.id = id;
         this.name = name;
+        this.locked = locked;
         this.service = service;
+    }
+
+    @Override
+    public boolean isLocked ()
+    {
+        return this.locked;
     }
 
     @Override

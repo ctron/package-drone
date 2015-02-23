@@ -27,6 +27,8 @@ public interface Channel
 
     public String getName ();
 
+    boolean isLocked ();
+
     public Set<Artifact> getArtifacts ();
 
     public List<ChannelAspectInformation> getAspects ();
@@ -52,4 +54,5 @@ public interface Channel
     public void addDeployGroup ( String groupId );
 
     public void removeDeployGroup ( String groupId );
+
 }

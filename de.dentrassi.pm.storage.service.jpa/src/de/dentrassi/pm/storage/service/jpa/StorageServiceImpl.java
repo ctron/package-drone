@@ -219,7 +219,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             return null;
         }
-        return new ChannelImpl ( ce.getId (), ce.getName (), this );
+        return new ChannelImpl ( ce.getId (), ce.getName (), ce.isLocked (), this );
     }
 
     private Artifact convert ( final ChannelImpl channel, final ArtifactEntity ae )
