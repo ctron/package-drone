@@ -27,7 +27,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
-@SuiteClasses ( { SetupTest.class, DefaultTest.class, MailTest.class, UserTest.class, UploadTest.class, BasicTest.class } )
+@SuiteClasses ( { SetupTest.class, MailTest.class, UserTest.class, UploadTest.class, BasicTest.class, DefaultTest.class, } )
 public class TestSuite
 {
     private static String SAUCE_USER_NAME = System.getProperty ( "sauce.username" );

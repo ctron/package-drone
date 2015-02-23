@@ -19,14 +19,64 @@ public class DefaultTest extends AbstractServerTest
     @Test
     public void testBase ()
     {
-        driver.get ( getBase () );
-        Assert.assertEquals ( resolve ( "/" ), driver.getCurrentUrl () );
+        simpleTest ( "/" );
     }
 
     @Test
     public void testChannels ()
     {
-        driver.get ( resolve ( "/channel" ) );
-        Assert.assertEquals ( resolve ( "/channel" ), driver.getCurrentUrl () );
+        simpleTest ( "/channel" );
+    }
+
+    @Test
+    public void testConfig ()
+    {
+        simpleTest ( "/config" );
+    }
+
+    @Test
+    public void testMailConfig ()
+    {
+        simpleTest ( "/default.mail/config" );
+    }
+
+    @Test
+    public void testSignConfig ()
+    {
+        simpleTest ( "/pgp.sign" );
+    }
+
+    @Test
+    public void testDeployKeys ()
+    {
+        simpleTest ( "/deploy/auth/group" );
+    }
+
+    @Test
+    public void testCoreView ()
+    {
+        simpleTest ( "/config/core/list" );
+    }
+
+    @Test
+    public void testCoreSite ()
+    {
+        simpleTest ( "/config/core/site" );
+    }
+
+    @Test
+    public void testTasks ()
+    {
+        simpleTest ( "/tasks" );
+    }
+
+    protected void simpleTest ( final String url )
+    {
+        final String full = resolve ( url );
+        driver.get ( full );
+        Assert.assertEquals ( full, driver.getCurrentUrl () );
+
+        final String title = driver.getTitle ();
+        Assert.assertTrue ( "Page title suffix", title.endsWith ( "| Package Drone" ) );
     }
 }
