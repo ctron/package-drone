@@ -1,9 +1,11 @@
 CREATE TABLE PROPERTIES ("KEY" VARCHAR(255) NOT NULL, "VALUE" TEXT, PRIMARY KEY("KEY"));
-INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '7' );
+INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '8' );
 
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,
     NAME          VARCHAR(255) UNIQUE,
+    
+    LOCKED        BOOLEAN NOT NULL DEFAULT 0,
     
     PRIMARY KEY (ID)
 );
