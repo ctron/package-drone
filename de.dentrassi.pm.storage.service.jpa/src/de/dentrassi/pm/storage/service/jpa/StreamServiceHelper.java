@@ -41,6 +41,7 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.ChannelLockedException;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -236,6 +237,14 @@ public interface StreamServiceHelper
             return ( (ChildArtifactEntity)ae ).getParentId ();
         }
         return null;
+    }
+
+    default void testLocked ( final ChannelEntity channel )
+    {
+        if ( channel.isLocked () )
+        {
+            throw new ChannelLockedException ( channel.getId () );
+        }
     }
 
 }

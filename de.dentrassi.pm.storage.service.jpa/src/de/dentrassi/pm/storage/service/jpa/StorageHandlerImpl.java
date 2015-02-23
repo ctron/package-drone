@@ -53,7 +53,6 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
-import de.dentrassi.pm.common.utils.ThrowingRunnable;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.StorageAccessor;
@@ -164,9 +163,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private final ChannelAspectProcessor channelAspectProcessor = Activator.getChannelAspects ();
 
-    private final LockManager<ChannelEntity, String> lockManager;
+    private final LockManager<String> lockManager;
 
-    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<ChannelEntity, String> lockManager )
+    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager )
     {
         this.em = em;
         this.generatorProcessor = generatorProcessor;
@@ -230,8 +229,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
-        doStreamed ( this.em, ae, ( file ) -> {
-            doLocked ( ae.getChannel (), ( ) -> {
+        this.lockManager.modifyRun ( ae.getChannel ().getId (), ( ) -> {
+            doStreamed ( this.em, ae, ( file ) -> {
                 // first clear old generated artifacts
 
                 deleteGeneratedChildren ( ae );
@@ -241,19 +240,6 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 this.em.flush ();
             } );
         } );
-    }
-
-    protected void doLocked ( final ChannelEntity channel, final ThrowingRunnable t ) throws Exception
-    {
-        this.lockManager.writeLock ( channel );
-        try
-        {
-            t.run ();
-        }
-        finally
-        {
-            this.lockManager.writeUnlock ( channel );
-        }
     }
 
     protected void deleteGeneratedChildren ( final GeneratorArtifactEntity ae )
@@ -315,10 +301,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
             final SortedMap<MetaKey, String> metadata = extractMetaData ( em, channel, file );
 
-            this.lockManager.writeLock ( channel );
+            return this.lockManager.modifyCall ( channel.getId (), ( ) -> {
 
-            try
-            {
                 ArtifactEntity ae;
                 try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
                 {
@@ -344,11 +328,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 }
 
                 return ae;
-            }
-            finally
-            {
-                this.lockManager.writeUnlock ( channel );
-            }
+            } );
         }
         finally
         {
@@ -456,6 +436,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 throw new IllegalArgumentException ( String.format ( "Artifact '%s' is not a generator artifact.", id ) );
             }
 
+            testLocked ( ae.getChannel () );
+
             regenerateArtifact ( (GeneratorArtifactEntity)ae, false );
             runChannelAggregators ( ae.getChannel () );
         }
@@ -474,6 +456,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             return null; // silently ignore
         }
+
+        testLocked ( ae.getChannel () );
 
         if ( !isDeleteable ( ae ) )
         {
@@ -545,11 +529,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         } );
 
         // clear
-
-        this.lockManager.writeLock ( channel );
-        try
-        {
-
+        this.lockManager.modifyRun ( channel.getId (), ( ) -> {
             channel.getExtractedProperties ().clear ();
 
             this.em.persist ( channel );
@@ -561,11 +541,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
             this.em.persist ( channel );
             this.em.flush ();
-        }
-        finally
-        {
-            this.lockManager.writeUnlock ( channel );
-        }
+        } );
     }
 
     private AggregationContext createAggregationContext ( final ChannelEntity channel )
@@ -849,6 +825,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
 
+        testLocked ( parentArtifact.getChannel () );
+
         if ( parentArtifact instanceof GeneratorArtifactEntity )
         {
             throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is a generator artifact", parentArtifact ) );
@@ -888,6 +866,19 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
 
         return convertMetaData ( null, channel.getProvidedProperties () );
+    }
+
+    public void clearChannel ( final String channelId )
+    {
+        final ChannelEntity channel = getCheckedChannel ( channelId );
+
+        testLocked ( channel );
+
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
+        q.setParameter ( "channelId", channelId );
+        q.executeUpdate ();
+
+        runChannelAggregators ( channel );
     }
 
 }

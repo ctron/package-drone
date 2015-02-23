@@ -12,63 +12,114 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LockManager<E, I extends Comparable<I>>
+import de.dentrassi.pm.common.utils.ThrowingRunnable;
+
+public class LockManager<I extends Comparable<I>>
 {
     private final static Logger logger = LoggerFactory.getLogger ( LockManager.class );
 
+    private final Lock writeLock;
+
+    public LockManager ()
+    {
+        this.writeLock = new ReentrantLock ();
+    }
+
     private final Map<I, ReadWriteLock> locks = new TreeMap<> ();
 
-    private final Function<E, I> idFunc;
-
-    public LockManager ( final Function<E, I> idFunc )
+    public void accessRun ( final I id, final ThrowingRunnable run )
     {
-        this.idFunc = idFunc;
+        act ( id, ReadWriteLock::readLock, ( ) -> {
+            run.run ();
+            return null;
+        } );
     }
 
-    public void readLock ( final E entity )
+    public void modifyRun ( final I id, final ThrowingRunnable run )
     {
-        act ( entity, ReadWriteLock::readLock, Lock::lock, "readLock" );
+        act ( id, ReadWriteLock::writeLock, ( ) -> {
+            run.run ();
+            return null;
+        } );
     }
 
-    public void readUnlock ( final E entity )
+    public <T> T accessCall ( final I id, final Callable<T> run )
     {
-        act ( entity, ReadWriteLock::readLock, Lock::unlock, "readUnlock" );
+        return act ( id, ReadWriteLock::readLock, run );
     }
 
-    public void writeLock ( final E entity )
+    public <T> T modifyCall ( final I id, final Callable<T> run )
     {
-        act ( entity, ReadWriteLock::writeLock, Lock::lock, "writeLock" );
+        return act ( id, ReadWriteLock::writeLock, run );
     }
 
-    public void writeUnlock ( final E entity )
+    public void removeLock ( final I id )
     {
-        act ( entity, ReadWriteLock::writeLock, Lock::unlock, "writeUnlock" );
-    }
-
-    protected void act ( final E entity, final Function<ReadWriteLock, Lock> f, final Consumer<Lock> actor, final String op )
-    {
-        final long start = System.currentTimeMillis ();
-
-        actor.accept ( f.apply ( getLock ( this.idFunc.apply ( entity ) ) ) );
-
-        if ( logger.isTraceEnabled () )
+        this.writeLock.lock ();
+        try
         {
-            logger.trace ( "Lock operation {} took {} ms", op, System.currentTimeMillis () - start );
+            this.locks.remove ( id );
+        }
+        finally
+        {
+            this.writeLock.unlock ();
+        }
+    }
+
+    protected <T> T act ( final I id, final Function<ReadWriteLock, Lock> f, final Callable<T> run )
+    {
+        try
+        {
+            return process ( id, f, run );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
+    protected <T> T process ( final I id, final Function<ReadWriteLock, Lock> f, final Callable<T> run ) throws Exception
+    {
+        final ReadWriteLock rwLock = getLock ( id );
+
+        if ( rwLock == null )
+        {
+            logger.info ( "No lock found for: '{}'", id );
+            return run.call ();
+        }
+
+        final long start = System.currentTimeMillis ();
+        final Lock lock = f.apply ( rwLock );
+        lock.lock ();
+        try
+        {
+            if ( logger.isTraceEnabled () )
+            {
+                logger.trace ( "Lock operation for {} took {} ms", id, System.currentTimeMillis () - start );
+            }
+
+            return run.call ();
+        }
+        finally
+        {
+            lock.unlock ();
         }
     }
 
     private ReadWriteLock getLock ( final I id )
     {
-        synchronized ( this.locks )
+        this.writeLock.unlock ();
+        try
         {
             ReadWriteLock lock = this.locks.get ( id );
             if ( lock == null )
@@ -77,6 +128,10 @@ public class LockManager<E, I extends Comparable<I>>
                 this.locks.put ( id, lock );
             }
             return lock;
+        }
+        finally
+        {
+            this.writeLock.unlock ();
         }
     }
 }
