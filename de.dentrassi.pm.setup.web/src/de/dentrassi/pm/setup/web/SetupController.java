@@ -61,7 +61,7 @@ public class SetupController
 
         final boolean loggedIn = request.getUserPrincipal () != null;
         {
-            final BasicTask task = new BasicTask ( "Sign is as admin user", "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application. <br/><br/> Alternatively the token is written to the file <code>${user.home}/.drone-admin-token</code>.", new LinkTarget ( "/login" ) );
+            final BasicTask task = new BasicTask ( "Sign is as admin user", 1, "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application. <br/><br/> Alternatively the token is written to the file <code>${user.home}/.drone-admin-token</code>.", new LinkTarget ( "/login" ) );
             if ( loggedIn )
             {
                 task.setState ( State.DONE );
@@ -70,7 +70,7 @@ public class SetupController
         }
 
         {
-            final BasicTask task = new BasicTask ( "Configure the database connection", "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null );
+            final BasicTask task = new BasicTask ( "Configure the database connection", 2, "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null );
             if ( configured )
             {
                 task.setState ( State.DONE );
@@ -79,7 +79,7 @@ public class SetupController
         }
 
         {
-            final BasicTask task = new BasicTask ( "Install or upgdate the database schema", "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null );
+            final BasicTask task = new BasicTask ( "Install or upgdate the database schema", 3, "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null );
             if ( !needUpgrade && configured )
             {
                 task.setState ( State.DONE );
@@ -88,7 +88,7 @@ public class SetupController
         }
 
         {
-            final BasicTask task = new BasicTask ( "Configure the mail service", "You will need to configure a mail server which Package Drone can use to sent e-mails.", loggedIn ? new LinkTarget ( "/default.mail/config" ) : null );
+            final BasicTask task = new BasicTask ( "Configure the mail service", 4, "You will need to configure a mail server which Package Drone can use to sent e-mails.", loggedIn ? new LinkTarget ( "/default.mail/config" ) : null );
 
             final BundleContext ctx = FrameworkUtil.getBundle ( SetupController.class ).getBundleContext ();
             final boolean mailPresent = ctx.getServiceReference ( "de.dentrassi.pm.mail.service.MailService" ) != null;
