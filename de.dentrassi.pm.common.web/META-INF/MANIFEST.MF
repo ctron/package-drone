@@ -20,7 +20,6 @@ Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
 Eclipse-BundleShape: dir
 Export-Package: de.dentrassi.pm.common.web;version="1.0.0";uses:="de.dentrassi.osgi.web,javax.servlet.http",
  de.dentrassi.pm.common.web.menu;version="1.0.0";uses:="javax.servlet.http,de.dentrassi.osgi.web,de.dentrassi.pm.common.web",
- de.dentrassi.pm.common.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage",
- de.dentrassi.pm.common.web.task;version="1.0.0";uses:="de.dentrassi.osgi.web"
+ de.dentrassi.pm.common.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/menuInterceptor.xml

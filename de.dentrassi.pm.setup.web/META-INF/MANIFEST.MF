@@ -15,6 +15,7 @@ Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.pm.database;version="1.0.0",
  de.dentrassi.pm.mail.service;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
+ de.dentrassi.pm.todo;version="1.0.0",
  javax.servlet;version="3.1.0",
  javax.servlet.annotation;version="3.1.0",
  javax.servlet.http;version="3.1.0",

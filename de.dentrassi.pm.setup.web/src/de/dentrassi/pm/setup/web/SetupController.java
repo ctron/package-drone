@@ -27,10 +27,10 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
-import de.dentrassi.pm.common.web.task.BasicTask;
-import de.dentrassi.pm.common.web.task.Task;
-import de.dentrassi.pm.common.web.task.Task.State;
 import de.dentrassi.pm.database.DatabaseSetup;
+import de.dentrassi.pm.todo.BasicTask;
+import de.dentrassi.pm.todo.Task;
+import de.dentrassi.pm.todo.Task.State;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )

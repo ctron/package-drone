@@ -152,6 +152,8 @@
 		
 		<module>../de.dentrassi.pm.system</module>
 		
+		<module>../de.dentrassi.pm.todo</module>
+		
 		<module>../de.dentrassi.pm.utils.deb</module>
 		
 		<module>../de.dentrassi.pm.feature</module>
