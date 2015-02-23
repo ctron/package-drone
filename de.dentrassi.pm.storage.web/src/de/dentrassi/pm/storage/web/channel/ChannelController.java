@@ -52,7 +52,6 @@ import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.service.DeployAuthService;
@@ -228,7 +227,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )
-    public String addPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
+    public ModelAndView addPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
             value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
     {
         try
@@ -242,10 +241,10 @@ public class ChannelController implements InterfaceExtender
         }
         catch ( final IOException e )
         {
-            return "/error/upload";
+            return CommonController.createError ( "Upload", "Upload failed", e );
         }
 
-        return "redirect:/channel/" + channelId + "/view";
+        return redirectDefaultView ( channelId );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/drop", method = RequestMethod.POST )
@@ -275,11 +274,16 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
-    public String clear ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView clear ( @PathVariable ( "channelId" ) final String channelId )
     {
         this.service.clearChannel ( channelId );
 
-        return "redirect:/channel/" + channelId + "/view";
+        return redirectDefaultView ( channelId );
+    }
+
+    protected ModelAndView redirectDefaultView ( final String channelId )
+    {
+        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/deployKeys" )
@@ -364,6 +368,34 @@ public class ChannelController implements InterfaceExtender
         return model;
     }
 
+    @RequestMapping ( value = "/channel/{channelId}/lock", method = RequestMethod.GET )
+    public ModelAndView lock ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        channel.lock ();
+
+        return redirectDefaultView ( channelId );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/unlock", method = RequestMethod.GET )
+    public ModelAndView unlock ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        channel.unlock ();
+
+        return redirectDefaultView ( channelId );
+    }
+
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
     public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
     {
@@ -415,7 +447,7 @@ public class ChannelController implements InterfaceExtender
         if ( !result.hasErrors () )
         {
             this.service.updateChannel ( channelId, data.getName () );
-            return new ModelAndView ( "redirect:/channel/" + channelId + "/view", model );
+            return redirectDefaultView ( channelId );
         }
         else
         {
@@ -438,14 +470,23 @@ public class ChannelController implements InterfaceExtender
 
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
-                result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
-                result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
+                if ( !channel.isLocked () )
+                {
+                    result.add ( new MenuEntry ( "Add Artifact", 100, LinkTarget.createFromController ( ChannelController.class, "add" ).expand ( model ), Modifier.PRIMARY, null ) );
+                    result.add ( new MenuEntry ( "Delete Channel", 400, LinkTarget.createFromController ( ChannelController.class, "delete" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                    result.add ( new MenuEntry ( "Clear Channel", 500, LinkTarget.createFromController ( ChannelController.class, "clear" ).expand ( model ), Modifier.WARNING, null ) );
+
+                    result.add ( new MenuEntry ( "Lock Channel", 600, LinkTarget.createFromController ( ChannelController.class, "lock" ).expand ( model ), Modifier.DEFAULT, null ) );
+                }
+                else
+                {
+                    result.add ( new MenuEntry ( "Unlock Channel", 600, LinkTarget.createFromController ( ChannelController.class, "unlock" ).expand ( model ), Modifier.DEFAULT, null ) );
+                }
 
                 result.add ( new MenuEntry ( "Edit", 150, "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
             }
 
-            if ( SecurityFilter.isLoggedIn ( request ) )
+            if ( request.getRemoteUser () != null )
             {
                 result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
             }

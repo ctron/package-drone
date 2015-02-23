@@ -118,7 +118,7 @@ public class LockManager<I extends Comparable<I>>
 
     private ReadWriteLock getLock ( final I id )
     {
-        this.writeLock.unlock ();
+        this.writeLock.lock ();
         try
         {
             ReadWriteLock lock = this.locks.get ( id );
