@@ -22,9 +22,12 @@ public class BasicTask implements Task
 
     private final LinkTarget target;
 
-    public BasicTask ( final String title, final String description, final LinkTarget target )
+    private final int priority;
+
+    public BasicTask ( final String title, final int priority, final String description, final LinkTarget target )
     {
         this.state = State.TODO;
+        this.priority = priority;
         this.title = title;
         this.description = description;
         this.target = target;
@@ -57,5 +60,11 @@ public class BasicTask implements Task
     public LinkTarget getTarget ()
     {
         return this.target;
+    }
+
+    @Override
+    public int getPriority ()
+    {
+        return this.priority;
     }
 }

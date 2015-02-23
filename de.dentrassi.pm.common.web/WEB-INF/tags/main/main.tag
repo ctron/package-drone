@@ -69,6 +69,9 @@ if ( p instanceof UserInformationPrincipal )
                 </c:if> 
                 <a href="<c:url value="/login"/>">Sign in</a></p>
         </c:if>
+        
+      
+        
         <c:if test="${not empty principal }">
             <p class="navbar-text navbar-right">
                 <c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=24"  width="24" height="24" />&nbsp;</c:if>
@@ -85,6 +88,25 @@ if ( p instanceof UserInformationPrincipal )
                 &nbsp;<a href="<c:url value="/logout"/>">Sign out</a>
             </p>
         </c:if>
+        
+        <p class="navbar-text navbar-right">
+	        <c:choose>
+	            <c:when test="${not empty openTasks and not empty principal}">
+	                <a href="/tasks" class="navbar-link">Tasks <span class="badge">${openTasks.size() }</span></a>
+	            </c:when>
+	            <c:when test="${not empty openTasks and empty principal}">
+                    <a href="/tasks" class="navbar-link" data-toggle="tooltip" data-placement="bottom" title="Maintance required!">
+	                   <span class="glyphicon glyphicon-bell"></span>
+                    </a>
+                    <script type="text/javascript">
+                    $(function () {
+                    	  $('[data-toggle="tooltip"]').tooltip()
+                    	})
+                    </script>
+	            </c:when>
+	        </c:choose>
+        </p>
+        
     </jsp:attribute>
 </h:navbar>
 

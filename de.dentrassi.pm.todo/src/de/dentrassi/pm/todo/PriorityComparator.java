@@ -10,9 +10,19 @@
  *******************************************************************************/
 package de.dentrassi.pm.todo;
 
-import java.util.List;
+import java.util.Comparator;
 
-public interface ToDoService
+public class PriorityComparator implements Comparator<Task>
 {
-    public List<Task> getOpenTasks ();
+    public static final Comparator<Task> INSTANCE = new PriorityComparator ();
+
+    private PriorityComparator ()
+    {
+    }
+
+    @Override
+    public int compare ( final Task o1, final Task o2 )
+    {
+        return Integer.compare ( o1.getPriority (), o2.getPriority () );
+    }
 }

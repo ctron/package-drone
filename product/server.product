@@ -47,6 +47,7 @@
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.database" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.deb" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.deb.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.generator.p2" autoStart="true" startLevel="0" />
@@ -76,6 +77,8 @@
       <plugin id="de.dentrassi.pm.storage.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.todo" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.todo.web" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.util" autoStart="true" startLevel="0" />
       <plugin id="org.apache.taglibs.standard-impl" autoStart="true" startLevel="0" />

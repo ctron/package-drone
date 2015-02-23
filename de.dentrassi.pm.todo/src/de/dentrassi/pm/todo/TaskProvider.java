@@ -10,9 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.todo;
 
-import java.util.List;
+import java.util.Collection;
 
-public interface ToDoService
+public interface TaskProvider
 {
-    public List<Task> getOpenTasks ();
+    public void addListener ( TaskListener listener );
+
+    public void removeListener ( TaskListener listener );
+
+    public Collection<? extends Task> getTasks ();
 }

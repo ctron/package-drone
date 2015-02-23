@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.todo.web.interceptor">
+   <implementation class="de.dentrassi.pm.todo.web.ToDoInterceptor"/>
+   <service>
+      <provide interface="de.dentrassi.osgi.web.interceptor.Interceptor"/>
+   </service>
+   <reference bind="setService" cardinality="0..1" interface="de.dentrassi.pm.todo.ToDoService" name="ToDoService" policy="dynamic" unbind="unsetService"/>
+</scr:component>

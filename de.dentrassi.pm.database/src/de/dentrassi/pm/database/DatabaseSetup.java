@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,13 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -37,6 +41,8 @@ public class DatabaseSetup implements AutoCloseable
     private final DatabaseConnectionData data;
 
     private final ServiceTracker<DataSourceFactory, DataSourceFactory> tracker;
+
+    private final ServiceTracker<EventAdmin, EventAdmin> eventAdminTracker;
 
     private final List<String> init = new LinkedList<> ();
 
@@ -55,8 +61,13 @@ public class DatabaseSetup implements AutoCloseable
             throw new IllegalStateException ( "Failed to create filter for JDBC driver factory", e );
         }
 
-        this.tracker = new ServiceTracker<DataSourceFactory, DataSourceFactory> ( FrameworkUtil.getBundle ( DatabaseSetup.class ).getBundleContext (), filter, null );
+        final BundleContext context = FrameworkUtil.getBundle ( DatabaseSetup.class ).getBundleContext ();
+
+        this.tracker = new ServiceTracker<DataSourceFactory, DataSourceFactory> ( context, filter, null );
         this.tracker.open ();
+
+        this.eventAdminTracker = new ServiceTracker<> ( context, EventAdmin.class, null );
+        this.eventAdminTracker.open ();
 
         // init sql
 
@@ -64,6 +75,13 @@ public class DatabaseSetup implements AutoCloseable
         {
             this.init.add ( "SET SESSION sql_mode = 'ANSI'" );
         }
+    }
+
+    @Override
+    public void close ()
+    {
+        this.tracker.close ();
+        this.eventAdminTracker.close ();
     }
 
     public long getCurrentVersion ()
@@ -196,12 +214,6 @@ public class DatabaseSetup implements AutoCloseable
         return p;
     }
 
-    @Override
-    public void close ()
-    {
-        this.tracker.close ();
-    }
-
     public UpgradeLog performUpgrade ()
     {
         final UpgradeLog log = new UpgradeLog ();
@@ -225,6 +237,12 @@ public class DatabaseSetup implements AutoCloseable
             }
             return null;
         } );
+
+        final EventAdmin eventAdmin = this.eventAdminTracker.getService ();
+        if ( eventAdmin != null )
+        {
+            eventAdmin.sendEvent ( new Event ( "packagedrone/database/schema", Collections.emptyMap () ) );
+        }
 
         return log;
     }

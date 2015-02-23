@@ -1,0 +1,37 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ToDo Web Components
+Bundle-SymbolicName: de.dentrassi.pm.todo.web
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: IBH SYSTEMS GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
+ de.dentrassi.osgi.web;bundle-version="1.0.0",
+ de.dentrassi.osgi.web.form;bundle-version="1.0.0",
+ de.dentrassi.pm.sec.web;bundle-version="1.0.0",
+ de.dentrassi.osgi.job.web;bundle-version="1.0.0"
+Import-Package: de.dentrassi.osgi.web;version="1.0.0",
+ de.dentrassi.osgi.web.controller;version="1.0.0",
+ de.dentrassi.osgi.web.interceptor;version="1.0.0",
+ de.dentrassi.pm.sec;version="1.0.0",
+ de.dentrassi.pm.sec.web.controller;version="1.0.0",
+ de.dentrassi.pm.todo;version="1.0.0",
+ javax.el;version="3.0.0",
+ javax.servlet;version="3.1.0",
+ javax.servlet.annotation;version="3.1.0",
+ javax.servlet.http;version="3.1.0",
+ javax.servlet.jsp;version="2.3.0",
+ javax.servlet.jsp.tagext;version="2.3.0",
+ javax.validation;version="1.1.0",
+ javax.validation.bootstrap;version="1.1.0",
+ javax.validation.constraints;version="1.1.0",
+ javax.validation.constraintvalidation;version="1.1.0",
+ javax.validation.executable;version="1.1.0",
+ javax.validation.groups;version="1.1.0",
+ javax.validation.metadata;version="1.1.0",
+ javax.validation.spi;version="1.1.0",
+ org.slf4j;version="1.7.2"
+Service-Component: OSGI-INF/todoInterceptor.xml,
+ OSGI-INF/controller.xml
+Eclipse-BundleShape: dir
+Export-Package: de.dentrassi.pm.todo.web;version="1.0.0"

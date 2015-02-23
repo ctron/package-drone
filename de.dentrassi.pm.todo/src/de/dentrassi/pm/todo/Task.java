@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.todo;
 
+import java.util.Comparator;
+
 import de.dentrassi.osgi.web.LinkTarget;
 
 public interface Task
@@ -32,4 +34,19 @@ public interface Task
      * @return the link target or <code>null</code>
      */
     public LinkTarget getTarget ();
+
+    public int getPriority ();
+
+    public default boolean isDone ()
+    {
+        return getState () == State.DONE;
+    }
+
+    public default boolean isOpen ()
+    {
+        return getState () != State.DONE;
+    }
+
+    public static final Comparator<Task> PRIORITY_COMPARATOR = PriorityComparator.INSTANCE;
+
 }
