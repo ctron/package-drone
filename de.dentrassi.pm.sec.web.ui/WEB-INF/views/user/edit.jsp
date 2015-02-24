@@ -57,7 +57,7 @@ fieldset {
                         <div class="input-group">
                             <input class="form-control" type="text" id="newRole" placeholder="New role"/>
                             <span class="input-group-btn">
-                                <button class="btn btn-default" type="button" onclick="addRole();"><span class="glyphicon glyphicon-plus"></span></button>
+                                <button class="btn btn-default" type="button" id="btnNewRole" onclick="addRole();"><span class="glyphicon glyphicon-plus"></span></button>
                             </span>
                         </div>
                     </h:formEntry>
