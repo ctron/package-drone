@@ -26,13 +26,14 @@ import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.utils.Filters.Multi;
 import de.dentrassi.osgi.utils.Filters.Pair;
+import de.dentrassi.pm.osgi.ParserHelper;
 import de.dentrassi.pm.osgi.TranslatedInformation;
 
 public class FeatureInformation implements TranslatedInformation
 {
     private String id;
 
-    private String version;
+    private Version version;
 
     private String label;
 
@@ -601,12 +602,12 @@ public class FeatureInformation implements TranslatedInformation
         return this.id;
     }
 
-    public String getVersion ()
+    public Version getVersion ()
     {
         return this.version;
     }
 
-    public void setVersion ( final String version )
+    public void setVersion ( final Version version )
     {
         this.version = version;
     }
@@ -695,5 +696,19 @@ public class FeatureInformation implements TranslatedInformation
     public String toString ()
     {
         return String.format ( "[Feature: %s]", this.id );
+    }
+
+    public static <T extends FeatureInformation> T fromJson ( final String string, final Class<T> clazz )
+    {
+        if ( string == null )
+        {
+            return null;
+        }
+        return ParserHelper.newGson ().fromJson ( string, clazz );
+    }
+
+    public String toJson ()
+    {
+        return ParserHelper.newGson ().toJson ( this );
     }
 }

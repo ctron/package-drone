@@ -22,6 +22,7 @@ import java.util.Set;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
+import de.dentrassi.pm.osgi.ParserHelper;
 import de.dentrassi.pm.osgi.TranslatedInformation;
 
 public class BundleInformation implements TranslatedInformation
@@ -241,7 +242,7 @@ public class BundleInformation implements TranslatedInformation
 
     private String id;
 
-    private String version;
+    private Version version;
 
     private String name;
 
@@ -407,12 +408,12 @@ public class BundleInformation implements TranslatedInformation
         this.name = name;
     }
 
-    public String getVersion ()
+    public Version getVersion ()
     {
         return this.version;
     }
 
-    public void setVersion ( final String version )
+    public void setVersion ( final Version version )
     {
         this.version = version;
     }
@@ -425,5 +426,19 @@ public class BundleInformation implements TranslatedInformation
     public String getId ()
     {
         return this.id;
+    }
+
+    public static <T extends BundleInformation> T fromJson ( final String string, final Class<T> clazz )
+    {
+        if ( string == null )
+        {
+            return null;
+        }
+        return ParserHelper.newGson ().fromJson ( string, clazz );
+    }
+
+    public String toJson ()
+    {
+        return ParserHelper.newGson ().toJson ( this );
     }
 }

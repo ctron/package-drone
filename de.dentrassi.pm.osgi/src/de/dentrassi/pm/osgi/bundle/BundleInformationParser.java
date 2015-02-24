@@ -72,14 +72,14 @@ public class BundleInformationParser
 
         final AttributedValue id = Headers.parse ( ma.getValue ( Constants.BUNDLE_SYMBOLICNAME ) );
         final AttributedValue version = Headers.parse ( ma.getValue ( Constants.BUNDLE_VERSION ) );
-        if ( id == null )
+        if ( id == null || version == null )
         {
             return null;
         }
 
         result.setId ( id.getValue () );
         result.setSingleton ( Boolean.parseBoolean ( id.getAttributes ().get ( "singleton" ) ) );
-        result.setVersion ( version.getValue () );
+        result.setVersion ( new Version ( version.getValue () ) );
 
         result.setName ( ma.getValue ( Constants.BUNDLE_NAME ) );
         result.setVendor ( ma.getValue ( Constants.BUNDLE_VENDOR ) );

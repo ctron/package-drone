@@ -23,7 +23,6 @@ import java.util.SortedMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -108,7 +107,7 @@ public class IndexHandler implements Handler
             final Map<String, Object> caps = new HashMap<> ();
 
             caps.put ( "osgi.wiring.bundle", bi.getId () );
-            caps.put ( "bundle-version", new Version ( bi.getVersion () ) );
+            caps.put ( "bundle-version", bi.getVersion () );
 
             addCapability ( r, "osgi.wiring.bundle", caps );
         }
@@ -174,7 +173,7 @@ public class IndexHandler implements Handler
         final Map<String, Object> caps = new HashMap<> ();
 
         caps.put ( "osgi.identity", bi.getId () );
-        caps.put ( "version", new Version ( bi.getVersion () ) );
+        caps.put ( "version", bi.getVersion () );
         caps.put ( "type", "osgi.bundle" );
 
         addCapability ( r, "osgi.identity", caps );

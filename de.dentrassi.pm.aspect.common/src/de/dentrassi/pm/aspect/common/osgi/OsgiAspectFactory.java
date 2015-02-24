@@ -12,8 +12,8 @@ package de.dentrassi.pm.aspect.common.osgi;
 
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
@@ -24,6 +24,8 @@ import de.dentrassi.pm.osgi.feature.FeatureInformation;
 
 public class OsgiAspectFactory implements ChannelAspectFactory
 {
+    private final static Logger logger = LoggerFactory.getLogger ( OsgiAspectFactory.class );
+
     public static final String ID = "osgi";
 
     private static class ChannelAspectImpl implements ChannelAspect
@@ -55,9 +57,15 @@ public class OsgiAspectFactory implements ChannelAspectFactory
             return null;
         }
 
-        final GsonBuilder gb = new GsonBuilder ();
-        final Gson gson = gb.create ();
-        return gson.fromJson ( string, clazz );
+        try
+        {
+            return BundleInformation.fromJson ( string, clazz );
+        }
+        catch ( final Exception e )
+        {
+            logger.debug ( "Failed to parse bundle information", e );
+            return null;
+        }
     }
 
     public static <T extends FeatureInformation> T fetchFeatureInformation ( final Map<MetaKey, String> metadata, final Class<T> clazz )
@@ -68,9 +76,15 @@ public class OsgiAspectFactory implements ChannelAspectFactory
             return null;
         }
 
-        final GsonBuilder gb = new GsonBuilder ();
-        final Gson gson = gb.create ();
-        return gson.fromJson ( string, clazz );
+        try
+        {
+            return FeatureInformation.fromJson ( string, clazz );
+        }
+        catch ( final Exception e )
+        {
+            logger.debug ( "Failed to parse feature information", e );
+            return null;
+        }
     }
 
     public static BundleInformation fetchBundleInformation ( final Map<MetaKey, String> metadata )

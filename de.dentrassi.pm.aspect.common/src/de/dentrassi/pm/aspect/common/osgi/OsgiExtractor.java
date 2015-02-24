@@ -26,7 +26,6 @@ import java.util.zip.ZipFile;
 import org.osgi.framework.Constants;
 
 import com.google.common.io.ByteStreams;
-import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
@@ -90,13 +89,12 @@ public class OsgiExtractor implements Extractor
         }
 
         metadata.put ( KEY_NAME, fi.getId () );
-        metadata.put ( KEY_VERSION, fi.getVersion () );
+        metadata.put ( KEY_VERSION, "" + fi.getVersion () );
         metadata.put ( KEY_CLASSIFIER, "eclipse.feature" );
 
         // store feature information
 
-        final GsonBuilder gb = new GsonBuilder ();
-        metadata.put ( KEY_FEATURE_INFORMATION, gb.create ().toJson ( fi ) );
+        metadata.put ( KEY_FEATURE_INFORMATION, fi.toJson () );
     }
 
     private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws Exception
@@ -140,22 +138,21 @@ public class OsgiExtractor implements Extractor
 
         // store main attributes
         metadata.put ( KEY_NAME, bi.getId () );
-        metadata.put ( KEY_VERSION, bi.getVersion () );
+        metadata.put ( KEY_VERSION, bi.getVersion () != null ? bi.getVersion ().toString () : null );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
 
         // serialize manifest
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
         final Manifest mf = new Manifest ();
         mf.getMainAttributes ().putValue ( Constants.BUNDLE_SYMBOLICNAME, bi.getId () );
-        mf.getMainAttributes ().putValue ( Constants.BUNDLE_VERSION, bi.getVersion () );
+        mf.getMainAttributes ().putValue ( Constants.BUNDLE_VERSION, bi.getVersion () != null ? bi.getVersion ().toString () : null );
         mf.getMainAttributes ().put ( Attributes.Name.MANIFEST_VERSION, "1.0" );
         mf.write ( bos );
         bos.close ();
         metadata.put ( KEY_MANIFEST, bos.toString ( "UTF-8" ) );
 
         // store bundle information
-        final GsonBuilder gb = new GsonBuilder ();
-        metadata.put ( KEY_BUNDLE_INFORMATION, gb.create ().toJson ( bi ) );
+        metadata.put ( KEY_BUNDLE_INFORMATION, bi.toJson () );
 
     }
 }

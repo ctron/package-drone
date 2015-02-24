@@ -143,7 +143,7 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
         attr.put ( Attributes.Name.MANIFEST_VERSION, "1.0" );
 
         attr.putValue ( Constants.BUNDLE_SYMBOLICNAME, bi.getId () + ".source" );
-        attr.putValue ( Constants.BUNDLE_VERSION, bi.getVersion () );
+        attr.putValue ( Constants.BUNDLE_VERSION, "" + bi.getVersion () );
         attr.putValue ( Constants.BUNDLE_MANIFESTVERSION, "2" );
         attr.putValue ( Constants.BUNDLE_VENDOR, bi.getVendor () );
         attr.putValue ( Constants.BUNDLE_NAME, String.format ( "Source bundle for '%s'", bi.getId () ) );

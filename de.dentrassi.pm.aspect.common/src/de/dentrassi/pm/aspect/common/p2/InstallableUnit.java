@@ -52,7 +52,7 @@ public class InstallableUnit
 
     private String id;
 
-    private String version;
+    private Version version;
 
     private boolean singleton;
 
@@ -72,9 +72,9 @@ public class InstallableUnit
 
         private final String classifer;
 
-        private final String version;
+        private final Version version;
 
-        public Artifact ( final String id, final String classifer, final String version )
+        public Artifact ( final String id, final String classifer, final Version version )
         {
             this.id = id;
             this.classifer = classifer;
@@ -91,7 +91,7 @@ public class InstallableUnit
             return this.classifer;
         }
 
-        public String getVersion ()
+        public Version getVersion ()
         {
             return this.version;
         }
@@ -347,12 +347,12 @@ public class InstallableUnit
         return this.id;
     }
 
-    public void setVersion ( final String version )
+    public void setVersion ( final Version version )
     {
         this.version = version;
     }
 
-    public String getVersion ()
+    public Version getVersion ()
     {
         return this.version;
     }
@@ -391,8 +391,8 @@ public class InstallableUnit
 
         // provides
 
-        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), feature.getVersion () );
-        result.getProvides ().put ( new Key ( "org.eclipse.update.feature", feature.getId () ), feature.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.jar" ), "" + feature.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.update.feature", feature.getId () ), "" + feature.getVersion () );
         result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.eclipse.type", "feature" ), "1.0.0" );
 
         // filter
@@ -429,8 +429,8 @@ public class InstallableUnit
 
         // version
 
-        final String version = feature.getVersion ();
-        if ( version == null || version.isEmpty () )
+        final Version version = feature.getVersion ();
+        if ( version == null )
         {
             return null;
         }
@@ -442,7 +442,7 @@ public class InstallableUnit
 
         // provides
 
-        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.group" ), feature.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", feature.getId () + ".feature.group" ), "" + feature.getVersion () );
 
         // properties
 
@@ -546,8 +546,8 @@ public class InstallableUnit
 
         // provides
 
-        result.getProvides ().put ( new Key ( "osgi.bundle", bundle.getId () ), bundle.getVersion () );
-        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", bundle.getId () ), bundle.getVersion () );
+        result.getProvides ().put ( new Key ( "osgi.bundle", bundle.getId () ), "" + bundle.getVersion () );
+        result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.iu", bundle.getId () ), "" + bundle.getVersion () );
         result.getProvides ().put ( new Key ( "org.eclipse.equinox.p2.eclipse.type", "bundle" ), "1.0.0" );
 
         for ( final PackageExport pe : bundle.getPackageExports () )
@@ -681,7 +681,7 @@ public class InstallableUnit
 
         final Element unit = addElement ( units, "unit" );
         unit.setAttribute ( "id", this.id );
-        unit.setAttribute ( "version", this.version );
+        unit.setAttribute ( "version", "" + this.version );
         unit.setAttribute ( "singleton", "" + this.singleton );
 
         final Element update = addElement ( unit, "update" );
@@ -738,7 +738,7 @@ public class InstallableUnit
             final Element a = addElement ( artifacts, "artifact" );
             a.setAttribute ( "classifier", artifact.getClassifer () );
             a.setAttribute ( "id", artifact.getId () );
-            a.setAttribute ( "version", artifact.getVersion () );
+            a.setAttribute ( "version", "" + artifact.getVersion () );
         }
 
         if ( this.additionalNodes != null )
@@ -807,12 +807,12 @@ public class InstallableUnit
         p.setAttribute ( "value", value );
     }
 
-    private static String makeManifest ( final String id, final String version ) throws IOException
+    private static String makeManifest ( final String id, final Version version ) throws IOException
     {
         final Manifest mf = new Manifest ();
         mf.getMainAttributes ().put ( Attributes.Name.MANIFEST_VERSION, "1.0" );
         mf.getMainAttributes ().putValue ( Constants.BUNDLE_SYMBOLICNAME, id );
-        mf.getMainAttributes ().putValue ( Constants.BUNDLE_VERSION, version );
+        mf.getMainAttributes ().putValue ( Constants.BUNDLE_VERSION, "" + version );
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream ();
         mf.write ( out );

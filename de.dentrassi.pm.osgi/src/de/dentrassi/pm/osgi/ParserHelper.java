@@ -20,6 +20,15 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.osgi.framework.Version;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+
 public final class ParserHelper
 {
     private ParserHelper ()
@@ -64,5 +73,49 @@ public final class ParserHelper
         {
             return localeString;
         }
+    }
+
+    private static final GsonBuilder gb;
+
+    public static Gson newGson ()
+    {
+        return gb.create ();
+    }
+
+    static
+    {
+        gb = new GsonBuilder ();
+        gb.registerTypeAdapter ( Version.class, new TypeAdapter<Version> () {
+
+            @Override
+            public Version read ( final JsonReader reader ) throws IOException
+            {
+                if ( reader.peek () == JsonToken.NULL )
+                {
+                    reader.nextNull ();
+                    return null;
+                }
+
+                final String str = reader.nextString ();
+                if ( str == null )
+                {
+                    return null;
+                }
+                return new Version ( str );
+            }
+
+            @Override
+            public void write ( final JsonWriter writer, final Version value ) throws IOException
+            {
+                if ( value == null )
+                {
+                    writer.nullValue ();
+                }
+                else
+                {
+                    writer.value ( value.toString () );
+                }
+            }
+        } );
     }
 }

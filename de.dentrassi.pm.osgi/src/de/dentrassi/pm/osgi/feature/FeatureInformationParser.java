@@ -87,7 +87,7 @@ public class FeatureInformationParser
         final FeatureInformation result = new FeatureInformation ();
 
         result.setId ( id );
-        result.setVersion ( version );
+        result.setVersion ( new Version ( version ) );
 
         result.setProvider ( makeNull ( root.getAttribute ( "provider-name" ) ) );
         result.setLabel ( makeNull ( root.getAttribute ( "label" ) ) );

@@ -16,6 +16,7 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.osgi.framework.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -79,7 +80,7 @@ public class P2Virtualizer implements Virtualizer
         }
     }
 
-    private void createP2Artifacts ( final Context context, final String id, final String version, final String type, final ArtifactInformation artifact, final String contentType ) throws Exception
+    private void createP2Artifacts ( final Context context, final String id, final Version version, final String type, final ArtifactInformation artifact, final String contentType ) throws Exception
     {
         final Document doc = this.xml.create ();
 
@@ -89,7 +90,7 @@ public class P2Virtualizer implements Virtualizer
         final Element a = addElement ( artifacts, "artifact" );
         a.setAttribute ( "classifier", type );
         a.setAttribute ( "id", id );
-        a.setAttribute ( "version", version );
+        a.setAttribute ( "version", version.toString () );
 
         final String md5 = artifact.getMetaData ().get ( new MetaKey ( "hasher", "md5" ) );
 
