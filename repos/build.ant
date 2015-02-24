@@ -27,6 +27,7 @@
 		<get-release-2 version="0.1.2"/>
 		<get-release-2 version="0.1.3"/>
 		<get-release-2 version="0.1.4"/>
+		<get-release-2 version="0.1.5"/>
 	</target>
 	
 	<!-- = = = = = = = = = = = = = = = = =
@@ -82,6 +83,7 @@
 		<adddeb src="download/package-drone-server_0.1.3_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.4_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.5_all.deb" />
+		<adddeb src="download/package-drone-server_0.2.0_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
@@ -132,12 +134,14 @@
 		
 		<exec executable="createrepo" dir="yum/centos/6" failifexecutionfails="true" failonerror="true">
 			<arg value="--deltas"/>
+			<arg value="--workers"/><arg value="4"/>
 			<arg value="--oldpackagedirs"/>
 			<arg file="yum/centos/6"/>
 			<arg value="." />
 		</exec>
 		<exec executable="createrepo" dir="yum/centos/7" failifexecutionfails="true" failonerror="true">
             <arg value="--deltas"/>
+			<arg value="--workers"/><arg value="4"/>
 			<arg value="--oldpackagedirs"/>
 			<arg file="yum/centos/7"/>
             <arg value="." />
