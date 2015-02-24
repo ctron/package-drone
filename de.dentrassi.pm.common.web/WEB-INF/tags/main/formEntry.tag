@@ -4,10 +4,10 @@
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
 <%@attribute name="command" required="false" type="java.lang.String"%>
-<%@attribute name="path" required="true" %>
-<%@attribute name="label" required="true" %>
+<%@attribute name="path" required="false" type="java.lang.String"%>
+<%@attribute name="label" required="false" type="java.lang.String" %>
 
-<div class='form-group ${form:validationState(pageContext,(command eq null) ? "command" : command ,path, "", "has-error")}'>
+<div class='form-group ${(empty path) ?  "" : form:validationState(pageContext,(command eq null) ? "command" : command ,path, "", "has-error")}'>
     <form:label path="${path }" cssClass="col-sm-2 control-label">${fn:escapeXml(label) }</form:label>
     
     <div class="col-sm-10">
