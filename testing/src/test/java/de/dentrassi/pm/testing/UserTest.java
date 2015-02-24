@@ -16,7 +16,8 @@ import java.sql.PreparedStatement;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 public class UserTest extends AbstractServerTest
 {
@@ -56,9 +57,12 @@ public class UserTest extends AbstractServerTest
 
         Assert.assertTrue ( driver.getCurrentUrl ().endsWith ( "/" + userId + "/edit" ) );
 
-        final Select select = new Select ( driver.findElementById ( "roles" ) );
-        select.selectByValue ( "ADMIN" );
-        select.selectByValue ( "MANAGER" );
+        final WebElement newRoleInput = driver.findElement ( By.id ( "newRole" ) );
+        final WebElement newRoleButton = driver.findElement ( By.id ( "btnNewRole" ) );
+
+        newRole ( newRoleInput, newRoleButton, "ADMIN" );
+        newRole ( newRoleInput, newRoleButton, "MANAGER" );
+
         driver.findElementById ( "command" ).submit ();
 
         Assert.assertTrue ( driver.getCurrentUrl ().endsWith ( "/" + userId + "/view" ) );
@@ -72,6 +76,13 @@ public class UserTest extends AbstractServerTest
         driver.findElementById ( "email" ).sendKeys ( TEST_USER_EMAIL );
         driver.findElementById ( "password" ).sendKeys ( TEST_USER_PASSWORD );
         driver.findElementById ( "command" ).submit ();
+    }
+
+    private void newRole ( final WebElement newRoleInput, final WebElement newRoleButton, final String role )
+    {
+        newRoleInput.clear ();
+        newRoleInput.sendKeys ( role );
+        newRoleButton.click ();
     }
 
     private void setPassword ( final String userId, final String password )
