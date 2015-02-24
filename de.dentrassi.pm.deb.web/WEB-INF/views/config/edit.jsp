@@ -64,11 +64,21 @@
 	           <fieldset>
 	               <legend>Content</legend>
 	               
+	               <h:formEntry label="Component" path="defaultComponent" command="command">
+	                   <form:input path="defaultComponent" cssClass="form-control"/>
+	               </h:formEntry>
+	               
+	               <%--
+	               
+	               TODO: re-enable when we have component selection
+	               
 	               <h:formEntry label="Components" path="components">
 	                   <form:select path="components" cssClass="form-control" multiple="true">
 	                       <form:option value="main"/>
 	                   </form:select>
 	               </h:formEntry>
+	               
+	               --%>
 	               
 	               <h:formEntry label="Architectures" path="architectures">
 	                   <form:select path="architectures" cssClass="form-control"  multiple="true">

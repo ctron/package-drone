@@ -167,6 +167,8 @@ public class ConfigController implements InterfaceExtender
 
         final ChannelConfiguration dist = new ChannelConfiguration ();
 
+        dist.setDefaultComponent ( "main" );
+
         MetaKeys.bind ( dist, channel.getMetaData () );
 
         model.put ( "command", dist );

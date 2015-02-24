@@ -230,7 +230,9 @@ public class AptServlet extends HttpServlet
                     return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ), "text/plain" );
             }
 
-            if ( !cfg.getComponents ().contains ( component ) )
+            // TODO: handle all components when implemented
+
+            if ( !cfg.getDefaultComponent ().contains ( component ) )
             {
                 return null;
             }

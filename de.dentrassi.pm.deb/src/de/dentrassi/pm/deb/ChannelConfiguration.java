@@ -11,46 +11,67 @@
 package de.dentrassi.pm.deb;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.NotBlank;
 
 import de.dentrassi.pm.common.MetaKeyBinding;
 
 public class ChannelConfiguration
 {
     @MetaKeyBinding ( namespace = "apt", key = "origin" )
+    @Pattern ( regexp = "[\\p{Alnum}\\p{Space}]*" )
     private String origin;
 
     @MetaKeyBinding ( namespace = "apt", key = "label" )
     private String label;
 
     @MetaKeyBinding ( namespace = "apt", key = "suite" )
+    @Pattern ( regexp = "\\p{Alnum}*" )
     private String suite;
 
     @MetaKeyBinding ( namespace = "apt", key = "version" )
+    @Pattern ( regexp = "[\\p{Alnum}\\.]*" )
     private String version;
 
     @MetaKeyBinding ( namespace = "apt", key = "codename" )
+    @Pattern ( regexp = "\\p{Alnum}*" )
     private String codename;
 
-    @MetaKeyBinding ( namespace = "apt", key = "components", converterClass = SpaceJoiner.class )
-    private Set<String> components = new HashSet<> ();
-
-    @MetaKeyBinding ( namespace = "apt", key = "defaultComponent" )
-    private String defaultComponent;
-
     @MetaKeyBinding ( namespace = "apt", key = "description" )
+    @Pattern ( regexp = "[^\\n\\r]*" )
     private String description;
 
     @MetaKeyBinding ( namespace = "apt", key = "architectures", converterClass = SpaceJoiner.class )
+    @Size ( min = 1 )
     private Set<String> architectures = new HashSet<> ();
 
     @MetaKeyBinding ( namespace = "apt", key = "distribution" )
+    @Pattern ( regexp = "\\p{Alnum}*" )
+    @NotBlank
     private String distribution;
 
     @MetaKeyBinding ( namespace = "apt", key = "signingService" )
     private String signingService;
+
+    @MetaKeyBinding ( namespace = "apt", key = "defaultComponent" )
+    @NotBlank
+    @Pattern ( regexp = "\\p{Alnum}*" )
+    private String defaultComponent;
+
+    public void setDefaultComponent ( final String defaultComponent )
+    {
+        this.defaultComponent = defaultComponent;
+    }
+
+    public String getDefaultComponent ()
+    {
+        return this.defaultComponent;
+    }
 
     public void setSigningService ( final String signingService )
     {
@@ -121,20 +142,6 @@ public class ChannelConfiguration
         this.codename = codename;
     }
 
-    public Set<String> getComponents ()
-    {
-        if ( this.components == null )
-        {
-            return Collections.singleton ( getDefaultComponent () );
-        }
-        return this.components;
-    }
-
-    public void setComponents ( final Set<String> components )
-    {
-        this.components = components;
-    }
-
     public String getDescription ()
     {
         return this.description;
@@ -158,20 +165,6 @@ public class ChannelConfiguration
     public void setArchitectures ( final Set<String> architectures )
     {
         this.architectures = architectures;
-    }
-
-    public String getDefaultComponent ()
-    {
-        if ( this.defaultComponent == null || this.defaultComponent.isEmpty () )
-        {
-            return "main";
-        }
-        return this.defaultComponent;
-    }
-
-    public void setDefaultComponent ( final String defaultComponent )
-    {
-        this.defaultComponent = defaultComponent;
     }
 
     public void setDistribution ( final String distribution )

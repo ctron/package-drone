@@ -34,10 +34,14 @@ public class DistDirGenerator
         }
         sb.append ( "<li><a href=\"Release\">Release</a></li>" );
 
+        /*
+         * TODO: implement multiple components
         for ( final String comp : this.cfg.getComponents () )
         {
             sb.append ( "<li><a href=\"" + comp + "\">" + comp + "</li>" );
         }
+        */
+        sb.append ( "<li><a href=\"" + this.cfg.getDefaultComponent () + "\">" + this.cfg.getDefaultComponent () + "</li>" );
 
         return sb.toString ();
     }

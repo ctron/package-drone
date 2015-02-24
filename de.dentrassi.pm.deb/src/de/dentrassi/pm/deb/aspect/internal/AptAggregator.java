@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -92,7 +93,7 @@ public class AptAggregator implements ChannelAggregator
 
             final DistributionInformation info = new DistributionInformation ();
             info.setArchitectures ( new TreeSet<> ( cfg.getArchitectures () ) );
-            info.setComponents ( new TreeSet<> ( cfg.getComponents () ) );
+            info.setComponents ( new TreeSet<> ( Collections.singleton ( cfg.getDefaultComponent () ) ) );
             info.setVersion ( cfg.getVersion () );
             info.setDescription ( cfg.getDescription () );
             info.setLabel ( cfg.getLabel () );
@@ -126,6 +127,9 @@ public class AptAggregator implements ChannelAggregator
                 final ControlInformation control = gson.fromJson ( controlJson, ControlInformation.class );
 
                 final PackageInformation packageInfo = new PackageInformation ( makePoolName ( art, packageName, version, arch ), art.getSize (), control.getValues (), checksums );
+
+                // TODO: implement a component selection mechanism
+
                 repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo );
             }
 
