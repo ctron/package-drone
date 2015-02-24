@@ -2,7 +2,7 @@
 <feature
       id="de.dentrassi.pm"
       label="Package Drone Main Feature"
-      version="0.1.5.qualifier"
+      version="0.2.0.qualifier"
       provider-name="Jens Reimann">
 
    <description url="https://github.com/ctron/package-drone">
