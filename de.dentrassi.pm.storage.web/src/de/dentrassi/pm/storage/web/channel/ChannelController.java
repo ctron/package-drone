@@ -361,7 +361,7 @@ public class ChannelController implements InterfaceExtender
         Collections.sort ( addAspects, ( o1, o2 ) -> o1.getLabel ().compareTo ( o2.getLabel () ) );
 
         model.put ( "channel", channel );
-        model.put ( "addAspects", infos.values () );
+        model.put ( "addAspects", addAspects );
 
         model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
 
