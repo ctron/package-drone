@@ -60,5 +60,11 @@
         <function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
         <function-signature>java.lang.String json(java.lang.Object)</function-signature>
     </function>
+    
+    <function>
+        <name>sort</name>
+        <function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
+        <function-signature>java.util.List sort(java.util.Collection)</function-signature>
+    </function>
 
 </taglib>

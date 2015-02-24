@@ -13,6 +13,11 @@ package de.dentrassi.osgi.web.tags;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,6 +28,41 @@ import de.dentrassi.osgi.utils.Strings;
 
 public class Functions
 {
+    private static Comparator<Object> COMPARATOR = new AnyComparator ();
+
+    private static class AnyComparator implements Comparator<Object>
+    {
+        @SuppressWarnings ( { "rawtypes", "unchecked" } )
+        @Override
+        public int compare ( final Object o1, final Object o2 )
+        {
+            // maybe we are lucky
+            if ( o1 == o2 )
+            {
+                return 0;
+            }
+
+            /// check of we can delegate that
+            if ( o1 instanceof Comparable && o2 instanceof Comparable )
+            {
+                return ( (Comparable)o1 ).compareTo ( o2 );
+            }
+
+            if ( o1 == null )
+            {
+                return -1; // the other one is not null, we already checked that
+            }
+
+            if ( o2 == null )
+            {
+                return 1;
+            }
+
+            // compare by string
+            return o1.toString ().compareTo ( o2.toString () );
+        }
+    }
+
     private static final MessageDigest MD;
 
     static
@@ -84,5 +124,22 @@ public class Functions
     {
         final Gson gson = new GsonBuilder ().create ();
         return gson.toJson ( object );
+    }
+
+    public static List<?> sort ( final Collection<?> items )
+    {
+        if ( items == null )
+        {
+            return null;
+        }
+
+        if ( items.isEmpty () )
+        {
+            return Collections.emptyList ();
+        }
+
+        final List<?> result = new ArrayList<> ( items );
+        Collections.sort ( result, COMPARATOR );
+        return result;
     }
 }

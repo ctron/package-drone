@@ -6,7 +6,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
-
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
 <h:main title="Edit user" subtitle="${empty user.details.name ? user.details.email : user.details.name }">
 
@@ -45,13 +45,22 @@ fieldset {
                 <fieldset>
                     <legend>Security</legend>
                     <h:formEntry label="Roles" path="roles" command="command">
-	                    <form:select path="roles" cssClass="form-control" multiple="true">
-	                        <form:option value="ADMIN"/>
-	                        <form:option value="MANAGER"/>
-	                    </form:select>
-	                    <span class="help-block">
-	                       This is a multi select list. The user will only have the roles which are selected/highlighted.
-	                    </span>
+                        <div id="currentRoles">
+		                    <c:forEach var="role" items="${web:sort(command.roles) }">
+		                       <div class="checkbox">
+		                           <label><input type="checkbox" name="roles" value="${fn:escapeXml(role) }" checked="checked"/> ${fn:escapeXml(role) }</label>
+		                       </div>
+		                    </c:forEach>
+	                    </div>
+                    </h:formEntry>
+                    
+                    <h:formEntry>
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="newRole" placeholder="New role"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" onclick="addRole();"><span class="glyphicon glyphicon-plus"></span></button>
+                            </span>
+                        </div>
                     </h:formEntry>
                     
                 </fieldset>
@@ -67,5 +76,30 @@ fieldset {
 
 		</form:form>
 </div>
+
+<script type="text/javascript">
+function addRole() {
+    var val = $('#newRole').val ();
+    var ca = $('#currentRoles');
+    
+    var div = document.createElement ( "div" );
+    div.setAttribute ( "class", "checkbox" );
+    
+    var label = document.createElement ( "label" );
+    div.appendChild(label);
+    
+    var input = document.createElement ( "input");
+    label.appendChild ( input );
+    
+    input.setAttribute ( "type", "checkbox" );
+    input.setAttribute ( "checked", "checked" );
+    input.setAttribute ( "name", "roles" );
+    input.setAttribute ( "value", val );
+    
+    label.appendChild ( document.createTextNode( " " + val ) );
+    
+    ca.append ( div );
+}
+</script>
 
 </h:main>
