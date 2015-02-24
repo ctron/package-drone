@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2015 Jens Reimann.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Jens Reimann - initial API and implementation
+ *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
 package de.dentrassi.pm.testing;
 
@@ -21,9 +21,11 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
@@ -46,7 +48,7 @@ public class TestSuite
     {
         if ( hasSauce () )
         {
-            driver = createSauce ( "Windows 8.1", "chrome", null );
+            driver = createSauce ( Platform.WIN8_1, "chrome", null );
         }
         else
         {
@@ -59,7 +61,7 @@ public class TestSuite
         return SAUCE_ACCESS_KEY != null && SAUCE_USER_NAME != null && !SAUCE_ACCESS_KEY.isEmpty () && !SAUCE_USER_NAME.isEmpty ();
     }
 
-    protected static RemoteWebDriver createSauce ( final String os, final String browser, final String version ) throws MalformedURLException
+    protected static RemoteWebDriver createSauce ( final Platform os, final String browser, final String version ) throws MalformedURLException
     {
         final DesiredCapabilities capabilities = new DesiredCapabilities ();
         capabilities.setCapability ( CapabilityType.BROWSER_NAME, browser );
@@ -68,13 +70,22 @@ public class TestSuite
             capabilities.setCapability ( CapabilityType.VERSION, version );
         }
         capabilities.setCapability ( CapabilityType.PLATFORM, os );
-        return new RemoteWebDriver ( new URL ( "http://" + SAUCE_USER_NAME + ":" + SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub" ), capabilities );
+        capabilities.setCapability ( "name", "Package Drone Main Test" );
+
+        final RemoteWebDriver driver = new RemoteWebDriver ( new URL ( String.format ( "http://%s:%s@ondemand.saucelabs.com:80/wd/hub", SAUCE_USER_NAME, SAUCE_ACCESS_KEY ) ), capabilities );
+
+        driver.setFileDetector ( new LocalFileDetector () );
+
+        return driver;
     }
 
     @AfterClass
     public static void destroyBrowser ()
     {
-        driver.quit ();
+        if ( driver != null )
+        {
+            driver.quit ();
+        }
     }
 
     private static Process PROCESS;
