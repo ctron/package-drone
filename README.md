@@ -42,6 +42,9 @@ What it currently can do
 * Automatically clean up channels based on custom aggregation and sorting rules
 * Provide a Maven 2 Repository Layout for downloading artifacts
 * Extract meta data from ".deb" files and create a signed APT repository index
+* Import artifacts from HTTP links
+* Import artifacts from Maven repositories
+* Lock channels (read only mode)
 
 Known bugs and limitation
 ----------------
@@ -49,7 +52,7 @@ Known bugs and limitation
 * The concept of P2 binaries is missing
 * PostgreSQL is not supported, since PostgreSQL does not support Blobs in a sane way
 
-What it currently cannot do
+What it (currently) cannot do
 ----------------
 
 A lot of things. If there is time it will be implemented. Or you can help by contributing ;-)
