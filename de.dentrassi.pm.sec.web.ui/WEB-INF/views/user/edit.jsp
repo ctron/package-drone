@@ -22,7 +22,6 @@ fieldset {
 
 <div class="container-fluid">
 	<form:form action="" method="POST"  cssClass="form-horizontal">
-	
 	   
 	    <div class="col-md-6">
             <div class="row">
