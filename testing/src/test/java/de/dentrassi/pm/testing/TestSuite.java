@@ -125,6 +125,9 @@ public class TestSuite
         else
         {
             System.out.println ( "Port open!" );
+
+            // sleep a little bit longer to allow OSGi to fire up all services
+            Thread.sleep ( 1000 );
         }
     }
 
@@ -161,10 +164,12 @@ public class TestSuite
     {
         System.out.print ( "Terminating server..." );
         System.out.flush ();
+
         if ( !PROCESS.destroyForcibly ().waitFor ( 10, TimeUnit.SECONDS ) )
         {
             throw new IllegalStateException ( "Failed to terminate process" );
         }
+
         System.out.println ( "done!" );
     }
 
