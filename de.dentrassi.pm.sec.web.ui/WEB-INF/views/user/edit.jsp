@@ -98,6 +98,9 @@ function addRole() {
     label.appendChild ( document.createTextNode( " " + val ) );
     
     ca.append ( div );
+    
+    // clear entry box
+    $('#newRole').val ( "" );
 }
 </script>
 
