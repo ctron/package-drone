@@ -13,30 +13,30 @@
     </jsp:attribute>
 </h:buttonbar>
 
-<p>
-Artifact Id: ${fn:escapeXml(artifact.id) }
-</p>
+<div class="container-fluid">
 
-<form method="post" action="" enctype="multipart/form-data" class="form-horizontal">
-    <fieldset>
-        <legend>Attach artifact</legend>
-        
-        <div class="form-group">
-            <label for="name" class="col-sm-2 control-label">File Name</label>
-            <div class="col-sm-10">
-                <input type="text" id="name" name="name" class="form-control" placeholder="Optional artifact name"/>
-            </div>
-        </div>
-        
-        <div class="form-group">
-	        <label for="file" class="col-sm-2 control-label">File</label>
-	        <div class="col-sm-10">
-	           <input type="file" id="file" name="file"/>
+	<form method="post" action="" enctype="multipart/form-data" class="form-horizontal">
+	    <fieldset>
+	        <legend>Attach artifact</legend>
+	        
+	        <div class="form-group">
+	            <label for="name" class="col-sm-2 control-label">File Name</label>
+	            <div class="col-sm-10">
+	                <input type="text" id="name" name="name" class="form-control" placeholder="Optional artifact name"/>
+	            </div>
 	        </div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary">Upload</button>
-    </fieldset>
-</form>
+	        
+	        <div class="form-group">
+		        <label for="file" class="col-sm-2 control-label">File</label>
+		        <div class="col-sm-10">
+		           <input type="file" id="file" name="file"/>
+		        </div>
+	        </div>
+	        
+	        <button type="submit" class="btn btn-primary">Upload</button>
+	    </fieldset>
+	</form>
+
+</div>
 
 </h:main>
