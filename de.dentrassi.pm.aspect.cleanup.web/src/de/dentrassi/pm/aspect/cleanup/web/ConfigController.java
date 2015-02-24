@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2015 Jens Reimann.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Jens Reimann - initial API and implementation
+ *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
 package de.dentrassi.pm.aspect.cleanup.web;
 
@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
@@ -33,10 +36,12 @@ import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.aspect.cleanup.Aggregator;
 import de.dentrassi.pm.aspect.cleanup.CleanupConfiguration;
 import de.dentrassi.pm.aspect.cleanup.CleanupTester;
 import de.dentrassi.pm.aspect.cleanup.Field;
 import de.dentrassi.pm.aspect.cleanup.Sorter;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
@@ -59,6 +64,8 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ConfigController.class );
+
     private CleanupTester tester;
 
     private StorageService service;
@@ -113,22 +120,19 @@ public class ConfigController implements InterfaceExtender
         {
             if ( configString != null && !configString.isEmpty () )
             {
+                // use the content from the input parameter
                 cfg = new GsonBuilder ().create ().fromJson ( configString, CleanupConfiguration.class );
             }
             else
             {
-                cfg = MetaKeys.bind ( new CleanupConfiguration (), channel.getMetaData () );
+                cfg = MetaKeys.bind ( makeDefaultConfiguration (), channel.getMetaData () );
             }
         }
         catch ( final Exception e )
         {
-            cfg = new CleanupConfiguration ();
-            final Sorter aggregator = new Sorter ();
-            aggregator.getFields ().add ( new Field ( "mvn", "groupId" ) );
-            aggregator.getFields ().add ( new Field ( "mvn", "artifactId" ) );
-            aggregator.getFields ().add ( new Field ( "mvn", "version" ) );
-
-            cfg.setSorter ( aggregator );
+            logger.info ( "Failed to parse cleanup config", e );
+            // something failed, go back to default
+            cfg = makeDefaultConfiguration ();
         }
 
         model.put ( "command", cfg );
@@ -136,6 +140,25 @@ public class ConfigController implements InterfaceExtender
         fillModel ( model, channelId );
 
         return new ModelAndView ( "edit", model );
+    }
+
+    protected CleanupConfiguration makeDefaultConfiguration ()
+    {
+        CleanupConfiguration cfg;
+        cfg = new CleanupConfiguration ();
+
+        final Aggregator aggregator = new Aggregator ();
+        aggregator.getFields ().add ( new MetaKey ( "mvn", "groupId" ) );
+        aggregator.getFields ().add ( new MetaKey ( "mvn", "artifactId" ) );
+        aggregator.getFields ().add ( new MetaKey ( "mvn", "version" ) );
+        aggregator.getFields ().add ( new MetaKey ( "mvn", "classifier" ) );
+        aggregator.getFields ().add ( new MetaKey ( "mvn", "extension" ) );
+        cfg.setAggregator ( aggregator );
+
+        final Sorter sorter = new Sorter ();
+        sorter.getFields ().add ( new Field ( "mvn", "snapshotVersion" ) );
+        cfg.setSorter ( sorter );
+        return cfg;
     }
 
     @RequestMapping ( value = "/edit", method = RequestMethod.POST )
