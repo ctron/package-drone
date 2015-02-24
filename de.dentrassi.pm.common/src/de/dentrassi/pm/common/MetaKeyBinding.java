@@ -25,5 +25,7 @@ public @interface MetaKeyBinding
 
     public boolean emptyAsNull () default true;
 
+    public boolean ignoreNull () default true;
+
     public Class<? extends BindingConverter> converterClass () default BindingConverter.class;
 }

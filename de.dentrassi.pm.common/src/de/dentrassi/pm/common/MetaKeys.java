@@ -67,7 +67,10 @@ public final class MetaKeys
                 }
             }
 
-            setValue ( field, data, value );
+            if ( value != null || !mkb.ignoreNull () )
+            {
+                setValue ( field, data, value );
+            }
         }
 
         return data;

@@ -81,10 +81,22 @@
 	               --%>
 	               
 	               <h:formEntry label="Architectures" path="architectures">
-	                   <form:select path="architectures" cssClass="form-control"  multiple="true">
-	                       <form:option value="i386"/>
-	                       <form:option value="amd64"/>
-	                   </form:select>
+	                   <div id="currentArchs">
+		                   <c:forEach var="arch" items="${command.architectures }">
+		                       <div class="checkbox">
+		                            <label><input type="checkbox" checked="checked" name="architectures" value="${fn:escapeXml(arch) }"/> ${fn:escapeXml(arch)}</label>
+	                           </div>
+	                       </c:forEach>
+                       </div>
+                   </h:formEntry>
+                   
+                   <h:formEntry label="" path="">
+                        <div class="input-group">
+                            <input type="text" id="newArch" class="form-control" placeholder="New architecture"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" onclick="addArch();"><span class="glyphicon glyphicon-plus"></span></button>
+                            </span>
+                       </div>
                    </h:formEntry>
 	               
 	           </fieldset>
@@ -119,6 +131,29 @@
 
 </div>
 
-
+<script type="text/javascript">
+function addArch() {
+	var val = $('#newArch').val ();
+	var ca = $('#currentArchs');
+	
+	var div = document.createElement ( "div" );
+	div.setAttribute ( "class", "checkbox" );
+	
+	var label = document.createElement ( "label" );
+	div.appendChild(label);
+	
+	var input = document.createElement ( "input");
+	label.appendChild ( input );
+	
+    input.setAttribute ( "type", "checkbox" );
+    input.setAttribute ( "checked", "checked" );
+    input.setAttribute ( "name", "architectures" );
+    input.setAttribute ( "value", val );
+	
+	label.appendChild ( document.createTextNode( " " + val ) );
+	
+	ca.append ( div );
+}
+</script>
 
 </h:main>

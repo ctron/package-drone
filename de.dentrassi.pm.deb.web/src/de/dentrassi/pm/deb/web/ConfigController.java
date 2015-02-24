@@ -167,7 +167,10 @@ public class ConfigController implements InterfaceExtender
 
         final ChannelConfiguration dist = new ChannelConfiguration ();
 
+        dist.setDistribution ( "default" );
         dist.setDefaultComponent ( "main" );
+        dist.getArchitectures ().add ( "i386" );
+        dist.getArchitectures ().add ( "amd64" );
 
         MetaKeys.bind ( dist, channel.getMetaData () );
 

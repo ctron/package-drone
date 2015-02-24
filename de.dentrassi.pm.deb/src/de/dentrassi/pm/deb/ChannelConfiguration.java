@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -154,11 +153,6 @@ public class ChannelConfiguration
 
     public Set<String> getArchitectures ()
     {
-        if ( this.architectures == null )
-        {
-            return new HashSet<> ( Arrays.asList ( "i386", "amd64" ) );
-        }
-
         return this.architectures;
     }
 
@@ -174,15 +168,19 @@ public class ChannelConfiguration
 
     public String getDistribution ()
     {
-        if ( this.distribution == null || this.distribution.isEmpty () )
-        {
-            return "default";
-        }
         return this.distribution;
     }
 
     public boolean isValid ()
     {
+        if ( this.defaultComponent == null || this.defaultComponent.isEmpty () )
+        {
+            return false;
+        }
+        if ( this.distribution == null || this.distribution.isEmpty () )
+        {
+            return false;
+        }
         return true;
     }
 }
