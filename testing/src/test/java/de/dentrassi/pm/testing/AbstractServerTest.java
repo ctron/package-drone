@@ -50,7 +50,7 @@ public class AbstractServerTest
 
     protected String getBase ()
     {
-        return "http://localhost:8080";
+        return System.getProperty ( "test.server", "http://localhost:8080" );
     }
 
     protected String resolve ( final String suffix )
