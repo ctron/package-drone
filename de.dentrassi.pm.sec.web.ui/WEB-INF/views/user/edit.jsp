@@ -45,9 +45,9 @@ fieldset {
                     <legend>Security</legend>
                     <h:formEntry label="Roles" path="roles" command="command">
                         <div id="currentRoles">
-		                    <c:forEach var="role" items="${web:sort(command.roles) }">
+		                    <c:forEach var="role" items="${allRoles }">
 		                       <div class="checkbox">
-		                           <label><input type="checkbox" name="roles" value="${fn:escapeXml(role) }" checked="checked"/> ${fn:escapeXml(role) }</label>
+		                           <label><input type="checkbox" name="roles" value="${fn:escapeXml(role) }" ${user.roles.contains(role) ? 'checked' : ''}/> ${fn:escapeXml(role) }</label>
 		                       </div>
 		                    </c:forEach>
 	                    </div>

@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
@@ -239,11 +241,31 @@ public class UserController extends AbstractUserCreationController implements In
         final Map<String, Object> model = new HashMap<> ( 2 );
 
         model.put ( "user", user );
-        model.put ( "command", user.getDetails ( DatabaseDetails.class ) );
+
+        final DatabaseDetails details = user.getDetails ( DatabaseDetails.class );
+
+        model.put ( "command", details );
+        model.put ( "allRoles", makeRoles ( details ) );
 
         addBreadcrumbs ( "Edit", userId, model );
 
         return new ModelAndView ( "user/edit", model );
+    }
+
+    private SortedSet<String> makeRoles ( final DatabaseDetails details )
+    {
+        if ( details == null )
+        {
+            return null;
+        }
+
+        final SortedSet<String> result = new TreeSet<> ();
+
+        result.addAll ( details.getRoles () );
+        result.add ( "MANAGER" );
+        result.add ( "ADMIN" );
+
+        return result;
     }
 
     @RequestMapping ( value = "/{userId}/edit", method = RequestMethod.POST )
@@ -261,6 +283,7 @@ public class UserController extends AbstractUserCreationController implements In
             final Map<String, Object> model = new HashMap<> ( 2 );
             model.put ( "command", data );
             model.put ( "user", user );
+            model.put ( "allRoles", makeRoles ( data ) );
 
             addBreadcrumbs ( "Edit", userId, model );
 
