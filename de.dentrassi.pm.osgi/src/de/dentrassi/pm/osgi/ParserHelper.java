@@ -96,6 +96,41 @@ public final class ParserHelper
                     return null;
                 }
 
+                /* Begin compat */
+                if ( reader.peek () == JsonToken.BEGIN_OBJECT )
+                {
+                    // old format
+                    reader.beginObject ();
+
+                    int major = 0;
+                    int minor = 0;
+                    int micro = 0;
+                    String qualifier = null;
+
+                    while ( reader.hasNext () )
+                    {
+                        final String name = reader.nextName ();
+                        switch ( name )
+                        {
+                            case "major":
+                                major = reader.nextInt ();
+                                break;
+                            case "minor":
+                                minor = reader.nextInt ();
+                                break;
+                            case "micro":
+                                micro = reader.nextInt ();
+                                break;
+                            case "qualifier":
+                                qualifier = reader.peek () == JsonToken.NULL ? null : reader.nextString ();
+                                break;
+                        }
+                    }
+                    reader.endObject ();
+                    return new Version ( major, minor, micro, qualifier );
+                }
+                /* end compat */
+
                 final String str = reader.nextString ();
                 if ( str == null )
                 {
