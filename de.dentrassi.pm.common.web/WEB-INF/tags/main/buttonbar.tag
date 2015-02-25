@@ -20,7 +20,7 @@
             <c:when test="${entry.getClass().simpleName eq 'Entry'}">
                 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
                 <div class="btn-group" role="group">
-                    <a role="button" class="btn ${pm:modifier('btn-', entry.modifier) }" href="${url}"><h:menuEntry entry="${entry }" /></a>
+                    <h:menuLink role="button" cssClass="btn ${pm:modifier('btn-', entry.modifier) }" entry="${entry }"/>
                 </div>
             </c:when>
 
@@ -39,7 +39,7 @@
                                 <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
                                     <c:set var="url"
                                         value="${subEntry.target.renderFull(pageContext)}" />
-                                    <li ><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if>>${fn:escapeXml(subEntry.label) }</a></li>
+                                    <li ><h:menuLink entry="${subEntry }"/></li>
                                 </c:when>
                             </c:choose>
                         </c:forEach>

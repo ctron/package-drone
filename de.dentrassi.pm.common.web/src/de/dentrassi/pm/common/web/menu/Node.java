@@ -19,10 +19,18 @@ public abstract class Node
 
     private final String icon;
 
-    public Node ( final String label, final String icon )
+    private final String id;
+
+    public Node ( final String id, final String label, final String icon )
     {
+        this.id = id;
         this.label = label;
         this.icon = icon;
+    }
+
+    public String getId ()
+    {
+        return this.id;
     }
 
     public String getLabel ()

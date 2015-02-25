@@ -128,6 +128,8 @@ if ( p instanceof UserInformationPrincipal )
 
 </section>
 
+<web:pop name="modal"/>
+
 <footer>
 
 <div class="pull-right"><a href="http://packagedrone.org" target="_blank">Package Drone ${droneVersion }</a></div>

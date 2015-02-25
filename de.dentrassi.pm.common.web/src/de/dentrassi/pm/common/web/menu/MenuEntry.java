@@ -10,29 +10,35 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.web.menu;
 
+import com.google.common.html.HtmlEscapers;
+
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.menu.Modal.Button;
+import de.dentrassi.pm.common.web.menu.Modal.ButtonFunction;
 
 /**
  * A menu entry from an extension point
  */
 public class MenuEntry implements Comparable<MenuEntry>
 {
-    private final String category;
+    private String category;
 
-    private final String label;
+    private String label;
 
-    private final LinkTarget target;
+    private LinkTarget target;
 
-    private final Modifier modifier;
+    private Modifier modifier;
 
-    private final int categoryOrder;
+    private int categoryOrder;
 
-    private final int entryOrder;
+    private int entryOrder;
 
-    private final boolean newWindow;
+    private boolean newWindow;
 
-    private final String icon;
+    private String icon;
+
+    private Modal modal;
 
     public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon )
     {
@@ -112,6 +118,72 @@ public class MenuEntry implements Comparable<MenuEntry>
         return this.label;
     }
 
+    public MenuEntry setCategory ( final String category )
+    {
+        this.category = category;
+        return this;
+    }
+
+    public MenuEntry setLabel ( final String label )
+    {
+        this.label = label;
+        return this;
+    }
+
+    public MenuEntry setTarget ( final LinkTarget target )
+    {
+        this.target = target;
+        return this;
+    }
+
+    public MenuEntry setModifier ( final Modifier modifier )
+    {
+        this.modifier = modifier;
+        return this;
+    }
+
+    public MenuEntry setCategoryOrder ( final int categoryOrder )
+    {
+        this.categoryOrder = categoryOrder;
+        return this;
+    }
+
+    public MenuEntry setEntryOrder ( final int entryOrder )
+    {
+        this.entryOrder = entryOrder;
+        return this;
+    }
+
+    public MenuEntry setNewWindow ( final boolean newWindow )
+    {
+        this.newWindow = newWindow;
+        return this;
+    }
+
+    public MenuEntry setIcon ( final String icon )
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    public MenuEntry setModal ( final Modal modal )
+    {
+        this.modal = modal;
+        return this;
+    }
+
+    public Modal getModal ()
+    {
+        return this.modal;
+    }
+
+    public MenuEntry makeModalMessage ( final String title, final String message )
+    {
+        this.modal = new Modal ( title, new Button ( ButtonFunction.CLOSE, "Close" ), new Button ( ButtonFunction.SUBMIT, this.label, this.icon, this.modifier ) );
+        this.modal.setBody ( "<p>" + HtmlEscapers.htmlEscaper ().escape ( message ) + "</p>" );
+        return this;
+    }
+
     @Override
     public int compareTo ( final MenuEntry o )
     {
@@ -132,4 +204,5 @@ public class MenuEntry implements Comparable<MenuEntry>
         // last by label
         return getMainLabel ().compareTo ( o.getMainLabel () );
     }
+
 }

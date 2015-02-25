@@ -21,14 +21,14 @@ public class SubMenu extends Node
 
     private final Modifier modifier;
 
-    public SubMenu ( final String label, final List<Node> nodes )
+    public SubMenu ( final String id, final String label, final List<Node> nodes )
     {
-        this ( label, nodes, Modifier.DEFAULT );
+        this ( id, label, nodes, Modifier.DEFAULT );
     }
 
-    public SubMenu ( final String label, final List<Node> nodes, final Modifier modifier )
+    public SubMenu ( final String id, final String label, final List<Node> nodes, final Modifier modifier )
     {
-        super ( label, null );
+        super ( id, label, null );
         this.nodes = Collections.unmodifiableList ( nodes );
         this.modifier = modifier;
     }

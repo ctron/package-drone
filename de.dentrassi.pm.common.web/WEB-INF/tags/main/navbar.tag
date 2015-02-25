@@ -33,7 +33,7 @@
         <c:choose>
             <c:when test="${entry.getClass().simpleName eq 'Entry'}">
                 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
-                <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${entry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(entry.label) }</a></li>
+                <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><h:menuLink entry="${entry }"/></li>
             </c:when>
             <c:when test="${entry.getClass().simpleName eq 'SubMenu' }">
                 <li class="dropdown">
@@ -43,7 +43,7 @@
                             <c:choose>
                                 <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
                                     <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
-                                    <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
+                                    <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><h:menuLink entry="${subEntry }"/></li>
                                 </c:when>
                             </c:choose>
                          </c:forEach>

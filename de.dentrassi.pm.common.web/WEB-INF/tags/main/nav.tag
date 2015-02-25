@@ -15,7 +15,7 @@
     <c:choose>
         <c:when test="${entry.getClass().simpleName eq 'Entry'}">
             <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
-            <li role="presentation" class='${web:active(pageContext.request, url)}'><a href="${url }"><h:menuEntry entry="${entry }"  /></a></li>
+            <li role="presentation" class='${web:active(pageContext.request, url)}'><h:menuLink entry="${entry }" /></li>
         </c:when>
         
         <c:when test="${entry.getClass().simpleName eq 'SubMenu' }">
@@ -26,7 +26,7 @@
                          <c:choose>
                              <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
                                  <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
-                                 <li class="${web:active(pageContext.request, url)}"><a href="<c:url value="${url }" />" <c:if test="${subEntry.newWindow }"> target="_blank"</c:if> >${fn:escapeXml(subEntry.label) }</a></li>
+                                 <li class="${web:active(pageContext.request, url)}"><h:menuLink entry="${subEntry }" /></li>
                              </c:when>
                          </c:choose>
                       </c:forEach>

@@ -5,7 +5,9 @@ Bundle-SymbolicName: de.dentrassi.pm.common.web
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: de.dentrassi.pm.sec;version="1.0.0",
+Import-Package: com.google.common.escape;version="18.0.0",
+ com.google.common.html;version="18.0.0",
+ de.dentrassi.pm.sec;version="1.0.0",
  javax.servlet;version="3.1.0",
  javax.servlet.http;version="3.1.0",
  org.eclipse.scada.utils;version="0.2.0",

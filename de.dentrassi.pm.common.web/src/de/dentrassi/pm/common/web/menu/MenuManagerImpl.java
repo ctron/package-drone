@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -102,7 +103,7 @@ public class MenuManagerImpl
                     // switch category
                     currentNodes = new LinkedList<> ();
                     currentCategory = entry.getCategory ();
-                    nodes.add ( new SubMenu ( entry.getCategory (), currentNodes ) );
+                    nodes.add ( new SubMenu ( UUID.randomUUID ().toString (), entry.getCategory (), currentNodes ) );
                 }
                 else
                 {
@@ -161,7 +162,7 @@ public class MenuManagerImpl
 
     private Entry convertEntry ( final MenuEntry entry )
     {
-        return new Entry ( entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow () );
+        return new Entry ( UUID.randomUUID ().toString (), entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow (), entry.getModal () );
     }
 
 }

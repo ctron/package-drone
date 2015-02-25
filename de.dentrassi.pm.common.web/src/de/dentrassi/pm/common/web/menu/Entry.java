@@ -21,13 +21,17 @@ public class Entry extends Node
 
     private final boolean newWindow;
 
-    public Entry ( final String label, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow )
+    private final Modal modal;
+
+    public Entry ( final String id, final String label, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow, final Modal modal )
     {
-        super ( label, icon );
+        super ( id, label, icon );
         this.target = target;
         this.modifier = modifier;
 
         this.newWindow = newWindow;
+
+        this.modal = modal;
     }
 
     public Modifier getModifier ()
@@ -43,5 +47,10 @@ public class Entry extends Node
     public boolean isNewWindow ()
     {
         return this.newWindow;
+    }
+
+    public Modal getModal ()
+    {
+        return this.modal;
     }
 }
