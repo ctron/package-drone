@@ -16,4 +16,4 @@ if [ -n "$PIDFILE" ]; then
     echo $$ > "$PIDFILE"
 fi
 
-exec "$JAVA" $JAVA_OPTS -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog
+exec "$JAVA" $JAVA_OPTS -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog "$@"
