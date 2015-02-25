@@ -105,6 +105,7 @@ public class DeployAuthController implements InterfaceExtender
 
                 result.add ( new MenuEntry ( "Create key", 2_000, LinkTarget.createFromController ( DeployAuthController.class, "createDeployKey" ).expand ( model ), Modifier.PRIMARY, null ) );
                 result.add ( new MenuEntry ( "Edit", 3_000, LinkTarget.createFromController ( DeployAuthController.class, "editGroup" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Delete", 4_000, LinkTarget.createFromController ( DeployAuthController.class, "deleteGroup" ).expand ( model ), Modifier.DANGER, "trash" ) );
             }
         }
         return result;
@@ -220,6 +221,13 @@ public class DeployAuthController implements InterfaceExtender
         addBreadcrumbs ( "Add group", null, model );
 
         return new ModelAndView ( "addGroup", model );
+    }
+
+    @RequestMapping ( value = "/group/{groupId}/delete", method = RequestMethod.GET )
+    public String deleteGroup ( @PathVariable ( "groupId" ) final String groupId )
+    {
+        this.service.deleteGroup ( groupId );
+        return "redirect:/deploy/auth/group";
     }
 
     @RequestMapping ( value = "/addGroup", method = RequestMethod.POST )
