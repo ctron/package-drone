@@ -11,9 +11,12 @@
 package de.dentrassi.pm.database.internal;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -40,13 +43,13 @@ import de.dentrassi.pm.todo.TaskProvider;
 
 public class DatabaseServiceImpl implements ManagedService
 {
+    private static final String SERVICE_FACTORY_PID = "service.factoryPid";
+
     private static final String GEMINI_FACTORY_PID = "gemini.jpa.punit";
 
     private static final String PROP_UNIT_NAME = "gemini.jpa.punit.name";
 
     private final static Logger logger = LoggerFactory.getLogger ( DatabaseServiceImpl.class );
-
-    private Hashtable<String, Object> properties;
 
     public static final class DatabaseBundle
     {
@@ -54,10 +57,13 @@ public class DatabaseServiceImpl implements ManagedService
 
         private final String name;
 
+        private final String filter;
+
         public DatabaseBundle ( final ConfigurationAdmin admin, final Bundle bundle )
         {
             this.admin = admin;
             this.name = bundle.getSymbolicName ();
+            this.filter = String.format ( "(&(%s=%s)(%s=%s))", SERVICE_FACTORY_PID, GEMINI_FACTORY_PID, PROP_UNIT_NAME, this.name );
         }
 
         public void create ( final Hashtable<String, Object> properties ) throws IOException
@@ -71,11 +77,11 @@ public class DatabaseServiceImpl implements ManagedService
             cfg.update ( props );
         }
 
-        public void delete () throws IOException, InvalidSyntaxException
+        public void delete () throws Exception
         {
             logger.info ( "Deleting configuration for: {}", this.name );
 
-            final Configuration[] result = this.admin.listConfigurations ( String.format ( "(&(%s=%s)(%s=%s))", "service.factoryPid", GEMINI_FACTORY_PID, PROP_UNIT_NAME, this.name ) );
+            final Configuration[] result = listConfigs ();
             if ( result != null )
             {
                 for ( final Configuration cfg : result )
@@ -84,6 +90,135 @@ public class DatabaseServiceImpl implements ManagedService
                 }
             }
         }
+
+        protected Configuration[] listConfigs () throws Exception
+        {
+            logger.debug ( "Looking for configurations: {}", this.filter );
+
+            final Configuration[] result = DatabaseBundle.this.admin.listConfigurations ( DatabaseBundle.this.filter );
+
+            logger.debug ( "Looking for configurations: {} -> {}", this.filter, result );
+
+            return result;
+        }
+
+        /**
+         * Initialize the configuration <br/>
+         * This will check first if the configuration is already applied to
+         * reduce the number of updates
+         *
+         * @param the
+         *            initial properties
+         * @throws InvalidSyntaxException
+         * @throws Exception
+         */
+        public void init ( Hashtable<String, Object> props ) throws Exception
+        {
+            logger.info ( "Initializing JPA unit configuration: {}", this.name );
+
+            props = new Hashtable<String, Object> ( props );
+            props.put ( PROP_UNIT_NAME, this.name );
+
+            final Configuration[] result = listConfigs ();
+
+            if ( result == null || result.length == 0 )
+            {
+                logger.info ( "Not configured" );
+                // not configured
+                create ( props );
+                return;
+            }
+
+            if ( result.length > 1 )
+            {
+                logger.info ( "Multiple configurations. Resetting..." );
+                // illegal state
+                delete ();
+                create ( props );
+                return;
+            }
+
+            // now we must check
+            final Configuration cfg = result[0];
+            Dictionary<String, Object> cp = cfg.getProperties ();
+            if ( cp == null )
+            {
+                logger.info ( "No data. Setting ... " );
+                // initial update, wtf
+                cfg.update ( props );
+                return;
+            }
+
+            cp = Dictionaries.copy ( cp );
+            cp.remove ( Constants.SERVICE_PID ); // we don't compare for this one
+
+            // we need to add this one, in order to compare
+            props.put ( SERVICE_FACTORY_PID, GEMINI_FACTORY_PID );
+
+            // dump
+            if ( logger.isDebugEnabled () )
+            {
+                final Set<String> keys = new HashSet<> ( Collections.list ( cp.keys () ) );
+                final Set<String> masterKeys = new HashSet<> ( Collections.list ( props.keys () ) );
+                for ( final String key : keys )
+                {
+                    logger.debug ( "\t{} -> {} / {}", key, cp.get ( key ), props.get ( key ) );
+                    masterKeys.remove ( key );
+                }
+                for ( final String key : masterKeys )
+                {
+                    logger.debug ( "\t{} -> null / {}", key, props.get ( key ) );
+                }
+            }
+
+            // check for size, might be match already
+
+            if ( cp.size () != props.size () )
+            {
+                logger.debug ( "Size different - current: {}, master: {}", cp.size (), props.size () );
+                cfg.update ( props );
+                return;
+            }
+
+            // compare values
+
+            final Set<String> currentKeys = new HashSet<> ( Collections.list ( cp.keys () ) );
+            final Set<String> masterKeys = new HashSet<> ( Collections.list ( props.keys () ) );
+            for ( final String currentKey : currentKeys )
+            {
+                if ( !props.containsKey ( currentKey ) )
+                {
+                    logger.info ( "Master does not contain this key: {}", currentKey );
+                    cfg.update ( props );
+                    return;
+                }
+
+                final Object currentValue = cp.get ( currentKey );
+                final Object masterValue = props.get ( currentKey );
+
+                // mark as processed
+                masterKeys.remove ( currentKey );
+
+                // compare
+                if ( !currentValue.equals ( masterValue ) )
+                {
+                    logger.info ( "Value difference - {} -> current: {}, master: {}", currentKey, currentValue, masterValue );
+                    cfg.update ( props );
+                    return;
+                }
+            }
+
+            // leftovers?
+            if ( !masterKeys.isEmpty () )
+            {
+                logger.info ( "We have leftovers in the master: {}", masterKeys );
+                cfg.update ( props );
+                return;
+            }
+
+            // we are done
+            logger.info ( "No update required - {}", this.name );
+        }
     }
 
     private final BundleTrackerCustomizer<DatabaseBundle> customizer = new BundleTrackerCustomizer<DatabaseServiceImpl.DatabaseBundle> () {
@@ -91,13 +226,13 @@ public class DatabaseServiceImpl implements ManagedService
         @Override
         public void removedBundle ( final Bundle bundle, final BundleEvent event, final DatabaseBundle object )
         {
-            logger.info ( "Remove bundle: {}", bundle.getSymbolicName () );
+            logger.trace ( "Remove bundle: {}", bundle.getSymbolicName () );
         }
 
         @Override
         public void modifiedBundle ( final Bundle bundle, final BundleEvent event, final DatabaseBundle object )
         {
-            logger.info ( "Modified bundle: {}", bundle.getSymbolicName () );
+            logger.trace ( "Modified bundle: {}", bundle.getSymbolicName () );
         }
 
         @Override
@@ -111,17 +246,38 @@ public class DatabaseServiceImpl implements ManagedService
             logger.info ( "Adding bundle: {}", bundle.getSymbolicName () );
             final DatabaseBundle db = new DatabaseBundle ( DatabaseServiceImpl.this.admin, bundle );
 
-            try
+            if ( DatabaseServiceImpl.this.initialized )
             {
-                db.delete ();
-                if ( DatabaseServiceImpl.this.properties != null )
+                try
                 {
-                    db.create ( DatabaseServiceImpl.this.properties );
+                    final Hashtable<String, Object> props = DatabaseServiceImpl.this.properties;
+                    DatabaseServiceImpl.this.executor.execute ( new Runnable () {
+                        @Override
+                        public void run ()
+                        {
+                            try
+                            {
+                                if ( props == null )
+                                {
+                                    db.delete ();
+                                }
+                                else
+                                {
+                                    db.init ( props );
+                                }
+                            }
+                            catch ( final Exception e )
+                            {
+                                logger.warn ( "Failed to update database configuration", e );
+                            }
+                        }
+                    } );
+
                 }
-            }
-            catch ( final Exception e )
-            {
-                logger.warn ( "Initial update failed", e );
+                catch ( final Exception e )
+                {
+                    logger.warn ( "Initial update failed", e );
+                }
             }
 
             return db;
@@ -130,12 +286,11 @@ public class DatabaseServiceImpl implements ManagedService
 
     private ConfigurationAdmin admin;
 
-    private final DatabaseTaskProvider taskProvider = new DatabaseTaskProvider ();
+    private Hashtable<String, Object> properties;
 
-    public void setAdmin ( final ConfigurationAdmin admin )
-    {
-        this.admin = admin;
-    }
+    private volatile boolean initialized = false;
+
+    private final DatabaseTaskProvider taskProvider = new DatabaseTaskProvider ();
 
     private final BundleContext context;
 
@@ -149,6 +304,11 @@ public class DatabaseServiceImpl implements ManagedService
     {
         this.context = FrameworkUtil.getBundle ( DatabaseServiceImpl.class ).getBundleContext ();
         this.tracker = new BundleTracker<> ( this.context, Bundle.INSTALLED | Bundle.ACTIVE | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING, this.customizer );
+    }
+
+    public void setAdmin ( final ConfigurationAdmin admin )
+    {
+        this.admin = admin;
     }
 
     public void start ()
@@ -174,6 +334,8 @@ public class DatabaseServiceImpl implements ManagedService
         this.tracker.close ();
 
         this.executor.shutdown ();
+
+        this.initialized = false;
     }
 
     protected boolean isPersistenceUnit ( final Bundle bundle )
@@ -194,6 +356,8 @@ public class DatabaseServiceImpl implements ManagedService
     @Override
     public void updated ( final Dictionary<String, ?> properties ) throws ConfigurationException
     {
+        this.initialized = true;
+
         // we must not trigger changes inside the handler method
         this.executor.execute ( new Runnable () {
 
@@ -205,13 +369,14 @@ public class DatabaseServiceImpl implements ManagedService
         } );
     }
 
-    protected void performUpdate ( final Dictionary<String, ?> properties )
+    private void performUpdate ( final Dictionary<String, ?> properties )
     {
         logger.debug ( "Update database properties: {}", properties );
 
         if ( properties != null )
         {
             final Hashtable<String, Object> newProps = Dictionaries.copy ( properties );
+            newProps.remove ( Constants.SERVICE_PID );
 
             this.properties = newProps;
             logger.debug ( "Updated database properties: {}", this.properties );
@@ -232,19 +397,22 @@ public class DatabaseServiceImpl implements ManagedService
 
         try
         {
-            deleteAll ();
             if ( properties != null )
             {
                 createAll ( properties );
             }
+            else
+            {
+                deleteAll ();
+            }
         }
-        catch ( IOException | InvalidSyntaxException e )
+        catch ( final Exception e )
         {
             logger.warn ( "Failed to apply configuration", e );
         }
     }
 
-    protected void createAll ( final Hashtable<String, Object> properties ) throws IOException
+    private void createAll ( final Hashtable<String, Object> properties ) throws Exception
     {
         logger.debug ( "Create configuration: {}", properties );
 
@@ -255,15 +423,15 @@ public class DatabaseServiceImpl implements ManagedService
         for ( final DatabaseBundle db : tracked.values () )
         {
             logger.debug ( "Processing: {}", db.name );
-            db.create ( properties );
+            db.init ( properties );
         }
     }
 
-    protected void deleteAll () throws IOException, InvalidSyntaxException
+    private void deleteAll () throws IOException, InvalidSyntaxException
     {
         logger.debug ( "Delete all configurations" );
 
-        final Configuration[] result = this.admin.listConfigurations ( String.format ( "(%s=%s)", "service.factoryPid", GEMINI_FACTORY_PID ) );
+        final Configuration[] result = this.admin.listConfigurations ( String.format ( "(%s=%s)", SERVICE_FACTORY_PID, GEMINI_FACTORY_PID ) );
         if ( result != null )
         {
             for ( final Configuration cfg : result )
