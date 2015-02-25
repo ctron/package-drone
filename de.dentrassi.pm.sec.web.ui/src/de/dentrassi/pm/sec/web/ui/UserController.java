@@ -117,12 +117,12 @@ public class UserController extends AbstractUserCreationController implements In
                         }
                         else
                         {
-                            result.add ( new MenuEntry ( "Lock user", 200, LinkTarget.createFromController ( UserController.class, "lockUser" ).expand ( model ), Modifier.WARNING, null ) );
+                            result.add ( new MenuEntry ( "Lock user", 200, LinkTarget.createFromController ( UserController.class, "lockUser" ).expand ( model ), Modifier.WARNING, null ).makeModalMessage ( "Lock user", "This will prevent the user from logging in. It can be reveresed by unlocking the user." ) );
                         }
 
                         if ( !details.isDeleted () )
                         {
-                            result.add ( new MenuEntry ( "Delete user", 300, LinkTarget.createFromController ( UserController.class, "deleteUser" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                            result.add ( new MenuEntry ( "Delete user", 300, LinkTarget.createFromController ( UserController.class, "deleteUser" ).expand ( model ), Modifier.DANGER, "trash" ).makeModalMessage ( "Delete user", "Are you sure you want to delete this user?" ) );
                         }
                     }
                 }
