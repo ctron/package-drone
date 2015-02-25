@@ -36,6 +36,34 @@
 		</attribute>
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
+	
+	<tag>
+	   <description>Push content on a stack</description>
+	   <name>push</name>
+	   <tag-class>de.dentrassi.osgi.web.tags.PushTag</tag-class>
+	   <body-content>scriptless</body-content>
+	   <attribute>
+	       <description>The name of the stack</description>
+	       <name>name</name>
+	       <required>true</required>
+	       <rtexprvalue>true</rtexprvalue>
+	       <type>java.lang.String</type>
+	   </attribute>
+	</tag>
+	
+	<tag>
+       <description>Pop all content from a stack</description>
+       <name>pop</name>
+       <tag-class>de.dentrassi.osgi.web.tags.PopTag</tag-class>
+       <body-content>empty</body-content>
+       <attribute>
+           <description>The name of the stack</description>
+           <name>name</name>
+           <required>true</required>
+           <rtexprvalue>true</rtexprvalue>
+           <type>java.lang.String</type>
+       </attribute>
+    </tag>
 
 	<function>
 		<name>active</name>
