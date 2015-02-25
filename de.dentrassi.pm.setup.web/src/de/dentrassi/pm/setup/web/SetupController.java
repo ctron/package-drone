@@ -28,6 +28,7 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.pm.database.DatabaseSetup;
+import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.todo.BasicTask;
 import de.dentrassi.pm.todo.Task;
 import de.dentrassi.pm.todo.Task.State;
@@ -38,6 +39,18 @@ import de.dentrassi.pm.todo.Task.State;
 public class SetupController
 {
     private final static Logger logger = LoggerFactory.getLogger ( SetupController.class );
+
+    private StorageService service;
+
+    public void setService ( final StorageService service )
+    {
+        this.service = service;
+    }
+
+    public void unsetService ( final StorageService service )
+    {
+        this.service = null;
+    }
 
     private List<Task> getTasks ( final HttpServletRequest request )
     {
@@ -71,7 +84,7 @@ public class SetupController
 
         {
             final BasicTask task = new BasicTask ( "Configure the database connection", 2, "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null );
-            if ( configured )
+            if ( configured && this.service != null )
             {
                 task.setState ( State.DONE );
             }
