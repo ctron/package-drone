@@ -17,11 +17,11 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
 <h:main title="Group" subtitle="${fn:escapeXml( (empty group.name) ? group.id : group.name ) }">
 
 <h:buttonbar menu="${menuManager.getActions ( group ) }">
-
-    <jsp:attribute name="after">
-        <a class="btn btn-default" href="<c:url value="/deploy/auth/group"/>">Groups</a>
+    <jsp:attribute name="before">
+        <div class="btn-group" role="group">
+            <a class="btn btn-default" href="<c:url value="/deploy/auth/group"/>">Groups</a>
+        </div>
     </jsp:attribute>
-
 </h:buttonbar>
 
 <div class="container-fluid">

@@ -11,7 +11,7 @@
 
 <div class="button-bar btn-toolbar" role="toolbar">
 
-    <c:if test="${not empty before }"><jsp:invoke fragment="before" /></c:if>
+    <jsp:invoke fragment="before" />
 
 <c:if test="${not empty menu }">
     
@@ -52,5 +52,5 @@
 
 </c:if>
 
-    <c:if test="${not empty after }"><jsp:invoke fragment="after" /></c:if>
+    <jsp:invoke fragment="after" />
 </div>
