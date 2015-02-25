@@ -79,27 +79,35 @@ fieldset {
 <script type="text/javascript">
 function addRole() {
     var val = $('#newRole').val ();
-    var ca = $('#currentRoles');
     
-    var div = document.createElement ( "div" );
-    div.setAttribute ( "class", "checkbox" );
+    var act = $("#currentRoles input[name='roles'][value='" + val + "']");
     
-    var label = document.createElement ( "label" );
-    div.appendChild(label);
+    if ( act.length > 0 ) {
+    	console.log ( act[0] );
+    	act[0].checked = true;
+    } else {
+        var ca = $('#currentRoles');
+	    
+	    var div = document.createElement ( "div" );
+	    div.setAttribute ( "class", "checkbox" );
+	    
+	    var label = document.createElement ( "label" );
+	    div.appendChild(label);
+	    
+	    var input = document.createElement ( "input");
+	    label.appendChild ( input );
+	    
+	    input.setAttribute ( "type", "checkbox" );
+	    input.setAttribute ( "checked", "checked" );
+	    input.setAttribute ( "name", "roles" );
+	    input.setAttribute ( "value", val );
+	    
+	    label.appendChild ( document.createTextNode( " " + val ) );
+	    
+	    ca.append ( div );
+    }
     
-    var input = document.createElement ( "input");
-    label.appendChild ( input );
-    
-    input.setAttribute ( "type", "checkbox" );
-    input.setAttribute ( "checked", "checked" );
-    input.setAttribute ( "name", "roles" );
-    input.setAttribute ( "value", val );
-    
-    label.appendChild ( document.createTextNode( " " + val ) );
-    
-    ca.append ( div );
-    
-    // clear entry box
+    //clear entry box
     $('#newRole').val ( "" );
 }
 </script>
