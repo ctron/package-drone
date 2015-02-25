@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -117,7 +118,7 @@ public class ChannelImpl implements Channel
         return this.service.listSimpleArtifacts ( this.id );
     }
 
-    public void streamData ( final String artifactId, final ArtifactReceiver consumer )
+    public void streamData ( final String artifactId, final ArtifactReceiver consumer ) throws FileNotFoundException
     {
         this.service.streamArtifact ( artifactId, consumer );
     }

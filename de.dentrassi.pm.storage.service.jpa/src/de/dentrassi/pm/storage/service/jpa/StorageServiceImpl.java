@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -267,12 +268,22 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
+    public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws FileNotFoundException
     {
-        doWithTransactionVoid ( em -> {
-            final ArtifactEntity ae = getCheckedArtifact ( em, artifactId );
+        final Boolean found = doWithTransaction ( em -> {
+            final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
+            if ( ae == null )
+            {
+                return false;
+            }
             internalStreamArtifact ( em, ae, receiver );
+            return true;
         } );
+
+        if ( !found )
+        {
+            throw new FileNotFoundException ( String.format ( "Artifact '%s' could not be found", artifactId ) );
+        }
     }
 
     private ArtifactEntity getCheckedArtifact ( final EntityManager em, final String artifactId )

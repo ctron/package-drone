@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -74,7 +75,14 @@ public class ArtifactImpl implements Artifact
     @Override
     public void streamData ( final ArtifactReceiver consumer )
     {
-        this.channel.streamData ( this.id, consumer );
+        try
+        {
+            this.channel.streamData ( this.id, consumer );
+        }
+        catch ( final FileNotFoundException e )
+        {
+            throw new IllegalStateException ( e );
+        }
     }
 
     @Override
