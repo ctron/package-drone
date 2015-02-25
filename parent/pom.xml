@@ -92,6 +92,8 @@
 
 		<module>../de.dentrassi.pm.common</module>
 		<module>../de.dentrassi.pm.common.web</module>
+		
+		<module>../de.dentrassi.pm.console</module>
 
 		<module>../de.dentrassi.pm.core</module>
 		<module>../de.dentrassi.pm.core.jpa</module>

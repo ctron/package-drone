@@ -45,6 +45,7 @@
       <plugin id="de.dentrassi.pm.aspect.cleanup" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.cleanup.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.console" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.database" autoStart="true" startLevel="0" />
