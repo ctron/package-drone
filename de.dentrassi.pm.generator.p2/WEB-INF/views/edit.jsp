@@ -24,7 +24,10 @@
         </h:formEntry>
 		
         <h:formEntry label="Feature Version" path="version" command="command">
-            <form:input path="version" cssClass="form-control"/> 
+            <form:input path="version" cssClass="form-control"/>
+            <span class="help-block">
+                A valid version string. The qualifier <q>.qualifier</q> will be replaced with the current timesstamp.
+            </span> 
         </h:formEntry>
         
         <h:formEntry label="Label" path="label" command="command">

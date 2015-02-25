@@ -21,7 +21,7 @@ public class FeatureData
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "id" )
     private String id;
 
-    @Pattern ( regexp = "[0-9]+((\\.[0-9]+){1,2}(\\.[^\\.])?)",
+    @Pattern ( regexp = "[0-9]+((\\.[0-9]+){1,2}(\\.[^\\.]+)?)",
             message = "Must be a valid version string: major.minor[.micro[.qualifier]]" )
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "version" )
     private String version;

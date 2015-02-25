@@ -18,9 +18,13 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +49,15 @@ import de.dentrassi.pm.storage.StorageAccessor;
 
 public class FeatureGenerator implements ArtifactGenerator
 {
+
+    private static final String QUALIFIER_SUFFIX = ".qualifier";
+
+    private static final DateFormat QUALIFIER_DATE_FORMAT = new SimpleDateFormat ( "yyyyMMddHHmm" );
+
+    static
+    {
+        QUALIFIER_DATE_FORMAT.setTimeZone ( TimeZone.getTimeZone ( "UTC" ) );
+    }
 
     private final static Logger logger = LoggerFactory.getLogger ( FeatureGenerator.class );
 
@@ -102,7 +115,7 @@ public class FeatureGenerator implements ArtifactGenerator
     private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final StorageAccessor storage, final String channelid ) throws Exception
     {
         final String id = getString ( map, ID, "id" );
-        final String version = getString ( map, ID, "version" );
+        final String version = makeVersion ( getString ( map, ID, "version" ) );
         final String label = getString ( map, ID, "label" );
 
         final String description = getString ( map, ID, "description" );
@@ -131,6 +144,28 @@ public class FeatureGenerator implements ArtifactGenerator
         }
 
         this.xml.write ( doc, out );
+    }
+
+    private String makeVersion ( String version )
+    {
+        if ( version == null )
+        {
+            return "0.0.0";
+        }
+
+        if ( !version.endsWith ( QUALIFIER_SUFFIX ) )
+        {
+            return version;
+        }
+
+        version = version.substring ( 0, version.length () - QUALIFIER_SUFFIX.length () );
+
+        return version + "." + makeTimestamp ( System.currentTimeMillis () );
+    }
+
+    private String makeTimestamp ( final long time )
+    {
+        return FeatureGenerator.QUALIFIER_DATE_FORMAT.format ( new Date ( time ) );
     }
 
     private void processPlugin ( final Element root, final ArtifactInformation a )
