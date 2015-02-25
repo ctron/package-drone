@@ -62,8 +62,18 @@ public class Configurator implements AutoCloseable
         try
         {
             // set main db configuration
-            final Configuration dbConf = cm.getConfiguration ( DatabaseConfigurationService.ID, null );
+
+            Configuration dbConf = cm.getConfiguration ( DatabaseConfigurationService.ID, null );
+
             final Dictionary<String, Object> props = makeProperties ( data );
+
+            if ( Boolean.getBoolean ( "package.drone.database.forceUpdate" ) )
+            {
+                logger.debug ( "Forcing update" );
+                dbConf.delete ();
+                dbConf = cm.getConfiguration ( DatabaseConfigurationService.ID, null );
+            }
+
             logger.debug ( "Setting new database properties: {}", props );
             dbConf.update ( props );
         }
