@@ -11,7 +11,7 @@
 	<url>https://github.com/ctron/package-drone</url>
 	<name>Package Drone</name>
 	<inceptionYear>2014</inceptionYear>
-	
+
 	<description>
 	   Package Drone is an extensible software artifact repository with primary focus on OSGi.
 	</description>
@@ -67,99 +67,103 @@
 
 	<modules>
 		<module>../de.dentrassi.osgi.converter</module>
-		
+
 		<module>../de.dentrassi.osgi.job</module>
 		<module>../de.dentrassi.osgi.job.jpa</module>
 		<module>../de.dentrassi.osgi.job.service.jpa</module>
 		<module>../de.dentrassi.osgi.job.web</module>
-		
+
 		<module>../de.dentrassi.osgi.scheduler</module>
 		<module>../de.dentrassi.osgi.scheduler.simple</module>
-		
+
 		<module>../de.dentrassi.osgi.utils</module>
 		<module>../de.dentrassi.osgi.validation</module>
 		<module>../de.dentrassi.osgi.validation.hibernate</module>
-		
+
 		<module>../de.dentrassi.osgi.web</module>
 		<module>../de.dentrassi.osgi.web.form</module>
 		<module>../de.dentrassi.osgi.web.servlet</module>
-		
+		<module>../de.dentrassi.osgi.web.tests</module>
+
 		<module>../de.dentrassi.pm.aspect</module>
 		<module>../de.dentrassi.pm.aspect.cleanup</module>
 		<module>../de.dentrassi.pm.aspect.cleanup.web</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
-		
+
 		<module>../de.dentrassi.pm.common</module>
 		<module>../de.dentrassi.pm.common.web</module>
-		
+
 		<module>../de.dentrassi.pm.core</module>
 		<module>../de.dentrassi.pm.core.jpa</module>
 		<module>../de.dentrassi.pm.core.web</module>
-		
+
 		<module>../de.dentrassi.pm.database</module>
-		
+
 		<module>../de.dentrassi.pm.deb</module>
 		<module>../de.dentrassi.pm.deb.web</module>
-		
+
 		<module>../de.dentrassi.pm.external.maven</module>
-		
+
 		<module>../de.dentrassi.pm.generator</module>
 		<module>../de.dentrassi.pm.generator.p2</module>
-		
+
 		<module>../de.dentrassi.pm.importer</module>
 		<module>../de.dentrassi.pm.importer.aether</module>
 		<module>../de.dentrassi.pm.importer.http</module>
 		<module>../de.dentrassi.pm.importer.http.web</module>
-		
+
 		<module>../de.dentrassi.pm.logging.jul</module>
-		
+
 		<module>../de.dentrassi.pm.mail.service</module>
 		<module>../de.dentrassi.pm.mail.web</module>
-		
+
 		<module>../de.dentrassi.pm.maven</module>
-		
+		<module>../de.dentrassi.pm.maven.tests</module>
+
 		<module>../de.dentrassi.pm.npm</module>
-		
+
 		<module>../de.dentrassi.pm.osgi</module>
+		<module>../de.dentrassi.pm.osgi.tests</module>
 		<module>../de.dentrassi.pm.osgi.web</module>
-		
+
 		<module>../de.dentrassi.pm.p2</module>
 		<module>../de.dentrassi.pm.p2.web</module>
-		
+
 		<module>../de.dentrassi.pm.r5</module>
-		
+
 		<module>../de.dentrassi.pm.sec</module>
 		<module>../de.dentrassi.pm.sec.jpa</module>
 		<module>../de.dentrassi.pm.sec.service</module>
 		<module>../de.dentrassi.pm.sec.service.admin</module>
 		<module>../de.dentrassi.pm.sec.service.core</module>
 		<module>../de.dentrassi.pm.sec.service.jpa</module>
-		
+
 		<module>../de.dentrassi.pm.sec.web</module>
 		<module>../de.dentrassi.pm.sec.web.ui</module>
-		
+
 		<module>../de.dentrassi.pm.setup.web</module>
-		
+
 		<module>../de.dentrassi.pm.signing</module>
 		<module>../de.dentrassi.pm.signing.pgp</module>
 		<module>../de.dentrassi.pm.signing.pgp.web</module>
-		
+
 		<module>../de.dentrassi.pm.storage</module>
 		<module>../de.dentrassi.pm.storage.jpa</module>
 		<module>../de.dentrassi.pm.storage.service</module>
 		<module>../de.dentrassi.pm.storage.service.jpa</module>
 		<module>../de.dentrassi.pm.storage.web</module>
-		
+
 		<module>../de.dentrassi.pm.system</module>
-		
+
 		<module>../de.dentrassi.pm.todo</module>
 		<module>../de.dentrassi.pm.todo.web</module>
-		
+
 		<module>../de.dentrassi.pm.utils.deb</module>
-		
+		<module>../de.dentrassi.pm.utils.deb.tests</module>
+
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>
-		
+
 		<module>../product</module>
 	</modules>
 
@@ -229,20 +233,19 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<environments>
-					   <environment>
-                            <os>all</os>
-                            <ws>all</ws>
-                            <arch>all</arch>
-                        </environment>
-                         <environment>
-                            <os>linux</os>
-                            <ws>all</ws>
-                            <arch>all</arch>
-                        </environment>
+						<environment>
+							<os>all</os>
+							<ws>all</ws>
+							<arch>all</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>all</ws>
+							<arch>all</arch>
+						</environment>
 					</environments>
 				</configuration>
 			</plugin>
-
 		</plugins>
 
 		<pluginManagement>

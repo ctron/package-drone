@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@ import de.dentrassi.osgi.web.ViewResolver;
 @ViewResolver ( "WEB-INF/views/%s.jsp" )
 public class TestController
 {
+    @RequestMapping
     public ModelAndView mainA ()
     {
         return new ModelAndView ( "index" );
