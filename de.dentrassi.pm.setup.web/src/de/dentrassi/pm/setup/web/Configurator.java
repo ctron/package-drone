@@ -22,12 +22,16 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.database.DatabaseConfigurationService;
 import de.dentrassi.pm.database.DatabaseConnectionData;
 
 public class Configurator implements AutoCloseable
 {
+    private final static Logger logger = LoggerFactory.getLogger ( Configurator.class );
+
     private final ServiceTracker<ConfigurationAdmin, ConfigurationAdmin> tracker;
 
     public static Configurator create ()
@@ -60,10 +64,12 @@ public class Configurator implements AutoCloseable
             // set main db configuration
             final Configuration dbConf = cm.getConfiguration ( DatabaseConfigurationService.ID, null );
             final Dictionary<String, Object> props = makeProperties ( data );
+            logger.debug ( "Setting new database properties: {}", props );
             dbConf.update ( props );
         }
         catch ( final Exception e )
         {
+            logger.warn ( "Failed to set database settings", e );
             throw new RuntimeException ( e );
         }
     }
