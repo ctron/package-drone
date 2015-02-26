@@ -14,7 +14,9 @@
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table class="table table-striped">
+<div class="table-responsive">
+
+<table class="table table-striped table-hover">
 
 <thead>
     <tr>
@@ -45,20 +47,23 @@
         
         <td>
         <c:forEach var="ee" items="${bundle.requiredExecutionEnvironments }">
-        <span class="label label-default">${fn:escapeXml(ee) }</span>
+            <span class="label label-default">${fn:escapeXml(ee) }</span>
         </c:forEach>
         </td>
         
         <td>
-        <c:set var="delim" value=""/>
-        <c:if test="${not empty bundle.docUrl }"><a target="_blank" href="${bundle.docUrl }">Documentation</a><c:set var="delim" value=", "/></c:if>
-        <c:if test="${not empty bundle.license and ( fn:startsWith(bundle.license, 'http://') or fn:startsWith(bundle.license, 'https://') ) }">${delim }<a href="${bundle.license }" target="_blank">License</a><c:set var="delim" value=", "/></c:if>
+            <ul class="link-list">
+                <h:artifactLinkListItem artifactId="${bundle.artifactId }" url="${bundle.docUrl }">Documentation</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${bundle.artifactId }" url="${bundle.license }">License</h:artifactLinkListItem>
+            </ul>
         </td>
     </tr>
     </c:forEach>
 </tbody>
 
 </table>
+
+</div>
 
 <script type="text/javascript">
 $(function () {
@@ -67,3 +72,4 @@ $(function () {
 </script>
 
 </h:main>
+

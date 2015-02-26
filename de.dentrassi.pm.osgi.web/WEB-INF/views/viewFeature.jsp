@@ -243,7 +243,10 @@ pageContext.setAttribute ( "requirements", requirements );
         <div class="row">
             <div class="col-md-12">
                 <c:if test="${not empty feature.descriptionUrl}">
-                    <strong>Link:</strong> <a href="${fn:escapeXml(feature.translate(feature.descriptionUrl)) }" target="_blank"><osgi:translated data="${feature }" property="descriptionUrl" /> </a>
+                    <dl class="dl-horizontal details">
+                        <dt>Link</dt>
+                        <dd><h:artifactLink url="${feature.translate(feature.descriptionUrl) }" artifactId="${artifact.id}">${fn:escapeXml(feature.translate(feature.descriptionUrl)) }</h:artifactLink><osgi:translatedLabels data="${feature }" property="descriptionUrl" /></dd>
+                    </dl>
                 </c:if>
             </div>
         </div>
@@ -266,7 +269,10 @@ pageContext.setAttribute ( "requirements", requirements );
         <div class="row">
             <div class="col-md-12">
                 <c:if test="${not empty feature.licenseUrl}">
-                    <strong>Link:</strong> <a href="${fn:escapeXml(feature.translate(feature.licenseUrl)) }" target="_blank">${fn:escapeXml(feature.translate(feature.licenseUrl)) }</a><osgi:translatedLabels data="${feature }" property="licenseUrl" />
+                    <dl class="dl-horizontal details">
+                        <dt>Link</dt>
+                        <dd><h:artifactLink url="${feature.translate(feature.licenseUrl) }" artifactId="${artifact.id}">${fn:escapeXml(feature.translate(feature.licenseUrl)) }</h:artifactLink><osgi:translatedLabels data="${feature }" property="licenseUrl" /></dd>
+                    </dl>
                 </c:if>
             </div>
         </div>
@@ -288,9 +294,14 @@ pageContext.setAttribute ( "requirements", requirements );
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
+            
                 <c:if test="${not empty feature.copyrightUrl}">
-                    <strong>Link:</strong> <a href="${fn:escapeXml(feature.translate(feature.copyrightUrl)) }" target="_blank">${fn:escapeXml(feature.translate(feature.copyrightUrl)) }</a><osgi:translatedLabels data="${feature }" property="copyrightUrl" />
+	                <dl class="dl-horizontal details">
+	                    <dt>Link</dt>
+	                    <dd><h:artifactLink url="${feature.translate(feature.copyrightUrl) }" artifactId="${artifact.id}">${fn:escapeXml(feature.translate(feature.copyrightUrl)) }</h:artifactLink><osgi:translatedLabels data="${feature }" property="copyrightUrl" /></dd>
+	                </dl>
                 </c:if>
+                
             </div>
         </div>
         <div class="row form-padding">

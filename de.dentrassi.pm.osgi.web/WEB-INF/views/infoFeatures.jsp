@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
+<%@ page language="java" contentType="text/html; charset=UTF-8" trimDirectiveWhitespaces="true"
     pageEncoding="UTF-8"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
@@ -22,6 +22,7 @@
         <th>Symbolic Name</th>
         <th>Version</th>
         <th>Name</th>
+        <th>Links</th>
     <tr>
 </thead>
 
@@ -42,6 +43,14 @@
                 <osgi:translated data="${feature }" property="label" />
             </c:otherwise>
         </c:choose>
+        </td>
+        
+        <td>
+            <ul class="link-list">
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.licenseUrl }">License</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.copyrightUrl }">Copyright</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.descriptionUrl }">Description</h:artifactLinkListItem>
+            </ul>
         </td>
         
         

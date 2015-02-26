@@ -103,3 +103,18 @@ img.gravatar {
 	background: white;
 	margin-bottom: 0;
 }
+
+/* link lists */
+.link-list {
+	list-style: none;
+	padding-left: 0;
+}
+
+ul.link-list > li {
+	display: inline-block;
+	padding-right: .5em;
+}
+
+ul.link-list > li:not(:last-child):after {
+    content: ' - ';
+}
