@@ -9,10 +9,10 @@
 <h:main title="Channel aspects" subtitle="${pm:channel(channel) }">
 
 <script type="text/javascript">
-function doAction ( action )
+function doAction ( action, factoryId )
 {
-    var form = $('#form');
-    form.attr("action", action);
+    var form = document.getElementById("form-" + factoryId);
+    form.setAttribute("action", action);
     form.submit ();
     return false;
 }
@@ -40,10 +40,10 @@ function doAction ( action )
     <p>${fn:escapeXml(aspect.description) }</p>
     <p>
     
-    <form id="form" action="removeAspect" method="POST">
-        <input type="hidden" name="aspect" value="<c:out value="${aspect.factoryId }"></c:out>">
-        <button class="btn btn-default" type="submit" name="command" value="remove">Remove</button>
-        <button onclick="doAction('refreshAspect');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+    <form id="form-${fn:escapeXml(aspect.factoryId) }" action="removeAspect" method="POST">
+        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }" />
+        <button onclick="doAction('removeAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="remove">Remove</button>
+        <button onclick="doAction('refreshAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
     </form>
     </div>
 </div>
