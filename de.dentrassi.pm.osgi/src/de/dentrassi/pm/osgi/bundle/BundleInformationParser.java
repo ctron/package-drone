@@ -85,7 +85,7 @@ public class BundleInformationParser
         result.setVendor ( ma.getValue ( Constants.BUNDLE_VENDOR ) );
 
         result.setDocUrl ( ma.getValue ( Constants.BUNDLE_DOCURL ) );
-        result.setLicense ( ma.getValue ( Constants.BUNDLE_LICENSE ) );
+        result.setLicense ( makeLicense ( ma.getValue ( Constants.BUNDLE_LICENSE ) ) );
         result.setDescription ( ma.getValue ( Constants.BUNDLE_DESCRIPTION ) );
 
         result.setEclipseBundleShape ( ma.getValue ( "Eclipse-BundleShape" ) );
@@ -99,6 +99,17 @@ public class BundleInformationParser
         attachLocalization ( result, ma );
 
         return result;
+    }
+
+    private String makeLicense ( final String value )
+    {
+        final AttributedValue license = Headers.parse ( value );
+        if ( license == null )
+        {
+            return null;
+        }
+
+        return license.getValue ();
     }
 
     private void processImportBundle ( final BundleInformation result, final Attributes ma )
