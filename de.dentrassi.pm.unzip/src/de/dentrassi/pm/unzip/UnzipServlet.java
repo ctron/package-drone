@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.activation.FileTypeMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,15 @@ import com.google.common.io.ByteStreams;
 public class UnzipServlet extends StorageServiceServlet
 {
     private static final long serialVersionUID = 1L;
+
+    private FileTypeMap fileTypeMap;
+
+    @Override
+    public void init () throws ServletException
+    {
+        super.init ();
+        this.fileTypeMap = FileTypeMap.getDefaultFileTypeMap ();
+    }
 
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
@@ -79,7 +89,8 @@ public class UnzipServlet extends StorageServiceServlet
                 {
                     if ( entry.getName ().equals ( localPath ) )
                     {
-                        response.setContentType ( "application/octet-stream" );
+                        final String type = this.fileTypeMap.getContentType ( entry.getName () );
+                        response.setContentType ( type );
                         response.setContentLengthLong ( entry.getSize () );
                         ByteStreams.copy ( zis, response.getOutputStream () );
                         return;
