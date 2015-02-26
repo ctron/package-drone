@@ -60,6 +60,7 @@ import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
@@ -579,6 +580,15 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // first delete all virtual artifacts
 
         deleteAllVirtualArtifacts ( channel );
+
+        // delete all metadata first
+
+        {
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace=:ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
+            q.setParameter ( "ASPECT", aspectFactoryId );
+            q.setParameter ( "CHANNEL", channel );
+            q.executeUpdate ();
+        }
 
         // process new meta data
 
