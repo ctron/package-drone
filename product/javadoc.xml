@@ -13,7 +13,6 @@
           ================================= -->
 	
 	<target name="javadoc" depends="clean">
-
 		<javadoc 
 			access="protected"
 			author="true"
