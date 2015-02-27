@@ -70,8 +70,9 @@ public class SignupController extends AbstractUserCreationController
 
         if ( result.hasErrors () )
         {
-            final Map<String, Object> model = new HashMap<> ( 1 );
+            final Map<String, Object> model = new HashMap<> ( 2 );
             model.put ( "command", data );
+            model.put ( "duplicateEmail", result.hasMarker ( "duplicateEmail" ) );
             return new ModelAndView ( "signup/form", model );
         }
 
