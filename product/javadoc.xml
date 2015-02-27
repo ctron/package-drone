@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+	<target name="javadoc" depends="clean">
+
+		<!-- ================================= 
+              target: javadoc
+             ================================= -->
+		<javadoc 
+			access="protected"
+			author="true"
+			splitindex="true"
+			use="true"
+		    destdir="target/javadoc"
+			version="true">
+
+			<fileset dir=".." defaultexcludes="yes">
+				<include name="de.dentrassi.osgi.converter/src/**" />
+				<include name="de.dentrassi.osgi.job/src/**" />
+				<include name="de.dentrassi.osgi.scheduler/src/**" />
+				<include name="de.dentrassi.osgi.utils/src/**" />
+				<include name="de.dentrassi.osgi.validation/src/**" />
+				<include name="de.dentrassi.osgi.web/src/**" />
+				<include name="de.dentrassi.osgi.form/src/**" />
+				
+				<include name="de.dentrassi.pm.aspect/src/**" />
+				<include name="de.dentrassi.pm.core/src/**" />
+				<include name="de.dentrassi.pm.database/src/**" />
+			    <include name="de.dentrassi.pm.generator/src/**" />
+				<include name="de.dentrassi.pm.mail.service/src/**" />
+				<include name="de.dentrassi.pm.signing/src/**" />
+				<include name="de.dentrassi.pm.storage/src/**" />
+				<include name="de.dentrassi.pm.storage.service/src/**" />
+				<include name="de.dentrassi.pm.system/src/**" />
+				<include name="de.dentrassi.pm.todo/src/**" />
+				
+				<include name="de.dentrassi.pm.sec/src/**" />
+				<include name="de.dentrassi.pm.sec.web/src/**" />
+				
+				<include name="de.dentrassi.pm.common/src/**" />
+				<include name="de.dentrassi.pm.osgi/src/**" />
+			</fileset>
+
+			<link href="https://docs.oracle.com/javase/7/docs/api/" />
+			<link href="https://docs.oracle.com/javase/8/docs/api/" />
+			<link href="http://docs.oracle.com/javase/8/javafx/api/" />
+			
+			<doctitle>Package Drone</doctitle>
+			
+			<group title="Repository System" packages="de.dentrassi.pm*"/>
+			<group title="Security" packages="de.dentrassi.pm.sec*"/>
+			<group title="Base Functionality" packages="de.dentrassi.osgi*"/>
+		</javadoc>
+	</target>
+
+	<!-- ================================= 
+          target: clean
+         ================================= -->
+	<target name="clean">
+	    <delete dir="target/javadoc"/>
+	</target>
+
+</project>

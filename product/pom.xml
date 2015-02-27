@@ -57,6 +57,18 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>javadoc</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>prepare-package</phase>
+						<configuration>
+							<target>
+								<ant antfile="javadoc.xml" />
+							</target>
+						</configuration>
+					</execution>
+					<execution>
 						<phase>package</phase>
 						<configuration>
 							<target>
@@ -207,11 +219,11 @@
 
 							<mappings>
 
-                                <mapping>
-                                    <directory>/usr/lib/${project.artifactId}</directory>
-                                    <username>pdrone</username>
-                                    <groupname>pdrone</groupname>
-                                </mapping>
+								<mapping>
+									<directory>/usr/lib/${project.artifactId}</directory>
+									<username>pdrone</username>
+									<groupname>pdrone</groupname>
+								</mapping>
 
 								<mapping>
 									<directory>/usr/lib/${project.artifactId}/instance</directory>
@@ -348,34 +360,34 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 								<!-- for the "adduser" scripts -->
 								<prereq>shadow-utils</prereq>
 							</prereqs>
-							
-				            <requires>
-				                <require>lsb-core-noarch &gt;= 4.0</require>
-				            </requires>
+
+							<requires>
+								<require>lsb-core-noarch &gt;= 4.0</require>
+							</requires>
 
 							<distribution>centos6</distribution>
 
 							<mappings>
 
-							    <mapping>
-                                    <directory>/etc/init.d</directory>
-                                    <configuration>true</configuration>
-                                    <username>root</username>
-                                    <groupname>root</groupname>
-                                    <filemode>07550</filemode>
-                                    <directoryIncluded>false</directoryIncluded>
-                                    <sources>
-                                        <source>
-                                            <location>src/sysv/${project.artifactId}</location>
-                                        </source>
-                                    </sources>
-                                </mapping>
-                                
-                                <mapping>
-                                    <directory>/usr/lib/${project.artifactId}</directory>
-                                    <username>pdrone</username>
-                                    <groupname>pdrone</groupname>
-                                </mapping>
+								<mapping>
+									<directory>/etc/init.d</directory>
+									<configuration>true</configuration>
+									<username>root</username>
+									<groupname>root</groupname>
+									<filemode>07550</filemode>
+									<directoryIncluded>false</directoryIncluded>
+									<sources>
+										<source>
+											<location>src/sysv/${project.artifactId}</location>
+										</source>
+									</sources>
+								</mapping>
+
+								<mapping>
+									<directory>/usr/lib/${project.artifactId}</directory>
+									<username>pdrone</username>
+									<groupname>pdrone</groupname>
+								</mapping>
 
 								<mapping>
 									<directory>/usr/lib/${project.artifactId}/instance</directory>
@@ -390,12 +402,12 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 										</source>
 									</sources>
 								</mapping>
-								
+
 								<mapping>
-								    <directory>/var/run/package-drone-server</directory>
-								    <username>pdrone</username>
-                                    <groupname>pdrone</groupname>
-                                    <filemode>0750</filemode>
+									<directory>/var/run/package-drone-server</directory>
+									<username>pdrone</username>
+									<groupname>pdrone</groupname>
+									<filemode>0750</filemode>
 								</mapping>
 
 								<mapping>
