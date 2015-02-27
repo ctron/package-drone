@@ -16,7 +16,10 @@
 	        <form:form action="" method="POST"  cssClass="form-horizontal">
 		   
 			    <h:formEntry label="E-Mail"  command="command" path="email">
-			        <form:input path="email" cssClass="form-control" type="email"/>
+                    <div class="input-group">
+                        <span class="input-group-addon">@</span>
+                        <form:input path="email" cssClass="form-control" type="email" placeholder="Valid e-mail address"/>
+                    </div>
 			    </h:formEntry>
 			    
 			    <h:formEntry label="Password"  command="command" path="password">
@@ -27,7 +30,7 @@
 			        <form:input path="passwordRepeat" cssClass="form-control" type="password"/>
 			    </h:formEntry>
 			    
-			    <h:formEntry label="Real Name"  command="command" path="name">
+			    <h:formEntry label="Real Name"  command="command" path="name" optional="true">
 			        <form:input path="name" cssClass="form-control" placeholder="Optional real name"/>
 			    </h:formEntry>
 		

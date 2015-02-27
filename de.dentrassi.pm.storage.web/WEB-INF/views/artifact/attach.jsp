@@ -19,7 +19,7 @@
 	    <fieldset>
 	        <legend>Attach artifact</legend>
 	        
-	        <div class="form-group">
+	        <div class="form-group optional">
 	            <label for="name" class="col-sm-2 control-label">File Name</label>
 	            <div class="col-sm-10">
 	                <input type="text" id="name" name="name" class="form-control" placeholder="Optional artifact name"/>

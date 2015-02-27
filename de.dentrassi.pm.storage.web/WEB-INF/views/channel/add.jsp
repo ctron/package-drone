@@ -20,13 +20,13 @@
     <fieldset>
         <legend>Upload artifact to channel</legend>
         
-        <div class="form-group">
-            <label for="name">File Name</label>
+        <div class="form-group optional">
+            <label class="control-label" for="name">File Name</label>
             <input type="text" id="name" name="name" class="form-control" placeholder="Optional alternate file name"/>
         </div>
         
         <div class="form-group">
-            <label for="file">File</label>
+            <label class="control-label" for="file">File</label>
             <input type="file" id="file" name="file"/>
         </div>
         

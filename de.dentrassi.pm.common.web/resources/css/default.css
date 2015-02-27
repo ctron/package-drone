@@ -105,6 +105,7 @@ img.gravatar {
 }
 
 /* link lists */
+
 .link-list {
 	list-style: none;
 	padding-left: 0;
@@ -117,4 +118,10 @@ ul.link-list > li {
 
 ul.link-list > li:not(:last-child):after {
     content: ' - ';
+}
+
+/* forms */
+
+.optional label.control-label {
+	font-style: italic;
 }
