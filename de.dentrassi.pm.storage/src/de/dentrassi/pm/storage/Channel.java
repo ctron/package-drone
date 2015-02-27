@@ -57,7 +57,7 @@ public interface Channel
 
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
-    public Collection<Artifact> findByName ( String artifactName );
+    public List<Artifact> findByName ( String artifactName );
 
     public Set<SimpleArtifactInformation> getSimpleArtifacts ();
 

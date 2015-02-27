@@ -58,4 +58,13 @@ public interface Artifact extends Comparable<Artifact>
         }
     };
 
+    public static Comparator<Artifact> CREATION_TIMESTAMP_COMPARATOR = new Comparator<Artifact> () {
+
+        @Override
+        public int compare ( final Artifact o1, final Artifact o2 )
+        {
+            return o1.getInformation ().getCreationTimestamp ().compareTo ( o2.getInformation ().getCreationTimestamp () );
+        }
+    };
+
 }

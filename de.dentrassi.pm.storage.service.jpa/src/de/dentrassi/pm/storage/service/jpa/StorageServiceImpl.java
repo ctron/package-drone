@@ -608,7 +608,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return result;
     }
 
-    public Collection<Artifact> findByName ( final String channelId, final String artifactName )
+    public List<Artifact> findByName ( final String channelId, final String artifactName )
     {
         return doWithTransaction ( em -> {
 
@@ -620,7 +620,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             final ChannelImpl ci = convert ( channel );
 
-            final Collection<Artifact> result = new LinkedList<> ();
+            final List<Artifact> result = new LinkedList<> ();
             for ( final ArtifactEntity ae : q.getResultList () )
             {
                 result.add ( convert ( ci, ae ) );

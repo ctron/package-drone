@@ -65,7 +65,7 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public Collection<Artifact> findByName ( final String artifactName )
+    public List<Artifact> findByName ( final String artifactName )
     {
         return this.service.findByName ( this.id, artifactName );
     }
