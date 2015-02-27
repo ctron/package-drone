@@ -45,6 +45,8 @@ What it currently can do
 * Import artifacts from HTTP links
 * Import artifacts from Maven repositories
 * Lock channels (read only mode)
+* Allow deep linking inside artifacts
+* Handle and host complete P2 repository ZIPs
 
 Known bugs and limitation
 ----------------
