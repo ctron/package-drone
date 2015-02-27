@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="javadoc">
+<project default="all">
+	
+    <!-- ================================= 
+           target: all
+          ================================= -->
+    
+    <target name="all" depends="javadoc, upload">
+	</target>
+	
+    <!-- ================================= 
+           target: javadoc
+          ================================= -->
+	
 	<target name="javadoc" depends="clean">
 
-		<!-- ================================= 
-              target: javadoc
-             ================================= -->
 		<javadoc 
 			access="protected"
 			author="true"
@@ -58,5 +67,16 @@
 	<target name="clean">
 	    <delete dir="target/javadoc"/>
 	</target>
+	
+	<!-- ================================= 
+          target: upload
+         ================================= -->
+    <target name="upload" if="javadoc.upload.target">
+        <exec executable="rsync" dir="target/javadoc">
+            <arg value="-azv"/>
+        	<arg value="."/>
+        	<arg value="${javadoc.upload.target}"/>
+        </exec>
+    </target>
 
 </project>
