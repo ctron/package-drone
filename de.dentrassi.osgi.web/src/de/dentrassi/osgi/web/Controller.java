@@ -19,6 +19,14 @@ import java.lang.annotation.Target;
 @Retention ( RetentionPolicy.RUNTIME )
 @Inherited
 @Target ( ElementType.TYPE )
+/**
+ * This marks a class as controller for the web framework
+ * <p>
+ * Simply adding this annotation is not enough. The class must also be
+ * registered as an OSGi service. If the class does not implement any interfaces,
+ * then the class itself can be used for registering it with OSGi.
+ * </p>
+ */
 public @interface Controller
 {
 }

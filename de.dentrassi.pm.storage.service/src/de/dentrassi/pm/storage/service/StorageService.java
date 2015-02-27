@@ -21,6 +21,9 @@ import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
 
+/**
+ * The storage service provides access to the artifact storage system
+ */
 public interface StorageService
 {
     public Channel createChannel ();
