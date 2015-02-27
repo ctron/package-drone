@@ -92,7 +92,7 @@
 
 		<module>../de.dentrassi.pm.common</module>
 		<module>../de.dentrassi.pm.common.web</module>
-		
+
 		<module>../de.dentrassi.pm.console</module>
 
 		<module>../de.dentrassi.pm.core</module>
@@ -159,7 +159,7 @@
 
 		<module>../de.dentrassi.pm.todo</module>
 		<module>../de.dentrassi.pm.todo.web</module>
-		
+
 		<module>../de.dentrassi.pm.unzip</module>
 
 		<module>../de.dentrassi.pm.utils.deb</module>
@@ -173,6 +173,20 @@
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.9.1</version>
+				<executions>
+					<execution>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -263,6 +277,11 @@
 					<groupId>org.eclipse.tycho.extras</groupId>
 					<artifactId>tycho-p2-extras-plugin</artifactId>
 					<version>${tycho-extras-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.1</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
