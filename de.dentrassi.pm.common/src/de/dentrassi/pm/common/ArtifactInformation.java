@@ -17,11 +17,12 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
- * Full artifact information <br/>
+ * Full artifact information
+ * <p>
  * The reason for the SimpleArtifactInformation and ArtifactInformation is that
  * reading the metadata actually is a costly operation, and sometimes you just
- * don't need
- * the meta data information.
+ * don't need the meta data information.
+ * </p>
  */
 public class ArtifactInformation extends SimpleArtifactInformation
 {

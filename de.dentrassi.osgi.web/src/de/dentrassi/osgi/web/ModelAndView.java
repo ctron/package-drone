@@ -53,8 +53,8 @@ public class ModelAndView
      * will be used instead to resolve the view.
      * </p>
      * <p>
-     * This can be required if there should be a
-     * <q>common view</q> which is re-used all over the application.
+     * This can be required if there should be a "common view" which is re-used
+     * all over the application.
      * </p>
      *
      * @param alternateViewResolver
