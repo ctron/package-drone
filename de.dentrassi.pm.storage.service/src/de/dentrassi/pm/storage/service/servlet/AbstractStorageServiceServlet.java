@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.unzip;
+package de.dentrassi.pm.storage.service.servlet;
 
 import java.io.IOException;
 
@@ -23,14 +23,18 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import de.dentrassi.pm.storage.service.StorageService;
 
-public abstract class StorageServiceServlet extends HttpServlet
+/**
+ * This is an abstract implementation for implementing servlets which require
+ * the {@link StorageService}.
+ */
+public abstract class AbstractStorageServiceServlet extends HttpServlet
 {
 
     private static final long serialVersionUID = 1L;
 
     private ServiceTracker<StorageService, StorageService> tracker;
 
-    public StorageServiceServlet ()
+    public AbstractStorageServiceServlet ()
     {
         super ();
     }
@@ -40,7 +44,7 @@ public abstract class StorageServiceServlet extends HttpServlet
     {
         super.init ();
 
-        final BundleContext context = FrameworkUtil.getBundle ( UnzipServlet.class ).getBundleContext ();
+        final BundleContext context = FrameworkUtil.getBundle ( getClass () ).getBundleContext ();
         this.tracker = new ServiceTracker<> ( context, StorageService.class, null );
         this.tracker.open ();
     }

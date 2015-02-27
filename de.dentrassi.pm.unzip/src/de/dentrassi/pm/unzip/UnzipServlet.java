@@ -26,7 +26,9 @@ import org.eclipse.scada.utils.str.StringHelper;
 
 import com.google.common.io.ByteStreams;
 
-public class UnzipServlet extends StorageServiceServlet
+import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
+
+public class UnzipServlet extends AbstractStorageServiceServlet
 {
     private static final long serialVersionUID = 1L;
 
