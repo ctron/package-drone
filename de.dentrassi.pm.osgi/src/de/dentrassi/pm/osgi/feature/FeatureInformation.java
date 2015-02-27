@@ -698,6 +698,11 @@ public class FeatureInformation implements TranslatedInformation
         return String.format ( "[Feature: %s]", this.id );
     }
 
+    public static FeatureInformation fromJson ( final String string )
+    {
+        return fromJson ( string, FeatureInformation.class );
+    }
+
     public static <T extends FeatureInformation> T fromJson ( final String string, final Class<T> clazz )
     {
         if ( string == null )

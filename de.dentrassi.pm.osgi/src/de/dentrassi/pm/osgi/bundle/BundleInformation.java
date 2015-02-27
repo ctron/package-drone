@@ -428,6 +428,11 @@ public class BundleInformation implements TranslatedInformation
         return this.id;
     }
 
+    public static BundleInformation fromJson ( final String string )
+    {
+        return fromJson ( string, BundleInformation.class );
+    }
+
     public static <T extends BundleInformation> T fromJson ( final String string, final Class<T> clazz )
     {
         if ( string == null )

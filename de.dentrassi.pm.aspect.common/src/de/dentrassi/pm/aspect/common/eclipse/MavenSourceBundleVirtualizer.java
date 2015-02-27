@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
-import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
@@ -182,7 +181,6 @@ public class MavenSourceBundleVirtualizer implements Virtualizer
 
         final String biString = parent.getMetaData ().get ( new MetaKey ( OsgiExtractor.NAMESPACE, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
 
-        final GsonBuilder gb = new GsonBuilder ();
-        return gb.create ().fromJson ( biString, BundleInformation.class );
+        return BundleInformation.fromJson ( biString );
     }
 }
