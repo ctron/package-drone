@@ -20,8 +20,14 @@
 			use="true"
 		    destdir="target/javadoc"
 			version="true">
+			
+			<classpath>
+				<fileset dir="../runtime/lib/plugins" includes="*.jar"/>
+			</classpath>
 
 			<fileset dir=".." defaultexcludes="yes">
+				<exclude name="**/internal/**"/>
+				
 				<include name="de.dentrassi.osgi.converter/src/**" />
 				<include name="de.dentrassi.osgi.job/src/**" />
 				<include name="de.dentrassi.osgi.scheduler/src/**" />
@@ -48,15 +54,21 @@
 				<include name="de.dentrassi.pm.osgi/src/**" />
 			</fileset>
 
-			<link href="https://docs.oracle.com/javase/7/docs/api/" />
 			<link href="https://docs.oracle.com/javase/8/docs/api/" />
 			<link href="http://docs.oracle.com/javase/8/javafx/api/" />
+			
+			<link href="https://osgi.org/javadoc/r5/core/"/>
+            <link href="https://osgi.org/javadoc/r5/cmpn/"/>
+            <link href="https://osgi.org/javadoc/r5/enterprise/"/>
+            <link href="http://docs.oracle.com/javaee/7/api/"/>
 			
 			<doctitle>Package Drone</doctitle>
 			
 			<group title="Repository System" packages="de.dentrassi.pm*"/>
 			<group title="Security" packages="de.dentrassi.pm.sec*"/>
 			<group title="Base Functionality" packages="de.dentrassi.osgi*"/>
+			
+			
 		</javadoc>
 	</target>
 
