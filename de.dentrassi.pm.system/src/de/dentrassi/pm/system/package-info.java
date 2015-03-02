@@ -8,18 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.system;
-
 /**
- * Service for system information
+ * System related services
  */
-public interface SystemService
-{
-    /**
-     * Get the default site prefix (e.g. <code>http://localhost:8080</code> )
-     *
-     * @return the default site prefix, may return <code>null</code> when the
-     *         hostname cannot be determined
-     */
-    public String getDefaultSitePrefix ();
-}
+package de.dentrassi.pm.system;

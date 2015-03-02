@@ -78,6 +78,7 @@
       <plugin id="de.dentrassi.pm.storage.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.system.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.todo" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.todo.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.unzip" autoStart="true" startLevel="0" />

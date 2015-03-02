@@ -70,6 +70,12 @@ public class DefaultTest extends AbstractServerTest
         simpleTest ( "/tasks" );
     }
 
+    @Test
+    public void testSystemBackup ()
+    {
+        simpleTest ( "/system/backup" );
+    }
+
     protected void simpleTest ( final String url )
     {
         final String full = resolve ( url );

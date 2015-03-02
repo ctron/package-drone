@@ -10,16 +10,23 @@
  *******************************************************************************/
 package de.dentrassi.pm.system;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
- * Service for system information
+ * A service for backing up and restoring system configuration.
+ * <p>
+ * This service does provide backup and restore capabilities for system
+ * configuration only, not for actual data.
+ * </p>
  */
-public interface SystemService
+public interface ConfigurationBackupService
 {
     /**
-     * Get the default site prefix (e.g. <code>http://localhost:8080</code> )
+     * Spool out the configuration in a ZIP file
      *
-     * @return the default site prefix, may return <code>null</code> when the
-     *         hostname cannot be determined
+     * @param stream
+     *            the stream to which the ZIP file is being written
      */
-    public String getDefaultSitePrefix ();
+    public void createConfigurationBackup ( OutputStream stream ) throws IOException;
 }

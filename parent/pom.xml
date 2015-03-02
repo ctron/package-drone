@@ -156,6 +156,7 @@
 		<module>../de.dentrassi.pm.storage.web</module>
 
 		<module>../de.dentrassi.pm.system</module>
+		<module>../de.dentrassi.pm.system.web</module>
 
 		<module>../de.dentrassi.pm.todo</module>
 		<module>../de.dentrassi.pm.todo.web</module>
