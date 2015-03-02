@@ -19,7 +19,10 @@
 			splitindex="true"
 			use="true"
 		    destdir="target/javadoc"
-			version="true">
+			version="true"
+			
+			Windowtitle="Package Drone"
+			>
 			
 			<classpath>
 				<fileset dir="../runtime/lib/plugins" includes="*.jar"/>
@@ -62,13 +65,13 @@
             <link href="https://osgi.org/javadoc/r5/enterprise/"/>
             <link href="http://docs.oracle.com/javaee/7/api/"/>
 			
-			<doctitle>Package Drone</doctitle>
+			<doctitle>Package Drone API</doctitle>
+			<header><![CDATA[<a target="_top" href="http://packagedrone.org">Package Drone</a>]]></header>
+			<bottom><![CDATA[<i>Copyright &#169; 2014, 2015 IBH SYSTEMS GmbH and others. All Rights Reserved.</i>]]></bottom>
 			
 			<group title="Repository System" packages="de.dentrassi.pm*"/>
 			<group title="Security" packages="de.dentrassi.pm.sec*"/>
 			<group title="Base Functionality" packages="de.dentrassi.osgi*"/>
-			
-			
 		</javadoc>
 	</target>
 
