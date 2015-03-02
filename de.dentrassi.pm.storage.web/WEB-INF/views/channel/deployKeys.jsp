@@ -1,11 +1,12 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+
 <%@page import="de.dentrassi.pm.storage.DeployKey"%>
 <%@page import="java.util.Collections"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="de.dentrassi.pm.storage.DeployGroup"%>
 <%@page import="java.util.List"%>
 <%@page import="de.dentrassi.pm.storage.Channel"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -24,7 +25,7 @@ pageContext.setAttribute ( "groups", groups );
 
 <web:define name="named">
 <c:choose>
-   <c:when test="${not empty named.name }">${fn:escapeXml(named.name) } (${fn:escapeXml(named.id) })</c:when>
+   <c:when test="${not empty named.name }">${fn:escapeXml(named.name) }</c:when>
    <c:otherwise>${fn:escapeXml(named.id) }</c:otherwise>
 </c:choose>
 </web:define>
@@ -65,20 +66,22 @@ pageContext.setAttribute ( "groups", groups );
 			                    <ul>
 			                          <c:forEach var="dk" items="${dg.keys}">
 			                            <li>
-			                               <a
+			                               <web:call name="named" named="${dk }"/>
+			                               (<a
 			                                   href="#"
 			                                   role="button"
 			                                   data-toggle="modal"
 			                                   data-target="#settings-modal"
 			                                   data-token="${dk.key}"
 			                                   data-channel="${channel.id }"
-			                                   >
-			                                   <web:call name="named" named="${dk }"/>
-			                               </a>
+			                                   ><small>View settings</small></a>)
+			                               <br/>
+			                               <code title="username">deploy</code> / <code title="password">${fn:escapeXml(dk.key) }</code> 
 			                            </li>
 			                        </c:forEach>
 			                    </ul>
 			                    </td>
+			                    
 			                    <td>
 			                    <form action="removeDeployGroup" method="post">
 			                       <input type="hidden" name="groupId" value="${fn:escapeXml(dg.id) }"/>
