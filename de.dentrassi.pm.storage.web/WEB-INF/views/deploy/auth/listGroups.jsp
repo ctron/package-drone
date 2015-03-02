@@ -16,12 +16,12 @@ pageContext.setAttribute ( "TAG", DeployAuthController.GROUP_ACTION_TAG );
 
 <h:defaultPager />
 
-<table class="table table-condensed table-striped">
+<table class="table table-condensed table-striped table-hover">
 
 <thead>
     <tr>
-        <th>ID</th>
         <th>Name</th>
+        <th>ID</th>
         <th>Keys</th>
     </tr>
 </thead>
@@ -29,8 +29,8 @@ pageContext.setAttribute ( "TAG", DeployAuthController.GROUP_ACTION_TAG );
 <tbody>
     <c:forEach var="group" items="${groups }">
     <tr>
+        <td>${fn:escapeXml( (group.name eq null ) ? group.id : group.name ) }</td>
         <td><a href="<c:url value="/deploy/auth/group/${group.id }/view"/>">${fn:escapeXml(group.id) }</a></td>
-        <td>${fn:escapeXml(group.name) }</td>
         <td>${group.keys.size() }</td>
     </tr>
     </c:forEach>    
