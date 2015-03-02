@@ -17,18 +17,47 @@ import java.util.Map;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 
+/**
+ * A handle to an artifact
+ * <p>
+ * This class represents handle to an artifact in a storage service. It can be
+ * held for a longer period of time in order to operate on this artifact.
+ * However the artifact might get deleted or modified in the meantime.
+ * </p>
+ */
 public interface Artifact extends Comparable<Artifact>
 {
+    /**
+     * Get a handle to the channel this artifact is stored in
+     *
+     * @return the channel handle, will never return <code>null</code>
+     */
     public Channel getChannel ();
 
+    /**
+     * Get the id of the artifact
+     *
+     * @return the id of this artifact, will never return <code>null</code>
+     */
     public String getId ();
 
     public void streamData ( ArtifactReceiver receiver );
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
 
+    /**
+     * Get the parent of this artifact
+     *
+     * @return a handle to the parent (container) artifact, or <code>null</code>
+     *         if the artifact is not contained by another artifact
+     */
     public Artifact getParent ();
 
+    /**
+     * Get detail information about this artifact
+     * 
+     * @return the detail information, never <code>null</code>
+     */
     public ArtifactInformation getInformation ();
 
     public Artifact attachArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );

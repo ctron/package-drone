@@ -18,12 +18,30 @@ import java.util.Map;
 
 import de.dentrassi.osgi.converter.ConverterManager;
 
+/**
+ * Helper methods when working with {@link MetaKey}s
+ */
 public final class MetaKeys
 {
     private MetaKeys ()
     {
     }
 
+    /**
+     * Get a string from meta data
+     * <p>
+     * If the provided metadata set is <code>null</code>, then the result will
+     * also be <code>null</code>.
+     * </p>
+     * 
+     * @param metadata
+     *            the meta data map, may be <code>null</code>
+     * @param ns
+     *            the namespace
+     * @param key
+     *            the key
+     * @return the value, as string, may be <code>null</code>
+     */
     public static String getString ( final Map<MetaKey, String> metadata, final String ns, final String key )
     {
         if ( metadata == null )

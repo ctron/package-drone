@@ -14,6 +14,17 @@ import java.security.SecureRandom;
 
 import de.dentrassi.osgi.utils.Strings;
 
+/**
+ * Helper methods when working with tokens
+ * <p>
+ * A token is an array of random bytes, encoded in a lower case hex string. It
+ * can be compared to a class 4 UUID, but with a flexible length and no other
+ * class variants.
+ * </p>
+ * <p>
+ * Tokens are used for creating salts, or e-mail verification links.
+ * </p>
+ */
 public final class Tokens
 {
     private static final SecureRandom random = new SecureRandom ();
@@ -22,6 +33,17 @@ public final class Tokens
     {
     }
 
+    /**
+     * Create a random token
+     * <p>
+     * This method uses the internal instance of of a {@link SecureRandom}
+     * generator to create a new token.
+     * </p>
+     *
+     * @param length
+     *            the length of the token
+     * @return the newly created token, never returns <code>null</code>
+     */
     public static String createToken ( final int length )
     {
         final byte[] data = new byte[length];

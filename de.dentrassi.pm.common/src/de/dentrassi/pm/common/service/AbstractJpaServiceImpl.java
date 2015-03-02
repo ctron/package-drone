@@ -14,6 +14,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 
+/**
+ * A base class for creating services based on JPA
+ */
 public class AbstractJpaServiceImpl
 {
     private EntityManagerFactory entityManagerFactory;

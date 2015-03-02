@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,14 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.common.utils;
-
 /**
- * A {@link Runnable} which may throw {@link Exception}s and support
- * {@link FunctionalInterface}.
+ * Some generic package drone related functionality
  */
-@FunctionalInterface
-public interface ThrowingRunnable
-{
-    public void run () throws Exception;
-}
+package de.dentrassi.pm.common.utils;

@@ -21,6 +21,14 @@ import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 
+/**
+ * A handle to a channel
+ * <p>
+ * This class represents handle to a channel in a storage service. It can be
+ * held for a longer period of time in order to operate on this channel. However
+ * the channel might get deleted or modified in the meantime.
+ * </p>
+ */
 public interface Channel
 {
     public String getId ();

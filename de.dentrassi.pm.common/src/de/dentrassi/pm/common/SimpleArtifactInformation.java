@@ -14,20 +14,60 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Set;
 
+/**
+ * Basic artifact information
+ * <p>
+ * This class only provides direct information on an artifact, which can be
+ * retrieved without join to much tables in the database.
+ * </p>
+ */
 public class SimpleArtifactInformation implements Comparable<SimpleArtifactInformation>
 {
+    /**
+     * The size of the artifact data in bytes
+     */
     private final long size;
 
+    /**
+     * The name of the artifact
+     * <p>
+     * Artifact names are not unique. Neither globally nor in a channel.
+     * </p>
+     */
     private final String name;
 
+    /**
+     * The ID of the channel this artifact is stored in
+     */
     private final String channelId;
 
+    /**
+     * The ID of the artifact
+     */
     private final String id;
 
+    /**
+     * The ID of the containing artifact
+     * <p>
+     * If the artifact is not child element, then this value will be
+     * <code>null</code>.
+     * </p>
+     */
     private final String parentId;
 
+    /**
+     * The timestamp when this artifact was stored in the repository
+     */
     private final Date creationTimestamp;
 
+    /**
+     * The different facets of the artifact
+     * <p>
+     * This can a list of tags like
+     * <q>deletable</q>, which can be used to adapt the UI based on the
+     * capabilities of this artifacts
+     * </p>
+     */
     private final Set<String> facets;
 
     public SimpleArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets )
@@ -87,6 +127,10 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
         return this.id.compareTo ( o.id );
     }
 
+    /**
+     * A ready to use comparator, which will compare artifact information
+     * objects by name
+     */
     public static Comparator<SimpleArtifactInformation> NAME_COMPARATOR = new Comparator<SimpleArtifactInformation> () {
 
         @Override

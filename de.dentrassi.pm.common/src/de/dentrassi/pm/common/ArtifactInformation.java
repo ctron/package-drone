@@ -37,11 +37,25 @@ public class ArtifactInformation extends SimpleArtifactInformation
         this.childIds = Collections.unmodifiableSortedSet ( childIds );
     }
 
+    /**
+     * Get the combined artifact meta data
+     *
+     * @return an unmodifiable set of meta data
+     */
     public SortedMap<MetaKey, String> getMetaData ()
     {
         return this.metaData;
     }
 
+    /**
+     * Get the ID of all direct children
+     * <p>
+     * If the artifact does not have any children, and empty set is returned.
+     * </p>
+     *
+     * @return an unmodifiable set of all direct child IDs, never returns
+     *         <code>null</code>
+     */
     public Set<String> getChildIds ()
     {
         return this.childIds;

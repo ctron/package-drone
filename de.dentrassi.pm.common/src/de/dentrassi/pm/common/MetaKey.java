@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,17 @@
  *******************************************************************************/
 package de.dentrassi.pm.common;
 
+/**
+ * A meta data key
+ * <p>
+ * A meta data key consists of a namespace and a key part. The namespace is in
+ * most cases the ID of the channel aspect factory.
+ * </p>
+ * <p>
+ * Meta keys with the same namespace and key are equal. The natural sort order
+ * is first by namespace and then by key. Both compared as strings.
+ * </p>
+ */
 public class MetaKey implements Comparable<MetaKey>
 {
     private final String namespace;
