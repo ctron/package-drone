@@ -15,19 +15,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention ( RetentionPolicy.RUNTIME )
-@Target ( ElementType.TYPE )
 /**
  * Defines how the views get resolved for the annotated web controller class
- *
  */
+@Retention ( RetentionPolicy.RUNTIME )
+@Target ( ElementType.TYPE )
 public @interface ViewResolver
 {
     /**
      * A string which is passed on to {@link String#format(String, Object...)},
      * with one parameter,
      * the view name.
-     * 
+     *
      * @return must return a view resource (e.g. JSP page) in the local bundle
      */
     String value () default "";
