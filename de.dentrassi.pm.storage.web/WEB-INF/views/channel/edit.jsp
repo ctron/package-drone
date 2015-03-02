@@ -18,15 +18,17 @@
 <form:form action="" method="POST" cssClass="form-horizontal">
 
     <h:formEntry label="ID"  command="command" path="id">
-        <form:input path="id" cssClass="form-control" disabled="true"/>
+        <form:input path="id" cssClass="form-control" readonly="true"/>
     </h:formEntry>
     
     <h:formEntry label="Name" command="command" path="name">
         <form:input path="name" cssClass="form-control" placeholder="Optional channel alias"/>
     </h:formEntry>
 	
-    <input type="submit" value="Submit" class="btn btn-primary">
-    <input type="reset" value="Reset" class="btn btn-default">
+	<h:formButtons>
+        <input type="submit" value="Submit" class="btn btn-primary">
+        <input type="reset" value="Reset" class="btn btn-default">
+    </h:formButtons>
 
 </form:form>
 </div>

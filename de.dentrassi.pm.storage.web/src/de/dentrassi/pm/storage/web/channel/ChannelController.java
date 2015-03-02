@@ -13,6 +13,8 @@ package de.dentrassi.pm.storage.web.channel;
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +43,8 @@ import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
+import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -127,6 +131,26 @@ public class ChannelController implements InterfaceExtender
         this.service.createChannel ();
 
         return result;
+    }
+
+    @RequestMapping ( value = "/channel/createDetailed", method = RequestMethod.GET )
+    public ModelAndView createDetailed ()
+    {
+        final Map<String, Object> model = new HashMap<> ( 1 );
+        model.put ( "command", new CreateChannel () );
+        return new ModelAndView ( "channel/create", model );
+    }
+
+    @RequestMapping ( value = "/channel/createDetailed", method = RequestMethod.POST )
+    public ModelAndView createDetailedPost ( @Valid @FormData ( "command" ) final CreateChannel data, final BindingResult result ) throws UnsupportedEncodingException
+    {
+        if ( !result.hasErrors () )
+        {
+            final Channel channel = this.service.createChannel ( data.getName () );
+            return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( channel.getId (), "UTF-8" ) ) );
+        }
+
+        return new ModelAndView ( "channel/create" );
     }
 
     @Secured ( false )
@@ -433,14 +457,13 @@ public class ChannelController implements InterfaceExtender
         edit.setName ( channel.getName () );
 
         model.put ( "command", edit );
-
         model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Edit" ) ) );
 
         return new ModelAndView ( "channel/edit", model );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
-    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final EditChannel data, final BindingResult result )
+    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final EditChannel data, final BindingResult result )
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -452,6 +475,7 @@ public class ChannelController implements InterfaceExtender
         else
         {
             model.put ( "command", data );
+            model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Edit" ) ) );
             return new ModelAndView ( "channel/edit", model );
         }
     }
@@ -499,7 +523,7 @@ public class ChannelController implements InterfaceExtender
 
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "create" ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
             }
 
             return result;
@@ -532,4 +556,35 @@ public class ChannelController implements InterfaceExtender
         }
         return null;
     }
+
+    @ControllerValidator ( formDataClass = CreateChannel.class )
+    public void validateCreate ( final CreateChannel data, final ValidationContext ctx )
+    {
+        if ( data.getName () == null )
+        {
+            return;
+        }
+
+        final Object other = this.service.getChannelWithAlias ( data.getName () );
+        if ( other != null )
+        {
+            ctx.error ( "name", String.format ( "The channel name '%s' is already in use", data.getName () ) );
+        }
+    }
+
+    @ControllerValidator ( formDataClass = EditChannel.class )
+    public void validateEdit ( final EditChannel data, final ValidationContext ctx )
+    {
+        if ( data.getName () == null )
+        {
+            return;
+        }
+
+        final Object other = this.service.getChannelWithAlias ( data.getName () );
+        if ( other != null )
+        {
+            ctx.error ( "name", String.format ( "The channel name '%s' is already in use", data.getName () ) );
+        }
+    }
+
 }

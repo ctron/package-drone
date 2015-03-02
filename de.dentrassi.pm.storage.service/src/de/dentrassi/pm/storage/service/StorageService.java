@@ -26,7 +26,12 @@ import de.dentrassi.pm.storage.Channel;
  */
 public interface StorageService
 {
-    public Channel createChannel ();
+    public default Channel createChannel ()
+    {
+        return createChannel ( null );
+    }
+
+    public Channel createChannel ( String alias );
 
     public Channel getChannel ( String channelId );
 

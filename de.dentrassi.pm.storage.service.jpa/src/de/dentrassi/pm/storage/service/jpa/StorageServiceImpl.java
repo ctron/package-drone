@@ -83,9 +83,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Channel createChannel ()
+    public Channel createChannel ( final String name )
     {
         final ChannelEntity channel = new ChannelEntity ();
+        channel.setName ( name );
+
         return doWithTransaction ( em -> {
             em.persist ( channel );
             return convert ( channel );
