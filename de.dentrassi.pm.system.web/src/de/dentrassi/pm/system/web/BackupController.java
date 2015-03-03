@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,7 @@ import de.dentrassi.pm.sec.service.SecurityService;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
+import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.system.ConfigurationBackupService;
 
 @Controller
@@ -112,6 +115,7 @@ public class BackupController implements InterfaceExtender
         try
         {
             this.service.provisionConfiguration ( request.getInputStream () );
+            waitForService ();
             quickResponse ( response, HttpServletResponse.SC_OK, "OK" );
         }
         catch ( final Exception e )
@@ -128,12 +132,30 @@ public class BackupController implements InterfaceExtender
         try
         {
             this.service.restoreConfiguration ( part.getInputStream () );
+            waitForService ();
             return new ModelAndView ( "redirect:/system/backup" );
         }
         catch ( final Exception e )
         {
             // we require ADMIN permissions, so we can show the stack trace
             return CommonController.createError ( "Restore", "Failed to restore configuration", e, true );
+        }
+    }
+
+    private void waitForService ()
+    {
+        final ServiceTracker<?, ?> tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( BackupController.class ).getBundleContext (), StorageService.class, null );
+        tracker.open ();
+        try
+        {
+            tracker.waitForService ( 5_000 ); // wait 5 seconds
+        }
+        catch ( final InterruptedException e )
+        {
+        }
+        finally
+        {
+            tracker.close ();
         }
     }
 
