@@ -33,6 +33,7 @@ public class SetupInterceptor extends ModelAndViewInterceptorAdapter
         this.ignoredPrefixes.add ( "/login" );
         this.ignoredPrefixes.add ( "/logout" );
         this.ignoredPrefixes.add ( "/resources" );
+        this.ignoredPrefixes.add ( "/system/backup" );
 
         this.tracker = Activator.getTracker ();
     }

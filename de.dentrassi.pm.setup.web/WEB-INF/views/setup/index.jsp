@@ -49,7 +49,12 @@ There are a few things you have to do in order to setup up Package Drone
 			     <web:call name="entryBody"/>
 			</c:forEach>
 		</div>
-
+	</div>
+	
+	<div class="col-md-4">
+	   <div class="alert alert-info">
+	       <strong>Import Configuration!</strong> If you have an exported configuration archive, you can <a class="alert-link" href="<c:url value="/system/backup"/>">import it</a>!.
+	   </div>
 	</div>
 
 </div></div>
