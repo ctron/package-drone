@@ -59,6 +59,24 @@ public class GodModeService implements UserService
 
     private static final boolean ENABLED = !Boolean.getBoolean ( PROP_BASE + ".admin.disabled" );
 
+    private static final String EXTERNAL_ADMIN_TOKEN_HASH;
+
+    private static final String EXTERNAL_ADMIN_TOKEN_SALT;
+
+    static
+    {
+        final String externalAdminToken = System.getProperty ( PROP_BASE + ".admin.token", System.getenv ( "PACKAGE_DRONE_ADMIN_TOKEN" ) );
+        if ( externalAdminToken != null && !externalAdminToken.isEmpty () )
+        {
+            EXTERNAL_ADMIN_TOKEN_SALT = Users.createToken ( 32 );
+            EXTERNAL_ADMIN_TOKEN_HASH = Users.hashIt ( EXTERNAL_ADMIN_TOKEN_SALT, externalAdminToken );
+        }
+        else
+        {
+            EXTERNAL_ADMIN_TOKEN_HASH = EXTERNAL_ADMIN_TOKEN_SALT = null;
+        }
+    }
+
     static
     {
         // roles
@@ -110,7 +128,15 @@ public class GodModeService implements UserService
         }
 
         final String hashedPassword = Users.hashIt ( this.adminSalt, credentials );
+
+        // check generated token
         if ( hashedPassword.equals ( this.adminTokenHash ) )
+        {
+            return getUserInformation ();
+        }
+
+        // check external token
+        if ( EXTERNAL_ADMIN_TOKEN_HASH != null && hashedPassword.equals ( EXTERNAL_ADMIN_TOKEN_HASH ) )
         {
             return getUserInformation ();
         }
