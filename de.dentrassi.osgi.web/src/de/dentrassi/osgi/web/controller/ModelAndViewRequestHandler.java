@@ -98,10 +98,12 @@ public class ModelAndViewRequestHandler implements RequestHandler
 
         if ( response.isCommitted () )
         {
+            logger.trace ( "Forwarding" );
             rd.forward ( request, response );
         }
         else
         {
+            logger.trace ( "Including" );
             rd.include ( request, response );
         }
     }
