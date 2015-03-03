@@ -8,6 +8,7 @@
     </description>
     
     <property name="eclipse.orbit.release" value="R20150124073747"/>
+	<property name="jetty.version" value="9.2.9.v20150224"/>
 
     <!-- ================================= 
           target: default
@@ -38,11 +39,14 @@
         <mkdir dir="download/bundles" />
     	<mkdir dir="download/sources" />
 
-        <parallel>
+        <parallel threadcount="4">
 
-        	<get src="http://eclipse.org/downloads/download.php?file=/jetty/9.2.9.v20150224/dist/jetty-distribution-9.2.9.v20150224.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
-        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/9.2.9.v20150224/jetty-osgi-boot-9.2.9.v20150224.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/9.2.9.v20150224/jetty-osgi-boot-jsp-9.2.9.v20150224.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://eclipse.org/downloads/download.php?file=/jetty/${jetty.version}/dist/jetty-distribution-${jetty.version}.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-server/${jetty.version}/jetty-server-${jetty.version}-sources.jar" dest="download/sources" usetimestamp="true" />
+        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/${jetty.version}/jetty-osgi-boot-${jetty.version}.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/${jetty.version}/jetty-osgi-boot-${jetty.version}-sources.jar" dest="download/sources" usetimestamp="true" />
+        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/${jetty.version}/jetty-osgi-boot-jsp-${jetty.version}.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/${jetty.version}/jetty-osgi-boot-jsp-${jetty.version}-sources.jar" dest="download/sources" usetimestamp="true" />
         	
             <!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
