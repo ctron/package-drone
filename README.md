@@ -48,11 +48,11 @@ What it currently can do
 * Allow deep linking inside artifacts
 * Handle and host complete P2 repository ZIPs
 
-Known bugs and limitation
+How to contribute
 ----------------
 
-* The concept of P2 binaries is missing
-* PostgreSQL is not supported, since PostgreSQL does not support Blobs in a sane way
+* Setup up your [development system](https://github.com/ctron/package-drone/wiki/Development)
+* Check the [issues where help is wanted](https://github.com/ctron/package-drone/labels/help%20wanted)
 
 What it (currently) cannot do
 ----------------
