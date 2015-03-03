@@ -38,6 +38,41 @@
         </div>
     
     </div>
+    
+     <div class="row">
+    
+        <div class="col-xs-6">
+            
+            <div class="panel panel-warning clearfix">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Import configuration</h3>
+                </div>
+                <div class="panel-body">
+                    Click on the following link to to export the system configuration as
+                    a complete ZIP file. The ZIP file can later be used to restore the
+                    system configuration.
+                </div>
+                <div class="panel-body pull-right">
+                    <form class="form-inline" enctype="multipart/form-data" action="<c:url value="/system/backup/import"/>" method="POST">
+                        <div class="form-group">
+                            <input  name="file" id="file" type="file"/>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-default" type="submit" href="">Import</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="col-xs-6">
+            <div class="alert alert-warning">
+                <strong>Warning!</strong> This will overwrite your current configuration. It will not alter your database content though.
+            </div>
+        </div>
+    
+    </div>
 
 </div>
 

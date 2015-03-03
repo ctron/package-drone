@@ -11,6 +11,7 @@
 package de.dentrassi.pm.system;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -29,4 +30,8 @@ public interface ConfigurationBackupService
      *            the stream to which the ZIP file is being written
      */
     public void createConfigurationBackup ( OutputStream stream ) throws IOException;
+
+    public void restoreConfiguration ( InputStream stream ) throws Exception;
+
+    public void provisionConfiguration ( InputStream stream ) throws Exception;
 }
