@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
+import static de.dentrassi.osgi.web.util.BasicAuthentication.parseAuthorization;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -18,11 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.w3c.dom.Node;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
@@ -620,48 +620,14 @@ public class MavenServlet extends HttpServlet
             return true;
         }
 
-        response.setStatus ( HttpServletResponse.SC_UNAUTHORIZED );
-        response.setHeader ( "WWW-Authenticate", "Basic realm=\"channel-" + channel.getId () + "\"" );
-
-        response.getWriter ().write ( "Please authenticate" );
+        BasicAuthentication.request ( response, "channel-" + channel.getId (), "Please authenticate" );
 
         return false;
     }
 
     private boolean isAuthenticated ( final Channel channel, final HttpServletRequest request )
     {
-        final String auth = request.getHeader ( "Authorization" );
-        logger.debug ( "Auth header: {}", auth );
-
-        if ( auth == null || auth.isEmpty () )
-        {
-            return false;
-        }
-
-        final String[] toks = auth.split ( "\\s" );
-        if ( toks.length < 2 )
-        {
-            return false;
-        }
-
-        if ( !"Basic".equalsIgnoreCase ( toks[0] ) )
-        {
-            return false;
-        }
-
-        final byte[] authData = Base64.getDecoder ().decode ( toks[1] );
-        final String authStr = StandardCharsets.ISO_8859_1.decode ( ByteBuffer.wrap ( authData ) ).toString ();
-
-        logger.debug ( "Auth String: {}", authStr );
-
-        final String[] authToks = authStr.split ( ":", 2 );
-
-        logger.debug ( "Auth tokens: {}", new Object[] { authToks } );
-
-        if ( authToks.length != 2 )
-        {
-            return false;
-        }
+        final String[] authToks = parseAuthorization ( request );
 
         if ( !authToks[0].equals ( "deploy" ) )
         {
