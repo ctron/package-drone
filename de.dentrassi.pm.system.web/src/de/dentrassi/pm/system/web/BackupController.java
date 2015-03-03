@@ -12,6 +12,7 @@ package de.dentrassi.pm.system.web;
 
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +30,8 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.ByteStreams;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -37,6 +40,7 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
+import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
@@ -94,12 +98,19 @@ public class BackupController implements InterfaceExtender
     @RequestMapping ( value = "/provision", method = RequestMethod.POST )
     @Secured ( false )
     @HttpConstraint ( PERMIT )
-    public void provisionData ( @RequestParameter ( "username" ) final String username, @RequestParameter ( "password" ) final String password, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    public void provisionData ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
+        final String[] authToks = BasicAuthentication.parseAuthorization ( request );
+        if ( authToks == null )
+        {
+            BasicAuthentication.request ( response, "provision", "Please authenticate" );
+            return;
+        }
+
         UserInformation user;
         try
         {
-            user = this.securityService.login ( username, password );
+            user = this.securityService.login ( authToks[0], authToks[1] );
             if ( user == null )
             {
                 quickResponse ( response, HttpServletResponse.SC_FORBIDDEN, "Not allowed" );
@@ -114,7 +125,12 @@ public class BackupController implements InterfaceExtender
 
         try
         {
-            this.service.provisionConfiguration ( request.getInputStream () );
+            final byte[] data = ByteStreams.toByteArray ( request.getInputStream () );
+            System.out.println ( "-----" );
+            System.out.write ( data );
+            System.out.println ( "-----" );
+            this.service.provisionConfiguration ( new ByteArrayInputStream ( data ) );
+
             waitForService ();
             quickResponse ( response, HttpServletResponse.SC_OK, "OK" );
         }

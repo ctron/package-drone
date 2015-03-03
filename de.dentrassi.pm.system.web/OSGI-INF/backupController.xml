@@ -5,4 +5,5 @@
       <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
    </service>
    <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.system.ConfigurationBackupService" name="ConfigurationBackupService" policy="static"/>
+   <reference bind="setSecurityService" cardinality="1..1" interface="de.dentrassi.pm.sec.service.SecurityService" name="SecurityService" policy="static"/>
 </scr:component>
