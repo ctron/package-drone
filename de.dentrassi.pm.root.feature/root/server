@@ -9,11 +9,13 @@ if [ -n "$JAVA_HOME" ]; then
 fi
 
 echo "Using Java: $JAVA"
+echo "   Options: $JAVA_OPTS"
 
 test -f /etc/default/package-drone-server && . /etc/default/package-drone-server
 
 if [ -n "$PIDFILE" ]; then
     echo $$ > "$PIDFILE"
+    echo "   PID File: $PIDFILE"
 fi
 
 exec "$JAVA" $JAVA_OPTS -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog "$@"
