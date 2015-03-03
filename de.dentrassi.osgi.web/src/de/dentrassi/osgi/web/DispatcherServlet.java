@@ -74,17 +74,10 @@ public class DispatcherServlet extends HttpServlet
         super.destroy ();
     }
 
-    private static final boolean DEFAULT_TO_UTF8 = !Boolean.getBoolean ( DispatcherServlet.class.getName () + ".disableDefaultUtf8" );
-
     @Override
     protected void service ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
         logger.trace ( "service - {} - {} ({})", request.getMethod (), request.getServletPath (), request );
-
-        if ( DEFAULT_TO_UTF8 )
-        {
-            response.setCharacterEncoding ( "UTF-8" );
-        }
 
         try
         {
