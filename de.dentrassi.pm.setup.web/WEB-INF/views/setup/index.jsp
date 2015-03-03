@@ -11,6 +11,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
+<%
+pageContext.setAttribute ( "admin", request.isUserInRole ( "ADMIN" ) );
+%>
+
 <web:define name="entryBody">
 
     <div
@@ -52,9 +56,11 @@ There are a few things you have to do in order to setup up Package Drone
 	</div>
 	
 	<div class="col-md-4">
-	   <div class="alert alert-info">
-	       <strong>Import Configuration!</strong> If you have an exported configuration archive, you can <a class="alert-link" href="<c:url value="/system/backup"/>">import it</a>!.
-	   </div>
+	   <c:if test="${admin }">
+	       <div class="alert alert-info">
+	           <strong>Import Configuration!</strong> If you have an exported configuration archive, you can <a class="alert-link" href="<c:url value="/system/backup"/>">import it</a>!.
+	       </div>
+	   </c:if>
 	</div>
 
 </div></div>
