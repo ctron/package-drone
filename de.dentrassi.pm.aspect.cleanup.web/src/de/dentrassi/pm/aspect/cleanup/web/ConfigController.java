@@ -60,7 +60,7 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @ViewResolver ( "/WEB-INF/views/config/%s.jsp" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
-@HttpConstraint
+@HttpConstraint ( rolesAllowed = "MANAGER" )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {

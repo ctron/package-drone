@@ -30,7 +30,7 @@ import de.dentrassi.pm.todo.ToDoService;
 @RequestMapping ( "/tasks" )
 @Secured
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
-@HttpConstraint
+@HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class TaskController
 {
