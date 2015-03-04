@@ -105,14 +105,14 @@ CREATE TABLE CHANNEL_ASPECTS (
 
 CREATE TABLE USERS (
     ID              VARCHAR(36) NOT NULL,
-    NAME            VARCHAR(256),
+    NAME            VARCHAR(255),
     
     REG_DATE        DATETIME NOT NULL,
     
     PASSWORD_HASH   VARCHAR(64),
     PASSWORD_SALT   VARCHAR(64),
     
-    EMAIL           VARCHAR(256),
+    EMAIL           VARCHAR(255),
     
     EMAIL_TOK       VARCHAR(64),
     EMAIL_TOK_SALT  VARCHAR(64),
