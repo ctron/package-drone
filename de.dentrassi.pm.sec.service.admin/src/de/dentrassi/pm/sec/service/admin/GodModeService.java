@@ -136,7 +136,7 @@ public class GodModeService implements UserService
         }
 
         // check external token
-        if ( EXTERNAL_ADMIN_TOKEN_HASH != null && hashedPassword.equals ( EXTERNAL_ADMIN_TOKEN_HASH ) )
+        if ( EXTERNAL_ADMIN_TOKEN_HASH != null && Users.hashIt ( EXTERNAL_ADMIN_TOKEN_SALT, credentials ).equals ( EXTERNAL_ADMIN_TOKEN_HASH ) )
         {
             return getUserInformation ();
         }
