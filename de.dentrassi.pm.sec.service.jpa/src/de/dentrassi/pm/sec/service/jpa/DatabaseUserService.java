@@ -670,10 +670,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
         checkPassword ( password );
 
-        if ( user.getPasswordHash () == null )
-        {
-            clearHasUserCacheAdded ();
-        }
+        clearHasUserCacheAdded ();
 
         applyPassword ( user, password );
 
