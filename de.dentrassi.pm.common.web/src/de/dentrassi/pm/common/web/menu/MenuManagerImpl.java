@@ -153,7 +153,7 @@ public class MenuManagerImpl
             }
             else
             {
-                result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon () ) );
+                result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow () ) );
             }
         }
 
