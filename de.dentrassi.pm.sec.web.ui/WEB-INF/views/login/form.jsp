@@ -49,6 +49,9 @@
 	        
 	        <h:formEntry label="Password"  command="command" path="password">
 	            <form:input path="password" cssClass="form-control" type="password"/>
+	            <span class="help-block pull-right">
+	               <a href="<c:url value="/signup/reset"/>"><small>Forgot your password?</small></a>
+	            </span>
 	        </h:formEntry>
 	        
 		    <div class="form-group">
