@@ -6,7 +6,7 @@
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
-<%@attribute name="entry" required="true" type="de.dentrassi.pm.common.web.menu.Node"%>
+<%@attribute name="entry" required="true" type="de.dentrassi.pm.common.web.menu.Entry"%>
 <%@attribute name="cssClass" required="false" type="java.lang.String" %>
 <%@attribute name="role" required="false" type="java.lang.String" %>
 
@@ -14,10 +14,9 @@
 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
 
 <a
-<c:if test="${not empty entry.modal }">data-toggle="modal" data-target="#modal-${entry.id }" href="#"</c:if>
-<c:if test="${empty entry.modal }">href="${url }"</c:if>
- ${' '} ${ ( not empty role ) ? 'role="'.concat(role).concat('"') : '' } ${' '} ${ ( not empty cssClass ) ? 'class="'.concat(cssClass).concat('"') : '' }
-    
+    <c:if test="${not empty entry.modal }">data-toggle="modal" data-target="#modal-${entry.id }" href="#"</c:if>
+    <c:if test="${empty entry.modal }">href="${url }"</c:if>
+    ${' '} ${ ( not empty role ) ? 'role="'.concat(role).concat('"') : '' } ${' '} ${ ( not empty cssClass ) ? 'class="'.concat(cssClass).concat('"') : '' }
     
     <c:if test="${entry.newWindow }"> target="_blank"</c:if>
 ><h:menuEntry entry="${entry }"></h:menuEntry></a>
