@@ -19,10 +19,6 @@
 	<target name="download">
 		<mkdir dir="download" />
 		<parallel threadcount="4">
-    		<get-release version="0.0.6"/>
-    		<get-release version="0.0.7"/>
-    		<get-release version="0.0.8"/>
-    		<get-release version="0.0.9"/>
     		<get-release-2 version="0.1.0"/>
     		<get-release-2 version="0.1.1"/>
     		<get-release-2 version="0.1.2"/>
@@ -32,6 +28,7 @@
     		<get-release-2 version="0.2.0"/>
     		<get-release-2 version="0.2.1"/>
 			<get-release-2 version="0.2.2"/>
+			<get-release-2 version="0.2.3"/>
 		</parallel>
 	</target>
 	
@@ -78,10 +75,6 @@
 		<delete dir="apt/db" />
 		<delete dir="apt/dists" />
 		<delete dir="apt/pool" />
-		<adddeb src="download/package-drone-server_0.0.6_all.deb" />
-		<adddeb src="download/package-drone-server_0.0.7_all.deb" />
-		<adddeb src="download/package-drone-server_0.0.8_all.deb" />
-		<adddeb src="download/package-drone-server_0.0.9_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.0_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.1_all.deb" />
 		<adddeb src="download/package-drone-server_0.1.2_all.deb" />
@@ -92,6 +85,7 @@
 		<adddeb src="download/package-drone-server_0.2.1_all.deb" />
 		<adddeb src="download/package-drone-server_0.2.2_all.deb" />
 		<adddeb src="download/package-drone-server_0.2.3_all.deb" />
+		<adddeb src="download/package-drone-server_0.2.4_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
