@@ -25,7 +25,9 @@ public class AboutMenuExtender implements InterfaceExtender
 
     public AboutMenuExtender ()
     {
-        this.entries.add ( new MenuEntry ( null, 0, "About", Integer.MAX_VALUE, new LinkTarget ( "https://github.com/ctron/package-drone/wiki" ), null, null, true ) );
+        this.entries.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "Wiki", 1_000, new LinkTarget ( "https://github.com/ctron/package-drone/wiki" ), null, null, true ) );
+        this.entries.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "Documentation", 1_000, new LinkTarget ( "http://doc.packagedrone.org/book" ), null, null, true ) );
+        this.entries.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "About", Integer.MAX_VALUE, new LinkTarget ( "http://packagedrone.org" ), null, null, true ) );
     }
 
     @Override
