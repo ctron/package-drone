@@ -9,6 +9,21 @@
 
 <h:main title="Login">
 
+<style>
+table.login-help-table {
+    margin-top: 1em;
+    margin-left: 2em;
+}
+table.login-help-table th {
+    padding-right: 1em;
+    vertical-align: baseline;
+    text-align: right;
+}
+table.login-help-table td {
+    vertical-align: baseline;
+}
+</style>
+
 <div class="container-fluid">
 
 <c:if test="${not empty errorTitle }">
@@ -74,20 +89,61 @@
 
     </div>
     
-    <c:if test="${failureCount gt 2 }">
-        <div class="col-md-4">
+    <div class="col-md-4">
+	    <c:if test="${failureCount gt 2 }">
+	        <div class="panel panel-info">
+	            <div class="panel-heading"><h3 class="panel-title">Forgot your password?</h3></div>
+	            <div class="panel-body">
+	            If you forgot your password, or your account was created without a password, then you can
+	            <a href="/signup/reset">request a new</a> one.
+	            </div>            
+	        </div>
+	    </c:if>
+	    <c:if test="${showAdminMode }">
             <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">Forgot your password?</h3></div>
+                <div class="panel-heading"><h3 class="panel-title">Admin Mode</h3></div>
                 <div class="panel-body">
-                If you forgot your password, or your account was created without a password, then you can
-                <a href="/signup/reset">request a new</a> one.
-                </div>            
+                It looks like your system has no registered users. In order to log in use
+                the following credentials:
+                <table class="login-help-table">
+                    <tr>
+                        <th>E-Mail</th><td><code>admin</code></td>
+                    </tr>
+                    <tr>
+                        <th>Password</th>
+                        <td>
+                            <a
+                                href="#"
+                                data-toggle="modal"
+                                data-target="#dlg-admin-token"
+                                >
+                                Admin Token
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                </div>
             </div>
-        </div>
-    </c:if>
+	    </c:if>
+    </div>
         
 </div></div>
 
-
+<div class="modal" id="dlg-admin-token" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Admin Token</h4>
+      </div>
+      <div class="modal-body">
+        <jsp:include page="adminToken.jsp"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-dismiss="modal">Got it!</button>
+      </div>
+    </div><%-- /.modal-content --%>
+  </div><%-- /.modal-dialog --%>
+</div><%-- /.modal --%>
 
 </h:main>

@@ -4,4 +4,5 @@
    <service>
       <provide interface="de.dentrassi.pm.sec.web.ui.LoginController"/>
    </service>
+   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.sec.service.SecurityService" name="SecurityService" policy="static"/>
 </scr:component>

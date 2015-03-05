@@ -33,6 +33,7 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.UserInformationPrincipal;
 import de.dentrassi.pm.sec.service.LoginException;
+import de.dentrassi.pm.sec.service.SecurityService;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 
 @Controller
@@ -41,6 +42,13 @@ import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 public class LoginController
 {
     private final static Logger logger = LoggerFactory.getLogger ( LoginController.class );
+
+    private SecurityService service;
+
+    public void setService ( final SecurityService service )
+    {
+        this.service = service;
+    }
 
     @RequestMapping ( method = RequestMethod.GET )
     public ModelAndView login ( final HttpServletRequest request )
@@ -62,6 +70,7 @@ public class LoginController
         }
 
         model.put ( "command", data );
+        model.put ( "showAdminMode", needShowAdminMode () );
 
         return new ModelAndView ( "login/form", model );
     }
@@ -120,6 +129,8 @@ public class LoginController
                 model.put ( "details", String.format ( "Failed to log in: %s", root.getClass ().getSimpleName () ) );
             }
 
+            model.put ( "showAdminMode", needShowAdminMode () );
+
             return new ModelAndView ( "login/form", model );
         }
 
@@ -127,4 +138,10 @@ public class LoginController
 
         return new ModelAndView ( "redirect:/" );
     }
+
+    private boolean needShowAdminMode ()
+    {
+        return !this.service.hasUserBase ();
+    }
+
 }

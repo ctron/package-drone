@@ -17,4 +17,12 @@ public interface UserService
     public UserInformation checkCredentials ( String username, String credentials, boolean rememberMe ) throws LoginException;
 
     public UserInformation refresh ( UserInformation user );
+
+    /**
+     * Check if this user service is a working user base
+     *
+     * @return <code>true</code> if this service is ready for use and has at
+     *         least one user configured, <code>false</code> otherwise.
+     */
+    public boolean hasUserBase ();
 }

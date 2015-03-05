@@ -234,4 +234,11 @@ public class GodModeService implements UserService
             System.err.println ( "WARNING: Unable to write announce file: " + ExceptionHelper.getMessage ( e ) );
         }
     }
+
+    @Override
+    public boolean hasUserBase ()
+    {
+        // we don't count as user base
+        return false;
+    }
 }

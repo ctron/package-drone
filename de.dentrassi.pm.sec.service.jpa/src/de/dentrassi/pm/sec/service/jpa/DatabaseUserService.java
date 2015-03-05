@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -239,7 +240,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             checkPassword ( data.getPassword () );
         }
 
-        return doWithTransaction ( ( em ) -> {
+        final DatabaseUserInformation result = doWithTransaction ( ( em ) -> {
 
             final Date now = new Date ();
 
@@ -275,6 +276,10 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             return convert ( user );
         } );
+
+        clearHasUserCache ();
+
+        return result;
     }
 
     private void applyPassword ( final UserEntity user, final String password )
@@ -386,7 +391,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     @Override
     public String verifyEmail ( final String userId, final String token )
     {
-        return doWithTransaction ( ( em ) -> processVerifyEmail ( em, userId, token ) );
+        final String result = doWithTransaction ( ( em ) -> processVerifyEmail ( em, userId, token ) );
+
+        clearHasUserCache ();
+
+        return result;
     }
 
     private String processVerifyEmail ( final EntityManager em, final String userId, final String token )
@@ -697,6 +706,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             em.persist ( user );
         } );
+        clearHasUserCache ();
     }
 
     @Override
@@ -709,7 +719,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             em.persist ( user );
         } );
-
+        clearHasUserCache ();
     }
 
     @Override
@@ -722,5 +732,59 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             user.setPasswordSalt ( null );
             em.persist ( user );
         } );
+        clearHasUserCache ();
+    }
+
+    private void clearHasUserCache ()
+    {
+        this.hasUserBase = null;
+    }
+
+    private volatile Boolean hasUserBase = null;
+
+    @Override
+    public boolean hasUserBase ()
+    {
+        if ( this.hasUserBase == null )
+        {
+            logger.debug ( "Need to refresh hasBase cache" );
+            /*
+             *  we can run unsynchronized, since this would only cause
+             *  the result to be evaluated multiple times
+             */
+            this.hasUserBase = checkUserBase ();
+        }
+
+        // get a copy
+
+        final Boolean result = this.hasUserBase;
+
+        logger.debug ( "Cache value: {}", result );
+
+        if ( result != null )
+        {
+            return result;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private Boolean checkUserBase ()
+    {
+        try
+        {
+            return doWithTransaction ( ( em ) -> {
+                final Query q = em.createQuery ( String.format ( "SELECT count(u.id) from %s u where ( not u.passwordHash is null ) and u.deleted = FALSE and u.locked = FALSE and u.emailVerified = TRUE", UserEntity.class.getName () ) );
+                return ( (Number)q.getSingleResult () ).longValue () > 0;
+            } );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to eval hasUserBase", e );
+            // check next time
+            return null;
+        }
     }
 }

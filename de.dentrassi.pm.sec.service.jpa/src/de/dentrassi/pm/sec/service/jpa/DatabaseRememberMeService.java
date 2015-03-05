@@ -101,4 +101,11 @@ public class DatabaseRememberMeService extends AbstractDatabaseUserService imple
         return rl.get ( 0 );
     }
 
+    @Override
+    public boolean hasUserBase ()
+    {
+        // we don't count as user base, this is done by DatabaseUserService
+        return false;
+    }
+
 }

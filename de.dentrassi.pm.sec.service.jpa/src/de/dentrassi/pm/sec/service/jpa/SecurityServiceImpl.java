@@ -68,6 +68,21 @@ public class SecurityServiceImpl implements SecurityService
     }
 
     @Override
+    public boolean hasUserBase ()
+    {
+        final Collection<UserService> services = this.userServiceTracker.getTracked ().values ();
+
+        for ( final UserService service : services )
+        {
+            if ( service.hasUserBase () )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public UserInformation refresh ( final UserInformation user )
     {
         final Collection<UserService> services = this.userServiceTracker.getTracked ().values ();
