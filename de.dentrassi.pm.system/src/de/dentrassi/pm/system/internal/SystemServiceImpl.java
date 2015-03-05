@@ -53,9 +53,28 @@ public class SystemServiceImpl implements SystemService
         }
     }
 
-    @SuppressWarnings ( "resource" )
     @Override
     public String getDefaultSitePrefix ()
+    {
+        String prefix;
+
+        prefix = System.getProperty ( "package.drone.site.prefix" );
+        if ( prefix != null && !prefix.isEmpty () )
+        {
+            return prefix;
+        }
+
+        prefix = System.getenv ( "PACKAGE_DRONE_SITE_PREFIX" );
+        if ( prefix != null && !prefix.isEmpty () )
+        {
+            return prefix;
+        }
+
+        return makePrefixFromJetty ();
+    }
+
+    @SuppressWarnings ( "resource" )
+    protected String makePrefixFromJetty ()
     {
         for ( final Connector c : this.server.getConnectors () )
         {
