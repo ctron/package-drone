@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -65,6 +66,8 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     private final static Logger logger = LoggerFactory.getLogger ( DatabaseUserService.class );
 
     private static final long MIN_EMAIL_DELAY = TimeUnit.MINUTES.toMillis ( 5 );
+
+    private final AtomicReference<Boolean> userBaseCache = new AtomicReference<> ( null );
 
     private MailService mailService;
 
@@ -277,7 +280,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             return convert ( user );
         } );
 
-        clearHasUserCache ();
+        if ( emailVerified && data.getPassword () != null && !data.getPassword ().isEmpty () )
+        {
+            // account is ready right now
+            clearHasUserCacheAdded ();
+        }
 
         return result;
     }
@@ -393,7 +400,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     {
         final String result = doWithTransaction ( ( em ) -> processVerifyEmail ( em, userId, token ) );
 
-        clearHasUserCache ();
+        clearHasUserCacheAdded ();
 
         return result;
     }
@@ -611,6 +618,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             }
         }
 
+        if ( user.getPasswordHash () == null )
+        {
+            clearHasUserCacheAdded ();
+        }
+
         applyPassword ( user, newPassword );
 
         em.persist ( user );
@@ -657,6 +669,11 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         }
 
         checkPassword ( password );
+
+        if ( user.getPasswordHash () == null )
+        {
+            clearHasUserCacheAdded ();
+        }
 
         applyPassword ( user, password );
 
@@ -719,7 +736,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             em.persist ( user );
         } );
-        clearHasUserCache ();
+        clearHasUserCacheAdded ();
     }
 
     @Override
@@ -737,27 +754,34 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
     private void clearHasUserCache ()
     {
-        this.hasUserBase = null;
+        this.userBaseCache.set ( null );
     }
 
-    private volatile Boolean hasUserBase = null;
+    private void clearHasUserCacheAdded ()
+    {
+        /*
+         * a user was added to the pool of usable users so if the userBaseCache is false, reset it
+         * if the user base cache was true already, then adding a new user
+         * does not make a difference. If the cache was null, then we need to
+         * refresh anyway.
+         */
+        this.userBaseCache.compareAndSet ( false, null );
+    }
 
     @Override
     public boolean hasUserBase ()
     {
-        if ( this.hasUserBase == null )
+        Boolean result = this.userBaseCache.get ();
+
+        if ( result == null )
         {
             logger.debug ( "Need to refresh hasBase cache" );
             /*
              *  we can run unsynchronized, since this would only cause
              *  the result to be evaluated multiple times
              */
-            this.hasUserBase = checkUserBase ();
+            this.userBaseCache.set ( result = checkUserBase () );
         }
-
-        // get a copy
-
-        final Boolean result = this.hasUserBase;
 
         logger.debug ( "Cache value: {}", result );
 
