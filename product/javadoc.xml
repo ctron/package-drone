@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="all">
 	
+	<property file="local.javadoc.properties" />
+	
+	<property name="javadoc.header" value=""/>
+	
     <!-- ================================= 
            target: all
           ================================= -->
@@ -66,7 +70,7 @@
             <link href="http://docs.oracle.com/javaee/7/api/"/>
 			
 			<doctitle>Package Drone API</doctitle>
-			<header><![CDATA[<a target="_top" href="http://packagedrone.org">Package Drone</a>]]></header>
+			<header>${javadoc.header}</header>
 			<bottom><![CDATA[<i>Copyright &#169; 2014, 2015 IBH SYSTEMS GmbH and others. All Rights Reserved.</i>]]></bottom>
 			
 			<group title="Repository System" packages="de.dentrassi.pm*"/>
