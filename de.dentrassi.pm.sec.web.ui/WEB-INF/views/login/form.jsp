@@ -77,7 +77,7 @@
     <c:if test="${failureCount gt 2 }">
         <div class="col-md-4">
             <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">Forgot password?</h3></div>
+                <div class="panel-heading"><h3 class="panel-title">Forgot your password?</h3></div>
                 <div class="panel-body">
                 If you forgot your password, or your account was created without a password, then you can
                 <a href="/signup/reset">request a new</a> one.
