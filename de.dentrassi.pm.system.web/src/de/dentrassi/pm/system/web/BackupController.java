@@ -12,7 +12,6 @@ package de.dentrassi.pm.system.web;
 
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,8 +29,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.ByteStreams;
-
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -44,6 +41,8 @@ import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.database.Configurator;
+import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.SecurityService;
@@ -98,7 +97,28 @@ public class BackupController implements InterfaceExtender
     @RequestMapping ( value = "/provision", method = RequestMethod.POST )
     @Secured ( false )
     @HttpConstraint ( PERMIT )
-    public void provisionData ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    public void provision ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        provision ( request, response, null );
+    }
+
+    @RequestMapping ( value = "/provisionWithSchema", method = RequestMethod.POST )
+    @Secured ( false )
+    @HttpConstraint ( PERMIT )
+    public void provisionWithSchema ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        provision ( request, response, ( ) -> {
+            try ( Configurator cfg = Configurator.create () )
+            {
+                try ( DatabaseSetup setup = new DatabaseSetup ( cfg.getDatabaseSettings () ) )
+                {
+                    setup.performUpgrade ();
+                }
+            }
+        } );
+    }
+
+    protected void provision ( final HttpServletRequest request, final HttpServletResponse response, final Runnable afterwards ) throws IOException
     {
         final String[] authToks = BasicAuthentication.parseAuthorization ( request );
         if ( authToks == null )
@@ -125,13 +145,15 @@ public class BackupController implements InterfaceExtender
 
         try
         {
-            final byte[] data = ByteStreams.toByteArray ( request.getInputStream () );
-            System.out.println ( "-----" );
-            System.out.write ( data );
-            System.out.println ( "-----" );
-            this.service.provisionConfiguration ( new ByteArrayInputStream ( data ) );
+            this.service.provisionConfiguration ( request.getInputStream () );
 
             waitForService ();
+
+            if ( afterwards != null )
+            {
+                afterwards.run ();
+            }
+
             quickResponse ( response, HttpServletResponse.SC_OK, "OK" );
         }
         catch ( final Exception e )

@@ -27,6 +27,7 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.pm.database.Configurator;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.todo.BasicTask;

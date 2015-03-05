@@ -36,6 +36,7 @@ import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.database.Configurator;
 import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.database.JdbcHelper;

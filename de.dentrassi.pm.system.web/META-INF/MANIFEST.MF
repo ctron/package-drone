@@ -13,6 +13,7 @@ Eclipse-BundleShape: dir
 Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.common.web;version="1.0.0",
  de.dentrassi.pm.common.web.menu;version="1.0.0",
+ de.dentrassi.pm.database;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  de.dentrassi.pm.sec.service;version="1.0.0",
  de.dentrassi.pm.storage.service;version="1.0.0",

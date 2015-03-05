@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.setup.web;
+package de.dentrassi.pm.database;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,9 +24,6 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.dentrassi.pm.database.DatabaseConfigurationService;
-import de.dentrassi.pm.database.DatabaseConnectionData;
 
 public class Configurator implements AutoCloseable
 {
