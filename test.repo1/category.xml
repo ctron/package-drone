@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/test.feature1_1.0.0.qualifier.jar" id="test.feature1" version="1.0.0.qualifier">
+      <category name="test.repo1.cat2"/>
+   </feature>
+   <feature url="features/test.feature2_1.0.0.qualifier.jar" id="test.feature2" version="1.0.0.qualifier" os="linux,win32" ws="gtk,win32" arch="x86,x86_64">
+      <category name="test.repo1.cat2"/>
+   </feature>
+   <bundle id="test.bundle1" version="1.0.0.qualifier">
+      <category name="test.repo1.cat1"/>
+   </bundle>
+   <category-def name="test.repo1.cat1" label="New Category 1">
+      <description>
+         Test Description #1
+      </description>
+   </category-def>
+   <category-def name="test.repo1.cat2" label="New Category 2">
+      <description>
+         Test Description #2
+      </description>
+   </category-def>
+</site>

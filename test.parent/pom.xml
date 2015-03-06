@@ -38,8 +38,8 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<tycho-version>0.21.0</tycho-version>
-		<tycho-extras-version>0.21.0</tycho-extras-version>
+		<tycho-version>0.22.0</tycho-version>
+		<tycho-extras-version>0.22.0</tycho-extras-version>
 	</properties>
 
 
@@ -77,11 +77,6 @@
 						<environment>
 							<os>win32</os>
 							<ws>win32</ws>
-							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>macosx</os>
-							<ws>cocoa</ws>
 							<arch>x86_64</arch>
 						</environment>
 					</environments>
@@ -128,6 +123,8 @@
 		<module>../test.feature1</module>
 		<module>../test.feature2</module>
 		<module>../test.feature3</module>
+		
+		<module>../test.repo1</module>
 	</modules>
 
 </project>
