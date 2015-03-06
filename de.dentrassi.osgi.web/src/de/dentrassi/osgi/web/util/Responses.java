@@ -31,6 +31,6 @@ public final class Responses
     public static void notFound ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-        response.getWriter ().println ( String.format ( "Resource '%s' could not be found", request.getServletPath () ) );
+        response.getWriter ().println ( String.format ( "Resource '%s' could not be found", Requests.getOriginalPath ( request ) ) );
     }
 }

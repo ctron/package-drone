@@ -2,6 +2,8 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
+
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%@attribute name="menu" required="true" type="de.dentrassi.pm.common.web.menu.Menu"%>
@@ -33,7 +35,7 @@
         <c:choose>
             <c:when test="${entry.getClass().simpleName eq 'Entry'}">
                 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
-                <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><h:menuLink entry="${entry }"/></li>
+                <li class="${web:active(pageContext.request,url) }"><h:menuLink entry="${entry }"/></li>
             </c:when>
             <c:when test="${entry.getClass().simpleName eq 'SubMenu' }">
                 <li class="dropdown">
@@ -43,7 +45,7 @@
                             <c:choose>
                                 <c:when test="${subEntry.getClass().simpleName eq 'Entry'}">
                                     <c:set var="url" value="${subEntry.target.renderFull(pageContext)}" />
-                                    <li <c:if test="${currentUrl eq url}" >class="active"</c:if>><h:menuLink entry="${subEntry }"/></li>
+                                    <li class="${web:active(pageContext.request,url) }"><h:menuLink entry="${subEntry }"/></li>
                                 </c:when>
                             </c:choose>
                          </c:forEach>

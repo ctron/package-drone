@@ -56,7 +56,6 @@ public class ContextImpl extends WebAppContext
         final ServletHolder holder = addServlet ( DispatcherServlet.class, "/" );
 
         final Dynamic reg = holder.getRegistration ();
-
         reg.setMultipartConfig ( new MultipartConfigElement ( "", /* 1GB */1024 * 1024 * 1024, /* 1GB */1024 * 1024 * 1024, /* 1MB */1024 * 1024 ) );
 
         this.filterTracker = new FilterTracker ( this.context, getServletContext () );

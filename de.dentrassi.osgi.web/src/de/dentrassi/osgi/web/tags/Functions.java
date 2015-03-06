@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.utils.Strings;
+import de.dentrassi.osgi.web.util.Requests;
 
 public class Functions
 {
@@ -85,7 +86,14 @@ public class Functions
             return "";
         }
 
-        return request.getServletPath ().equals ( targetUrl ) ? "active" : "";
+        final String s1 = request.getPathInfo ();
+        final String s2 = request.getPathTranslated ();
+        final String s3 = request.getContextPath ();
+        final String s4 = request.getServletPath ();
+        final String s5 = request.getRequestURI ();
+        final String s6 = "" + request.getRequestURL ();
+
+        return Requests.getOriginalPath ( request ).equals ( targetUrl ) ? "active" : "";
     }
 
     public static String toFirstUpper ( final String string )

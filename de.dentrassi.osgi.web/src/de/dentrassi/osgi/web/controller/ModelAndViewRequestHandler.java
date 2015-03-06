@@ -95,15 +95,14 @@ public class ModelAndViewRequestHandler implements RequestHandler
         setModelAsRequestAttributes ( request, this.modelAndView.getModel () );
 
         final RequestDispatcher rd = request.getRequestDispatcher ( path );
-
         if ( response.isCommitted () )
         {
-            logger.trace ( "Forwarding" );
+            logger.trace ( "Including" );
             rd.include ( request, response );
         }
         else
         {
-            logger.trace ( "Including" );
+            logger.trace ( "Forwarding" );
             rd.forward ( request, response );
         }
     }

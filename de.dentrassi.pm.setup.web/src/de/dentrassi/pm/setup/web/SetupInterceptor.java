@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.util.tracker.ServiceTracker;
 
 import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
+import de.dentrassi.osgi.web.util.Requests;
 import de.dentrassi.pm.setup.web.internal.Activator;
 
 public class SetupInterceptor extends ModelAndViewInterceptorAdapter
@@ -41,7 +42,7 @@ public class SetupInterceptor extends ModelAndViewInterceptorAdapter
     @Override
     public boolean preHandle ( final HttpServletRequest request, final HttpServletResponse response ) throws Exception
     {
-        final String current = request.getServletPath ();
+        final String current = Requests.getOriginalPath ( request );
 
         for ( final String prefix : this.ignoredPrefixes )
         {

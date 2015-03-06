@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.util;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 
 public final class Requests
@@ -46,5 +47,16 @@ public final class Requests
         {
             return -1;
         }
+    }
+
+    public static String getOriginalPath ( final HttpServletRequest request )
+    {
+        final Object val = request.getAttribute ( RequestDispatcher.FORWARD_SERVLET_PATH );
+        if ( val instanceof String )
+        {
+            return (String)val;
+        }
+
+        return request.getServletPath ();
     }
 }
