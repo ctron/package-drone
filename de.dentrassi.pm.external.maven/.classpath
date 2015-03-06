@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/maven-artifact-3.2.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/plexus-interpolation-1.22.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-model-3.2.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/plexus-utils-3.0.21.jar"/>

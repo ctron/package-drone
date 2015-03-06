@@ -162,6 +162,7 @@
 		<module>../de.dentrassi.pm.todo.web</module>
 
 		<module>../de.dentrassi.pm.unzip</module>
+		<module>../de.dentrassi.pm.unzip.tests</module>
 
 		<module>../de.dentrassi.pm.utils.deb</module>
 		<module>../de.dentrassi.pm.utils.deb.tests</module>

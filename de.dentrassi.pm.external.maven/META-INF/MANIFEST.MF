@@ -9,8 +9,10 @@ Bundle-ClassPath: lib/maven-aether-provider-3.2.5.jar,
  lib/maven-model-builder-3.2.5.jar,
  lib/plexus-utils-3.0.21.jar,
  lib/maven-model-3.2.5.jar,
- lib/plexus-interpolation-1.22.jar
-Export-Package: org.apache.maven.repository.internal;version="3.2.5";
+ lib/plexus-interpolation-1.22.jar,
+ lib/maven-artifact-3.2.5.jar
+Export-Package: org.apache.maven.artifact.versioning;version="3.2.5";uses:="org.apache.maven.artifact.resolver,org.apache.maven.artifact",
+ org.apache.maven.repository.internal;version="3.2.5";
   uses:="org.apache.maven.model.building,
    org.eclipse.aether.spi.log,
    com.google.common.base,

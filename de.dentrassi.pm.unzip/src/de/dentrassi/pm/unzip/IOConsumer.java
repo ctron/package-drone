@@ -8,7 +8,12 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-/**
- * Tools for maven
- */
-package de.dentrassi.pm.common.maven;
+package de.dentrassi.pm.unzip;
+
+import java.io.IOException;
+
+@FunctionalInterface
+public interface IOConsumer<T>
+{
+    public void accept ( T data ) throws IOException;
+}

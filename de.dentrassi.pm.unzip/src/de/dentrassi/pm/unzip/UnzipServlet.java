@@ -14,12 +14,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -29,6 +29,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.eclipse.scada.utils.str.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +112,9 @@ public class UnzipServlet extends AbstractStorageServiceServlet
                 case "newestByName":
                     handleNewestByName ( request, response, path );
                     return;
+                case "maven":
+                    handleMaven ( request, response, path );
+                    return;
                 default:
                     handleNotFoundError ( response, String.format ( "Unzip target type '%s' unknown.", type ) );
                     return;
@@ -132,6 +136,52 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         }
     }
 
+    protected void handleMaven ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
+    {
+        final IOConsumer<MavenVersionedArtifact> consumer = ( artifact ) -> {
+            streamArtifactEntry ( response, artifact.getArtifact ().getId (), path );
+        };
+
+        if ( path.isEmpty () )
+        {
+            throw new IllegalArgumentException ( String.format ( "The 'maven' type needs an addition type (latest, prefixed, ...)" ) );
+        }
+
+        final String mavenType = path.pop ();
+
+        if ( path.isEmpty () )
+        {
+            throw new IllegalArgumentException ( String.format ( "The 'maven' type needs the channel id or name after the sub-type" ) );
+        }
+
+        final String channelIdOrName = path.pop ();
+
+        final Supplier<Collection<Artifact>> artifactSupplier = ( ) -> {
+            final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
+            if ( channel == null )
+            {
+                throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
+            }
+            return channel.getArtifacts ();
+        };
+
+        switch ( mavenType )
+        {
+            case "latest":
+                handleMavenLatest ( artifactSupplier, channelIdOrName, path, false, consumer );
+                break;
+            case "latest-SNAPSHOT":
+                handleMavenLatest ( artifactSupplier, channelIdOrName, path, true, consumer );
+                break;
+            case "prefixed":
+                handleMavenPrefixed ( artifactSupplier, channelIdOrName, path, consumer );
+                break;
+            case "perfect":
+                handleMavenPerfect ( artifactSupplier, channelIdOrName, path, consumer );
+                break;
+        }
+    }
+
     protected void handleNewest ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
     {
         handleWithFilter ( "newest", request, response, path, null );
@@ -142,7 +192,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         handleWithFilter ( "newestZip", request, response, path, UnzipServlet::isZip );
     }
 
-    private void handleWithFilter ( final String type, final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path, final Predicate<Artifact> filter ) throws IOException
+    protected void handleWithFilter ( final String type, final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path, final Predicate<Artifact> filter ) throws IOException
     {
         requirePathPrefix ( path, 1, String.format ( "The '%1$s' method requires at least one parameter: channel. e.g. /unzip/%1$s/<channelIdOrName>/path/to/file", type ) );
 
@@ -175,72 +225,83 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         streamArtifactEntry ( response, artifact.getId (), path );
     }
 
-    /*
-    private static final VersionScheme VERSION_SCHEME = new GenericVersionScheme ();
-
-    private void handleMaven ( final String type, final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
+    protected static void processArtifacts ( final String sourceName, final List<MavenVersionedArtifact> arts, final IOConsumer<MavenVersionedArtifact> consumer ) throws IOException
     {
-        requirePathPrefix ( path, 1, String.format ( "The '%1$s' method requires at least one parameter: channel. e.g. /unzip/%1$s/<channelIdOrName>/path/to/file", type ) );
-
-        final String channelIdOrName = path.pop ();
-
-        final String groupId = "";
-        final String artifactId = "";
-        final String version = "";
-
-        final Map<String, List<Artifact>> arts = getMavenArtifacts ( channelIdOrName, groupId, artifactId );
-
-        Version bestVersion = null;
-        Artifact bestArtifact = null;
-
-        for ( final Map.Entry<String, List<Artifact>> entry : arts.entrySet () )
+        if ( arts.isEmpty () )
         {
-            final String vs = entry.getKey ();
-            final GenericVersion v;
-            try
-            {
-                v = VERSION_SCHEME.parseVersion ( vs );
-            }
-            catch ( final InvalidVersionSpecificationException e )
-            {
-                // ignore this one
-                continue;
-            }
-
-            // check if version matches
-
-            if ( bestVersion == null || bestVersion.compareTo ( v ) < 0 )
-            {
-                bestVersion = v;
-                Collections.sort ( entry.getValue (), Artifact.CREATION_TIMESTAMP_COMPARATOR );
-                bestArtifact = entry.getValue ().get ( 0 );
-            }
+            throw new IllegalStateException ( String.format ( "Unable to find artifacts in %s", sourceName ) );
         }
 
-        / *
-        Collections.sort ( arts, Artifact.CREATION_TIMESTAMP_COMPARATOR );
+        Collections.sort ( arts ); // by version
 
-        final Artifact artifact = arts.get ( 0 );
+        final MavenVersionedArtifact artifact = arts.get ( arts.size () - 1 ); // get last
 
-        logger.debug ( "Streaming artifact {} for channel {}", artifact.getId (), channelIdOrName );
+        logger.debug ( "Streaming artifact {} for {}", artifact.getArtifact ().getId (), sourceName );
 
-        streamArtifactEntry ( response, artifact.getId (), path );
-        * /
+        consumer.accept ( artifact );
     }
 
-    */
-
-    protected Map<String, List<Artifact>> getMavenArtifacts ( final String channelIdOrName, final String groupId, final String artifactId )
+    protected static void handleMavenPrefixed ( final Supplier<Collection<Artifact>> artifactsSupplier, final String channelIdOrName, final LinkedList<String> path, final IOConsumer<MavenVersionedArtifact> consumer ) throws IOException
     {
-        final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
-        if ( channel == null )
+        requirePathPrefix ( path, 3, "The 'maven' method requires at least one parameter: channel. e.g. /unzip/maven/prefixed/<channelIdOrName>/<group.id>/<artifact.id>/<version>/path/to/file" );
+
+        final String groupId = path.pop ();
+        final String artifactId = path.pop ();
+        final String versionString = path.pop ();
+
+        final String versionPrefix;
+        final int idx = versionString.toLowerCase ().indexOf ( 'x' );
+        if ( idx > 0 )
         {
-            throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
+            // the x marks the spot
+            versionPrefix = versionString.substring ( 0, idx - 1 );
+        }
+        else
+        {
+            versionPrefix = versionString;
         }
 
-        final Map<String, List<Artifact>> arts = new HashMap<> ();
+        final boolean snapshot = versionString.endsWith ( "-SNAPSHOT" );
 
-        for ( final Artifact art : channel.getArtifacts () )
+        final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, ( a ) -> a.toString ().startsWith ( versionPrefix ) );
+
+        processArtifacts ( String.format ( "maven artifact %s/%s/%s in channel %s", groupId, artifactId, versionString, channelIdOrName ), arts, consumer );
+    }
+
+    protected static void handleMavenPerfect ( final Supplier<Collection<Artifact>> artifactsSupplier, final String channelIdOrName, final LinkedList<String> path, final IOConsumer<MavenVersionedArtifact> consumer ) throws IOException
+    {
+        requirePathPrefix ( path, 3, "The 'maven' method requires at least one parameter: channel. e.g. /unzip/maven/perfect/<channelIdOrName>/<group.id>/<artifact.id>/<version>/path/to/file" );
+
+        final String groupId = path.pop ();
+        final String artifactId = path.pop ();
+        final String versionString = path.pop ();
+
+        final boolean snapshot = versionString.endsWith ( "-SNAPSHOT" );
+
+        final ComparableVersion v = new ComparableVersion ( versionString );
+
+        final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, ( a ) -> a.compareTo ( v ) == 0 );
+
+        processArtifacts ( String.format ( "maven artifact %s/%s/%s in channel %s", groupId, artifactId, versionString, channelIdOrName ), arts, consumer );
+    }
+
+    protected static void handleMavenLatest ( final Supplier<Collection<Artifact>> artifactsSupplier, final String channelIdOrName, final LinkedList<String> path, final boolean snapshot, final IOConsumer<MavenVersionedArtifact> consumer ) throws IOException
+    {
+        requirePathPrefix ( path, 2, "The 'maven' method requires at least two parameters: groupId, artifactId. e.g. /unzip/maven/latest(-SNAPSHOT)/<channelIdOrName>/<group.id>/<artifact.id>/path/to/file" );
+
+        final String groupId = path.pop ();
+        final String artifactId = path.pop ();
+
+        final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, null );
+
+        processArtifacts ( String.format ( "latest maven artifact %s/%s in channel %s", groupId, artifactId, channelIdOrName ), arts, consumer );
+    }
+
+    protected static List<MavenVersionedArtifact> getMavenArtifacts ( final Supplier<Collection<Artifact>> artifactsSupplier, final String groupId, final String artifactId, final boolean snapshot, final Predicate<ComparableVersion> versionFilter )
+    {
+        final List<MavenVersionedArtifact> arts = new ArrayList<> ();
+
+        for ( final Artifact art : artifactsSupplier.get () )
         {
             if ( !isZip ( art ) )
             {
@@ -250,43 +311,74 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             final ArtifactInformation ai = art.getInformation ();
             final String mvnGroupId = ai.getMetaData ().get ( MK_GROUP_ID );
             final String mvnArtifactId = ai.getMetaData ().get ( MK_ARTIFACT_ID );
+
             final String mvnVersion = ai.getMetaData ().get ( MK_VERSION );
             final String mvnSnapshotVersion = ai.getMetaData ().get ( MK_SNAPSHOT_VERSION );
+
+            if ( snapshot && mvnSnapshotVersion == null )
+            {
+                // we are only looking for snapshots
+                continue;
+            }
+
+            if ( !snapshot && mvnSnapshotVersion != null )
+            {
+                // we are not looking for snapshots
+                continue;
+            }
 
             if ( mvnGroupId == null || mvnArtifactId == null || mvnVersion == null )
             {
                 continue;
             }
 
-            if ( !mvnGroupId.equals ( groupId ) || !mvnGroupId.equals ( artifactId ) )
+            if ( !mvnGroupId.equals ( groupId ) || !mvnArtifactId.equals ( artifactId ) )
             {
                 continue;
             }
 
-            addArtifact ( arts, mvnVersion, art );
-            if ( mvnSnapshotVersion != null )
+            ComparableVersion v;
+            try
             {
-                addArtifact ( arts, mvnSnapshotVersion, art );
+                v = new ComparableVersion ( mvnVersion );
             }
+            catch ( final Exception e )
+            {
+                logger.debug ( "Version not parsable: " + mvnVersion, e );
+                // ignore this one
+                continue;
+            }
+
+            ComparableVersion sv = null;
+            if ( snapshot )
+            {
+                try
+                {
+                    sv = new ComparableVersion ( mvnVersion );
+                }
+                catch ( final Exception e )
+                {
+                    logger.debug ( "Version not parsable: " + mvnVersion, e );
+                    // ignore this one
+                    continue;
+                }
+            }
+
+            if ( versionFilter != null && !versionFilter.test ( v ) )
+            {
+                logger.trace ( "Ignoring version: {}", v );
+                continue;
+            }
+
+            arts.add ( new MavenVersionedArtifact ( snapshot ? sv : v, art ) );
         }
 
         if ( arts.isEmpty () )
         {
-            throw new IllegalStateException ( String.format ( "Unable to find artifact in channel '%s' (%s)", channelIdOrName, channel.getId () ) );
+            throw new IllegalStateException ( "No artifacts found" );
         }
 
         return arts;
-    }
-
-    private static void addArtifact ( final Map<String, List<Artifact>> arts, final String version, final Artifact artifact )
-    {
-        List<Artifact> list = arts.get ( version );
-        if ( list == null )
-        {
-            list = new LinkedList<> ();
-            arts.put ( version, list );
-        }
-        list.add ( artifact );
     }
 
     protected static boolean isZip ( final Artifact art )
@@ -340,7 +432,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         streamArtifactEntry ( response, artifact.getId (), path );
     }
 
-    private void requirePathPrefix ( final LinkedList<String> path, final int pathPrefixCount, final String message )
+    private static void requirePathPrefix ( final LinkedList<String> path, final int pathPrefixCount, final String message )
     {
         if ( path.size () < pathPrefixCount )
         {
