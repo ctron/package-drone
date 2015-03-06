@@ -86,13 +86,6 @@ public class Functions
             return "";
         }
 
-        final String s1 = request.getPathInfo ();
-        final String s2 = request.getPathTranslated ();
-        final String s3 = request.getContextPath ();
-        final String s4 = request.getServletPath ();
-        final String s5 = request.getRequestURI ();
-        final String s6 = "" + request.getRequestURL ();
-
         return Requests.getOriginalPath ( request ).equals ( targetUrl ) ? "active" : "";
     }
 
