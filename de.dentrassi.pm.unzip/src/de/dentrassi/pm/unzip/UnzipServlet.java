@@ -15,8 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -33,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
@@ -42,9 +45,21 @@ import de.dentrassi.pm.storage.service.util.DownloadHelper;
 public class UnzipServlet extends AbstractStorageServiceServlet
 {
 
-    private final static Logger logger = LoggerFactory.getLogger ( UnzipServlet.class );
+    private static final MetaKey MK_MIME_TYPE = new MetaKey ( "mime", "type" );
+
+    private static final MetaKey MK_MVN_EXTENSION = new MetaKey ( "mvn", "extension" );
 
     private static final long serialVersionUID = 1L;
+
+    private final static Logger logger = LoggerFactory.getLogger ( UnzipServlet.class );
+
+    private static final MetaKey MK_GROUP_ID = new MetaKey ( "mvn", "groupId" );
+
+    private static final MetaKey MK_ARTIFACT_ID = new MetaKey ( "mvn", "artifactId" );
+
+    private static final MetaKey MK_VERSION = new MetaKey ( "mvn", "version" );
+
+    private static final MetaKey MK_SNAPSHOT_VERSION = new MetaKey ( "mvn", "snapshotVersion" );
 
     private FileTypeMap fileTypeMap;
 
@@ -160,15 +175,135 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         streamArtifactEntry ( response, artifact.getId (), path );
     }
 
+    /*
+    private static final VersionScheme VERSION_SCHEME = new GenericVersionScheme ();
+
+    private void handleMaven ( final String type, final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
+    {
+        requirePathPrefix ( path, 1, String.format ( "The '%1$s' method requires at least one parameter: channel. e.g. /unzip/%1$s/<channelIdOrName>/path/to/file", type ) );
+
+        final String channelIdOrName = path.pop ();
+
+        final String groupId = "";
+        final String artifactId = "";
+        final String version = "";
+
+        final Map<String, List<Artifact>> arts = getMavenArtifacts ( channelIdOrName, groupId, artifactId );
+
+        Version bestVersion = null;
+        Artifact bestArtifact = null;
+
+        for ( final Map.Entry<String, List<Artifact>> entry : arts.entrySet () )
+        {
+            final String vs = entry.getKey ();
+            final GenericVersion v;
+            try
+            {
+                v = VERSION_SCHEME.parseVersion ( vs );
+            }
+            catch ( final InvalidVersionSpecificationException e )
+            {
+                // ignore this one
+                continue;
+            }
+
+            // check if version matches
+
+            if ( bestVersion == null || bestVersion.compareTo ( v ) < 0 )
+            {
+                bestVersion = v;
+                Collections.sort ( entry.getValue (), Artifact.CREATION_TIMESTAMP_COMPARATOR );
+                bestArtifact = entry.getValue ().get ( 0 );
+            }
+        }
+
+        / *
+        Collections.sort ( arts, Artifact.CREATION_TIMESTAMP_COMPARATOR );
+
+        final Artifact artifact = arts.get ( 0 );
+
+        logger.debug ( "Streaming artifact {} for channel {}", artifact.getId (), channelIdOrName );
+
+        streamArtifactEntry ( response, artifact.getId (), path );
+        * /
+    }
+
+    */
+
+    protected Map<String, List<Artifact>> getMavenArtifacts ( final String channelIdOrName, final String groupId, final String artifactId )
+    {
+        final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
+        if ( channel == null )
+        {
+            throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
+        }
+
+        final Map<String, List<Artifact>> arts = new HashMap<> ();
+
+        for ( final Artifact art : channel.getArtifacts () )
+        {
+            if ( !isZip ( art ) )
+            {
+                continue;
+            }
+
+            final ArtifactInformation ai = art.getInformation ();
+            final String mvnGroupId = ai.getMetaData ().get ( MK_GROUP_ID );
+            final String mvnArtifactId = ai.getMetaData ().get ( MK_ARTIFACT_ID );
+            final String mvnVersion = ai.getMetaData ().get ( MK_VERSION );
+            final String mvnSnapshotVersion = ai.getMetaData ().get ( MK_SNAPSHOT_VERSION );
+
+            if ( mvnGroupId == null || mvnArtifactId == null || mvnVersion == null )
+            {
+                continue;
+            }
+
+            if ( !mvnGroupId.equals ( groupId ) || !mvnGroupId.equals ( artifactId ) )
+            {
+                continue;
+            }
+
+            addArtifact ( arts, mvnVersion, art );
+            if ( mvnSnapshotVersion != null )
+            {
+                addArtifact ( arts, mvnSnapshotVersion, art );
+            }
+        }
+
+        if ( arts.isEmpty () )
+        {
+            throw new IllegalStateException ( String.format ( "Unable to find artifact in channel '%s' (%s)", channelIdOrName, channel.getId () ) );
+        }
+
+        return arts;
+    }
+
+    private static void addArtifact ( final Map<String, List<Artifact>> arts, final String version, final Artifact artifact )
+    {
+        List<Artifact> list = arts.get ( version );
+        if ( list == null )
+        {
+            list = new LinkedList<> ();
+            arts.put ( version, list );
+        }
+        list.add ( artifact );
+    }
+
     protected static boolean isZip ( final Artifact art )
     {
-        if ( art.getInformation ().getName ().endsWith ( ".zip" ) )
+        if ( art.getInformation ().getName ().toLowerCase ().endsWith ( ".zip" ) )
         {
             return true;
         }
 
-        final String md = art.getInformation ().getMetaData ().get ( new MetaKey ( "mime", "type" ) );
-        if ( md != null && md.equals ( "application/zip" ) )
+        final String mdExtension = art.getInformation ().getMetaData ().get ( MK_MVN_EXTENSION );
+        if ( mdExtension != null && mdExtension.equalsIgnoreCase ( "zip" ) )
+        {
+            return true;
+        }
+
+        final String mdMime = art.getInformation ().getMetaData ().get ( MK_MIME_TYPE );
+        if ( mdMime != null && mdMime.equalsIgnoreCase ( "application/zip" ) )
         {
             return true;
         }
