@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
@@ -87,6 +90,9 @@ public class UnzipServlet extends AbstractStorageServiceServlet
                 case "newest":
                     handleNewest ( request, response, path );
                     return;
+                case "newestZip":
+                    handleNewestZip ( request, response, path );
+                    return;
                 case "newestByName":
                     handleNewestByName ( request, response, path );
                     return;
@@ -113,6 +119,16 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
     protected void handleNewest ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
     {
+        handleWithFilter ( request, response, path, null );
+    }
+
+    protected void handleNewestZip ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
+    {
+        handleWithFilter ( request, response, path, UnzipServlet::isZip );
+    }
+
+    private void handleWithFilter ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path, final Predicate<Artifact> filter ) throws IOException
+    {
         requirePathPrefix ( path, 1, "The 'newest' method requires at least one parameter: channel. e.g. /unzip/newest/<channelIdOrName>/path/to/file" );
 
         final String channelIdOrName = path.pop ();
@@ -123,7 +139,12 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
         }
 
-        final List<Artifact> arts = new ArrayList<> ( channel.getArtifacts () );
+        List<Artifact> arts = new ArrayList<> ( channel.getArtifacts () );
+
+        if ( filter != null )
+        {
+            arts = arts.stream ().filter ( filter ).collect ( Collectors.toList () );
+        }
 
         if ( arts.isEmpty () )
         {
@@ -137,6 +158,22 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         logger.debug ( "Streaming artifact {} for channel {}", artifact.getId (), channelIdOrName );
 
         streamArtifactEntry ( response, artifact.getId (), path );
+    }
+
+    protected static boolean isZip ( final Artifact art )
+    {
+        if ( art.getInformation ().getName ().endsWith ( ".zip" ) )
+        {
+            return true;
+        }
+
+        final String md = art.getInformation ().getMetaData ().get ( new MetaKey ( "mime", "type" ) );
+        if ( md != null && md.equals ( "application/zip" ) )
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected void handleNewestByName ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
@@ -198,7 +235,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         if ( localPath.isEmpty () )
         {
-            DownloadHelper.streamArtifact ( response, getService (), artifactId, null, false );
+            DownloadHelper.streamArtifact ( response, getService (), artifactId, null, true );
             return;
         }
 
