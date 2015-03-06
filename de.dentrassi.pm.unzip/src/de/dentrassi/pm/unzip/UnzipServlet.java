@@ -119,17 +119,17 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
     protected void handleNewest ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
     {
-        handleWithFilter ( request, response, path, null );
+        handleWithFilter ( "newest", request, response, path, null );
     }
 
     protected void handleNewestZip ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
     {
-        handleWithFilter ( request, response, path, UnzipServlet::isZip );
+        handleWithFilter ( "newestZip", request, response, path, UnzipServlet::isZip );
     }
 
-    private void handleWithFilter ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path, final Predicate<Artifact> filter ) throws IOException
+    private void handleWithFilter ( final String type, final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path, final Predicate<Artifact> filter ) throws IOException
     {
-        requirePathPrefix ( path, 1, "The 'newest' method requires at least one parameter: channel. e.g. /unzip/newest/<channelIdOrName>/path/to/file" );
+        requirePathPrefix ( path, 1, String.format ( "The '%1$s' method requires at least one parameter: channel. e.g. /unzip/%1$s/<channelIdOrName>/path/to/file", type ) );
 
         final String channelIdOrName = path.pop ();
 
@@ -153,7 +153,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         Collections.sort ( arts, Artifact.CREATION_TIMESTAMP_COMPARATOR );
 
-        final Artifact artifact = arts.listIterator ().next ();
+        final Artifact artifact = arts.get ( 0 );
 
         logger.debug ( "Streaming artifact {} for channel {}", artifact.getId (), channelIdOrName );
 
@@ -198,7 +198,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         Collections.sort ( arts, Artifact.CREATION_TIMESTAMP_COMPARATOR );
 
-        final Artifact artifact = arts.listIterator ().next ();
+        final Artifact artifact = arts.get ( 0 );
 
         logger.debug ( "Streaming artifact {} for name {} in channel {}", artifact.getId (), name, channelIdOrName );
 
