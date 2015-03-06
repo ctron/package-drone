@@ -629,6 +629,11 @@ public class MavenServlet extends HttpServlet
     {
         final String[] authToks = parseAuthorization ( request );
 
+        if ( authToks == null )
+        {
+            return false;
+        }
+
         if ( !authToks[0].equals ( "deploy" ) )
         {
             return false;
