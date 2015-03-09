@@ -58,6 +58,8 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
     private static final MetaKey MK_ARTIFACT_ID = new MetaKey ( "mvn", "artifactId" );
 
+    private static final MetaKey MK_CLASSIFIER = new MetaKey ( "mvn", "classifier" );
+
     private static final MetaKey MK_VERSION = new MetaKey ( "mvn", "version" );
 
     private static final MetaKey MK_SNAPSHOT_VERSION = new MetaKey ( "mvn", "snapshotVersion" );
@@ -351,12 +353,20 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             final String mvnGroupId = ai.getMetaData ().get ( MK_GROUP_ID );
             final String mvnArtifactId = ai.getMetaData ().get ( MK_ARTIFACT_ID );
 
+            final String classifier = ai.getMetaData ().get ( MK_CLASSIFIER );
+
             final String mvnVersion = ai.getMetaData ().get ( MK_VERSION );
             final String mvnSnapshotVersion = ai.getMetaData ().get ( MK_SNAPSHOT_VERSION );
 
             if ( mvnGroupId == null || mvnArtifactId == null || mvnVersion == null )
             {
                 // no GAV information
+                continue;
+            }
+
+            if ( classifier != null && !classifier.isEmpty () )
+            {
+                // no classifiers right now
                 continue;
             }
 
