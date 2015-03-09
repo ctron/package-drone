@@ -22,6 +22,9 @@ import java.nio.file.Path;
 import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.ParseException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,6 +37,9 @@ import de.dentrassi.pm.importer.SimpleImporterDescription;
 
 public class HttpImporter implements Importer
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( HttpImporter.class );
+
     public static final String ID = "http";
 
     private static final SimpleImporterDescription DESCRIPTION;
@@ -64,7 +70,8 @@ public class HttpImporter implements Importer
     public void runImport ( final ImportContext context, final String configuration ) throws Exception
     {
         final Configuration cfg = this.gson.fromJson ( configuration, Configuration.class );
-        System.out.println ( "Get URL: " + cfg.getUrl () );
+
+        logger.debug ( "Get URL: {}", cfg.getUrl () );
 
         final URL url = new URL ( cfg.getUrl () );
 
