@@ -99,6 +99,12 @@ public class LinkTarget
         return this.url;
     }
 
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[LinkTarget: %s]", this.url );
+    }
+
     private static Set<String> getRawPaths ( final Method method )
     {
         final RequestMappingInformation rmi = Controllers.fromMethod ( method );
