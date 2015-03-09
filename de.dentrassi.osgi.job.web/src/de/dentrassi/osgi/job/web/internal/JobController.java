@@ -34,6 +34,7 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.util.Requests;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
@@ -94,6 +95,11 @@ public class JobController
         final LinkTarget url = target.expand ( Collections.singletonMap ( "id", id ) );
 
         logger.debug ( "Forwarding to job result view: {}", url );
+
+        if ( url.getUrl ().equals ( Requests.getOriginalPath ( request ) ) )
+        {
+            throw new IllegalStateException ( String.format ( "Illegal redirect to same URL: %s", url.getUrl () ) );
+        }
 
         final RequestDispatcher rd = request.getRequestDispatcher ( url.getUrl () );
         rd.forward ( request, response );

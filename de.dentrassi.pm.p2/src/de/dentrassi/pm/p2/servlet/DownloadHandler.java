@@ -92,7 +92,8 @@ public class DownloadHandler implements Handler
                 continue;
             }
 
-            DownloadHelper.streamArtifact ( resp, a, null, true );
+            logger.debug ( "Streaming artifact: {} / {} ", a.getInformation ().getName (), a.getId () );
+            DownloadHelper.streamArtifact ( resp, a, md.get ( new MetaKey ( "mime", "type" ) ), true );
             return;
         }
 
