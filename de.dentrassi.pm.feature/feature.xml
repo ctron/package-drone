@@ -2,11 +2,11 @@
 <feature
       id="de.dentrassi.pm"
       label="Package Drone Main Feature"
-      version="0.2.5.qualifier"
+      version="0.3.0.qualifier"
       provider-name="Jens Reimann">
 
-   <description url="https://github.com/ctron/package-drone">
-      A package manager repository for Java (any maybe more)
+   <description url="http://packagedrone.org">
+      A package manager repository for OSGi, Java and others.
    </description>
 
    <copyright>
