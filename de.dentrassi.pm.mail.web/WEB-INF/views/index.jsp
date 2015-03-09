@@ -35,7 +35,7 @@ if ( principal instanceof UserInformationPrincipal )
 		    <form:form action="" method="POST" cssClass="form-horizontal">
 		    
 		        <h:formEntry label="User" path="username" command="command">
-		            <form:input path="user" cssClass="form-control" placeholder="Username for the mail server"/>
+		            <form:input path="username" cssClass="form-control" placeholder="Username for the mail server"/>
 		        </h:formEntry>
 		        
 		        <h:formEntry label="Password" path="password" command="command">
