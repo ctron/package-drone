@@ -179,6 +179,9 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             case "perfect":
                 handleMavenPerfect ( artifactSupplier, channelIdOrName, path, consumer );
                 break;
+            default:
+                handleNotFoundError ( response, String.format ( "Unknown maven sub-type: %s", mavenType ) );
+                break;
         }
     }
 
@@ -265,6 +268,12 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, ( a ) -> a.toString ().startsWith ( versionPrefix ) );
 
+        if ( arts.isEmpty () )
+        {
+            // no result,
+            throw new IllegalStateException ( String.format ( "No artifacts found for - groupId: %s, artifactId: %s, version: %s, snapshots: %s", groupId, artifactId, versionPrefix, snapshot ) );
+        }
+
         processArtifacts ( String.format ( "maven artifact %s/%s/%s in channel %s", groupId, artifactId, versionString, channelIdOrName ), arts, consumer );
     }
 
@@ -280,6 +289,12 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, true, ( a ) -> a.compareTo ( v ) == 0 );
 
+        if ( arts.isEmpty () )
+        {
+            // no result,
+            throw new IllegalStateException ( String.format ( "No artifacts found for - groupId: %s, artifactId: %s, version: %s", groupId, artifactId, v ) );
+        }
+
         processArtifacts ( String.format ( "maven artifact %s/%s/%s in channel %s", groupId, artifactId, versionString, channelIdOrName ), arts, consumer );
     }
 
@@ -291,6 +306,12 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         final String artifactId = path.pop ();
 
         final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, null );
+
+        if ( arts.isEmpty () )
+        {
+            // no result,
+            throw new IllegalStateException ( String.format ( "No artifacts found for - groupId: %s, artifactId: %s", groupId, artifactId ) );
+        }
 
         processArtifacts ( String.format ( "latest maven artifact %s/%s in channel %s", groupId, artifactId, channelIdOrName ), arts, consumer );
     }
@@ -377,12 +398,6 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             }
         }
 
-        if ( arts.isEmpty () )
-        {
-            // no result,
-            throw new IllegalStateException ( "No artifacts found" );
-        }
-
         return arts;
     }
 
@@ -416,7 +431,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
      * <code>application/zip</code>
      * </ul>
      * </p>
-     * 
+     *
      * @param artifact
      *            the artifact to check
      * @return <code>true</code> if the artifact is a ZIP file,
