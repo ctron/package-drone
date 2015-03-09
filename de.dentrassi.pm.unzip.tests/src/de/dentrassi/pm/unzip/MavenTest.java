@@ -108,7 +108,7 @@ public class MavenTest
     public void testLatest () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), false, ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), false, result::add );
 
         dumpMavenList ( "Result - latest", result );
 
@@ -119,7 +119,7 @@ public class MavenTest
     public void testLatestSnapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), true, ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), true, result::add );
 
         dumpMavenList ( "Result - latest-SNAPSHOT", result );
 
@@ -130,7 +130,7 @@ public class MavenTest
     public void testPerfect () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-RC1" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-RC1" ), result::add );
 
         dumpMavenList ( "Result - perfect", result );
 
@@ -141,7 +141,7 @@ public class MavenTest
     public void testPerfectSnapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.1.1-SNAPSHOT" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.1.1-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - perfect - snapshot", result );
 
@@ -152,7 +152,7 @@ public class MavenTest
     public void testPerfectSnapshot2 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-20150102.101010-1" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-20150102.101010-1" ), result::add );
 
         dumpMavenList ( "Result - perfect - snapshot 2", result );
 
@@ -163,7 +163,7 @@ public class MavenTest
     public void testPrefixed1 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.x", result );
 
@@ -174,7 +174,7 @@ public class MavenTest
     public void testPrefixed2 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.2.x", result );
 
@@ -185,7 +185,7 @@ public class MavenTest
     public void testPrefixed1Snapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x-SNAPSHOT" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.x", result );
 
@@ -196,7 +196,7 @@ public class MavenTest
     public void testPrefixed2Snapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x-SNAPSHOT" ), ( art ) -> result.add ( art ) );
+        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.2.x", result );
 

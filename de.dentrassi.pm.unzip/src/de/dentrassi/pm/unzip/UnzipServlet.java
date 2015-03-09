@@ -276,11 +276,9 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         final String artifactId = path.pop ();
         final String versionString = path.pop ();
 
-        final boolean snapshot = versionString.endsWith ( "-SNAPSHOT" );
-
         final ComparableVersion v = new ComparableVersion ( versionString );
 
-        final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, snapshot, ( a ) -> a.compareTo ( v ) == 0 );
+        final List<MavenVersionedArtifact> arts = getMavenArtifacts ( artifactsSupplier, groupId, artifactId, true, ( a ) -> a.compareTo ( v ) == 0 );
 
         processArtifacts ( String.format ( "maven artifact %s/%s/%s in channel %s", groupId, artifactId, versionString, channelIdOrName ), arts, consumer );
     }
@@ -297,6 +295,23 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         processArtifacts ( String.format ( "latest maven artifact %s/%s in channel %s", groupId, artifactId, channelIdOrName ), arts, consumer );
     }
 
+    /**
+     * Get a list of all relevant maven artifacts
+     *
+     * @param artifactsSupplier
+     *            the supplier of artifacts
+     * @param groupId
+     *            the group id to filter for, must not be <code>null
+     * @param artifactId
+     *            the artifact id to filter for, must not be <code>null
+     * @param snapshot
+     *            whether to consider snapshot versions of not
+     * @param versionFilter
+     *            an optional version filter
+     * @return a list of all matching artifacts wrapped in
+     *         {@link MavenVersionedArtifact}, if there is a snapshot version
+     *         present, then the snapshot version of used as version
+     */
     protected static List<MavenVersionedArtifact> getMavenArtifacts ( final Supplier<Collection<Artifact>> artifactsSupplier, final String groupId, final String artifactId, final boolean snapshot, final Predicate<ComparableVersion> versionFilter )
     {
         final List<MavenVersionedArtifact> arts = new ArrayList<> ();
@@ -305,8 +320,11 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         {
             if ( !isZip ( art ) )
             {
+                // if is is anot a zip, then this is not for the unzip plugin
                 continue;
             }
+
+            // fetch meta data
 
             final ArtifactInformation ai = art.getInformation ();
             final String mvnGroupId = ai.getMetaData ().get ( MK_GROUP_ID );
@@ -315,86 +333,109 @@ public class UnzipServlet extends AbstractStorageServiceServlet
             final String mvnVersion = ai.getMetaData ().get ( MK_VERSION );
             final String mvnSnapshotVersion = ai.getMetaData ().get ( MK_SNAPSHOT_VERSION );
 
-            if ( snapshot && mvnSnapshotVersion == null )
-            {
-                // we are only looking for snapshots
-                continue;
-            }
-
-            if ( !snapshot && mvnSnapshotVersion != null )
-            {
-                // we are not looking for snapshots
-                continue;
-            }
-
             if ( mvnGroupId == null || mvnArtifactId == null || mvnVersion == null )
             {
+                // no GAV information
                 continue;
             }
 
             if ( !mvnGroupId.equals ( groupId ) || !mvnArtifactId.equals ( artifactId ) )
             {
+                // wrong group or artifact id
                 continue;
             }
 
-            ComparableVersion v;
-            try
+            if ( !snapshot && ( mvnSnapshotVersion != null || mvnVersion.endsWith ( "-SNAPSHOT" ) ) )
             {
-                v = new ComparableVersion ( mvnVersion );
-            }
-            catch ( final Exception e )
-            {
-                logger.debug ( "Version not parsable: " + mvnVersion, e );
-                // ignore this one
+                // we are not looking for snapshots
                 continue;
             }
 
-            ComparableVersion sv = null;
-            if ( snapshot )
-            {
-                try
-                {
-                    sv = new ComparableVersion ( mvnVersion );
-                }
-                catch ( final Exception e )
-                {
-                    logger.debug ( "Version not parsable: " + mvnVersion, e );
-                    // ignore this one
-                    continue;
-                }
-            }
+            final ComparableVersion v = parseVersion ( mvnVersion );
+            final ComparableVersion sv = parseVersion ( mvnSnapshotVersion );
 
-            if ( versionFilter != null && !versionFilter.test ( v ) )
+            if ( v == null )
             {
-                logger.trace ( "Ignoring version: {}", v );
+                // unable to parse v
                 continue;
             }
 
-            arts.add ( new MavenVersionedArtifact ( snapshot ? sv : v, art ) );
+            if ( versionFilter == null )
+            {
+                // no filter, add it
+                arts.add ( new MavenVersionedArtifact ( sv != null ? sv : v, art ) );
+            }
+            else if ( versionFilter.test ( v ) )
+            {
+                // filter matched, add it
+                arts.add ( new MavenVersionedArtifact ( sv != null ? sv : v, art ) );
+            }
+            else if ( sv != null && versionFilter.test ( sv ) )
+            {
+                // we have a snapshot version and it matched, add it
+                arts.add ( new MavenVersionedArtifact ( sv, art ) );
+            }
         }
 
         if ( arts.isEmpty () )
         {
+            // no result,
             throw new IllegalStateException ( "No artifacts found" );
         }
 
         return arts;
     }
 
-    protected static boolean isZip ( final Artifact art )
+    private static ComparableVersion parseVersion ( final String version )
     {
-        if ( art.getInformation ().getName ().toLowerCase ().endsWith ( ".zip" ) )
+        if ( version == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            return new ComparableVersion ( version );
+        }
+        catch ( final Exception e )
+        {
+            logger.debug ( "Version not parsable: " + version, e );
+            return null;
+        }
+    }
+
+    /**
+     * Check if an artifact is a ZIP file
+     * <p>
+     * An artifact is a ZIP file if at least one of th following tests is true:
+     * <ul>
+     * <li>Its lower case name ends with <code>.zip</code></li>
+     * <li>The meta data field <code>mvn:extension</code> is set to
+     * <code>zip</code>
+     * <li>The meta data field <code>mime:type</code> is set to
+     * <code>application/zip</code>
+     * </ul>
+     * </p>
+     * 
+     * @param artifact
+     *            the artifact to check
+     * @return <code>true</code> if the artifact is a ZIP file,
+     *         <code>false</code> otherwise
+     */
+    protected static boolean isZip ( final Artifact artifact )
+    {
+        if ( artifact.getInformation ().getName ().toLowerCase ().endsWith ( ".zip" ) )
         {
             return true;
         }
 
-        final String mdExtension = art.getInformation ().getMetaData ().get ( MK_MVN_EXTENSION );
+        final String mdExtension = artifact.getInformation ().getMetaData ().get ( MK_MVN_EXTENSION );
         if ( mdExtension != null && mdExtension.equalsIgnoreCase ( "zip" ) )
         {
             return true;
         }
 
-        final String mdMime = art.getInformation ().getMetaData ().get ( MK_MIME_TYPE );
+        final String mdMime = artifact.getInformation ().getMetaData ().get ( MK_MIME_TYPE );
         if ( mdMime != null && mdMime.equalsIgnoreCase ( "application/zip" ) )
         {
             return true;
