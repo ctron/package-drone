@@ -18,10 +18,18 @@
 
 	<form:form action="" method="POST" cssClass="form-horizontal" enctype="multipart/form-data">
 		<fieldset>
-			<legend>Create channel P2 category</legend>
+			<legend>Create P2 categories based on an uploaded category.xml</legend>
 
             <h:formEntry label="Category XML file" path="file">
                 <input type="file" name="file" id="file">
+                <span class="help-block">
+                Select and upload a <q>Category Definition</q> file (<code>category.xml</code>) which defines
+                categories and assigned features.
+                </span>
+                <span class="help-block">
+                Also see <a href="http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Ffile_wizards%2Fnew_category.htm" target="_blank" >New Category Definition File</a>
+                in the Eclipse Luna help.
+                </span>
             </h:formEntry>
             
 			<button type="submit" class="btn btn-primary">Create</button>
