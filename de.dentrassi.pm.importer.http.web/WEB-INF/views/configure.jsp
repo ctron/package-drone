@@ -38,9 +38,9 @@ function doAction(action) {
 		    
 		    <div class="form-group">
 		        <div class="col-sm-offset-2 col-sm-10">
-		            <button type="submit" class="btn btn-primary">Proceed</button>
+		            <button type="submit" class="btn ${ ok ? 'btn-default' : 'btn-primary'}">Check</button>
 		            <c:if test="${ok }">
-                        <button type="button" id="test" class="btn btn-info" onclick="doAction('<c:url value="test"/>');">Test</button>
+                        <button type="button" id="test" class="btn btn-primary" onclick="doAction('<c:url value="test"/>');">Proceed</button>
 		            </c:if>
 		            <button type="reset" class="btn btn-default">Reset</button>
 		        </div>
