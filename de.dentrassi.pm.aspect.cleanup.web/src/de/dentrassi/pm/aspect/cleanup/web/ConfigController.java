@@ -145,7 +145,11 @@ public class ConfigController implements InterfaceExtender
     protected CleanupConfiguration makeDefaultConfiguration ()
     {
         CleanupConfiguration cfg;
+
         cfg = new CleanupConfiguration ();
+
+        cfg.setNumberOfVersions ( 3 );
+        cfg.setOnlyRootArtifacts ( true );
 
         final Aggregator aggregator = new Aggregator ();
         aggregator.getFields ().add ( new MetaKey ( "mvn", "groupId" ) );

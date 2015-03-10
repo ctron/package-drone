@@ -34,6 +34,12 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 		            </span>
 			   </h:formEntry>
 			   
+			   <h:formCheckbox label="Only root artifacts" path="onlyRootArtifacts" command="command">
+			     <span class="help-block">
+			     If checked, then only root elements will be cleared and child elements will be ignored.
+			     </span>
+			   </h:formCheckbox>
+			   
                <div class='form-group ${form:validationState(pageContext,"command","aggregator", "", "has-error")}'>
                    <form:label path="aggregator" cssClass="col-sm-2 control-label">Aggregation</form:label>
                    

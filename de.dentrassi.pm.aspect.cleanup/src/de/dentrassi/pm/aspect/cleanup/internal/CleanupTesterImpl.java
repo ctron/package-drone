@@ -26,7 +26,7 @@ public class CleanupTesterImpl implements CleanupTester
     @Override
     public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<ArtifactInformation> artifacts, final CleanupConfiguration configuration )
     {
-        return CleanupListener.process ( configuration, CleanupListener.aggregate ( configuration.getAggregator (), configuration.getSorter (), artifacts ) );
+        return CleanupListener.process ( configuration, CleanupListener.aggregate ( configuration.getAggregator (), configuration.getSorter (), configuration.isOnlyRootArtifacts (), artifacts ) );
     }
 
 }

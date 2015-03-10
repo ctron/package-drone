@@ -18,11 +18,24 @@ public class CleanupConfiguration
     @MetaKeyBinding ( namespace = CleanupAspect.ID, key = "number-of-versions" )
     private int numberOfVersions = 3;
 
+    @MetaKeyBinding ( namespace = CleanupAspect.ID, key = "only-root" )
+    private boolean onlyRootArtifacts;
+
     @MetaKeyBinding ( namespace = CleanupAspect.ID, key = "sorter" )
     private Sorter sorter;
 
     @MetaKeyBinding ( namespace = CleanupAspect.ID, key = "aggregator" )
     private Aggregator aggregator;
+
+    public boolean isOnlyRootArtifacts ()
+    {
+        return this.onlyRootArtifacts;
+    }
+
+    public void setOnlyRootArtifacts ( final boolean onlyRootArtifacts )
+    {
+        this.onlyRootArtifacts = onlyRootArtifacts;
+    }
 
     public Aggregator getAggregator ()
     {

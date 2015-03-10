@@ -59,7 +59,7 @@ public class CleanupListener implements ChannelListener
             return;
         }
 
-        final Map<List<String>, LinkedList<ArtifactInformation>> artifacts = aggregate ( cfg.getAggregator (), cfg.getSorter (), context.getChannelArtifacts () );
+        final Map<List<String>, LinkedList<ArtifactInformation>> artifacts = aggregate ( cfg.getAggregator (), cfg.getSorter (), cfg.isOnlyRootArtifacts (), context.getChannelArtifacts () );
 
         final SortedMap<ResultKey, List<ResultEntry>> result = process ( cfg, artifacts );
 
@@ -107,7 +107,7 @@ public class CleanupListener implements ChannelListener
         return result;
     }
 
-    static Map<List<String>, LinkedList<ArtifactInformation>> aggregate ( final Aggregator aggregator, final Sorter sorter, final Collection<ArtifactInformation> artifacts )
+    static Map<List<String>, LinkedList<ArtifactInformation>> aggregate ( final Aggregator aggregator, final Sorter sorter, final boolean rootOnly, final Collection<ArtifactInformation> artifacts )
     {
         final Map<List<String>, LinkedList<ArtifactInformation>> result = new HashMap<> ();
 
@@ -115,6 +115,12 @@ public class CleanupListener implements ChannelListener
         {
             if ( !art.is ( "deletable" ) )
             {
+                continue;
+            }
+
+            if ( rootOnly && art.getParentId () != null )
+            {
+                // ignore non-root artifacts
                 continue;
             }
 
