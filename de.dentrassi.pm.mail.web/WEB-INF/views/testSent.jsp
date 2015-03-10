@@ -14,24 +14,10 @@
 <div class="col-xs-offset-1 col-xs-10">
 
 <c:choose>
-
-	<c:when test="${not empty message }">
-	
-	   <div class="alert alert-danger">
-	       <strong>Test message failed!</strong> ${fn:escapeXml(message) }
-	   </div>
-	   
-	   <pre>${fn:escapeXml(stacktrace) }</pre>
-	</c:when>
-	
-	<c:otherwise>
-	
-		<div class="alert alert-success">
-		    <strong>Mail sent!</strong> The test e-mail has been handed over to the first mail server.
-		</div>
-		
-	</c:otherwise>
-
+	<div class="alert alert-success">
+	    <strong>Mail sent!</strong> The test e-mail has been handed over to the first mail server. This
+	    does not guarantee a delivery, since other involved mail servers could block the transmission.
+	</div>
 </c:choose>
 
 </div></div></div>
