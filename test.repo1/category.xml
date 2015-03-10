@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
+   <stats location="http://localhost:8080">
+      <bundle id="bcpg" version="1.51.0"/>
+   </stats>
    <feature url="features/test.feature1_1.0.0.qualifier.jar" id="test.feature1" version="1.0.0.qualifier">
       <category name="test.repo1.cat2"/>
    </feature>
@@ -19,4 +22,5 @@
          Test Description #2
       </description>
    </category-def>
+   <repository-reference location="http://somewhere.else.com" enabled="true" />
 </site>
