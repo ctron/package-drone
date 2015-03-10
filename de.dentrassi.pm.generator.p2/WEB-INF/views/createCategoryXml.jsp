@@ -16,22 +16,13 @@
 
 <h:genBlock>
 
-
-	<form:form action="" method="POST" cssClass="form-horizontal">
+	<form:form action="" method="POST" cssClass="form-horizontal" enctype="multipart/form-data">
 		<fieldset>
 			<legend>Create channel P2 category</legend>
 
-            <h:formEntry label="Category ID" path="id" command="command">
-                <form:input path="id" cssClass="form-control"/>
+            <h:formEntry label="Category XML file" path="file">
+                <input type="file" name="file" id="file">
             </h:formEntry>
-
-            <h:formEntry label="Name" path="name" command="command">
-                <form:input path="name" cssClass="form-control"/> 
-            </h:formEntry>
-
-            <h:formEntry label="Description" path="description" command="command">
-                <form:textarea path="description" cssClass="form-control"/> 
-            </h:formEntry> 
             
 			<button type="submit" class="btn btn-primary">Create</button>
 		</fieldset>

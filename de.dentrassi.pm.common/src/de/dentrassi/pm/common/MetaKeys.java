@@ -33,7 +33,7 @@ public final class MetaKeys
      * If the provided metadata set is <code>null</code>, then the result will
      * also be <code>null</code>.
      * </p>
-     * 
+     *
      * @param metadata
      *            the meta data map, may be <code>null</code>
      * @param ns
@@ -44,11 +44,40 @@ public final class MetaKeys
      */
     public static String getString ( final Map<MetaKey, String> metadata, final String ns, final String key )
     {
+        return getString ( metadata, ns, key, null );
+    }
+
+    /**
+     * Get a string from meta data
+     * <p>
+     * If the provided metadata set is <code>null</code>, then the result will
+     * also be <code>null</code>.
+     * </p>
+     *
+     * @param metadata
+     *            the meta data map, may be <code>null</code>
+     * @param ns
+     *            the namespace
+     * @param key
+     *            the key
+     * @param defaultValue
+     *            the value returned if either the metadata parmeter is
+     *            <code>null</code> or the metadata does not contain this key or
+     *            the value is <code>null</code>
+     * @return the value, as string, may be <code>null</code>
+     */
+    public static String getString ( final Map<MetaKey, String> metadata, final String ns, final String key, final String defaultValue )
+    {
         if ( metadata == null )
         {
-            return null;
+            return defaultValue;
         }
-        return metadata.get ( new MetaKey ( ns, key ) );
+        final String result = metadata.get ( new MetaKey ( ns, key ) );
+        if ( result == null )
+        {
+            return defaultValue;
+        }
+        return result;
     }
 
     public static <T> T bind ( final T data, final Map<MetaKey, String> metadata ) throws Exception

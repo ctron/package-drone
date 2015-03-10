@@ -23,33 +23,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.common.event.AddedEvent;
-import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.storage.StorageAccessor;
 
 public class CategoryGenerator implements ArtifactGenerator
 {
-    private final static Logger logger = LoggerFactory.getLogger ( CategoryGenerator.class );
-
     public static final String ID = "p2.category";
-
-    private final XmlHelper xml;
-
-    public CategoryGenerator ()
-    {
-        this.xml = new XmlHelper ();
-    }
 
     @Override
     public LinkTarget getAddTarget ()
@@ -96,114 +82,29 @@ public class CategoryGenerator implements ArtifactGenerator
         final String name = getString ( map, ID, "name" );
         final String description = getString ( map, ID, "description" );
 
-        String version = getString ( map, ID, "version" );
-        if ( version == null || version.isEmpty () )
-        {
-            version = String.format ( "0.0.0.0--%x", System.currentTimeMillis () );
-        }
+        final String version = getString ( map, ID, "version", Helper.makeDefaultVersion () );
 
-        final Document doc = this.xml.create ();
-        final Element units = doc.createElement ( "units" );
-        doc.appendChild ( units );
+        Helper.createFragmentFile ( out, ( units ) -> {
 
-        final Element unit = XmlHelper.addElement ( units, "unit" );
+            Helper.createCategoryUnit ( units, id, name, description, version, ( unit ) -> {
+                final Element reqs = XmlHelper.addElement ( unit, "requires" );
+                for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
+                {
+                    if ( Helper.isFeature ( a.getMetaData () ) )
+                    {
+                        Helper.addFeatureRequirement ( reqs, a );
+                    }
+                }
+                XmlHelper.fixSize ( reqs );
+            } );
 
-        unit.setAttribute ( "id", id );
-        unit.setAttribute ( "version", version );
-
-        final Element props = XmlHelper.addElement ( unit, "properties" );
-        addProperty ( props, "org.eclipse.equinox.p2.name", name );
-        addProperty ( props, "org.eclipse.equinox.p2.description", description );
-        addProperty ( props, "org.eclipse.equinox.p2.type.category", "true" );
-        XmlHelper.fixSize ( props );
-
-        {
-            final Element provs = XmlHelper.addElement ( unit, "provides" );
-            final Element p = XmlHelper.addElement ( provs, "provided" );
-            p.setAttribute ( "namespace", "org.eclipse.equinox.p2.iu" );
-            p.setAttribute ( "name", id );
-            p.setAttribute ( "version", version );
-            XmlHelper.fixSize ( provs );
-        }
-
-        final Element reqs = XmlHelper.addElement ( unit, "requires" );
-        for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
-        {
-            processPlugin ( reqs, a );
-        }
-        XmlHelper.fixSize ( reqs );
-
-        {
-            final Element t = XmlHelper.addElement ( unit, "touchpoint" );
-            t.setAttribute ( "id", "null" );
-            t.setAttribute ( "version", "0.0.0" );
-        }
-
-        XmlHelper.fixSize ( units );
-
-        this.xml.write ( doc, out );
-    }
-
-    private void processPlugin ( final Element root, final ArtifactInformation a )
-    {
-        if ( !isFeature ( a.getMetaData () ) )
-        {
-            return;
-        }
-
-        final String id = a.getMetaData ().get ( new MetaKey ( "osgi", "name" ) );
-        if ( id == null )
-        {
-            return;
-        }
-
-        final Element p = root.getOwnerDocument ().createElement ( "required" );
-        root.appendChild ( p );
-
-        p.setAttribute ( "namespace", "org.eclipse.equinox.p2.iu" );
-        p.setAttribute ( "name", id + ".feature.group" );
-        p.setAttribute ( "range", "0.0.0" );
+        } );
     }
 
     @Override
     public boolean shouldRegenerate ( final Object event )
     {
-        logger.debug ( "Check if we need to generate: {}", event );
-
-        boolean result = false;
-        if ( event instanceof AddedEvent )
-        {
-            final AddedEvent context = (AddedEvent)event;
-            result = isFeature ( context.getMetaData () );
-        }
-        else if ( event instanceof RemovedEvent )
-        {
-            final RemovedEvent context = (RemovedEvent)event;
-            result = isFeature ( context.getMetaData () );
-        }
-
-        logger.debug ( "Result: {}", result );
-
-        return result;
-    }
-
-    private boolean isFeature ( final Map<MetaKey, String> metaData )
-    {
-        final String classifier = metaData.get ( new MetaKey ( "osgi", "classifier" ) );
-        logger.debug ( "Artifact OSGi classifier: {}", classifier );
-        return "eclipse.feature".equals ( classifier );
-    }
-
-    protected void addProperty ( final Element parent, final String key, final String value )
-    {
-        if ( value == null )
-        {
-            return;
-        }
-
-        final Element p = XmlHelper.addElement ( parent, "property" );
-        p.setAttribute ( "name", key );
-        p.setAttribute ( "value", value );
+        return Helper.shouldRegenerateCategory ( event );
     }
 
 }

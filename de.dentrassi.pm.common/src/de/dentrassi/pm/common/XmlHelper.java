@@ -262,4 +262,28 @@ public class XmlHelper
         }
     }
 
+    /**
+     * Get the text value of the first element with the matching name
+     */
+    public static String getText ( final Element ele, final String string )
+    {
+        for ( final Node child : iter ( ele.getChildNodes () ) )
+        {
+            if ( ! ( child instanceof Element ) )
+            {
+                continue;
+            }
+
+            final Element childEle = (Element)child;
+
+            if ( !childEle.getNodeName ().equals ( string ) )
+            {
+                continue;
+            }
+
+            return childEle.getTextContent ();
+        }
+        return null;
+    }
+
 }

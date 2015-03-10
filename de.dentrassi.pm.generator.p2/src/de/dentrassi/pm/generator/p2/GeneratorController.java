@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.Part;
 import javax.validation.Valid;
 
 import org.osgi.framework.FrameworkUtil;
@@ -25,11 +26,14 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.generator.p2.xml.CategoryXmlGenerator;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
 
@@ -40,6 +44,13 @@ public class GeneratorController
     private StorageService service;
 
     private final GeneratorProcessor generators = new GeneratorProcessor ( FrameworkUtil.getBundle ( GeneratorController.class ).getBundleContext () );
+
+    private final XmlHelper xml;
+
+    public GeneratorController ()
+    {
+        this.xml = new XmlHelper ();
+    }
 
     public void start ()
     {
@@ -199,6 +210,36 @@ public class GeneratorController
 
         final String name = String.format ( "%s.category", data.getId () );
         this.service.createGeneratorArtifact ( channelId, name, CategoryGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
+
+        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+    }
+
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategoryXml",
+            method = RequestMethod.GET )
+    public ModelAndView createCategoryXml ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final ModelAndView mav = new ModelAndView ( "createCategoryXml" );
+
+        mav.put ( "generators", this.generators.getInformations ().values () );
+        mav.put ( "channelId", channelId );
+
+        return mav;
+    }
+
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategoryXml",
+            method = RequestMethod.POST )
+    public ModelAndView createCategoryXmlPost ( @PathVariable ( "channelId" ) final String channelId, final @RequestParameter ( "file" ) Part file, final BindingResult result ) throws Exception
+    {
+        if ( result.hasErrors () )
+        {
+            final ModelAndView mav = new ModelAndView ( "createCategoryXml" );
+            mav.put ( "generators", this.generators.getInformations ().values () );
+            mav.put ( "channelId", channelId );
+            return mav;
+        }
+
+        final String name = file.getSubmittedFileName ();
+        this.service.createGeneratorArtifact ( channelId, name, CategoryXmlGenerator.ID, file.getInputStream (), null );
 
         return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
     }

@@ -28,8 +28,6 @@ import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -40,8 +38,6 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.common.event.AddedEvent;
-import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
@@ -58,8 +54,6 @@ public class FeatureGenerator implements ArtifactGenerator
     {
         QUALIFIER_DATE_FORMAT.setTimeZone ( TimeZone.getTimeZone ( "UTC" ) );
     }
-
-    private final static Logger logger = LoggerFactory.getLogger ( FeatureGenerator.class );
 
     public static final String ID = "p2.feature";
 
@@ -170,8 +164,7 @@ public class FeatureGenerator implements ArtifactGenerator
 
     private void processPlugin ( final Element root, final ArtifactInformation a )
     {
-        final String classifier = a.getMetaData ().get ( new MetaKey ( "osgi", "classifier" ) );
-        if ( !"bundle".equals ( classifier ) )
+        if ( !Helper.isBundle ( a.getMetaData () ) )
         {
             return;
         }
@@ -206,30 +199,7 @@ public class FeatureGenerator implements ArtifactGenerator
     @Override
     public boolean shouldRegenerate ( final Object event )
     {
-        logger.debug ( "Check if we need to generate: {}", event );
-
-        boolean result = false;
-        if ( event instanceof AddedEvent )
-        {
-            final AddedEvent context = (AddedEvent)event;
-            result = isBundle ( context.getMetaData () );
-        }
-        else if ( event instanceof RemovedEvent )
-        {
-            final RemovedEvent context = (RemovedEvent)event;
-            result = isBundle ( context.getMetaData () );
-        }
-
-        logger.debug ( "Result: {}", result );
-
-        return result;
-    }
-
-    private boolean isBundle ( final Map<MetaKey, String> metaData )
-    {
-        final String classifier = metaData.get ( new MetaKey ( "osgi", "classifier" ) );
-        logger.debug ( "Artifact OSGi classifier: {}", classifier );
-        return "bundle".equals ( classifier );
+        return Helper.shouldRegenerateFeature ( event );
     }
 
 }
