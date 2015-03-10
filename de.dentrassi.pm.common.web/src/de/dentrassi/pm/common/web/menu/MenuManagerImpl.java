@@ -124,15 +124,19 @@ public class MenuManagerImpl
             final String cat = entry.getCategory ();
             if ( cat == null )
             {
+                // entry has not category
                 continue;
             }
 
             final Integer prio = map.get ( cat );
             if ( prio == null && entry.getCategoryOrder () != Integer.MAX_VALUE )
             {
+                // we don't yet have a category and the cat order is not "unspecified"
                 map.put ( cat, entry.getCategoryOrder () );
             }
         }
+
+        // we should have a map of categories priorities now
 
         final List<MenuEntry> result = new ArrayList<> ( entries.size () );
 
@@ -141,6 +145,7 @@ public class MenuManagerImpl
             final String cat = entry.getCategory ();
             if ( cat == null )
             {
+                // no category, just copy
                 result.add ( entry );
                 continue;
             }
@@ -148,11 +153,14 @@ public class MenuManagerImpl
             final Integer prio = map.get ( cat );
             if ( prio == null )
             {
+                // no recorded priority, copy
                 result.add ( entry );
+                // and record priority
                 map.put ( cat, entry.getCategoryOrder () );
             }
             else
             {
+                // recorded priority, create new entry with recorded priority
                 result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow () ) );
             }
         }

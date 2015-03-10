@@ -8,7 +8,7 @@
 <%
 pageContext.setAttribute ( "showStackTrace", Boolean.getBoolean ( "package.drone.showStackTrace" ) );
 %>
-<h:main title="${title }">
+<h:main title="${title }" subtitle="${subtitle}">
 
 <c:choose>
 

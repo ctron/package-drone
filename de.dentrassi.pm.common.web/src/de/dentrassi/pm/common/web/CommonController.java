@@ -33,6 +33,8 @@ public class CommonController
 
     public static final String ERROR_VIEW_TITLE = "title";
 
+    public static final String ERROR_VIEW_SUBTITLE = "subtitle";
+
     public static final String ERROR_VIEW_RESULT = "result";
 
     public static final String ERROR_VIEW_MESSAGE = "message";
@@ -57,11 +59,17 @@ public class CommonController
 
     public static ModelAndView createError ( final String title, final String result, final Throwable e, final boolean showStackTrace )
     {
+        return createError ( title, null, result, e, showStackTrace );
+    }
+
+    public static ModelAndView createError ( final String title, final String subtitle, final String result, final Throwable e, final boolean showStackTrace )
+    {
         final ModelAndView mav = new ModelAndView ( ERROR_VIEW );
 
         mav.put ( "showStackTrace", showStackTrace );
 
         mav.put ( ERROR_VIEW_TITLE, title );
+        mav.put ( ERROR_VIEW_SUBTITLE, subtitle );
         mav.put ( ERROR_VIEW_RESULT, result );
         mav.put ( ERROR_VIEW_EXCEPTION, e );
         if ( e != null )
