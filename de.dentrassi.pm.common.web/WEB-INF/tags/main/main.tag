@@ -27,6 +27,7 @@ if ( p instanceof UserInformationPrincipal )
 <c:set var="jquery" value="${pageContext.request.contextPath}/resources/jquery"/>
 <c:set var="html5shiv" value="${pageContext.request.contextPath}/resources/html5shiv/3.7.2"/>
 <c:set var="respond" value="${pageContext.request.contextPath}/resources/respond/1.4.2"/>
+<c:set var="fontAwesome" value="${pageContext.request.contextPath}/resources/font-awesome/4.3.0"/>
 
 <head>
     <title>${fn:escapeXml(title) } | Package Drone</title>
@@ -49,7 +50,9 @@ if ( p instanceof UserInformationPrincipal )
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="${jquery}/jquery-1.11.2.min.js"></script>
     <script src="${bootstrap}/js/bootstrap.min.js"></script>
-
+    
+    <link rel="stylesheet" href="${fontAwesome}/css/font-awesome.min.css">
+    
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
 </head>
 
