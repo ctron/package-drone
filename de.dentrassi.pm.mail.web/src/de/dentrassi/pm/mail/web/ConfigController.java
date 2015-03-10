@@ -11,8 +11,6 @@
 package de.dentrassi.pm.mail.web;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Dictionary;
@@ -26,7 +24,6 @@ import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
@@ -42,6 +39,7 @@ import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.mail.service.java.DefaultMailService;
@@ -273,18 +271,7 @@ public class ConfigController implements InterfaceExtender
         catch ( final Throwable e )
         {
             logger.warn ( "Failed to send test e-mail", e );
-
-            final StringWriter sw = new StringWriter ();
-            e.printStackTrace ( new PrintWriter ( sw ) );
-            try
-            {
-                sw.close ();
-            }
-            catch ( final IOException e1 )
-            {
-            }
-            model.put ( "message", ExceptionHelper.getMessage ( e ) );
-            model.put ( "stacktrace", sw.toString () );
+            return CommonController.createError ( "Test Mail", "Result", null, e, true );
         }
 
         return new ModelAndView ( "testSent", model );
