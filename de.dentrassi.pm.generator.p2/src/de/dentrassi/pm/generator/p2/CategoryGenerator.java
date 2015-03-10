@@ -21,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.w3c.dom.Element;
 
@@ -87,12 +89,15 @@ public class CategoryGenerator implements ArtifactGenerator
         Helper.createFragmentFile ( out, ( units ) -> {
 
             Helper.createCategoryUnit ( units, id, name, description, version, ( unit ) -> {
+
+                final Set<String> ctx = new HashSet<> ();
+
                 final Element reqs = XmlHelper.addElement ( unit, "requires" );
                 for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
                 {
                     if ( Helper.isFeature ( a.getMetaData () ) )
                     {
-                        Helper.addFeatureRequirement ( reqs, a );
+                        Helper.addFeatureRequirement ( ctx, reqs, a );
                     }
                 }
                 XmlHelper.fixSize ( reqs );

@@ -135,7 +135,7 @@ public final class Helper
         return "bundle".equals ( classifier );
     }
 
-    public static void addFeatureRequirement ( final Element requires, final ArtifactInformation a )
+    public static void addFeatureRequirement ( final Set<String> context, final Element requires, final ArtifactInformation a )
     {
         final String id = a.getMetaData ().get ( new MetaKey ( "osgi", "name" ) );
         if ( id == null )
@@ -143,9 +143,15 @@ public final class Helper
             return;
         }
 
-        final Element p = XmlHelper.addElement ( requires, "required" );
-
         final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
+
+        final String key = String.format ( "%s.feature.group-%s", id, version );
+        if ( !context.add ( key ) )
+        {
+            return;
+        }
+
+        final Element p = XmlHelper.addElement ( requires, "required" );
 
         final FeatureInformation fi = FeatureInformation.fromJson ( a.getMetaData ().get ( FeatureInformation.META_KEY ) );
         if ( fi != null )
@@ -162,7 +168,7 @@ public final class Helper
         p.setAttribute ( "range", String.format ( "[%1$s,%1$s]", version ) );
     }
 
-    public static void addBundleRequirement ( final Element requires, final ArtifactInformation a )
+    public static void addBundleRequirement ( final Set<String> context, final Element requires, final ArtifactInformation a )
     {
         final String id = a.getMetaData ().get ( new MetaKey ( "osgi", "name" ) );
         if ( id == null )
@@ -170,10 +176,16 @@ public final class Helper
             return;
         }
 
+        final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
+
+        final String key = String.format ( "%s.feature.group-%s", id, version );
+        if ( !context.add ( key ) )
+        {
+            return;
+        }
+
         final Element p = requires.getOwnerDocument ().createElement ( "required" );
         requires.appendChild ( p );
-
-        final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
 
         p.setAttribute ( "namespace", "org.eclipse.equinox.p2.iu" );
         p.setAttribute ( "name", id );

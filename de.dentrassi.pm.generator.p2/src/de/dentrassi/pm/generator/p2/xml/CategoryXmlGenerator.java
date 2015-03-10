@@ -93,6 +93,8 @@ public class CategoryXmlGenerator implements ArtifactGenerator
                     Helper.createCategoryUnit ( units, cat.getId (), cat.getLabel (), cat.getDescription (), Helper.makeDefaultVersion (), ( unit ) -> {
                         final Element reqs = XmlHelper.addElement ( unit, "requires" );
 
+                        final Set<String> ctx = new HashSet<> ();
+
                         final Set<ArtifactInformation> list = map.get ( cat.getId () );
                         if ( list != null )
                         {
@@ -100,11 +102,11 @@ public class CategoryXmlGenerator implements ArtifactGenerator
                             {
                                 if ( Helper.isFeature ( ai.getMetaData () ) )
                                 {
-                                    Helper.addFeatureRequirement ( reqs, ai );
+                                    Helper.addFeatureRequirement ( ctx, reqs, ai );
                                 }
                                 else if ( Helper.isBundle ( ai.getMetaData () ) )
                                 {
-                                    Helper.addBundleRequirement ( reqs, ai );
+                                    Helper.addBundleRequirement ( ctx, reqs, ai );
                                 }
                             }
                         }
