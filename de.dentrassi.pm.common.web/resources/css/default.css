@@ -109,6 +109,7 @@ img.gravatar {
 .link-list {
 	list-style: none;
 	padding-left: 0;
+	margin-bottom: 0;
 }
 
 ul.link-list > li {
