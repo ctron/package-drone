@@ -92,6 +92,7 @@ public class DefaultMailService implements MailService
                     return new PasswordAuthentication ( username, password );
                 }
             };
+            properties.put ( "mail.smtp.auth", "true" );
         }
 
         this.session = Session.getInstance ( properties, auth );
