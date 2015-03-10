@@ -24,7 +24,19 @@ public class Form extends FormTagSupport
 
     private String command = "command";
 
+    private String enctype;
+
     private Object commandValue;
+
+    public void setEnctype ( final String enctype )
+    {
+        this.enctype = enctype;
+    }
+
+    public String getEnctype ()
+    {
+        return this.enctype;
+    }
 
     public void setMethod ( final String method )
     {
@@ -50,6 +62,7 @@ public class Form extends FormTagSupport
         writer.writeOptionalAttribute ( "id", this.command );
         writer.writeOptionalAttribute ( "action", this.action );
         writer.writeOptionalAttribute ( "method", this.method );
+        writer.writeOptionalAttribute ( "enctype", this.enctype );
         writeDefaultAttributes ( writer );
         writer.write ( ">" );
 
