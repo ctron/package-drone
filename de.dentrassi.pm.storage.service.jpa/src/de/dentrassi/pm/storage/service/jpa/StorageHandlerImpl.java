@@ -138,17 +138,6 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
             {
                 throw new RuntimeException ( e );
             }
-            finally
-            {
-                try
-                {
-                    stream.close ();
-                }
-                catch ( final IOException e )
-                {
-                    // ignore this one
-                }
-            }
         }
 
         @Override
