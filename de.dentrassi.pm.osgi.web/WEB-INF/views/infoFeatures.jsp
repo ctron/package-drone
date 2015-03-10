@@ -47,9 +47,9 @@
         
         <td>
             <ul class="link-list">
-                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.licenseUrl }">License</h:artifactLinkListItem>
-                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.copyrightUrl }">Copyright</h:artifactLinkListItem>
-                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.descriptionUrl }">Description</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.translate(feature.licenseUrl) }">License</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.translate(feature.copyrightUrl) }">Copyright</h:artifactLinkListItem>
+                <h:artifactLinkListItem artifactId="${feature.artifactId }" url="${feature.translate(feature.descriptionUrl) }">Description</h:artifactLinkListItem>
             </ul>
         </td>
         
