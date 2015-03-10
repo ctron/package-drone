@@ -34,6 +34,7 @@ import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.GenerationContext;
+import de.dentrassi.pm.osgi.feature.FeatureInformation;
 
 public final class Helper
 {
@@ -142,10 +143,19 @@ public final class Helper
             return;
         }
 
-        final Element p = requires.getOwnerDocument ().createElement ( "required" );
-        requires.appendChild ( p );
+        final Element p = XmlHelper.addElement ( requires, "required" );
 
         final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
+
+        final FeatureInformation fi = FeatureInformation.fromJson ( a.getMetaData ().get ( FeatureInformation.META_KEY ) );
+        if ( fi != null )
+        {
+            final String filter = fi.getQualifiers ().toFilterString ();
+            if ( filter != null )
+            {
+                XmlHelper.addElement ( p, "filter" ).setTextContent ( filter );
+            }
+        }
 
         p.setAttribute ( "namespace", "org.eclipse.equinox.p2.iu" );
         p.setAttribute ( "name", id + ".feature.group" );

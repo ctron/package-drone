@@ -22,11 +22,14 @@ import java.util.Set;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.osgi.ParserHelper;
 import de.dentrassi.pm.osgi.TranslatedInformation;
 
 public class BundleInformation implements TranslatedInformation
 {
+    public static final MetaKey META_KEY = new MetaKey ( "osgi", "bundle-information" );
+
     public static class PackageImport
     {
         private final String name;
