@@ -23,7 +23,7 @@ else
 
 		<div class="panel panel-${type }">
 		    <div class="panel-heading">
-		        <h4 class="panel-title">${fn:escapeXml(job.label) }</h4>
+		        <h4 class="panel-title"><c:if test="${not job.complete }"><i class="fa fa-spinner fa-pulse"></i>${ ' ' }</c:if>${fn:escapeXml(job.label) }</h4>
 		    </div>
 		    
 		    <div class="panel-body">
