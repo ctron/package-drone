@@ -134,6 +134,11 @@ public class MenuManagerImpl
                 // we don't yet have a category and the cat order is not "unspecified"
                 map.put ( cat, entry.getCategoryOrder () );
             }
+            else if ( prio != null && entry.getCategoryOrder () < prio )
+            {
+                // overwrite with higher priority
+                map.put ( cat, entry.getCategoryOrder () );
+            }
         }
 
         // we should have a map of categories priorities now
