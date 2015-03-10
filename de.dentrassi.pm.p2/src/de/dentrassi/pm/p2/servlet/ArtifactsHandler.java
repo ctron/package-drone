@@ -23,6 +23,8 @@ import de.dentrassi.pm.storage.Channel;
 
 public class ArtifactsHandler extends AbstractRepositoryHandler
 {
+    private static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
+
     public ArtifactsHandler ( final Channel channel, final boolean compress )
     {
         super ( channel, compress, "artifacts" );
@@ -41,7 +43,7 @@ public class ArtifactsHandler extends AbstractRepositoryHandler
 
         for ( final Artifact artifact : this.channel.getArtifacts () )
         {
-            final String ft = artifact.getInformation ().getMetaData ().get ( new MetaKey ( "p2.repo", "fragment-type" ) );
+            final String ft = artifact.getInformation ().getMetaData ().get ( MK_FRAGMENT_TYPE );
 
             if ( "artifacts".equals ( ft ) )
             {
