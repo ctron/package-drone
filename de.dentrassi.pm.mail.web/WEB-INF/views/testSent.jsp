@@ -13,12 +13,16 @@
 
 <div class="col-xs-offset-1 col-xs-10">
 
-<c:choose>
 	<div class="alert alert-success">
-	    <strong>Mail sent!</strong> The test e-mail has been handed over to the first mail server. This
-	    does not guarantee a delivery, since other involved mail servers could block the transmission.
+	    <strong>Mail sent!</strong> The test e-mail has been handed over to the first mail server.
 	</div>
-</c:choose>
+	
+	<p class="text-muted">
+        This does not guarantee a delivery, since other
+        e-mails are passed from mail server to mail server until they reach
+        their final destination. Any of those mail servers still can block
+        this message.
+    </p>
 
 </div></div></div>
 
