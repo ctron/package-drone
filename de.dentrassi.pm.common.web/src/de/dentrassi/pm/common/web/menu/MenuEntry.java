@@ -205,4 +205,10 @@ public class MenuEntry implements Comparable<MenuEntry>
         return getMainLabel ().compareTo ( o.getMainLabel () );
     }
 
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[Menu: %s@%s/%s@%s - %s]", this.category, this.categoryOrder, this.label, this.entryOrder, this.target );
+    }
+
 }
