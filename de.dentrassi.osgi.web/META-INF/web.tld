@@ -64,6 +64,20 @@
            <type>java.lang.String</type>
        </attribute>
     </tag>
+    
+    <tag>
+        <description>Show number of bytes</description>
+        <name>bytes</name>
+        <tag-class>de.dentrassi.osgi.web.tags.BytesTag</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <description>The number of bytes</description>
+            <name>amount</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Long</type>
+        </attribute>
+    </tag>
 
 	<function>
 		<name>active</name>
@@ -94,5 +108,4 @@
         <function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
         <function-signature>java.util.List sort(java.util.Collection)</function-signature>
     </function>
-
 </taglib>
