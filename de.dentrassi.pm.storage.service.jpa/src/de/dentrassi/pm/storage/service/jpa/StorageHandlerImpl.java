@@ -71,6 +71,31 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
 
+    public static class AggregationContextImpl implements AggregationContext
+    {
+        private final Collection<ArtifactInformation> artifacts;
+
+        private final SortedMap<MetaKey, String> metaData;
+
+        public AggregationContextImpl ( Collection<ArtifactInformation> artifacts, SortedMap<MetaKey, String> metaData )
+        {
+            this.artifacts = artifacts;
+            this.metaData = metaData;
+        }
+
+        @Override
+        public Collection<ArtifactInformation> getArtifacts ()
+        {
+            return artifacts;
+        }
+
+        @Override
+        public Map<MetaKey, String> getChannelMetaData ()
+        {
+            return metaData;
+        }
+    }
+
     private class ArtifactContextImpl implements Virtualizer.Context, GenerationContext
     {
         private final ChannelEntity channel;
@@ -541,20 +566,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
         final SortedMap<MetaKey, String> metaData = convertMetaData ( null, channel.getProvidedProperties () );
 
-        return new AggregationContext () {
-
-            @Override
-            public Collection<ArtifactInformation> getArtifacts ()
-            {
-                return artifacts;
-            }
-
-            @Override
-            public Map<MetaKey, String> getChannelMetaData ()
-            {
-                return metaData;
-            }
-        };
+        return new AggregationContextImpl ( artifacts, metaData );
     }
 
     public void runChannelAggregators ( final String channelId )
