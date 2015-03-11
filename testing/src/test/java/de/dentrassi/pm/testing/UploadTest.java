@@ -39,7 +39,7 @@ public class UploadTest extends AbstractServerTest
 
     private void withChannel ( final String channelId )
     {
-        driver.get ( resolve ( String.format ( "/channel/%s/view", channelId ) ) );
+        driver.get ( resolve ( String.format ( "/channel/%s/viewPlain", channelId ) ) );
 
         // should be an empty channel
 
@@ -57,6 +57,10 @@ public class UploadTest extends AbstractServerTest
 
             ele.submit ();
         }
+
+        // navigate to plain view
+
+        driver.get ( resolve ( String.format ( "/channel/%s/viewPlain", channelId ) ) );
 
         // check upload
 
