@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -160,7 +161,15 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/view", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId )
+    public void view ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
+    {
+        request.getRequestDispatcher ( "tree" ).forward ( request, response );
+    }
+
+    @Secured ( false )
+    @RequestMapping ( value = "/channel/{channelId}/viewPlain", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
+    public ModelAndView viewPlain ( @PathVariable ( "channelId" ) final String channelId )
     {
         final ModelAndView result = new ModelAndView ( "channel/view" );
 
@@ -597,8 +606,8 @@ public class ChannelController implements InterfaceExtender
 
             final List<MenuEntry> result = new LinkedList<> ();
 
-            result.add ( new MenuEntry ( "List", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
-            result.add ( new MenuEntry ( "Tree", 120, LinkTarget.createFromController ( ChannelController.class, "tree" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "Content", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
+            result.add ( new MenuEntry ( "List", 120, LinkTarget.createFromController ( ChannelController.class, "viewPlain" ).expand ( model ), Modifier.DEFAULT, null ) );
             result.add ( new MenuEntry ( "Details", 200, LinkTarget.createFromController ( ChannelController.class, "details" ).expand ( model ), Modifier.DEFAULT, null ) );
 
             if ( request.isUserInRole ( "MANAGER" ) )
