@@ -42,6 +42,9 @@ public class ChannelEntity
     @Column ( name = "NAME", nullable = true, unique = true )
     private String name;
 
+    @Column ( name = "DESCRIPTION", nullable = true, length = 255 )
+    private String description;
+
     @OneToMany ( mappedBy = "channel" )
     private Set<ArtifactEntity> artifacts = new HashSet<> ();
 
@@ -72,6 +75,16 @@ public class ChannelEntity
     public boolean isLocked ()
     {
         return this.locked;
+    }
+
+    public void setDescription ( final String description )
+    {
+        this.description = description;
+    }
+
+    public String getDescription ()
+    {
+        return this.description;
     }
 
     public void setDeployGroups ( final Set<DeployGroupEntity> deployGroups )
