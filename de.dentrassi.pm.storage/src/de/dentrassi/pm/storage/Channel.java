@@ -107,6 +107,28 @@ public interface Channel
 
     public void removeDeployGroup ( String groupId );
 
+    /**
+     * Stream the data of a cache entry to the consumer
+     * <p>
+     * The {@link CacheEntry#getStream()} may only be called while consuming the
+     * cache entry. The stream will be closed automatically before this method
+     * returns.
+     * </p>
+     *
+     * @param key
+     *            the key of the cache entry
+     * @param consumer
+     *            the consumer of the cache entry
+     * @throws FileNotFoundException
+     *             if the cache entry does not exists
+     */
     public void streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException;
+
+    /**
+     * Get information about all present cache entries
+     * 
+     * @return the list of information
+     */
+    public List<CacheEntryInformation> getAllCacheEntries ();
 
 }

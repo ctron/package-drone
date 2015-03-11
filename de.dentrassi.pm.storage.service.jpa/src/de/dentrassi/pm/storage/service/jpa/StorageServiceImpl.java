@@ -48,6 +48,7 @@ import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.CacheEntry;
+import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
@@ -771,9 +772,27 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer )
     {
+        doWithHandlerVoid ( ( handler ) -> handler.streamCacheEntry ( channelId, namespace, key, consumer ) );
+    }
+
+    protected void doWithHandlerVoid ( final ThrowingConsumer<StorageHandlerImpl> consumer )
+    {
         doWithTransactionVoid ( ( em ) -> {
-            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).streamCacheEntry ( channelId, namespace, key, consumer );
+            final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+            consumer.accept ( handler );
         } );
     }
 
+    protected <R> R doWithHandler ( final ManagerFunction<R, StorageHandlerImpl> consumer )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+            return consumer.process ( handler );
+        } );
+    }
+
+    public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
+    {
+        return doWithHandler ( ( handler ) -> handler.getAllCacheEntries ( channelId ) );
+    }
 }

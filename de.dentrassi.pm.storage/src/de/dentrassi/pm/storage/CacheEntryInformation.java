@@ -10,18 +10,18 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage;
 
-import java.io.InputStream;
+import de.dentrassi.pm.common.MetaKey;
 
 /**
- * The cache entry information and data
+ * Information about a cache entry
  */
-public interface CacheEntry extends CacheEntryInformation
+public interface CacheEntryInformation
 {
-    /**
-     * Get the stream to the data
-     * <p>
-     * <em>Note:</em> This method may only be called once
-     * </p>
-     */
-    public InputStream getStream ();
+    public MetaKey getKey ();
+
+    public String getName ();
+
+    public long getSize ();
+
+    public String getMimeType ();
 }

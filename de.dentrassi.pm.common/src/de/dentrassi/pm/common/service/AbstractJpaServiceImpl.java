@@ -22,9 +22,9 @@ public class AbstractJpaServiceImpl
     private EntityManagerFactory entityManagerFactory;
 
     @FunctionalInterface
-    public static interface ManagerFunction<T>
+    public static interface ManagerFunction<R, T>
     {
-        public T process ( EntityManager entityManager ) throws Exception;
+        public R process ( T input ) throws Exception;
     }
 
     @FunctionalInterface
@@ -38,7 +38,7 @@ public class AbstractJpaServiceImpl
         this.entityManagerFactory = entityManagerFactory;
     }
 
-    protected <T> T doWithManager ( final ManagerFunction<T> function ) throws Exception
+    protected <R> R doWithManager ( final ManagerFunction<R, EntityManager> function ) throws Exception
     {
         final EntityManager em = this.entityManagerFactory.createEntityManager ();
         try
@@ -59,7 +59,7 @@ public class AbstractJpaServiceImpl
         } );
     }
 
-    protected <T> T doWithTransaction ( final ManagerFunction<T> function )
+    protected <R> R doWithTransaction ( final ManagerFunction<R, EntityManager> function )
     {
         try
         {
@@ -70,7 +70,7 @@ public class AbstractJpaServiceImpl
 
                 try
                 {
-                    final T result = function.process ( entityManager );
+                    final R result = function.process ( entityManager );
                     tx.commit ();
                     return result;
                 }

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.CacheEntry;
+import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
@@ -917,6 +919,25 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         this.em.persist ( cce );
     }
 
+    public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
+    {
+        final ChannelEntity channel = getCheckedChannel ( channelId );
+
+        final TypedQuery<ChannelCacheEntity> q = this.em.createQuery ( String.format ( "SELECT cce from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ), ChannelCacheEntity.class );
+        q.setParameter ( "channel", channel );
+
+        final List<ChannelCacheEntity> rl = q.getResultList ();
+
+        final List<CacheEntryInformation> result = new ArrayList<> ( rl.size () );
+
+        for ( final ChannelCacheEntity cce : rl )
+        {
+            result.add ( new CacheEntryInformationImpl ( new MetaKey ( cce.getNamespace (), cce.getKey () ), cce.getName (), cce.getSize (), cce.getMimeType () ) );
+        }
+
+        return result;
+    }
+
     public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
     {
         if ( consumer == null )
@@ -939,33 +960,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         try
         {
             final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );;
-            consumer.accept ( new CacheEntry () {
-
-                @Override
-                public InputStream getStream ()
-                {
-                    return stream;
-                }
-
-                @Override
-                public String getName ()
-                {
-                    return cce.getName ();
-                }
-
-                @Override
-                public String getMimeType ()
-                {
-                    return cce.getMimeType ();
-                }
-
-                @Override
-                public long getSize ()
-                {
-                    return cce.getSize ();
-                }
-
-            } );
+            consumer.accept ( new CacheEntryImpl ( stream, cce ) );
         }
         catch ( final Exception e )
         {

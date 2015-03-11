@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage.web.channel;
 
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -32,6 +33,8 @@ import javax.validation.Valid;
 import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 
+import com.google.common.io.ByteStreams;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -47,6 +50,7 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
@@ -481,6 +485,55 @@ public class ChannelController implements InterfaceExtender
         }
     }
 
+    @RequestMapping ( value = "/channel/{channelId}/viewCache", method = RequestMethod.GET )
+    @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
+    public ModelAndView viewCache ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        model.put ( "channel", channel );
+        model.put ( "cacheEntries", channel.getAllCacheEntries () );
+
+        return new ModelAndView ( "channel/viewCache", model );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/viewCacheEntry", method = RequestMethod.GET )
+    @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
+    public ModelAndView viewCacheEntry ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "namespace" ) final String namespace, @RequestParameter ( "key" ) final String key, final HttpServletResponse response )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        model.put ( "channel", channel );
+
+        try
+        {
+            channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
+                response.setContentLengthLong ( cacheEntry.getSize () );
+                response.setContentType ( cacheEntry.getMimeType () );
+                response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
+                // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
+                ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+            } );
+            return null;
+        }
+        catch ( final FileNotFoundException e )
+        {
+            return CommonController.createNotFound ( "channel cache entry", String.format ( "%s:%s", namespace, key ) );
+        }
+    }
+
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
@@ -551,6 +604,11 @@ public class ChannelController implements InterfaceExtender
             if ( request.isUserInRole ( "MANAGER" ) )
             {
                 result.add ( new MenuEntry ( "Deploy Keys", 1000, LinkTarget.createFromController ( ChannelController.class, "deployKeys" ).expand ( model ), Modifier.DEFAULT, null ) );
+            }
+
+            if ( request.isUserInRole ( "MANAGER" ) || request.isUserInRole ( "ADMIN" ) )
+            {
+                result.add ( new MenuEntry ( "Cache", 4_00, LinkTarget.createFromController ( ChannelController.class, "viewCache" ).expand ( model ), Modifier.DEFAULT, null ) );
             }
 
             return result;

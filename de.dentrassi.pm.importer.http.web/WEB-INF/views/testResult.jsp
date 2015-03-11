@@ -7,6 +7,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form"%>
 <%@ taglib uri="http://dentrassi.de/osgi/job" prefix="job"%>
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web"%>
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <h:main title="Import Test" subtitle="Result">
@@ -40,7 +41,7 @@ function doAction(action) {
             <dd>${result.name }</dd>
             
             <dt>Content Length</dt>
-            <dd>${result.contentLength }</dd>
+            <dd><web:bytes amount="${result.contentLength }"/></dd>
         </dl>
     </div>
 </div>

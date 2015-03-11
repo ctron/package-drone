@@ -6,7 +6,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrassi.de/pm/storage" prefix="storage" %>
-
+<%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
 <%
 pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
@@ -121,7 +121,7 @@ div.dz-error-message {
 <c:forEach items="${sortedArtifacts }" var="artifact">
     <tr id="row-${artifact.id }">
         <td>${fn:escapeXml(artifact.name) }</td>
-        <td>${fn:escapeXml(artifact.size) }</td>
+        <td class="text-right"><web:bytes amount="${ artifact.size}"/></td>
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
         <td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
         <td>

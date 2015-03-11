@@ -25,6 +25,7 @@ import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.CacheEntry;
+import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
@@ -187,4 +188,9 @@ public class ChannelImpl implements Channel
         this.service.unlockChannel ( this.id );
     }
 
+    @Override
+    public List<CacheEntryInformation> getAllCacheEntries ()
+    {
+        return this.service.getAllCacheEntries ( this.id );
+    }
 }

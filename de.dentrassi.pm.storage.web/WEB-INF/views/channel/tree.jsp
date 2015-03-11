@@ -20,7 +20,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 		      <a href="<c:url value="/artifact/${artifact.id}/view"/>">${fn:escapeXml(artifact.name) }</a>
 		    </td>
 		    
-		    <td>${artifact.size }</td>
+		    <td class="text-right"><web:bytes amount="${artifact.size }"/></td>
 		    
 		    <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
 		    
