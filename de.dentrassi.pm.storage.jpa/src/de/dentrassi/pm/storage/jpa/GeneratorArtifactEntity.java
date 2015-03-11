@@ -18,7 +18,7 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue ( "GEN" )
 @SecondaryTable ( name = "GENERATED_ARTIFACTS" )
-public class GeneratorArtifactEntity extends StoredArtifactEntity
+public class GeneratorArtifactEntity extends RootArtifactEntity
 {
     @Column ( name = "GENERATOR_ID", nullable = false, table = "GENERATED_ARTIFACTS" )
     private String generatorId;

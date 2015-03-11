@@ -217,7 +217,7 @@ public interface StreamServiceHelper
             result.add ( "deletable" );
         }
 
-        if ( ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity && ! ( ae instanceof GeneratorArtifactEntity ) )
+        if ( ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity )
         {
             result.add ( "parentable" );
         }
@@ -227,7 +227,7 @@ public interface StreamServiceHelper
 
     default boolean isDeleteable ( final ArtifactEntity ae )
     {
-        return ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity;
+        return ae instanceof AttachedArtifactEntity || ae instanceof StoredArtifactEntity || ae instanceof GeneratorArtifactEntity;
     }
 
     default String getParentId ( final ArtifactEntity ae )
