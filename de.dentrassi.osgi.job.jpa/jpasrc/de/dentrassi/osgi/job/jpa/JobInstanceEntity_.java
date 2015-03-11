@@ -5,7 +5,7 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-02-19T12:18:57.749+0100")
+@Generated(value="Dali", date="2015-03-10T17:11:11.867+0100")
 @StaticMetamodel(JobInstanceEntity.class)
 public class JobInstanceEntity_ {
 	public static volatile SingularAttribute<JobInstanceEntity, String> id;
@@ -16,4 +16,6 @@ public class JobInstanceEntity_ {
 	public static volatile SingularAttribute<JobInstanceEntity, Long> version;
 	public static volatile SingularAttribute<JobInstanceEntity, String> errorInformation;
 	public static volatile SingularAttribute<JobInstanceEntity, String> label;
+	public static volatile SingularAttribute<JobInstanceEntity, String> currentWorkLabel;
+	public static volatile SingularAttribute<JobInstanceEntity, Double> percentComplete;
 }

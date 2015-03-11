@@ -18,3 +18,4 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/http.xml
 Export-Package: de.dentrassi.pm.importer.http;version="1.0.0";uses:="de.dentrassi.pm.importer"
+Require-Bundle: de.dentrassi.osgi.job

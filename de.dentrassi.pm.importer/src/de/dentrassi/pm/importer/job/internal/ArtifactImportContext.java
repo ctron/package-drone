@@ -13,6 +13,7 @@ package de.dentrassi.pm.importer.job.internal;
 import java.io.InputStream;
 import java.util.Map;
 
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -21,8 +22,9 @@ public class ArtifactImportContext extends AbstractImportContext
 {
     private final Artifact artifact;
 
-    public ArtifactImportContext ( final StorageService service, final String artifactId )
+    public ArtifactImportContext ( final StorageService service, final String artifactId, final Context context )
     {
+        super ( context );
         this.artifact = service.getArtifact ( artifactId );
         if ( this.artifact == null )
         {

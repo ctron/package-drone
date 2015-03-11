@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.dentrassi.osgi.job.ErrorInformation;
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.importer.ImportContext;
@@ -194,6 +195,18 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
     private final List<ImportEntry> entries = new LinkedList<> ();
 
     private final List<CleanupTask> cleanup = new LinkedList<> ();
+
+    private final Context context;
+
+    public AbstractImportContext ( final Context context )
+    {
+        this.context = context;
+    }
+
+    public Context getJobContext ()
+    {
+        return this.context;
+    }
 
     @Override
     public ImportSubContext scheduleImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )

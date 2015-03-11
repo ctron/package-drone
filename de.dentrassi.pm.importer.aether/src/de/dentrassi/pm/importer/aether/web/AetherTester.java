@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.job.AbstractJsonJobFactory;
 import de.dentrassi.osgi.job.JobFactoryDescriptor;
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.aether.AetherImporter;
 import de.dentrassi.pm.importer.aether.Configuration;
@@ -62,7 +63,7 @@ public class AetherTester extends AbstractJsonJobFactory<Configuration, AetherRe
     }
 
     @Override
-    protected AetherResult process ( final Configuration cfg ) throws Exception
+    protected AetherResult process ( final Context context, final Configuration cfg ) throws Exception
     {
         final AetherResult result = new AetherResult ();
 

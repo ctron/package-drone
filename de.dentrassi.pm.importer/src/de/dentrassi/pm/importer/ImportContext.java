@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.importer;
 
+import de.dentrassi.osgi.job.JobInstance.Context;
+
 public interface ImportContext extends ImportSubContext
 {
     @FunctionalInterface
@@ -19,4 +21,6 @@ public interface ImportContext extends ImportSubContext
     }
 
     public void addCleanupTask ( CleanupTask cleanup );
+
+    public Context getJobContext ();
 }

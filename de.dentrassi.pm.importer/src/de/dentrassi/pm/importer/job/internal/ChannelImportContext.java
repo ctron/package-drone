@@ -13,6 +13,7 @@ package de.dentrassi.pm.importer.job.internal;
 import java.io.InputStream;
 import java.util.Map;
 
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
@@ -22,8 +23,9 @@ public class ChannelImportContext extends AbstractImportContext
 {
     private final Channel channel;
 
-    public ChannelImportContext ( final StorageService service, final String channelId )
+    public ChannelImportContext ( final StorageService service, final String channelId, final Context context )
     {
+        super ( context );
         this.channel = service.getChannel ( channelId );
         if ( this.channel == null )
         {

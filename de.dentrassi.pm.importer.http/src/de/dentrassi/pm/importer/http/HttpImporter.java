@@ -25,10 +25,10 @@ import javax.mail.internet.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.ImportContext;
 import de.dentrassi.pm.importer.Importer;
@@ -81,10 +81,28 @@ public class HttpImporter implements Importer
 
         String name;
 
+        final Context job = context.getJobContext ();
+
         try ( final InputStream in = con.getInputStream ();
               OutputStream out = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
         {
-            ByteStreams.copy ( in, out );
+            final long length = con.getContentLengthLong ();
+
+            if ( length > 0 )
+            {
+                job.beginWork ( String.format ( "Downloading %s bytes of data", length ), length );
+            }
+
+            // manual copy
+            final byte[] buffer = new byte[4096];
+            int rc;
+            while ( ( rc = in.read ( buffer ) ) > 0 )
+            {
+                out.write ( buffer, 0, rc );
+                job.worked ( rc );
+            }
+
+            job.complete ();
 
             // get the name inside here, since this will properly clean up if something fails
 

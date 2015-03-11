@@ -16,6 +16,7 @@ import java.net.URLConnection;
 
 import de.dentrassi.osgi.job.AbstractJsonJobFactory;
 import de.dentrassi.osgi.job.JobFactoryDescriptor;
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.http.Configuration;
 import de.dentrassi.pm.importer.http.HttpImporter;
@@ -39,7 +40,7 @@ public class DownloadTester extends AbstractJsonJobFactory<Configuration, TestRe
     }
 
     @Override
-    protected TestResult process ( final Configuration cfg ) throws Exception
+    protected TestResult process ( final Context context, final Configuration cfg ) throws Exception
     {
         final TestResult result = new TestResult ();
 
@@ -57,6 +58,8 @@ public class DownloadTester extends AbstractJsonJobFactory<Configuration, TestRe
         {
             final HttpURLConnection httpCon = (HttpURLConnection)con;
             result.setReturnCode ( httpCon.getResponseCode () );
+            final long length = httpCon.getContentLengthLong ();
+            result.setContentLength ( length );
         }
 
         final String name = HttpImporter.makeName ( cfg, url, con );

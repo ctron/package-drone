@@ -57,6 +57,32 @@ public class JobInstanceEntity
     @Column ( length = 255 )
     private String label;
 
+    @Column ( name = "CURRENT_WORK_LABEL", length = 255, nullable = true )
+    private String currentWorkLabel;
+
+    @Column ( name = "PERCENT_COMPLETE", nullable = true )
+    private Double percentComplete;
+
+    public void setPercentComplete ( final Double percentComplete )
+    {
+        this.percentComplete = percentComplete;
+    }
+
+    public Double getPercentComplete ()
+    {
+        return this.percentComplete;
+    }
+
+    public void setCurrentWorkLabel ( final String currentWorkLabel )
+    {
+        this.currentWorkLabel = currentWorkLabel;
+    }
+
+    public String getCurrentWorkLabel ()
+    {
+        return this.currentWorkLabel;
+    }
+
     public void setLabel ( final String label )
     {
         this.label = label;

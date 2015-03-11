@@ -39,11 +39,18 @@ public class JobHandleImpl implements JobHandle
 
     private final String result;
 
+    private final String currentWorkLabel;
+
+    private final Double percentComplete;
+
     public JobHandleImpl ( final JobInstanceEntity ji )
     {
         this.id = ji.getId ();
         this.state = ji.getState ();
         this.errorString = ji.getErrorInformation ();
+
+        this.currentWorkLabel = ji.getCurrentWorkLabel ();
+        this.percentComplete = ji.getPercentComplete ();
 
         this.request = new JobRequest ();
         this.request.setFactoryId ( ji.getFactoryId () );
@@ -98,6 +105,16 @@ public class JobHandleImpl implements JobHandle
     public String getLabel ()
     {
         return this.label;
+    }
+
+    public String getCurrentWorkLabel ()
+    {
+        return this.currentWorkLabel;
+    }
+
+    public double getPercentComplete ()
+    {
+        return this.percentComplete == null ? 0.0 : this.percentComplete;
     }
 
     @Override

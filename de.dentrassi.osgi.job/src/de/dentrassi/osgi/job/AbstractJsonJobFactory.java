@@ -15,6 +15,8 @@ import java.util.function.Supplier;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import de.dentrassi.osgi.job.JobInstance.Context;
+
 public abstract class AbstractJsonJobFactory<T, R> implements JobFactory
 {
     private static GsonBuilder DEFAULT = new GsonBuilder ();
@@ -52,7 +54,7 @@ public abstract class AbstractJsonJobFactory<T, R> implements JobFactory
         return this.builder.create ();
     }
 
-    protected abstract R process ( T data ) throws Exception;
+    protected abstract R process ( Context context, T data ) throws Exception;
 
     @Override
     public JobInstance createInstance ( final String data )
@@ -66,7 +68,7 @@ public abstract class AbstractJsonJobFactory<T, R> implements JobFactory
             @Override
             public void run ( final Context context ) throws Exception
             {
-                final R result = process ( cfg );
+                final R result = process ( context, cfg );
                 context.setResult ( gson.toJson ( result ) );
             }
         };

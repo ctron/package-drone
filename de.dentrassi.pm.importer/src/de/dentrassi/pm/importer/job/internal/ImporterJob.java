@@ -15,6 +15,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import de.dentrassi.osgi.job.AbstractJsonJobFactory;
 import de.dentrassi.osgi.job.JobFactoryDescriptor;
+import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.Importer;
 import de.dentrassi.pm.importer.job.ImporterJobConfiguration;
@@ -61,7 +62,7 @@ public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration
     }
 
     @Override
-    protected ImporterResult process ( final ImporterJobConfiguration cfg ) throws Exception
+    protected ImporterResult process ( final Context context, final ImporterJobConfiguration cfg ) throws Exception
     {
         final Importer imp = getImporter ( cfg.getImporterId () );
 
@@ -74,10 +75,10 @@ public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration
         switch ( cfg.getDescriptor ().getType () )
         {
             case "channel":
-                ctx = new ChannelImportContext ( this.service, cfg.getDescriptor ().getId () );
+                ctx = new ChannelImportContext ( this.service, cfg.getDescriptor ().getId (), context );
                 break;
             case "artifact":
-                ctx = new ArtifactImportContext ( this.service, cfg.getDescriptor ().getId () );
+                ctx = new ArtifactImportContext ( this.service, cfg.getDescriptor ().getId (), context );
                 break;
             default:
                 throw new IllegalArgumentException ( String.format ( "Unknown import type: %s", cfg.getDescriptor ().getType () ) );

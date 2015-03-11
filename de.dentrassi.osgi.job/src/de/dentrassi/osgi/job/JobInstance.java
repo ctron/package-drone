@@ -14,6 +14,12 @@ public interface JobInstance
 {
     public static interface Context
     {
+        public void beginWork ( String label, long amount );
+
+        public void worked ( long amount );
+
+        public void complete ();
+
         public void setResult ( String data );
     }
 

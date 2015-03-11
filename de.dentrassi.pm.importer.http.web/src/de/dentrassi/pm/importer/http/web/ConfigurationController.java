@@ -106,6 +106,12 @@ public class ConfigurationController
         final Map<String, Object> model = new HashMap<> ();
 
         final JobHandle job = this.jobManager.getJob ( jobId );
+
+        if ( job.isFailed () )
+        {
+            return new ModelAndView ( String.format ( "redirect:/job/%s/result", jobId ) );
+        }
+
         model.put ( "job", job );
 
         final String data = job.getRequest ().getData ();

@@ -38,6 +38,9 @@ function doAction(action) {
             
             <dt>Name</dt>
             <dd>${result.name }</dd>
+            
+            <dt>Content Length</dt>
+            <dd>${result.contentLength }</dd>
         </dl>
     </div>
 </div>

@@ -48,6 +48,48 @@ import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 
 public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
 {
+    public class ContextImpl implements Context
+    {
+        private final String id;
+
+        private long totalAmount;
+
+        private long worked;
+
+        public ContextImpl ( final String id )
+        {
+            this.id = id;
+        }
+
+        @Override
+        public void beginWork ( final String label, final long amount )
+        {
+            this.totalAmount = amount;
+            internalStartWork ( this.id, label );
+        }
+
+        @Override
+        public void complete ()
+        {
+            internalWorked ( this.id, 1.0 );
+        }
+
+        @Override
+        public void worked ( final long amount )
+        {
+            this.worked = Math.min ( this.worked + amount, this.totalAmount );
+            internalWorked ( this.id, (double)this.worked / (double)this.totalAmount );
+        }
+
+        @Override
+        public void setResult ( final String data )
+        {
+            logger.debug ( "Setting result for job {}: {}", this.id, data );
+            internalSetResult ( this.id, data );
+            complete ();
+        }
+    }
+
     private final static Logger logger = LoggerFactory.getLogger ( JobManagerImpl.class );
 
     private final Map<String, JobFactory> factories = new HashMap<> ();
@@ -204,16 +246,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
 
                 try
                 {
-                    instance.run ( new Context () {
-
-                        @Override
-                        public void setResult ( final String data )
-                        {
-                            logger.debug ( "Setting result for job {}: {}", id, data );
-                            internalSetResult ( id, data );
-                        }
-
-                    } );
+                    instance.run ( new ContextImpl ( id ) );
                 }
                 catch ( final Throwable e )
                 {
@@ -227,6 +260,33 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
         };
         t.setName ( String.format ( "JobInstance/" + id + "/" + request.getFactoryId () ) );
         t.start ();
+    }
+
+    protected void internalStartWork ( final String id, final String label )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final JobInstanceEntity ji = em.find ( JobInstanceEntity.class, id, LockModeType.NONE );
+            if ( ji == null )
+            {
+                return;
+            }
+            ji.setCurrentWorkLabel ( label );
+            ji.setPercentComplete ( 0.0 );
+            em.persist ( ji );
+        } );
+    }
+
+    protected void internalWorked ( final String id, final double percentComplete )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final JobInstanceEntity ji = em.find ( JobInstanceEntity.class, id, LockModeType.OPTIMISTIC );
+            if ( ji == null )
+            {
+                return;
+            }
+            ji.setPercentComplete ( percentComplete );
+            em.persist ( ji );
+        } );
     }
 
     protected void internalSetRunning ( final String id )

@@ -20,6 +20,18 @@ public class TestResult
 
     private String name;
 
+    private long contentLength;
+
+    public void setContentLength ( final long contentLength )
+    {
+        this.contentLength = contentLength;
+    }
+
+    public long getContentLength ()
+    {
+        return this.contentLength;
+    }
+
     public void setName ( final String name )
     {
         this.name = name;
