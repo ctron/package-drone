@@ -19,6 +19,18 @@ public class EditChannel
      */
     private String name;
 
+    private String description;
+
+    public void setDescription ( final String description )
+    {
+        this.description = description;
+    }
+
+    public String getDescription ()
+    {
+        return this.description;
+    }
+
     public String getId ()
     {
         return this.id;

@@ -146,7 +146,7 @@ public class ChannelController implements InterfaceExtender
     {
         if ( !result.hasErrors () )
         {
-            final Channel channel = this.service.createChannel ( data.getName () );
+            final Channel channel = this.service.createChannel ( data.getName (), data.getDescription () );
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( channel.getId (), "UTF-8" ) ) );
         }
 
@@ -455,6 +455,7 @@ public class ChannelController implements InterfaceExtender
         final EditChannel edit = new EditChannel ();
         edit.setId ( channel.getId () );
         edit.setName ( channel.getName () );
+        edit.setDescription ( channel.getDescription () );
 
         model.put ( "command", edit );
         model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Edit" ) ) );
@@ -469,7 +470,7 @@ public class ChannelController implements InterfaceExtender
 
         if ( !result.hasErrors () )
         {
-            this.service.updateChannel ( channelId, data.getName () );
+            this.service.updateChannel ( channelId, data.getName (), data.getDescription () );
             return redirectDefaultView ( channelId );
         }
         else
@@ -565,7 +566,7 @@ public class ChannelController implements InterfaceExtender
             return;
         }
 
-        final Object other = this.service.getChannelWithAlias ( data.getName () );
+        final Channel other = this.service.getChannelWithAlias ( data.getName () );
         if ( other != null )
         {
             ctx.error ( "name", String.format ( "The channel name '%s' is already in use", data.getName () ) );
@@ -580,8 +581,8 @@ public class ChannelController implements InterfaceExtender
             return;
         }
 
-        final Object other = this.service.getChannelWithAlias ( data.getName () );
-        if ( other != null )
+        final Channel other = this.service.getChannelWithAlias ( data.getName () );
+        if ( other != null && !other.getId ().equals ( data.getId () ) )
         {
             ctx.error ( "name", String.format ( "The channel name '%s' is already in use", data.getName () ) );
         }

@@ -33,7 +33,19 @@ public interface Channel
 {
     public String getId ();
 
+    /**
+     * A unique alias to the channel id
+     * 
+     * @return the alias name or <code>null</code> if none is set
+     */
     public String getName ();
+
+    /**
+     * A plain text description of this channel
+     *
+     * @return the description
+     */
+    public String getDescription ();
 
     boolean isLocked ();
 

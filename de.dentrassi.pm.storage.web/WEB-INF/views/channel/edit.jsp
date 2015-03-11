@@ -24,6 +24,10 @@
     <h:formEntry label="Name" command="command" path="name">
         <form:input path="name" cssClass="form-control" placeholder="Optional channel alias"/>
     </h:formEntry>
+    
+    <h:formEntry label="Description" command="command" path="description">
+        <form:textarea path="description" cssClass="form-control"/>
+    </h:formEntry>
 	
 	<h:formButtons>
         <input type="submit" value="Submit" class="btn btn-primary">

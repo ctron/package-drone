@@ -14,6 +14,18 @@ public class CreateChannel
 {
     private String name;
 
+    private String description;
+
+    public void setDescription ( final String description )
+    {
+        this.description = description;
+    }
+
+    public String getDescription ()
+    {
+        return this.description;
+    }
+
     public void setName ( final String name )
     {
         this.name = name;

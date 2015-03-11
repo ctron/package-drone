@@ -28,10 +28,10 @@ public interface StorageService
 {
     public default Channel createChannel ()
     {
-        return createChannel ( null );
+        return createChannel ( null, null );
     }
 
-    public Channel createChannel ( String alias );
+    public Channel createChannel ( String alias, String description );
 
     public Channel getChannel ( String channelId );
 
@@ -79,7 +79,7 @@ public interface StorageService
 
     public void clearChannel ( String id );
 
-    public void updateChannel ( String id, String name );
+    public void updateChannel ( String id, String name, String description );
 
     public void refreshChannelAspect ( String channelId, String aspectFactoryId );
 }

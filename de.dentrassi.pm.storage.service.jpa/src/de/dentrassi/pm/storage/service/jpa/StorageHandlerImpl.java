@@ -183,7 +183,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     }
 
     @Override
-    public void updateChannel ( final String channelId, final String name )
+    public void updateChannel ( final String channelId, final String name, final String description )
     {
         final ChannelEntity channel = getCheckedChannel ( channelId );
 
@@ -195,6 +195,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         {
             channel.setName ( name );
         }
+
+        channel.setDescription ( description );
 
         this.em.persist ( channel );
     }

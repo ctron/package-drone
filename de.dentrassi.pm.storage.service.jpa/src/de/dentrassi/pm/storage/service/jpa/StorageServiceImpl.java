@@ -83,10 +83,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Channel createChannel ( final String name )
+    public Channel createChannel ( final String name, final String description )
     {
         final ChannelEntity channel = new ChannelEntity ();
         channel.setName ( name );
+        channel.setDescription ( description );
 
         return doWithTransaction ( em -> {
             em.persist ( channel );
@@ -236,7 +237,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             return null;
         }
-        return new ChannelImpl ( ce.getId (), ce.getName (), ce.isLocked (), this );
+        return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), this );
     }
 
     private Artifact convert ( final ChannelImpl channel, final ArtifactEntity ae )
@@ -645,10 +646,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public void updateChannel ( final String channelId, final String name )
+    public void updateChannel ( final String channelId, final String name, final String description )
     {
         doWithTransactionVoid ( em -> {
-            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).updateChannel ( channelId, name );
+            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).updateChannel ( channelId, name, description );
         } );
     }
 
