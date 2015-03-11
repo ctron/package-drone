@@ -38,6 +38,7 @@ import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;

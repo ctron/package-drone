@@ -36,6 +36,8 @@ public class P2RepoChannelAggregator implements ChannelAggregator
     {
         final Map<String, String> result = new HashMap<> ();
 
+        final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelNameOrId (), context.getChannelMetaData (), true, true );
+
         Date lastTimestamp = null;
         for ( final ArtifactInformation ai : context.getArtifacts () )
         {
@@ -49,6 +51,8 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             {
                 lastTimestamp = cts;
             }
+
+            streamer.process ( ai, context::streamArtifact );
         }
 
         if ( lastTimestamp != null )
@@ -57,7 +61,8 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             result.put ( "last-change-string", DATE_FORMAT.format ( lastTimestamp.getTime () ) );
         }
 
+        streamer.spoolOut ( context::createCacheEntry );
+
         return result;
     }
-
 }

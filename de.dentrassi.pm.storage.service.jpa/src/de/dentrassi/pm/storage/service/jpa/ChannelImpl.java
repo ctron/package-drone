@@ -21,8 +21,10 @@ import java.util.SortedMap;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.CacheEntry;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
@@ -59,6 +61,12 @@ public class ChannelImpl implements Channel
     public boolean isLocked ()
     {
         return this.locked;
+    }
+
+    @Override
+    public void streamCacheEntry ( final MetaKey key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    {
+        this.service.streamCacheEntry ( this.id, key.getNamespace (), key.getKey (), consumer );
     }
 
     @Override

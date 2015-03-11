@@ -12,10 +12,14 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -53,12 +57,18 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
+import de.dentrassi.pm.common.utils.IOConsumer;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.generator.GeneratorProcessor;
+import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.CacheEntry;
 import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
+import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
@@ -71,29 +81,85 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
 
-    public static class AggregationContextImpl implements AggregationContext
+    public class AggregationContextImpl implements AggregationContext
     {
         private final Collection<ArtifactInformation> artifacts;
 
         private final SortedMap<MetaKey, String> metaData;
 
-        public AggregationContextImpl ( Collection<ArtifactInformation> artifacts, SortedMap<MetaKey, String> metaData )
+        private final ChannelEntity channel;
+
+        private final String namespace;
+
+        public AggregationContextImpl ( final Collection<ArtifactInformation> artifacts, final SortedMap<MetaKey, String> metaData, final ChannelEntity channel, final String namespace )
         {
             this.artifacts = artifacts;
             this.metaData = metaData;
+            this.channel = channel;
+            this.namespace = namespace;
+        }
+
+        @Override
+        public String getChannelId ()
+        {
+            return this.channel.getId ();
+        }
+
+        @Override
+        public String getChannelName ()
+        {
+            return this.channel.getName ();
+        }
+
+        @Override
+        public String getChannelDescription ()
+        {
+            return this.channel.getDescription ();
         }
 
         @Override
         public Collection<ArtifactInformation> getArtifacts ()
         {
-            return artifacts;
+            return this.artifacts;
         }
 
         @Override
         public Map<MetaKey, String> getChannelMetaData ()
         {
-            return metaData;
+            return this.metaData;
         }
+
+        @Override
+        public void createCacheEntry ( final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator )
+        {
+            try
+            {
+                internalCreateCacheEntry ( this.channel, this.namespace, id, name, mimeType, creator );
+            }
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( e );
+            }
+        }
+
+        @Override
+        public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws FileNotFoundException
+        {
+            final ArtifactEntity art = StorageHandlerImpl.this.em.find ( ArtifactEntity.class, artifactId );
+            if ( art == null )
+            {
+                throw new FileNotFoundException ( artifactId );
+            }
+            try
+            {
+                internalStreamArtifact ( StorageHandlerImpl.this.em, art, receiver );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+        }
+
     }
 
     private class ArtifactContextImpl implements Virtualizer.Context, GenerationContext
@@ -529,44 +595,47 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.info ( "Running channel aggregators - channelId: {}", channel.getId () );
 
-        final Map<MetaKey, String> metadata = new HashMap<> ();
-
-        final AggregationContext context = createAggregationContext ( channel );
-
-        this.channelAspectProcessor.process ( channel.getAspects (), ChannelAspect::getChannelAggregator, aggregator -> {
-            try
-            {
-                final Map<String, String> md = aggregator.aggregateMetaData ( context );
-                convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aggregator.getId () ), e );
-            }
-        } );
-
-        // clear
         this.lockManager.modifyRun ( channel.getId (), ( ) -> {
-            channel.getExtractedProperties ().clear ();
 
+            // delete old cache entries
+            deleteAllCacheEntries ( channel );
+
+            // current state for context
+            final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
+            final SortedMap<MetaKey, String> metaData = convertMetaData ( null, channel.getProvidedProperties () );
+
+            // gather new meta data
+            final Map<MetaKey, String> metadata = new HashMap<> ();
+
+            this.channelAspectProcessor.process ( channel.getAspects (), ChannelAspect::getChannelAggregator, aggregator -> {
+                try
+                {
+                    // create new context for this channel aspect
+                    final AggregationContext context = new AggregationContextImpl ( artifacts, metaData, channel, aggregator.getId () );
+
+                    // process
+                    final Map<String, String> md = aggregator.aggregateMetaData ( context );
+                    convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
+                }
+                catch ( final Exception e )
+                {
+                    throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aggregator.getId () ), e );
+                }
+            } );
+
+            // clear old meta data
+
+            channel.getExtractedProperties ().clear ();
             this.em.persist ( channel );
             this.em.flush ();
 
-            // set
+            // set new meta data
 
             Helper.convertExtractedProperties ( metadata, channel, channel.getExtractedProperties () );
 
             this.em.persist ( channel );
             this.em.flush ();
         } );
-    }
-
-    private AggregationContext createAggregationContext ( final ChannelEntity channel )
-    {
-        final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
-        final SortedMap<MetaKey, String> metaData = convertMetaData ( null, channel.getProvidedProperties () );
-
-        return new AggregationContextImpl ( artifacts, metaData );
     }
 
     public void runChannelAggregators ( final String channelId )
@@ -803,6 +872,106 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
 
         this.em.flush ();
+    }
+
+    protected void deleteAllCacheEntries ( final ChannelEntity channel )
+    {
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ) );
+        q.setParameter ( "channel", channel );
+        final int result = q.executeUpdate ();
+
+        logger.info ( "Deleted {} cache entries in channel {}", result, channel.getId () );
+
+        this.em.flush ();
+    }
+
+    protected void deleteCacheEntries ( final String namespace, final ChannelEntity channel )
+    {
+        final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel and cce.namepsace=:ns", ChannelCacheEntity.class.getName () ) );
+        q.setParameter ( "channel", channel );
+        q.setParameter ( "ns", namespace );
+        final int result = q.executeUpdate ();
+
+        logger.info ( "Deleted {} cache entries in channel {} for namespace {}", result, channel.getId (), namespace );
+
+        this.em.flush ();
+    }
+
+    public void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
+    {
+        final ChannelCacheEntity cce = new ChannelCacheEntity ();
+
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+        creator.accept ( bos );
+        bos.close ();
+        final byte[] data = bos.toByteArray ();
+
+        cce.setChannel ( channel );
+        cce.setNamespace ( namespace );
+        cce.setKey ( id );
+        cce.setData ( data );
+        cce.setSize ( data.length );
+        cce.setName ( name );
+        cce.setMimeType ( mimeType );
+
+        this.em.persist ( cce );
+    }
+
+    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    {
+        if ( consumer == null )
+        {
+            return;
+        }
+
+        final ChannelCacheKey ccKey = new ChannelCacheKey ();
+        ccKey.setChannel ( channelId );
+        ccKey.setNamespace ( namespace );
+        ccKey.setKey ( key );
+
+        final ChannelCacheEntity cce = this.em.find ( ChannelCacheEntity.class, ccKey );
+
+        if ( cce == null )
+        {
+            throw new FileNotFoundException ( ccKey.toString () );
+        }
+
+        try
+        {
+            final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );;
+            consumer.accept ( new CacheEntry () {
+
+                @Override
+                public InputStream getStream ()
+                {
+                    return stream;
+                }
+
+                @Override
+                public String getName ()
+                {
+                    return cce.getName ();
+                }
+
+                @Override
+                public String getMimeType ()
+                {
+                    return cce.getMimeType ();
+                }
+
+                @Override
+                public long getSize ()
+                {
+                    return cce.getSize ();
+                }
+
+            } );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to stream cache entry:  " + ccKey, e );
+            throw new RuntimeException ( e );
+        }
     }
 
     public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )

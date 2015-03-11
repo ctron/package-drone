@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.SortedMap;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 
 /**
  * A handle to a channel
@@ -35,10 +37,20 @@ public interface Channel
 
     /**
      * A unique alias to the channel id
-     * 
+     *
      * @return the alias name or <code>null</code> if none is set
      */
     public String getName ();
+
+    public default String getNameOrId ()
+    {
+        final String name = getName ();
+        if ( name != null && !name.isEmpty () )
+        {
+            return name;
+        }
+        return getId ();
+    }
 
     /**
      * A plain text description of this channel
@@ -94,5 +106,7 @@ public interface Channel
     public void addDeployGroup ( String groupId );
 
     public void removeDeployGroup ( String groupId );
+
+    public void streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException;
 
 }

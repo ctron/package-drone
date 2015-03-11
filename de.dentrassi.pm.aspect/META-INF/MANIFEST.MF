@@ -10,7 +10,9 @@ Export-Package: de.dentrassi.pm.aspect;version="1.0.0";uses:="org.osgi.framework
  de.dentrassi.pm.aspect.extract;version="1.0.0";uses:="de.dentrassi.pm.aspect",
  de.dentrassi.pm.aspect.listener;version="1.0.0",
  de.dentrassi.pm.aspect.virtual;version="1.0.0"
-Import-Package: de.dentrassi.pm.common;version="1.0.0",
+Import-Package: com.google.common.io;version="18.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.common.utils;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
  org.osgi.framework;version="1.7.0",
  org.osgi.util.tracker;version="1.5.1"

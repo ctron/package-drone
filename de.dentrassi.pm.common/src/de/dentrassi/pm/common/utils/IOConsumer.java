@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,10 +8,12 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service.jpa;
+package de.dentrassi.pm.common.utils;
+
+import java.io.IOException;
 
 @FunctionalInterface
-public interface ThrowingConsumer<T>
+public interface IOConsumer<T>
 {
-    public void accept ( T t ) throws Exception;
+    public void accept ( T data ) throws IOException;
 }

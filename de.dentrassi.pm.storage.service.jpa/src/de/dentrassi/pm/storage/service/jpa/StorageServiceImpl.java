@@ -43,9 +43,11 @@ import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.CacheEntry;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
@@ -424,6 +426,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 }
 
                 final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+
                 hi.recreateAllVirtualArtifacts ( channel );
             } );
 
@@ -763,6 +766,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 channel.setLocked ( state );
                 em.persist ( channel );
             } );
+        } );
+    }
+
+    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).streamCacheEntry ( channelId, namespace, key, consumer );
         } );
     }
 

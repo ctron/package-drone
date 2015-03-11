@@ -40,6 +40,7 @@ import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.ChannelLockedException;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;

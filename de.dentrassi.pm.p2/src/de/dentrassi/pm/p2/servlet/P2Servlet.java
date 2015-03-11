@@ -25,7 +25,9 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
+import de.dentrassi.pm.p2.internal.aspect.ChannelStreamer;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 
@@ -36,6 +38,14 @@ public class P2Servlet extends HttpServlet
     private static final long serialVersionUID = 1L;
 
     private ServiceTracker<StorageService, StorageService> tracker;
+
+    private final ChannelCacheHandler artifactsXml = new ChannelCacheHandler ( new MetaKey ( "p2.repo", "artifacts.xml" ) );
+
+    private final ChannelCacheHandler artifactsJar = new ChannelCacheHandler ( new MetaKey ( "p2.repo", "artifacts.jar" ) );
+
+    private final ChannelCacheHandler contentXml = new ChannelCacheHandler ( new MetaKey ( "p2.repo", "content.xml" ) );
+
+    private final ChannelCacheHandler contentJar = new ChannelCacheHandler ( new MetaKey ( "p2.repo", "content.jar" ) );
 
     @Override
     public void init () throws ServletException
@@ -57,14 +67,14 @@ public class P2Servlet extends HttpServlet
     @Override
     protected void service ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        logger.debug ( "Request: {} / {}", req.getMethod (), req.getPathInfo () );
+        logger.debug ( "Request: {} / {}", req.getMethod (), req.getServletPath () );
         super.service ( req, resp );
     }
 
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        final String path = req.getPathInfo ();
+        final String path = req.getServletPath ();
         final String paths[] = path.split ( "/" );
 
         if ( paths.length < 2 )
@@ -91,28 +101,33 @@ public class P2Servlet extends HttpServlet
                 resp.sendRedirect ( req.getContextPath () + StringHelper.join ( paths, "/" ) + "/" );
                 return;
             }
-            process ( req, resp, new IndexHandler ( channel ) );
-            return;
+            final String title = ChannelStreamer.makeTitle ( channel.getId (), channel.getName (), channel.getMetaData () );
+            req.setAttribute ( "p2Title", title );
+            req.setAttribute ( "id", channel.getId () );
+            req.setAttribute ( "name", channel.getName () );
+            req.setAttribute ( "description", channel.getDescription () );
+            req.getRequestDispatcher ( "/WEB-INF/views/channel.jsp" ).forward ( req, resp );
         }
         else if ( "p2.index".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new P2IndexHandler ( channel ) );
+            // process ( req, resp, new P2IndexHandler ( channel ) );
+            req.getRequestDispatcher ( "/WEB-INF/views/p2index.jsp" ).forward ( req, resp );
         }
         else if ( "content.xml".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new MetadataHandler ( channel, false ) );
+            this.contentXml.process ( channel, req, resp );
         }
         else if ( "artifacts.xml".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new ArtifactsHandler ( channel, false ) );
+            this.artifactsXml.process ( channel, req, resp );
         }
         else if ( "content.jar".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new MetadataHandler ( channel, true ) );
+            this.contentJar.process ( channel, req, resp );
         }
         else if ( "artifacts.jar".equals ( paths[2] ) && paths.length == 3 )
         {
-            process ( req, resp, new ArtifactsHandler ( channel, true ) );
+            this.artifactsJar.process ( channel, req, resp );
         }
         else if ( "repo.zip".equals ( paths[2] ) && paths.length == 3 )
         {

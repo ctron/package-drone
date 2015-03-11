@@ -8,15 +8,14 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-
-package de.dentrassi.pm.p2.servlet;
+package de.dentrassi.pm.p2.internal.aspect;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import de.dentrassi.pm.common.servlet.Handler;
+import de.dentrassi.pm.common.utils.IOConsumer;
 
-public interface SpoolOutHandler extends Handler
+public interface SpoolOutHandler
 {
-    public void process ( OutputStream out ) throws IOException;
+    public void spoolOut ( final String id, final String name, final String mimeType, final IOConsumer<OutputStream> stream ) throws IOException;
 }

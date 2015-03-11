@@ -25,6 +25,7 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
+import de.dentrassi.pm.p2.internal.aspect.ChannelStreamer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 
@@ -52,11 +53,18 @@ public class ZippedHandler implements Handler
         resp.setContentType ( "application/zip" );
         final ZipOutputStream zos = new ZipOutputStream ( resp.getOutputStream () );
 
-        write ( zos, "content.xml", new MetadataHandler ( this.channel, false ) );
-        write ( zos, "artifacts.xml", new ArtifactsHandler ( this.channel, false ) );
+        String channelName = this.channel.getName ();
+        if ( channelName == null )
+        {
+            channelName = this.channel.getId ();
+        }
+
+        final ChannelStreamer streamer = new ChannelStreamer ( channelName, this.channel.getMetaData (), false, true );
 
         for ( final Artifact a : this.channel.getArtifacts () )
         {
+            streamer.process ( a.getInformation (), ( ai, receiver ) -> a.streamData ( receiver ) );
+
             final Map<MetaKey, String> md = a.getInformation ().getMetaData ();
 
             final String classifier = md.get ( new MetaKey ( "osgi", OsgiExtractor.KEY_CLASSIFIER ) );
@@ -81,6 +89,12 @@ public class ZippedHandler implements Handler
             }
         }
 
+        streamer.spoolOut ( ( id, name, mimeType, stream ) -> {
+            zos.putNextEntry ( new ZipEntry ( name ) );
+            stream.accept ( zos );
+            zos.closeEntry ();
+        } );
+
         zos.close ();
     }
 
@@ -95,14 +109,5 @@ public class ZippedHandler implements Handler
         zos.putNextEntry ( new ZipEntry ( name ) );
         a.streamData ( ( ai, stream ) -> ByteStreams.copy ( stream, zos ) );
         zos.closeEntry ();
-    }
-
-    private void write ( final ZipOutputStream zos, final String name, final SpoolOutHandler handler ) throws Exception
-    {
-        zos.putNextEntry ( new ZipEntry ( name ) );
-        handler.prepare ();
-        handler.process ( zos );
-        zos.closeEntry ();
-
     }
 }

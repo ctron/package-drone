@@ -8,12 +8,14 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.unzip;
+package de.dentrassi.pm.p2.internal.aspect;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
+
+import de.dentrassi.pm.storage.ArtifactReceiver;
 
 @FunctionalInterface
-public interface IOConsumer<T>
+public interface ArtifactStreamer
 {
-    public void accept ( T data ) throws IOException;
+    public void stream ( String artifactId, ArtifactReceiver receiver ) throws FileNotFoundException;
 }

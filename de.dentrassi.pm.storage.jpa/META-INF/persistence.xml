@@ -19,6 +19,7 @@
 		<class>de.dentrassi.pm.storage.jpa.DeployGroupEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.DeployKeyEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.RootArtifactEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ChannelCacheEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="true"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
