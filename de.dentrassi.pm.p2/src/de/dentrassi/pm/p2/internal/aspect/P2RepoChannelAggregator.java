@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +23,8 @@ import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 
 public class P2RepoChannelAggregator implements ChannelAggregator
 {
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss.SSS" );
+
     @Override
     public String getId ()
     {
@@ -51,7 +54,7 @@ public class P2RepoChannelAggregator implements ChannelAggregator
         if ( lastTimestamp != null )
         {
             result.put ( "last-change", "" + lastTimestamp.getTime () );
-            result.put ( "last-change-string", new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss.SSS" ).format ( lastTimestamp.getTime () ) );
+            result.put ( "last-change-string", DATE_FORMAT.format ( lastTimestamp.getTime () ) );
         }
 
         return result;
