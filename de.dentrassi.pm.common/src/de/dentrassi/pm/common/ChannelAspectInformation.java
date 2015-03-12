@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,9 @@
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
 package de.dentrassi.pm.common;
+
+import java.util.Collections;
+import java.util.SortedSet;
 
 public class ChannelAspectInformation
 {
@@ -20,6 +23,8 @@ public class ChannelAspectInformation
 
     private final boolean resolved;
 
+    private final SortedSet<String> requires;
+
     private ChannelAspectInformation ( final String factoryId )
     {
         this.factoryId = factoryId;
@@ -27,22 +32,21 @@ public class ChannelAspectInformation
 
         this.label = null;
         this.description = null;
+        this.requires = Collections.emptySortedSet ();
     }
 
-    public ChannelAspectInformation ( final String factoryId, final String label, final String description )
+    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final SortedSet<String> requires )
     {
         this.factoryId = factoryId;
         this.label = label;
         this.description = description;
+        this.requires = requires == null ? Collections.emptySortedSet () : Collections.unmodifiableSortedSet ( requires );
         this.resolved = true;
     }
 
-    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final boolean resolved )
+    public SortedSet<String> getRequires ()
     {
-        this.factoryId = factoryId;
-        this.label = label;
-        this.description = description;
-        this.resolved = resolved;
+        return this.requires;
     }
 
     public String getDescription ()
@@ -67,7 +71,7 @@ public class ChannelAspectInformation
 
     /**
      * Create an unresolved information instance
-     * 
+     *
      * @param factoryId
      *            the factory id
      * @return a new information instance

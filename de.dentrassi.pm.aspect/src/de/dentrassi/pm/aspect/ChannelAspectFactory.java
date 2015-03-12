@@ -14,6 +14,8 @@ public interface ChannelAspectFactory
 {
     public static final String DESCRIPTION = "drone.aspect.description";
 
+    public static final String REQUIRES = "drone.aspect.requires";
+
     public static final String DESCRIPTION_FILE = "drone.aspect.description.file";
 
     public static final String NAME = "drone.aspect.name";

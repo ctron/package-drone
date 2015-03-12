@@ -400,6 +400,8 @@ public class ChannelController implements InterfaceExtender
         model.put ( "channel", channel );
         model.put ( "addAspects", addAspects );
 
+        model.put ( "allAspects", aspects.getAspectInformations () );
+
         model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
 
         return model;
