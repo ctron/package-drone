@@ -9,6 +9,14 @@
  *     Jens Reimann - initial API and implementation
  *******************************************************************************/
  
+.page-header {
+	margin-top: 0px;
+}
+
+h1 {
+	margin-top: 10pt;
+}
+ 
 ul.validation-error {
      margin: 0px;
 }
@@ -37,6 +45,11 @@ tr.table-row-additional > td  {
 	border-top: 0 !important;
 }
 
+/* breadcrumbs */
+
+#breadcrumbs {
+	margin-bottom: 0px;
+}
 
 /* boxes */
 
