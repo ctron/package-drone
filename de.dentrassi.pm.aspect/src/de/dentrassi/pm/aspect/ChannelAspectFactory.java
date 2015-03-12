@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,13 @@ package de.dentrassi.pm.aspect;
 
 public interface ChannelAspectFactory
 {
-    public static final String FACTORY_ID = "pm.channel.aspect.id";
+    public static final String DESCRIPTION = "drone.aspect.description";
+
+    public static final String DESCRIPTION_FILE = "drone.aspect.description.file";
+
+    public static final String NAME = "drone.aspect.name";
+
+    public static final String FACTORY_ID = "drone.aspect.id";
 
     public ChannelAspect createAspect ();
 }

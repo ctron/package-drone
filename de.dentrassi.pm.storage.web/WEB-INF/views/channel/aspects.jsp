@@ -37,14 +37,17 @@ function doAction ( action, factoryId )
         </h3>
     </div>
     <div class="panel-body">
-    <p>${fn:escapeXml(aspect.description) }</p>
-    <p>
     
-    <form id="form-${fn:escapeXml(aspect.factoryId) }" action="removeAspect" method="POST">
-        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }" />
-        <button onclick="doAction('removeAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="remove">Remove</button>
-        <button onclick="doAction('refreshAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
-    </form>
+    ${aspect.description }
+    
+        <p></p>
+    
+        <form id="form-${fn:escapeXml(aspect.factoryId) }" action="removeAspect" method="POST">
+	        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }" />
+	        <button onclick="doAction('removeAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="remove">Remove</button>
+	        <button onclick="doAction('refreshAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+	    </form>
+    
     </div>
 </div>
 

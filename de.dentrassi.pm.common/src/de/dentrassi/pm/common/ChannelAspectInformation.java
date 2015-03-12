@@ -20,6 +20,15 @@ public class ChannelAspectInformation
 
     private final boolean resolved;
 
+    private ChannelAspectInformation ( final String factoryId )
+    {
+        this.factoryId = factoryId;
+        this.resolved = false;
+
+        this.label = null;
+        this.description = null;
+    }
+
     public ChannelAspectInformation ( final String factoryId, final String label, final String description )
     {
         this.factoryId = factoryId;
@@ -54,6 +63,18 @@ public class ChannelAspectInformation
     public boolean isResolved ()
     {
         return this.resolved;
+    }
+
+    /**
+     * Create an unresolved information instance
+     * 
+     * @param factoryId
+     *            the factory id
+     * @return a new information instance
+     */
+    public static ChannelAspectInformation unresolved ( final String factoryId )
+    {
+        return new ChannelAspectInformation ( factoryId );
     }
 
 }

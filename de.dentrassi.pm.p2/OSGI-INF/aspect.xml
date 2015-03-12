@@ -5,4 +5,7 @@
       <provide interface="de.dentrassi.pm.aspect.ChannelAspectFactory"/>
    </service>
    <properties entry="OSGI-INF/aspect.properties"/>
+   <property name="pm.channel.aspect.requires" type="String">mime
+hasher
+   </property>
 </scr:component>

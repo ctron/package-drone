@@ -10,6 +10,10 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -20,15 +24,23 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.common.ChannelAspectInformation;
 
 public class ChannelAspectProcessor
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( ChannelAspectProcessor.class );
+
     private final ServiceTracker<ChannelAspectFactory, ChannelAspectFactory> tracker;
 
     public ChannelAspectProcessor ( final BundleContext context )
@@ -141,9 +153,20 @@ public class ChannelAspectProcessor
         {
             for ( final ServiceReference<ChannelAspectFactory> ref : refs )
             {
-                final String factoryId = getString ( ref, ChannelAspectFactory.FACTORY_ID );
-                final String label = getString ( ref, Constants.SERVICE_PID );
-                final String description = getString ( ref, Constants.SERVICE_DESCRIPTION );
+                final String factoryId = getString ( ref, ChannelAspectFactory.FACTORY_ID, getString ( ref, Constants.SERVICE_PID, null ) );
+                final String label = getString ( ref, ChannelAspectFactory.NAME, null );
+
+                final String descUrl = getString ( ref, ChannelAspectFactory.DESCRIPTION_FILE, null );
+                final String description;
+                if ( descUrl != null )
+                {
+                    description = loadUrl ( ref.getBundle (), descUrl );
+                }
+                else
+                {
+                    description = getString ( ref, ChannelAspectFactory.DESCRIPTION, getString ( ref, Constants.SERVICE_DESCRIPTION, null ) );
+                }
+
                 if ( factoryId != null )
                 {
                     result.put ( factoryId, new ChannelAspectInformation ( factoryId, label, description ) );
@@ -152,6 +175,25 @@ public class ChannelAspectProcessor
         }
 
         return result;
+    }
+
+    private String loadUrl ( final Bundle bundle, final String descUrl )
+    {
+        final URL url = bundle.getEntry ( descUrl );
+        if ( url == null )
+        {
+            return null;
+        }
+
+        try ( Reader reader = new InputStreamReader ( url.openStream (), StandardCharsets.UTF_8 ) )
+        {
+            return CharStreams.toString ( reader );
+        }
+        catch ( final Exception e )
+        {
+            logger.info ( "Failed to load url", e );
+        }
+        return null;
     }
 
     public List<ChannelAspectInformation> resolve ( final List<String> aspects )
@@ -165,7 +207,7 @@ public class ChannelAspectProcessor
             final ChannelAspectInformation ai = infos.get ( aspect );
             if ( ai == null )
             {
-                result.add ( new ChannelAspectInformation ( aspect, null, null, false ) );
+                result.add ( ChannelAspectInformation.unresolved ( aspect ) );
             }
             else
             {
@@ -176,12 +218,12 @@ public class ChannelAspectProcessor
         return result;
     }
 
-    private static String getString ( final ServiceReference<ChannelAspectFactory> ref, final String name )
+    private static String getString ( final ServiceReference<ChannelAspectFactory> ref, final String name, final String defaultValue )
     {
         final Object v = ref.getProperty ( name );
         if ( v == null )
         {
-            return null;
+            return defaultValue;
         }
         return v.toString ();
     }
