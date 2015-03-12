@@ -132,7 +132,14 @@ public class OsgiController implements InterfaceExtender
             }
         }
 
-        bundles.sort ( ( i1, i2 ) -> i1.getId ().compareTo ( i2.getId () ) );
+        bundles.sort ( ( i1, i2 ) -> {
+            final int rc = i1.getId ().compareTo ( i2.getId () );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+            return i1.getVersion ().compareTo ( i2.getVersion () );
+        } );
 
         model.put ( "bundles", bundles );
 
@@ -215,7 +222,14 @@ public class OsgiController implements InterfaceExtender
             }
         }
 
-        features.sort ( ( i1, i2 ) -> i1.getId ().compareTo ( i2.getId () ) );
+        features.sort ( ( i1, i2 ) -> {
+            final int rc = i1.getId ().compareTo ( i2.getId () );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+            return i1.getVersion ().compareTo ( i2.getVersion () );
+        } );
 
         model.put ( "features", features );
 
