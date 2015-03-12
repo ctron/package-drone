@@ -25,19 +25,23 @@ public class ChannelAspectInformation
 
     private final SortedSet<String> requires;
 
+    private final String groupId;
+
     private ChannelAspectInformation ( final String factoryId )
     {
         this.factoryId = factoryId;
         this.resolved = false;
 
+        this.groupId = null;
         this.label = null;
         this.description = null;
         this.requires = Collections.emptySortedSet ();
     }
 
-    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final SortedSet<String> requires )
+    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final String groupId, final SortedSet<String> requires )
     {
         this.factoryId = factoryId;
+        this.groupId = groupId == null || groupId.isEmpty () ? "other" : groupId;
         this.label = label;
         this.description = description;
         this.requires = requires == null ? Collections.emptySortedSet () : Collections.unmodifiableSortedSet ( requires );
@@ -52,6 +56,16 @@ public class ChannelAspectInformation
     public SortedSet<String> getRequires ()
     {
         return this.requires;
+    }
+
+    /**
+     * Get the id of the group this aspect belongs to
+     *
+     * @return the group id, never returns <code>null</code>
+     */
+    public String getGroupId ()
+    {
+        return this.groupId;
     }
 
     public String getDescription ()

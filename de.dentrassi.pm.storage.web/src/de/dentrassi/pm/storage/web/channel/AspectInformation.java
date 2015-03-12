@@ -17,12 +17,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 
 /**
@@ -44,6 +46,8 @@ public class AspectInformation
             return o1.getFactoryId ().compareTo ( o2.getFactoryId () );
         }
     };
+
+    private Group group;
 
     private final ChannelAspectInformation information;
 
@@ -79,7 +83,12 @@ public class AspectInformation
         return this.requires;
     }
 
-    public static List<AspectInformation> resolve ( final Collection<ChannelAspectInformation> aspects )
+    public Group getGroup ()
+    {
+        return this.group;
+    }
+
+    public static List<AspectInformation> resolve ( final Collection<GroupInformation> groups, final Collection<ChannelAspectInformation> aspects )
     {
         if ( aspects == null )
         {
@@ -95,15 +104,30 @@ public class AspectInformation
             map.put ( aspect.getFactoryId (), new AspectInformation ( aspect ) );
         }
 
-        // then resolve dependencies
+        // convert groups
+
+        final Map<String, Group> groupMap = new HashMap<> ( groups.size () );
+        for ( final GroupInformation gi : groups )
+        {
+            groupMap.put ( gi.getId (), new Group ( gi.getId (), gi.getName () ) );
+        }
+
+        // then resolve dependencies and assign groups
 
         final List<AspectInformation> result = new ArrayList<> ( aspects.size () );
 
         for ( final AspectInformation info : map.values () )
         {
             info.resolveDeps ( map );
+            info.group = groupMap.get ( info.information.getGroupId () );
+            if ( info.group == null )
+            {
+                info.group = Group.OTHER;
+            }
             result.add ( info );
         }
+
+        // sort
 
         Collections.sort ( result, NAME_COMPARATOR );
 
@@ -205,6 +229,62 @@ public class AspectInformation
             return false;
         }
         return true;
+    }
+
+    public static class Group implements Comparable<Group>
+    {
+        public static final Group OTHER = new Group ( "other", "Other" );
+
+        private final String id;
+
+        private final String name;
+
+        public Group ( final String id, final String name )
+        {
+            this.id = id;
+            this.name = name;
+        }
+
+        public String getId ()
+        {
+            return this.id;
+        }
+
+        public String getName ()
+        {
+            return this.name;
+        }
+
+        @Override
+        public int compareTo ( final Group o )
+        {
+            final int rc = this.name.compareTo ( o.name );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+
+            return this.id.compareTo ( o.id );
+        }
+
+    }
+
+    public static Map<Group, List<AspectInformation>> group ( final List<AspectInformation> aspects )
+    {
+        final Map<Group, List<AspectInformation>> result = new HashMap<> ();
+
+        for ( final AspectInformation ai : aspects )
+        {
+            List<AspectInformation> list = result.get ( ai.getGroup () );
+            if ( list == null )
+            {
+                list = new LinkedList<> ();
+                result.put ( ai.getGroup (), list );
+            }
+            list.add ( ai );
+        }
+
+        return result;
     }
 
 }

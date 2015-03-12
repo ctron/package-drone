@@ -61,65 +61,109 @@ function doAction ( action, factoryId )
 	
 	   <h2>Assigned aspects</h2>
 	
-		<c:forEach items="${assignedAspects }" var="aspect">
-			<div class="panel panel-default" id="${aspect.factoryId }">
-			    <div class="panel-heading">
-			        <h3 class="panel-title">${fn:escapeXml(aspect.name) }
-			        <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
-			        </h3>
-			    </div>
-			    <div class="panel-body">
-			    
-			     <div class="panel-body-section">
-			         ${aspect.information.description }
-			     </div>
-			         
-			     <web:call name="requires" requires="${aspect.requires }"/>
-			    
-	                <div>
-				        <form id="form-${fn:escapeXml(aspect.factoryId) }" action="removeAspect" method="POST">
-					        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }" />
-					        <button onclick="doAction('removeAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="remove">Remove</button>
-					        <button onclick="doAction('refreshAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
-					    </form>
-				    
-				    </div>
-			    
-			    </div>
+		<div role="tabpanel">
+	
+	        <ul class="nav nav-pills" role="tablist">
+	            <c:forEach items="${web:sort ( groupedAssignedAspects.keySet() ) }" var="group" varStatus="s">
+	                <li role="presentation" class="${ s.first ? 'active' : '' }">
+	                    <a role="tab" href="#cgroup-${group.id}" data-toggle="pill" aria-controls="cgroup-${group.id }">${fn:escapeXml(group.name) }</a>
+	                </li>
+	            </c:forEach>
+	        </ul>
+	        
+	        <p></p>
+	        
+            <div class="tab-content">
+                <c:forEach items="${web:sort ( groupedAssignedAspects.keySet() ) }" var="group" varStatus="s">
+                
+                    <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="cgroup-${group.id }">
+                
+						<c:forEach items="${groupedAssignedAspects[group] }" var="aspect">
+							<div class="panel panel-default" id="${aspect.factoryId }">
+							    <div class="panel-heading">
+							        <h3 class="panel-title">${fn:escapeXml(aspect.name) }
+							        <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
+							        </h3>
+							    </div>
+							    <div class="panel-body">
+							    
+							     <div class="panel-body-section">
+							         ${aspect.information.description }
+							     </div>
+							         
+							     <web:call name="requires" requires="${aspect.requires }"/>
+							    
+					                <div>
+								        <form id="form-${fn:escapeXml(aspect.factoryId) }" action="removeAspect" method="POST">
+									        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }" />
+									        <button onclick="doAction('removeAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="remove">Remove</button>
+									        <button onclick="doAction('refreshAspect', '${fn:escapeXml(aspect.factoryId)}');" class="btn btn-default" type="button" name="command" value="refresh" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+									    </form>
+								    
+								    </div>
+							    
+							    </div>
+							</div>
+						
+						</c:forEach>
+					</div>
+				</c:forEach>
 			</div>
 		
-		</c:forEach>
+		</div>
 	
 	</div>
 
 </div>
 
 <div class="col-sm-6" >
-<div >
+<div>
+
 <h2>Additional aspects</h2>
 
-	<c:forEach items="${addAspects }" var="aspect">
-		<div class="panel panel-default" id="${aspect.factoryId }">
-		    <div class="panel-heading"><h3 class="panel-title">${fn:escapeXml(aspect.name) }</h3></div>
-		    <div class="panel-body">
-			    <div class="panel-body-section">${fn:escapeXml(aspect.information.description) }</div>
-                <web:call name="requires" requires="${aspect.requires }"/>
-			    
-                <div>
-                    <form id="add-${fn:escapeXml(aspect.factoryId) }" class="addAspect" action="addAspect" method="POST" data-factory-id="${fn:escapeXml(aspect.factoryId) }"
-                        <c:set var="missingIds" value="${aspect.getMissingIds(assignedAspects) }" />
-                        <c:if test="${not empty missingIds}">
-                        data-missing-requires="${fn:escapeXml(fn:join(missingIds, ',')) }"
-                        </c:if>
-                        >
-                        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }">
-                        <input type="submit" value="Add" class="btn btn-default" />
-                    </form>
-			    </div>
-		    </div>
-		</div>
-	</c:forEach>
+    <div role="tabpanel">
 
+        <ul class="nav nav-pills" role="tablist">
+            <c:forEach items="${web:sort ( addAspects.keySet() ) }" var="group" varStatus="s">
+                <li role="presentation" class="${ s.first ? 'active' : '' }">
+                    <a role="tab" href="#group-${group.id}" data-toggle="pill" aria-controls="group-${group.id }">${fn:escapeXml(group.name) }</a>
+                </li>
+            </c:forEach>
+        </ul>
+        
+        <p></p>
+
+        <div class="tab-content">
+		    <c:forEach items="${web:sort ( addAspects.keySet() ) }" var="group" varStatus="s">
+		    
+		      <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="group-${group.id }">
+		      
+		    	<c:forEach items="${addAspects[group] }" var="aspect">
+					<div class="panel panel-default" id="${aspect.factoryId }">
+					    <div class="panel-heading"><h3 class="panel-title">${fn:escapeXml(aspect.name) }</h3></div>
+					    <div class="panel-body">
+						    <div class="panel-body-section">${fn:escapeXml(aspect.information.description) }</div>
+			                <web:call name="requires" requires="${aspect.requires }"/>
+						    
+			                <div>
+			                    <form id="add-${fn:escapeXml(aspect.factoryId) }" class="addAspect" action="addAspect" method="POST" data-factory-id="${fn:escapeXml(aspect.factoryId) }"
+			                        <c:set var="missingIds" value="${aspect.getMissingIds(assignedAspects) }" />
+			                        <c:if test="${not empty missingIds}">
+			                        data-missing-requires="${fn:escapeXml(fn:join(missingIds, ',')) }"
+			                        </c:if>
+			                        >
+			                        <input type="hidden" name="aspect" value="${fn:escapeXml(aspect.factoryId) }">
+			                        <input type="submit" value="Add" class="btn btn-default" />
+			                    </form>
+						    </div>
+					    </div>
+					</div>
+				</c:forEach>
+				</div>
+		    </c:forEach>
+        </div>
+    </div>
+    
 </div>
 </div>
 
@@ -152,12 +196,15 @@ function doAction ( action, factoryId )
 
 <script type="text/javascript">
 
+function escapeId ( theid ) {
+    return theid.replace ( /([:,\.\[\]])/g, "\\\\$1" ); <%-- double escape, one for JSP, one for JavaScript --%>
+}
 
 var nameMap = ${nameMapJson};
 
 $("form.addAspect[data-missing-requires]").click ( function(event){
 	var req = $(this).data("missing-requires").split( "," );
-	console.log ( req);
+	// console.log ( req);
 	event.preventDefault();
 	
 	var list = $("#modal-req-list");
@@ -173,18 +220,20 @@ $("form.addAspect[data-missing-requires]").click ( function(event){
 		list.append ( li );
 	}
 	
-	console.log ( $(this).data("factory-id") );
+	// console.log ( $(this).data("factory-id") );
 	
 	var modal = $("#modal-requires");
 	modal.data ( "factoryId", $(this).data("factoryId") );
-	modal.modal({});
+	modal.modal({
+		backdrop: 'static'
+	});
 } );
 
 $('#modal-req-without').click ( function(event){
 	var modal = $("#modal-requires");
 	var factoryId = modal.data("factoryId");
 	
-	var form = $("#add-" + factoryId);
+	var form = $("#add-" + escapeId ( "" + factoryId ) );
 	form.attr ( "action", "addAspect");
 	form.submit ();
 	
@@ -196,7 +245,7 @@ $('#modal-req-with').click ( function(event){
 	var modal = $("#modal-requires");
     var factoryId = modal.data("factoryId");
 	
-	var form = $("#add-" + factoryId);
+	var form = $("#add-" + escapeId ( factoryId ) );
     form.attr ( "action", "addAspectWithDependencies");
     form.submit ();
     

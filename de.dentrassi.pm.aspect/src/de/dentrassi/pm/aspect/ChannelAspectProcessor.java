@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.aspect.group.Group;
+import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 
 public class ChannelAspectProcessor
@@ -47,6 +49,8 @@ public class ChannelAspectProcessor
     private final static Logger logger = LoggerFactory.getLogger ( ChannelAspectProcessor.class );
 
     private final ServiceTracker<ChannelAspectFactory, FactoryEntry> tracker;
+
+    private ServiceTracker<Group, GroupInformation> groupTracker;
 
     public static class FactoryEntry
     {
@@ -96,11 +100,34 @@ public class ChannelAspectProcessor
             }
         } );
         this.tracker.open ();
+
+        this.groupTracker = new ServiceTracker<Group, GroupInformation> ( context, Group.class, new ServiceTrackerCustomizer<Group, GroupInformation> () {
+
+            @Override
+            public GroupInformation addingService ( final ServiceReference<Group> reference )
+            {
+                final Group group = context.getService ( reference );
+                return group.getInformation ();
+            }
+
+            @Override
+            public void modifiedService ( final ServiceReference<Group> reference, final GroupInformation service )
+            {
+            }
+
+            @Override
+            public void removedService ( final ServiceReference<Group> reference, final GroupInformation service )
+            {
+                context.ungetService ( reference );
+            }
+        } );
+        this.groupTracker.open ();
     }
 
     public void close ()
     {
         this.tracker.close ();
+        this.groupTracker.close ();
     }
 
     protected Map<String, ChannelAspectFactory> getAllFactories ()
@@ -227,9 +254,11 @@ public class ChannelAspectProcessor
             description = getString ( ref, ChannelAspectFactory.DESCRIPTION, getString ( ref, Constants.SERVICE_DESCRIPTION, null ) );
         }
 
+        final String groupId = getString ( ref, ChannelAspectFactory.GROUP_ID, null );
+
         final SortedSet<String> requires = makeRequires ( ref );
 
-        final ChannelAspectInformation info = new ChannelAspectInformation ( factoryId, label, description, requires );
+        final ChannelAspectInformation info = new ChannelAspectInformation ( factoryId, label, description, groupId, requires );
 
         return new FactoryEntry ( info, context.getService ( ref ) );
     }
@@ -299,6 +328,11 @@ public class ChannelAspectProcessor
             return defaultValue;
         }
         return v.toString ();
+    }
+
+    public Collection<GroupInformation> getGroups ()
+    {
+        return new ArrayList<> ( this.groupTracker.getTracked ().values () );
     }
 
 }

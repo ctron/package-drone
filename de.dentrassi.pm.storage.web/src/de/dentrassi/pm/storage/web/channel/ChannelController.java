@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -52,6 +53,7 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.web.CommonController;
@@ -388,15 +390,20 @@ public class ChannelController implements InterfaceExtender
         final ModelAndView model = new ModelAndView ( "channel/aspects" );
 
         final ChannelAspectProcessor aspects = Activator.getAspects ();
+        final Collection<GroupInformation> groups = aspects.getGroups ();
 
         model.put ( "channel", channel );
 
         final Set<String> assigned = channel.getAspectIds ();
 
-        final List<AspectInformation> allAspects = AspectInformation.resolve ( aspects.getAspectInformations ().values () );
+        final List<AspectInformation> allAspects = AspectInformation.resolve ( groups, aspects.getAspectInformations ().values () );
 
-        model.put ( "assignedAspects", AspectInformation.filterIds ( allAspects, ( id ) -> assigned.contains ( id ) ) );
-        model.put ( "addAspects", AspectInformation.filterIds ( allAspects, ( id ) -> !assigned.contains ( id ) ) );
+        final List<AspectInformation> assignedAspects = AspectInformation.filterIds ( allAspects, ( id ) -> assigned.contains ( id ) );
+        model.put ( "assignedAspects", assignedAspects );
+
+        model.put ( "groupedAssignedAspects", AspectInformation.group ( assignedAspects ) );
+
+        model.put ( "addAspects", AspectInformation.group ( AspectInformation.filterIds ( allAspects, ( id ) -> !assigned.contains ( id ) ) ) );
 
         final Map<String, String> nameMap = new HashMap<> ();
         for ( final AspectInformation ai : allAspects )

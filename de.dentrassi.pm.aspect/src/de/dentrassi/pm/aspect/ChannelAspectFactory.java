@@ -22,5 +22,7 @@ public interface ChannelAspectFactory
 
     public static final String FACTORY_ID = "drone.aspect.id";
 
+    public static final String GROUP_ID = "drone.aspect.group.id";
+
     public ChannelAspect createAspect ();
 }

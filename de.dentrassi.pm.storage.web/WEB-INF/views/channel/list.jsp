@@ -14,7 +14,9 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 
 <h:buttonbar menu="${menuManager.getActions(TAG) }" />
 
-<table class="table table-striped" style="width: 100%" id="channels">
+<div class="table-responsive">
+
+<table class="table table-striped table-hover" style="width: 100%" id="channels">
 
 <thead>
 	<tr>
@@ -35,5 +37,7 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 </tbody>
 
 </table>
+
+</div>
 
 </h:main>
