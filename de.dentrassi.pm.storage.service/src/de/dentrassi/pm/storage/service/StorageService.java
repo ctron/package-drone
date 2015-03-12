@@ -69,7 +69,17 @@ public interface StorageService
 
     public SimpleArtifactInformation deleteArtifact ( String artifactId );
 
-    public void addChannelAspect ( String channelId, String aspectFactoryId );
+    /**
+     * Add an aspect to the channel
+     *
+     * @param channelId
+     *            the channel to process
+     * @param aspectFactoryId
+     *            the factory id of the aspect to add
+     * @param withDependencies
+     *            whether or not to add required dependent channel aspects
+     */
+    public void addChannelAspect ( String channelId, String aspectFactoryId, boolean withDependencies );
 
     public void removeChannelAspect ( String channelId, String aspectFactoryId );
 

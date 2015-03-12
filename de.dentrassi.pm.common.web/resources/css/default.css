@@ -126,3 +126,18 @@ ul.link-list > li:not(:last-child):after {
 .optional label.control-label {
 	font-style: italic;
 }
+
+/* dependency lists */
+
+ul.dependency-list {
+    display: inline-block;
+    padding: 0;
+}
+
+ul.dependency-list li {
+    display: inline;
+}
+
+ul.dependency-list > li:not(:last-child):after {
+    content: ', ';
+}

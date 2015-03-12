@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -645,9 +644,9 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         runChannelAggregators ( getCheckedChannel ( channelId ) );
     }
 
-    protected void reprocessAspect ( final ChannelEntity channel, final String aspectFactoryId ) throws Exception
+    protected void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
     {
-        logger.info ( "Reprocessing aspect - channelId: {}, aspect: {}", channel.getId (), aspectFactoryId );
+        logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
 
         final RegenerateTracker tracker = new RegenerateTracker ( this );
 
@@ -658,8 +657,8 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // delete all metadata first
 
         {
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace=:ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
-            q.setParameter ( "ASPECT", aspectFactoryId );
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
+            q.setParameter ( "ASPECT", aspectFactoryIds );
             q.setParameter ( "CHANNEL", channel );
             q.executeUpdate ();
         }
@@ -679,8 +678,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 // generate metadata for new factory
 
                 final Map<MetaKey, String> metadata = new HashMap<> ();
-                final List<String> list = Arrays.asList ( aspectFactoryId );
-                this.channelAspectProcessor.process ( list, ChannelAspect::getExtractor, extractor -> {
+                this.channelAspectProcessor.process ( aspectFactoryIds, ChannelAspect::getExtractor, extractor -> {
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();

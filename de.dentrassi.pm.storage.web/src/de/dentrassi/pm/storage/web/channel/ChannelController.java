@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import javax.servlet.ServletException;
@@ -35,6 +36,7 @@ import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.common.io.ByteStreams;
+import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
@@ -50,7 +52,6 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
-import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.web.CommonController;
@@ -388,19 +389,22 @@ public class ChannelController implements InterfaceExtender
 
         final ChannelAspectProcessor aspects = Activator.getAspects ();
 
-        final Map<String, ChannelAspectInformation> infos = aspects.getAspectInformations ();
-        for ( final ChannelAspectInformation ca : channel.getAspects () )
+        model.put ( "channel", channel );
+
+        final Set<String> assigned = channel.getAspectIds ();
+
+        final List<AspectInformation> allAspects = AspectInformation.resolve ( aspects.getAspectInformations ().values () );
+
+        model.put ( "assignedAspects", AspectInformation.filterIds ( allAspects, ( id ) -> assigned.contains ( id ) ) );
+        model.put ( "addAspects", AspectInformation.filterIds ( allAspects, ( id ) -> !assigned.contains ( id ) ) );
+
+        final Map<String, String> nameMap = new HashMap<> ();
+        for ( final AspectInformation ai : allAspects )
         {
-            infos.remove ( ca.getFactoryId () );
+            nameMap.put ( ai.getFactoryId (), ai.getName () );
         }
 
-        final ArrayList<ChannelAspectInformation> addAspects = new ArrayList<> ( infos.values () );
-        Collections.sort ( addAspects, ( o1, o2 ) -> o1.getLabel ().compareTo ( o2.getLabel () ) );
-
-        model.put ( "channel", channel );
-        model.put ( "addAspects", addAspects );
-
-        model.put ( "allAspects", aspects.getAspectInformations () );
+        model.put ( "nameMapJson", new GsonBuilder ().create ().toJson ( nameMap ) );
 
         model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
 
@@ -438,7 +442,14 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
     public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
     {
-        this.service.addChannelAspect ( channelId, aspectFactoryId );
+        this.service.addChannelAspect ( channelId, aspectFactoryId, false );
+        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/addAspectWithDependencies", method = RequestMethod.POST )
+    public ModelAndView addAspectWithDependencies ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
+    {
+        this.service.addChannelAspect ( channelId, aspectFactoryId, true );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 

@@ -153,6 +153,12 @@ public class ChannelImpl implements Channel
         return this.service.getChannelAspectInformations ( this.id );
     }
 
+    @Override
+    public Set<String> getAspectIds ()
+    {
+        return this.service.getChannelAspects ( this.id );
+    }
+
     public void generate ( final String id )
     {
         this.service.generateArtifact ( id );

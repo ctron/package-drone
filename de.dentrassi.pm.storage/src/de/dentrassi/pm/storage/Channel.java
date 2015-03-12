@@ -85,6 +85,13 @@ public interface Channel
 
     public List<ChannelAspectInformation> getAspects ();
 
+    /**
+     * Get a set of assigned channel aspect IDs
+     * 
+     * @return the set of assigned IDs, never returns <code>null</code>
+     */
+    public Set<String> getAspectIds ();
+
     public boolean hasAspect ( String id );
 
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
@@ -126,7 +133,7 @@ public interface Channel
 
     /**
      * Get information about all present cache entries
-     * 
+     *
      * @return the list of information
      */
     public List<CacheEntryInformation> getAllCacheEntries ();

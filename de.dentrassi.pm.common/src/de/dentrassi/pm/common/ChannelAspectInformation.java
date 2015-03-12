@@ -44,6 +44,11 @@ public class ChannelAspectInformation
         this.resolved = true;
     }
 
+    /**
+     * Get an unmodifiable sorted set of requirements
+     *
+     * @return the set of requirement id
+     */
     public SortedSet<String> getRequires ()
     {
         return this.requires;

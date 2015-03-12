@@ -12,11 +12,9 @@ package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.CascadeType.ALL;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -51,7 +49,7 @@ public class ChannelEntity
     @ElementCollection
     @CollectionTable ( name = "CHANNEL_ASPECTS", joinColumns = @JoinColumn ( name = "CHANNEL_ID", nullable = false ) )
     @Column ( nullable = false, unique = true, name = "ASPECT" )
-    private List<String> aspects = new ArrayList<> ();
+    private Set<String> aspects = new HashSet<> ();
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "channel" )
     private Collection<ExtractedChannelPropertyEntity> extractedProperties = new LinkedList<> ();
@@ -127,12 +125,12 @@ public class ChannelEntity
         this.artifacts = artifacts;
     }
 
-    public List<String> getAspects ()
+    public Set<String> getAspects ()
     {
         return this.aspects;
     }
 
-    public void setAspects ( final List<String> aspects )
+    public void setAspects ( final Set<String> aspects )
     {
         this.aspects = aspects;
     }

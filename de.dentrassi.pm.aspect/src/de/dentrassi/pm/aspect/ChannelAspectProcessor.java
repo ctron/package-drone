@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,9 +122,9 @@ public class ChannelAspectProcessor
         return result;
     }
 
-    public <T> void process ( final List<String> factoryIds, final Function<ChannelAspect, T> getter, final Consumer<T> consumer )
+    public <T> void process ( final Collection<String> factoryIds, final Function<ChannelAspect, T> getter, final Consumer<T> consumer )
     {
-        final List<ChannelAspect> aspects = createAspects ( factoryIds );
+        final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )
         {
             final T t = getter.apply ( aspect );
@@ -134,9 +135,9 @@ public class ChannelAspectProcessor
         }
     }
 
-    public <T> void processWithAspect ( final List<String> factoryIds, final Function<ChannelAspect, T> getter, final BiConsumer<ChannelAspect, T> consumer )
+    public <T> void processWithAspect ( final Collection<String> factoryIds, final Function<ChannelAspect, T> getter, final BiConsumer<ChannelAspect, T> consumer )
     {
-        final List<ChannelAspect> aspects = createAspects ( factoryIds );
+        final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )
         {
             final T t = getter.apply ( aspect );
@@ -147,16 +148,16 @@ public class ChannelAspectProcessor
         }
     }
 
-    public void processWithAspects ( final List<String> factoryIds, final Consumer<ChannelAspect> aspectConsumer )
+    public void processWithAspects ( final Collection<String> factoryIds, final Consumer<ChannelAspect> aspectConsumer )
     {
-        final List<ChannelAspect> aspects = createAspects ( factoryIds );
+        final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )
         {
             aspectConsumer.accept ( aspect );
         }
     }
 
-    private List<ChannelAspect> createAspects ( final List<String> factoryIds )
+    private Collection<ChannelAspect> createAspects ( final Collection<String> factoryIds )
     {
         final List<String> missingAspects = new LinkedList<> ();
 
@@ -268,7 +269,7 @@ public class ChannelAspectProcessor
         return null;
     }
 
-    public List<ChannelAspectInformation> resolve ( final List<String> aspects )
+    public List<ChannelAspectInformation> resolve ( final Collection<String> aspects )
     {
         final Map<String, ChannelAspectInformation> infos = getAspectInformations ();
 
