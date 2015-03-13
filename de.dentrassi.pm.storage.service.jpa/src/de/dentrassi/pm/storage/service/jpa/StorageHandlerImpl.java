@@ -652,6 +652,12 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
 
+        if ( aspectFactoryIds.isEmpty () )
+        {
+            // nothing to do
+            return;
+        }
+
         final RegenerateTracker tracker = new RegenerateTracker ( this );
 
         // first delete all virtual artifacts
