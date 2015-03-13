@@ -45,6 +45,8 @@ import javax.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
@@ -67,6 +69,7 @@ import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
+import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
@@ -74,6 +77,7 @@ import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 
@@ -200,7 +204,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
                 return null;
             }
 
-            return convert ( this.em.find ( ArtifactEntity.class, artifactId ) );
+            return convert ( this.em.find ( ArtifactEntity.class, artifactId ), null );
         }
 
         @Override
@@ -354,7 +358,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
 
     private ArtifactContextImpl createGeneratedContext ( final RegenerateTracker tracker, final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final boolean runAggregator )
     {
-        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact, null ), em, ( ) -> {
             final GeneratedArtifactEntity ge = new GeneratedArtifactEntity ();
             ge.setParent ( artifact );
             return ge;
@@ -498,7 +502,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
     {
         logger.debug ( "Creating virtual artifact context for: {}", namespace );
 
-        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact, null ), em, ( ) -> {
             final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
             ve.setParent ( artifact );
             ve.setNamespace ( namespace );
@@ -564,7 +568,7 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         // now run the channel aggregator
         runChannelAggregators ( channel );
 
-        return convert ( ae );
+        return convert ( ae, null );
     }
 
     private void runGeneratorTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final Object event )
@@ -792,20 +796,58 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         return result;
     }
 
-    public <T extends Comparable<? super T>> Set<T> listArtifacts ( final String channelId, final Function<ArtifactEntity, T> mapper )
-    {
-        return listArtifacts ( getCheckedChannel ( channelId ), mapper );
-    }
-
     @Override
     public Set<ArtifactInformation> getArtifacts ( final String channelId )
     {
-        return listArtifacts ( getCheckedChannel ( channelId ), ( ae ) -> convert ( ae ) );
+        return getArtifacts ( getCheckedChannel ( channelId ) );
+    }
+
+    /**
+     * Get all artifact properties of a channel
+     * <p>
+     * This method should provide a simple way of simply getting all artifact
+     * properties and work around a n+1 select issue when the whole channel is
+     * fetched and meta data is required
+     * </p>
+     *
+     * @param channel
+     *            the channel
+     * @return all meta data
+     */
+    public Multimap<String, MetaDataEntry> getChannelArtifactProperties ( final ChannelEntity channel )
+    {
+        final Multimap<String, MetaDataEntry> result = HashMultimap.create ();
+
+        /*
+         * Load in two steps, EclipseLink seems to have problems selecting over an abstract type
+         */
+
+        loadChannelArtifactMetaData ( channel, ExtractedArtifactPropertyEntity.class, result );
+        loadChannelArtifactMetaData ( channel, ProvidedArtifactPropertyEntity.class, result );
+
+        return result;
+    }
+
+    private <T extends ArtifactPropertyEntity> void loadChannelArtifactMetaData ( final ChannelEntity channel, final Class<T> clazz, final Multimap<String, MetaDataEntry> result )
+    {
+        final TypedQuery<Object[]> q = this.em.createQuery ( String.format ( "select aep.artifact.id,aep from %s aep where aep.artifact.channel=:channel", clazz.getName () ), Object[].class );
+        q.setParameter ( "channel", channel );
+
+        for ( final Object[] entry : q.getResultList () )
+        {
+            final String artifactId = (String)entry[0];
+            @SuppressWarnings ( "unchecked" )
+            final T aep = (T)entry[1];
+
+            final MetaDataEntry mdEntry = new MetaDataEntry ( new MetaKey ( aep.getNamespace (), aep.getKey () ), aep.getValue () );
+            result.put ( artifactId, mdEntry );
+        }
     }
 
     protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity ce )
     {
-        return listArtifacts ( ce, ( ae ) -> convert ( ae ) );
+        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( ce );
+        return listArtifacts ( ce, ( ae ) -> convert ( ae, properties ) );
     }
 
     public void recreateVirtualArtifacts ( final ArtifactEntity artifact )

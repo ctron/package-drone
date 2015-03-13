@@ -47,7 +47,7 @@ tr.table-row-additional > td  {
 
 /* breadcrumbs */
 
-#breadcrumbs {
+.breadcrumb-compact {
 	margin-bottom: 0px;
 }
 

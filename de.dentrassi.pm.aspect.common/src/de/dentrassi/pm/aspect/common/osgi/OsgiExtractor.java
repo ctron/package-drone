@@ -91,6 +91,7 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_NAME, fi.getId () );
         metadata.put ( KEY_VERSION, "" + fi.getVersion () );
         metadata.put ( KEY_CLASSIFIER, "eclipse.feature" );
+        metadata.put ( de.dentrassi.pm.aspect.Constants.KEY_ARTIFACT_LABEL, "Eclipse Feature" );
 
         // store feature information
 
@@ -140,6 +141,7 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_NAME, bi.getId () );
         metadata.put ( KEY_VERSION, bi.getVersion () != null ? bi.getVersion ().toString () : null );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
+        metadata.put ( de.dentrassi.pm.aspect.Constants.KEY_ARTIFACT_LABEL, "OSGi Bundle" );
 
         // serialize manifest
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();

@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.Constants;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.utils.deb.Packages;
 
@@ -64,6 +65,8 @@ public class DebianExtractor implements Extractor
         metadata.put ( "shortDescription", makeShort ( controlFile.get ( "Description" ) ) );
         metadata.put ( "architecture", controlFile.get ( "Architecture" ) );
         metadata.put ( "section", controlFile.get ( "Section" ) );
+
+        metadata.put ( Constants.KEY_ARTIFACT_LABEL, "Debian Package" );
 
         final Gson gson = this.builder.create ();
 

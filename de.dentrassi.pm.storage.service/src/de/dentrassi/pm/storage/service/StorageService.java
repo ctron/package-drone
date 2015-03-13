@@ -92,4 +92,6 @@ public interface StorageService
     public void updateChannel ( String id, String name, String description );
 
     public void refreshChannelAspect ( String channelId, String aspectFactoryId );
+
+    public void refreshAllChannelAspects ( String channelId );
 }

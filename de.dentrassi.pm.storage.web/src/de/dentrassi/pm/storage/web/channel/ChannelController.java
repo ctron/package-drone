@@ -54,6 +54,7 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.web.CommonController;
@@ -206,7 +207,7 @@ public class ChannelController implements InterfaceExtender
 
         final Map<Object, List<SimpleArtifactInformation>> tree = new HashMap<> ();
 
-        for ( final SimpleArtifactInformation entry : channel.getSimpleArtifacts () )
+        for ( final ArtifactInformation entry : channel.getArtifactInformations () )
         {
             List<SimpleArtifactInformation> list = tree.get ( entry.getParentId () );
             if ( list == null )
@@ -474,6 +475,13 @@ public class ChannelController implements InterfaceExtender
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
+    @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
+    public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        this.service.refreshAllChannelAspects ( channelId );
+        return redirectDefaultView ( channelId );
+    }
+
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
     public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -591,6 +599,7 @@ public class ChannelController implements InterfaceExtender
                 }
 
                 result.add ( new MenuEntry ( "Edit", 150, "Edit Channel", 200, LinkTarget.createFromController ( ChannelController.class, "edit" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Maintenance", 160, "Refresh aspects", 100, LinkTarget.createFromController ( ChannelController.class, "refreshAllAspects" ).expand ( model ), Modifier.SUCCESS, "refresh" ) );
             }
 
             if ( request.getRemoteUser () != null )

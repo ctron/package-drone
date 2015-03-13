@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -87,7 +88,7 @@ public interface Channel
 
     /**
      * Get a set of assigned channel aspect IDs
-     * 
+     *
      * @return the set of assigned IDs, never returns <code>null</code>
      */
     public Set<String> getAspectIds ();
@@ -99,6 +100,18 @@ public interface Channel
     public List<Artifact> findByName ( String artifactName );
 
     public Set<SimpleArtifactInformation> getSimpleArtifacts ();
+
+    /**
+     * Get detailed information of all artifacts
+     * <p>
+     * This method behaves exactly like {@link #getSimpleArtifacts()} but
+     * provides more details in the returned information. Information is of type
+     * {@link ArtifactInformation}, which mainly includes the meta data.
+     * </p>
+     *
+     * @return the artifact information
+     */
+    public Set<ArtifactInformation> getArtifactInformations ();
 
     public SortedMap<MetaKey, String> getMetaData ();
 

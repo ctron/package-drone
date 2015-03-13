@@ -23,6 +23,7 @@
 		<properties>
 			<property name="eclipselink.weaving" value="true"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
+			<property name="eclipselink.logging.level.sql" value="FINEST"/>
 		</properties>
 	</persistence-unit>
 </persistence>

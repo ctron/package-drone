@@ -12,4 +12,10 @@
         <function-class>de.dentrassi.pm.common.web.tags.Functions</function-class>
         <function-signature>java.lang.String modifier(java.lang.String,de.dentrassi.pm.common.web.Modifier)</function-signature>
     </function>
+    
+    <function>
+        <name>metadata</name>
+        <function-class>de.dentrassi.pm.common.web.tags.Functions</function-class>
+        <function-signature>java.util.SortedSet metadata(java.util.Map,java.lang.String,java.lang.String)</function-signature>
+    </function>
 </taglib>

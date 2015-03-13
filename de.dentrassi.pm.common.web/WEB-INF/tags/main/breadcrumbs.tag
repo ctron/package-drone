@@ -6,9 +6,11 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
+<%@ attribute name="cssClass" type="java.lang.String"%>
+
 <c:if test="${not empty breadcrumbs }">
 
-<ol id="breadcrumbs" class="breadcrumb">
+<ol id="breadcrumbs" class="breadcrumb ${cssClass }">
     <c:forEach var="entry" items="${breadcrumbs.entries }" >
         <c:set var="active" value="${web:active(pageContext.request, entry.target) }"/>
         <c:choose>

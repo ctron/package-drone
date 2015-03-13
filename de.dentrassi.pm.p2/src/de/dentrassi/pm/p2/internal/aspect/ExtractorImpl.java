@@ -21,6 +21,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.Constants;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
 
@@ -56,11 +57,13 @@ public class ExtractorImpl implements Extractor
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "artifacts" );
+            metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Artifact Information" );
         }
         else if ( isMetaData ( file ) )
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "metadata" );
+            metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Meta Data Fragment" );
         }
     }
 

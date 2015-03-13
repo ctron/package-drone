@@ -36,6 +36,7 @@ import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
 
+import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.ArtifactInformation;
@@ -101,7 +102,7 @@ public interface StreamServiceHelper
                 final Blob blob = rs.getBlob ( 1 );
                 try ( InputStream stream = blob.getBinaryStream () )
                 {
-                    receiver.receive ( convert ( ae ), stream );
+                    receiver.receive ( convert ( ae, null ), stream );
                 }
                 finally
                 {
@@ -188,7 +189,22 @@ public interface StreamServiceHelper
         return metadata;
     }
 
-    default ArtifactInformation convert ( final ArtifactEntity ae )
+    /**
+     * Convert an artifact entity to an detailed artifact information object
+     * <p>
+     * If there is an additional properties map provided, then the meta data
+     * will be used from the properties map. Otherwise the artifact entity will
+     * be used as source of properties, which might trigger another select on
+     * the database.
+     * </p>
+     *
+     * @param ae
+     *            the entity to convert
+     * @param props
+     *            the optional properties
+     * @return the result information object
+     */
+    default ArtifactInformation convert ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
     {
         if ( ae == null )
         {
@@ -201,7 +217,29 @@ public interface StreamServiceHelper
             childIds.add ( childId );
         }
 
-        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), convertMetaData ( ae ), childIds );
+        SortedMap<MetaKey, String> metaData;
+        if ( properties != null )
+        {
+            metaData = extract ( ae.getId (), properties );
+        }
+        else
+        {
+            metaData = convertMetaData ( ae );
+        }
+
+        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), metaData, childIds );
+    }
+
+    default SortedMap<MetaKey, String> extract ( final String id, final Multimap<String, MetaDataEntry> properties )
+    {
+        final SortedMap<MetaKey, String> result = new TreeMap<> ();
+
+        for ( final MetaDataEntry entry : properties.get ( id ) )
+        {
+            result.put ( entry.getKey (), entry.getValue () );
+        }
+
+        return result;
     }
 
     default Set<String> getArtifactFacets ( final ArtifactEntity ae )

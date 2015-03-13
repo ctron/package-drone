@@ -10,6 +10,11 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.web.tags;
 
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.web.Modifier;
 
 public class Functions
@@ -65,5 +70,48 @@ public class Functions
         {
             return value != null ? value : "";
         }
+    }
+
+    /**
+     * Get all meta data values which match namespace and key
+     *
+     * @param metadata
+     *            the map of meta data to filter
+     * @param namespace
+     *            an optional namespace filter
+     * @param key
+     *            an optional key filter
+     * @return the result set
+     */
+    public static SortedSet<String> metadata ( final Map<MetaKey, String> metadata, String namespace, String key )
+    {
+        final SortedSet<String> result = new TreeSet<> ();
+
+        if ( namespace.isEmpty () )
+        {
+            namespace = null;
+        }
+
+        if ( key.isEmpty () )
+        {
+            key = null;
+        }
+
+        for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
+        {
+            if ( namespace != null && !namespace.equals ( entry.getKey ().getNamespace () ) )
+            {
+                continue;
+            }
+
+            if ( key != null && !key.equals ( entry.getKey ().getKey () ) )
+            {
+                continue;
+            }
+
+            result.add ( entry.getValue () );
+        }
+
+        return result;
     }
 }

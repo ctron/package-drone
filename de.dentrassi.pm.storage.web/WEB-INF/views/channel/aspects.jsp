@@ -49,7 +49,7 @@ function doAction ( action, factoryId )
 }
 </script>
 
-<h:breadcrumbs />
+<h:breadcrumbs cssClass="breadcrumb-compact" />
 
 <div class="container-fluid">
 

@@ -6,6 +6,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://dentrassi.de/pm/storage" prefix="storage" %>
+<%@ taglib uri="http://dentrassi.de/pm" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
 
@@ -25,7 +26,14 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
                       <i style="visibility: hidden;" class="fa fa-square-o"></i>
                   </c:otherwise>
 		      </c:choose>
+		      
 		      ${fn:escapeXml(artifact.name) }
+		    </td>
+		    
+		    <td>
+                <c:forEach var="value" items="${pm:metadata(artifact.metaData, null, 'artifactLabel') }" >
+                    <span class="label label-info">${fn:escapeXml(value) }</span>
+                </c:forEach>
 		    </td>
 		    
 		    <td class="text-right"><web:bytes amount="${artifact.size }"/></td>
@@ -46,6 +54,12 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <h:main title="Channel" subtitle="${storage:channel(channel) }">
 
+<style>
+a.popup-ajax {
+    color: inherit;
+}
+</style>
+
 <h:buttonbar menu="${menuManager.getActions(channel) }" />
 
 <h:nav menu="${menuManager.getViews(channel) }" />
@@ -57,6 +71,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 		<thead>
 		    <tr>
 		        <th>Name</th>
+		        <th>Classifier</th>
 		        <th>Size</th>
 		        <th>Created</th>
 		        <th></th>

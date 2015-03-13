@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -135,6 +136,12 @@ public class ChannelImpl implements Channel
     public Set<SimpleArtifactInformation> getSimpleArtifacts ()
     {
         return this.service.listSimpleArtifacts ( this.id );
+    }
+
+    @Override
+    public Set<ArtifactInformation> getArtifactInformations ()
+    {
+        return this.service.listArtifactInformations ( this.id );
     }
 
     public void streamData ( final String artifactId, final ArtifactReceiver consumer ) throws FileNotFoundException
