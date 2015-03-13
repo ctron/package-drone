@@ -142,7 +142,7 @@ function doAction ( action, factoryId )
 					<div class="panel panel-default" id="${aspect.factoryId }">
 					    <div class="panel-heading"><h3 class="panel-title">${fn:escapeXml(aspect.name) }</h3></div>
 					    <div class="panel-body">
-						    <div class="panel-body-section">${fn:escapeXml(aspect.information.description) }</div>
+						    <div class="panel-body-section">${aspect.information.description }</div>
 			                <web:call name="requires" requires="${aspect.requires }"/>
 						    
 			                <div>
