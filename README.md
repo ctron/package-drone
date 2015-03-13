@@ -47,6 +47,7 @@ What it currently can do
 * Lock channels (read only mode)
 * Allow deep linking inside artifacts
 * Handle and host complete P2 repository ZIPs
+* Unzip zipped P2 repositories on the fly
 
 How to contribute
 ----------------
