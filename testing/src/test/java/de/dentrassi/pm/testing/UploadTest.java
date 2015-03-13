@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 public class UploadTest extends AbstractServerTest
@@ -46,6 +47,11 @@ public class UploadTest extends AbstractServerTest
         Assert.assertTrue ( findArtifacts ().isEmpty () );
 
         driver.get ( resolve ( String.format ( "/channel/%s/add", channelId ) ) );
+
+        // test for "Upload" active
+
+        final WebElement link = driver.findElement ( By.linkText ( "Upload" ) );
+        Assert.assertTrue ( link.findElement ( By.xpath ( ".." ) ).getAttribute ( "class" ).contains ( "active" ) );;
 
         // upload file
 
