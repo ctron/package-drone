@@ -11,6 +11,7 @@
 package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -99,31 +100,16 @@ public interface StreamServiceHelper
                     throw new FileNotFoundException ( String.format ( "Data for artifact '%s' not found", artifactId ) );
                 }
 
-                final Blob blob = rs.getBlob ( 1 );
-                try ( InputStream stream = blob.getBinaryStream () )
+                try ( InputStream stream = rs.getBinaryStream ( 2 ) )
                 {
                     receiver.receive ( convert ( ae, null ), stream );
-                }
-                finally
-                {
-                    blob.free ();
                 }
             }
         }
     }
 
-    default ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> extractedMetaData, final Map<MetaKey, String> providedMetaData ) throws SQLException, IOException
+    public static void writeBlobAsBlob ( final EntityManager em, final ArtifactEntity artifact, final InputStream stream ) throws SQLException, IOException
     {
-        final ArtifactEntity artifact = artifactSupplier.get ();
-        artifact.setName ( name );
-        artifact.setChannel ( channel );
-        artifact.setCreationTimestamp ( new Date () );
-
-        Helper.convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
-        Helper.convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
-
-        // set the blob
-
         final Connection c = em.unwrap ( Connection.class );
 
         long size;
@@ -151,6 +137,64 @@ public interface StreamServiceHelper
         finally
         {
             blob.free ();
+        }
+    }
+
+    public static void writeBlobAsStream ( final EntityManager em, final ArtifactEntity artifact, final InputStream stream ) throws SQLException, IOException
+    {
+        final Connection c = em.unwrap ( Connection.class );
+
+        final long size;
+
+        final Path tmp = Files.createTempFile ( "blob-", null );
+        try
+        {
+
+            try ( OutputStream os = new FileOutputStream ( tmp.toFile () ) )
+            {
+                size = ByteStreams.copy ( stream, os );
+            }
+
+            artifact.setSize ( size );
+            em.persist ( artifact );
+            em.flush ();
+
+            try ( InputStream in = new FileInputStream ( tmp.toFile () ) )
+            {
+                try ( PreparedStatement ps = c.prepareStatement ( "update ARTIFACTS set data=? where id=?" ) )
+                {
+                    ps.setBinaryStream ( 1, in, size );
+                    ps.setString ( 2, artifact.getId () );
+                    ps.executeUpdate ();
+                }
+            }
+        }
+        finally
+        {
+            Files.deleteIfExists ( tmp );
+        }
+
+    }
+
+    default ArtifactEntity storeBlob ( final Supplier<ArtifactEntity> artifactSupplier, final EntityManager em, final ChannelEntity channel, final String name, final InputStream stream, final Map<MetaKey, String> extractedMetaData, final Map<MetaKey, String> providedMetaData ) throws SQLException, IOException
+    {
+        final ArtifactEntity artifact = artifactSupplier.get ();
+        artifact.setName ( name );
+        artifact.setChannel ( channel );
+        artifact.setCreationTimestamp ( new Date () );
+
+        Helper.convertExtractedProperties ( extractedMetaData, artifact, artifact.getExtractedProperties () );
+        Helper.convertProvidedProperties ( providedMetaData, artifact, artifact.getProvidedProperties () );
+
+        // set the blob
+
+        if ( Boolean.getBoolean ( "package.drone.binary.streamMode" ) )
+        {
+            writeBlobAsStream ( em, artifact, stream );
+        }
+        else
+        {
+            writeBlobAsBlob ( em, artifact, stream );
         }
 
         return artifact;
