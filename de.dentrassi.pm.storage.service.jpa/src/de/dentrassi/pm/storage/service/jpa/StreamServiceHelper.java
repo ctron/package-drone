@@ -85,7 +85,7 @@ public interface StreamServiceHelper
         }
     }
 
-    default void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ArtifactReceiver receiver ) throws Exception
+    default void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<InputStream> receiver ) throws Exception
     {
         final String artifactId = ae.getId ();
 
@@ -102,10 +102,15 @@ public interface StreamServiceHelper
 
                 try ( InputStream stream = rs.getBinaryStream ( 2 ) )
                 {
-                    receiver.receive ( convert ( ae, null ), stream );
+                    receiver.accept ( stream );
                 }
             }
         }
+    }
+
+    default void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ArtifactReceiver receiver ) throws Exception
+    {
+        internalStreamArtifact ( em, ae, ( stream ) -> receiver.receive ( convert ( ae, null ), stream ) );
     }
 
     public static void writeBlobAsBlob ( final EntityManager em, final ArtifactEntity artifact, final InputStream stream ) throws SQLException, IOException
