@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.database;
 
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +39,7 @@ public class JdbcHelper
             {
                 final String className = getString ( ref.getProperty ( "osgi.jdbc.driver.class" ) );
                 String name = getString ( ref.getProperty ( "osgi.jdbc.driver.name" ) );
-                final String version = getString ( ref.getProperty ( "osgi.jdbc.driver.version" ) );
+                String version = getString ( ref.getProperty ( "osgi.jdbc.driver.version" ) );
 
                 if ( className == null )
                 {
@@ -48,6 +49,11 @@ public class JdbcHelper
                 if ( name == null )
                 {
                     name = className;
+                }
+
+                if ( version == null )
+                {
+                    version = fromDriver ( context, ref );
                 }
 
                 result.add ( new JdbcDriverInformation ( className, name, version ) );
@@ -67,6 +73,24 @@ public class JdbcHelper
         } );
 
         return result;
+    }
+
+    private static String fromDriver ( final BundleContext context, final ServiceReference<DataSourceFactory> ref )
+    {
+        final DataSourceFactory service = context.getService ( ref );
+        try
+        {
+            final Driver driver = service.createDriver ( null );
+            return String.format ( "%s.%s", driver.getMajorVersion (), driver.getMinorVersion () );
+        }
+        catch ( final Throwable e )
+        {
+            return null;
+        }
+        finally
+        {
+            context.ungetService ( ref );
+        }
     }
 
     private static String getString ( final Object value )
