@@ -34,6 +34,9 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.util.tracker.ServiceTracker;
 
+import de.dentrassi.pm.database.schema.Tasks;
+import de.dentrassi.pm.database.schema.UpgradeLog;
+
 public class DatabaseSetup implements AutoCloseable
 {
     public static final String KEY_DATABASE_SCHEMA_VERSION = "database-schema-version";

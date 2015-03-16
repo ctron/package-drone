@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.database;
+package de.dentrassi.pm.database.schema;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

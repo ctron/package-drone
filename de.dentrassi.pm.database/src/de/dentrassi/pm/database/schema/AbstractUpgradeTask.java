@@ -8,11 +8,13 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.database;
+package de.dentrassi.pm.database.schema;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import de.dentrassi.pm.database.DatabaseSetup;
 
 public abstract class AbstractUpgradeTask implements UpgradeTask
 {
