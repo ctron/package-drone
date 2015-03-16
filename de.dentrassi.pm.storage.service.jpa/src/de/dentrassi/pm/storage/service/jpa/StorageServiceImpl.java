@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import javax.persistence.EntityManager;
@@ -94,14 +93,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public Channel createChannel ( final String name, final String description )
     {
-        final ChannelEntity channel = new ChannelEntity ();
-        channel.setName ( name );
-        channel.setDescription ( description );
+        return doWithHandler ( ( handler ) -> convert ( handler.createChannel ( name, description, null ) ) );
+    }
 
-        return doWithTransaction ( em -> {
-            em.persist ( channel );
-            return convert ( channel );
-        } );
+    protected ChannelImpl convert ( final ChannelEntity channel )
+    {
+        return convert ( channel, this );
     }
 
     @Override
@@ -241,15 +238,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ) );
     }
 
-    private ChannelImpl convert ( final ChannelEntity ce )
-    {
-        if ( ce == null )
-        {
-            return null;
-        }
-        return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), this );
-    }
-
     private Artifact convert ( final ChannelImpl channel, final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
     {
         if ( ae == null )
@@ -349,65 +337,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void addChannelAspect ( final String channelId, final String aspectFactoryId, final boolean withDependencies )
     {
-        this.lockManager.modifyRun ( channelId, ( ) -> {
-            doWithTransactionVoid ( em -> {
-                final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                testLocked ( channel );
-
-                if ( !withDependencies )
-                {
-                    internalAddAspects ( em, channel, Collections.singleton ( aspectFactoryId ) );
-                }
-                else
-                {
-                    internalAddAspects ( em, channel, expandDependencies ( aspectFactoryId ) );
-                }
-            } );
-        } );
-    }
-
-    private Set<String> expandDependencies ( final String aspectFactoryId )
-    {
-        final Map<String, ChannelAspectInformation> all = Activator.getChannelAspects ().getAspectInformations ();
-
-        final Set<String> result = new HashSet<> ();
-        final TreeSet<String> requested = new TreeSet<> ();
-        requested.add ( aspectFactoryId );
-
-        while ( !requested.isEmpty () )
-        {
-            final String id = requested.pollFirst ();
-
-            if ( result.add ( id ) )
-            {
-                final ChannelAspectInformation asp = all.get ( id );
-
-                final Set<String> reqs = new HashSet<> ( asp.getRequires () );
-                reqs.removeAll ( requested ); // remove all qhich are already present
-                requested.addAll ( reqs ); // add to request list
-            }
-        }
-
-        return result;
-    }
-
-    protected void internalAddAspects ( final EntityManager em, final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
-    {
-        logger.debug ( "Adding aspects - channel: {}, aspects: {}", channel.getId (), aspectFactoryIds );
-
-        final Set<String> added = new HashSet<> ();
-        for ( final String aspectFactoryId : aspectFactoryIds )
-        {
-            if ( channel.getAspects ().add ( aspectFactoryId ) )
-            {
-                added.add ( aspectFactoryId );
-            }
-        }
-
-        em.persist ( channel );
-        em.flush ();
-
-        new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspects ( channel, added );
+        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
     }
 
     @Override
@@ -644,7 +574,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    protected void mergeMetaData ( final Map<MetaKey, String> metadata, final Map<MetaKey, String> result )
+    protected static void mergeMetaData ( final Map<MetaKey, String> metadata, final Map<MetaKey, String> result )
     {
         for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
         {
@@ -884,4 +814,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         doWithTransferHandlerVoid ( ( handler ) -> handler.exportChannel ( channelId, stream ) );
     }
 
+    @Override
+    public Channel importChannel ( final InputStream inputStream )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+            final TransferHandler transfer = new TransferHandler ( em, this.lockManager );
+            return convert ( transfer.importChannel ( storage, inputStream ) );
+        } );
+    }
 }

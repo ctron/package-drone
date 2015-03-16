@@ -238,6 +238,15 @@ public interface StreamServiceHelper
         return metadata;
     }
 
+    public default ChannelImpl convert ( final ChannelEntity ce, final StorageServiceImpl service )
+    {
+        if ( ce == null )
+        {
+            return null;
+        }
+        return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), service );
+    }
+
     /**
      * Convert an artifact entity to an detailed artifact information object
      * <p>

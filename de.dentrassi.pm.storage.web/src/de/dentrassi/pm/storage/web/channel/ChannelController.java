@@ -46,6 +46,8 @@ import javax.validation.Valid;
 
 import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.GsonBuilder;
@@ -93,6 +95,11 @@ import de.dentrassi.pm.storage.web.internal.Activator;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( ChannelController.class );
+
+    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
+
     private StorageService service;
 
     private DeployAuthService deployAuthService;
@@ -628,6 +635,7 @@ public class ChannelController implements InterfaceExtender
             if ( request.isUserInRole ( "MANAGER" ) )
             {
                 result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
             }
 
             return result;
@@ -735,7 +743,26 @@ public class ChannelController implements InterfaceExtender
 
     }
 
-    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
+    @RequestMapping ( value = "/channel/import", method = RequestMethod.GET )
+    public ModelAndView importChannel ()
+    {
+        return new ModelAndView ( "channel/importChannel" );
+    }
+
+    @RequestMapping ( value = "/channel/import", method = RequestMethod.POST )
+    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part )
+    {
+        try
+        {
+            final Channel channel = this.service.importChannel ( part.getInputStream () );
+            return new ModelAndView ( "redirect:/channel/" + channel.getId () + "/view" );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to import", e );
+            return CommonController.createError ( "Import", "Channel", "Failed to import channel", e, null );
+        }
+    }
 
     private String makeExportFileName ( final String channelId )
     {

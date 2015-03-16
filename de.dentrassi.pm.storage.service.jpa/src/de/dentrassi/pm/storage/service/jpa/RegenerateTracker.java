@@ -19,11 +19,8 @@ public class RegenerateTracker
 {
     private final Set<GeneratorArtifactEntity> artifacts = new HashSet<> ();
 
-    private final StorageHandlerImpl handler;
-
-    public RegenerateTracker ( final StorageHandlerImpl handler )
+    public RegenerateTracker ()
     {
-        this.handler = handler;
     }
 
     public void add ( final GeneratorArtifactEntity artifact )
@@ -31,7 +28,7 @@ public class RegenerateTracker
         this.artifacts.add ( artifact );
     }
 
-    public void process ( final boolean runAggregator )
+    public void process ( final StorageHandlerImpl handler )
     {
         if ( this.artifacts.isEmpty () )
         {
@@ -40,17 +37,17 @@ public class RegenerateTracker
 
         for ( final GeneratorArtifactEntity artifact : this.artifacts )
         {
-            regenerateArtifact ( artifact, runAggregator );
+            regenerateArtifact ( artifact, handler );
         }
 
         this.artifacts.clear ();
     }
 
-    private void regenerateArtifact ( final GeneratorArtifactEntity artifact, final boolean runAggregator )
+    private void regenerateArtifact ( final GeneratorArtifactEntity artifact, final StorageHandlerImpl handler )
     {
         try
         {
-            this.handler.regenerateArtifact ( artifact, runAggregator );
+            handler.regenerateArtifact ( artifact, false );
         }
         catch ( final Exception e )
         {

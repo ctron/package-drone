@@ -122,5 +122,15 @@ public interface StorageService
      *             if there is an export error or an error writing to the output
      *             stream
      */
-    public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException;
+    public void exportChannel ( String channelId, OutputStream stream ) throws IOException;
+
+    /**
+     * Import a channel which was previously exported with
+     * {@link #exportChannel(String, OutputStream)}
+     *
+     * @param inputStream
+     *            a stream to the channel export file
+     * @return the newly created channel
+     */
+    public Channel importChannel ( InputStream inputStream );
 }
