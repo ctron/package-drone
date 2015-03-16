@@ -1,6 +1,13 @@
 CREATE TABLE PROPERTIES ("KEY" VARCHAR(255) NOT NULL, "VALUE" TEXT, PRIMARY KEY("KEY"));
 INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '9' );
 
+--#ifdef postgres
+foo bar;
+--#endif -- postgres
+--#ifdef mysql
+bar foo;
+--#endif -- mysql
+
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,
     NAME          VARCHAR(255) UNIQUE,

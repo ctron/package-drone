@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,17 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.database.schema;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -30,8 +25,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.CharStreams;
 
 public class Tasks
 {
@@ -43,8 +36,11 @@ public class Tasks
 
     private UpgradeTask createTask;
 
-    public Tasks ()
+    private final Set<String> defines;
+
+    public Tasks ( final Set<String> defines )
     {
+        this.defines = defines;
         this.bundle = FrameworkUtil.getBundle ( Tasks.class );
         try
         {
@@ -59,7 +55,12 @@ public class Tasks
 
     private void loadCreateTask () throws Exception
     {
-        this.createTask = loadTask ( "/sql/create.sql" );
+        this.createTask = createParser ().loadTask ( "/sql/create.sql" );
+    }
+
+    private Parser createParser ()
+    {
+        return new Parser ( this.bundle, this.defines );
     }
 
     private void loadTasks () throws Exception
@@ -78,47 +79,11 @@ public class Tasks
             }
 
             final long nr = Long.parseLong ( m.group ( 1 ) );
-            final UpgradeTask task = loadTask ( name );
+            final UpgradeTask task = createParser ().loadTask ( name );
             if ( task != null )
             {
                 this.tasks.put ( nr, task );
             }
-        }
-
-        /*
-        {
-            final StatementTask s = new StatementTask ( "CREATE TABLE PROPERTIES (\"KEY\" VARCHAR(255) NOT NULL, VALUE TEXT, PRIMARY KEY(\"KEY\"))" );
-            this.tasks.put ( 1L, s );
-        }
-        */
-    }
-
-    private UpgradeTask loadTask ( final String name ) throws Exception
-    {
-        final URL entry = this.bundle.getEntry ( name );
-
-        try ( final Reader r = new InputStreamReader ( entry.openStream (), StandardCharsets.UTF_8 ) )
-        {
-            final String sql = CharStreams.toString ( r );
-            final String[] sqlToks = sql.split ( ";" );
-
-            final List<String> sqls = new LinkedList<> ();
-
-            for ( final String sqlTok : sqlToks )
-            {
-                final String s = sqlTok.trim ();
-                if ( !s.isEmpty () )
-                {
-                    sqls.add ( s );
-                }
-            }
-
-            if ( sqls.isEmpty () )
-            {
-                return null;
-            }
-
-            return new StatementTask ( sqls );
         }
     }
 

@@ -17,10 +17,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -49,7 +51,7 @@ public class DatabaseSetup implements AutoCloseable
 
     private final List<String> init = new LinkedList<> ();
 
-    private final Tasks tasks = new Tasks ();
+    private final Tasks tasks;
 
     public DatabaseSetup ( final DatabaseConnectionData data )
     {
@@ -74,10 +76,19 @@ public class DatabaseSetup implements AutoCloseable
 
         // init sql
 
+        final Set<String> defines = new HashSet<> ();
+
         if ( "com.mysql.jdbc.Driver".equals ( data.getJdbcDriver () ) )
         {
             this.init.add ( "SET SESSION sql_mode = 'ANSI'" );
+            defines.add ( "mysql" );
         }
+        else if ( "org.postgresql.Driver".equals ( data.getJdbcDriver () ) )
+        {
+            defines.add ( "postgres" );
+        }
+
+        this.tasks = new Tasks ( defines );
     }
 
     @Override
