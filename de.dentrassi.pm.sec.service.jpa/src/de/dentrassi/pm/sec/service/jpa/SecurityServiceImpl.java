@@ -12,8 +12,11 @@ package de.dentrassi.pm.sec.service.jpa;
 
 import java.util.Collection;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.service.LoginException;
@@ -22,6 +25,8 @@ import de.dentrassi.pm.sec.service.UserService;
 
 public class SecurityServiceImpl implements SecurityService
 {
+    private final static Logger logger = LoggerFactory.getLogger ( SecurityServiceImpl.class );
+
     private final ServiceTracker<UserService, UserService> userServiceTracker;
 
     public SecurityServiceImpl ()
@@ -57,13 +62,29 @@ public class SecurityServiceImpl implements SecurityService
 
         for ( final UserService service : services )
         {
-            final UserInformation user = service.checkCredentials ( username, password, rememberMe );
-            if ( user != null )
+            try
             {
-                return user;
+                // pass on to the next user service
+                final UserInformation user = service.checkCredentials ( username, password, rememberMe );
+                if ( user != null )
+                {
+                    // got a login
+                    return user;
+                }
+            }
+            catch ( final Exception e )
+            {
+                if ( ExceptionHelper.getRootCause ( e ) instanceof LoginException )
+                {
+                    // this failure is ok
+                    throw e;
+                }
+                // this one it not and so we continue afterwards
+                logger.warn ( "UserService failed", e );
             }
         }
 
+        // end of the service list, nobody knowns this user
         throw new LoginException ( "Login error!", "Invalid username or password." );
     }
 
