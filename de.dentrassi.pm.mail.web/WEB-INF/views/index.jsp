@@ -24,7 +24,7 @@ if ( principal instanceof UserInformationPrincipal )
     }
 }
 %>
-<h:main title="Default Mail" subtitle="Setup">
+<h:main title="Default Mail Sender" subtitle="Setup">
 
 <div class="container-fluid form-padding">
 
@@ -34,30 +34,53 @@ if ( principal instanceof UserInformationPrincipal )
 
 		    <form:form action="" method="POST" cssClass="form-horizontal">
 		    
-		        <h:formEntry label="User" path="username" command="command">
-		            <form:input path="username" cssClass="form-control" placeholder="Username for the mail server"/>
-		        </h:formEntry>
+		        <fieldset>
+                    <legend>Authentication</legend>
 		        
-		        <h:formEntry label="Password" path="password" command="command">
-		            <form:input path="password" cssClass="form-control" type="password" placeholder="Password for the mail server"/>
-		        </h:formEntry>
+			        <h:formEntry label="User" path="username" command="command">
+	                    <form:input path="username" cssClass="form-control" placeholder="Username for the mail server"/>
+	                </h:formEntry>
+	                
+	                <h:formEntry label="Password" path="password" command="command">
+	                    <form:input path="password" cssClass="form-control" type="password" placeholder="Password for the mail server"/>
+	                </h:formEntry>
 		        
-		        <h:formEntry label="Host" path="host" command="command">
-		            <form:input path="host" cssClass="form-control"  placeholder="Hostname or IP of the SMTP server"/>
-		        </h:formEntry>
-		        
-		        <h:formEntry label="Port" path="port" command="command">
-		            <form:input path="port" cssClass="form-control" type="number"  placeholder="Optional port number of the SMTP server"/>
-		        </h:formEntry>
-		        
-		        <h:formEntry label="From" path="from" command="command">
-                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail"/>
-                </h:formEntry>
-                
-                <h:formEntry label="Prefix" path="prefix" command="command">
-                    <form:input path="prefix" cssClass="form-control"  placeholder="Optional subject prefix"/>
-                </h:formEntry>
+		        </fieldset>
 		    
+		        <fieldset>
+		        
+                    <legend>Connectivity</legend>
+		        
+			        <h:formEntry label="Host" path="host" command="command">
+			            <form:input path="host" cssClass="form-control"  placeholder="Hostname or IP of the SMTP server"/>
+			        </h:formEntry>
+			        
+			        <h:formEntry label="Port" path="port" command="command">
+			            <form:input path="port" cssClass="form-control" type="number"  placeholder="Optional port number of the SMTP server"/>
+			        </h:formEntry>
+			        
+			        <h:formCheckbox label="Enable TLS" path="enableStartTls" command="command">
+                        <span class="help-block">
+                        This will enable the <code>STARTTLS</code> command and allow for starting an encrypted connection to the mail server.
+                        If you mail server does not support TLS, then sending of mails will fail. 
+                        </span>
+			        </h:formCheckbox>
+		        
+		        </fieldset>
+		        
+		        <fieldset>
+                    <legend>Mail Settings</legend>
+                    
+                    <h:formEntry label="From" path="from" command="command">
+	                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail"/>
+	                </h:formEntry>
+	                
+	                <h:formEntry label="Prefix" path="prefix" command="command">
+	                    <form:input path="prefix" cssClass="form-control"  placeholder="Optional subject prefix"/>
+	                </h:formEntry>
+                
+		        </fieldset>
+		        
 		        <div class="form-group">
 		            <div class="col-sm-offset-2 col-sm-10">
 		                <button type="submit" class="btn btn-primary">Update</button>
@@ -70,7 +93,7 @@ if ( principal instanceof UserInformationPrincipal )
 	
 	<div class="col-md-4">
 	
-	   <div class="panel panel-info">
+	   <div class="panel panel-${servicePresent ? 'success' : 'default' }">
 	       <div class="panel-heading"><h3 class="panel-title">Mail Service</h3></div>
 	       
 	       <%-- info about mail service --%>
@@ -80,7 +103,6 @@ if ( principal instanceof UserInformationPrincipal )
 	               <tr><th>Service Present</th><td id="servicePresent">${servicePresent }</td></tr>
 	           </tbody>
 	       </table>
-	       
 	       
          <c:if test="${servicePresent }">
 	         <div class="panel-body">
@@ -97,6 +119,19 @@ if ( principal instanceof UserInformationPrincipal )
              </div>
           </c:if>
 	       
+	   </div>
+	   
+	   <div class="panel panel-info">
+	       <div class="panel-heading"><h3 class="panel-title">Relay server</h3></div>
+	       <div class="panel-body">
+	       <p>
+	       This system needs a connection to an SMTP mail server which allows relaying of e-mails.
+	       </p>
+	       <p>
+	       The setup might be different based an how your SMTP server is set up. Some ISP servers
+	       enforce that the sender mail address (<q>From</q>) is really your e-mail account.
+	       </p>
+	       </div>
 	   </div>
 	
 	</div> <%-- info col --%>

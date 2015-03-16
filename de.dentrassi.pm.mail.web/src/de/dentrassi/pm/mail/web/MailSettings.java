@@ -29,6 +29,18 @@ public class MailSettings
 
     private String prefix;
 
+    private boolean enableStartTls;
+
+    public void setEnableStartTls ( final boolean enableStartTls )
+    {
+        this.enableStartTls = enableStartTls;
+    }
+
+    public boolean isEnableStartTls ()
+    {
+        return this.enableStartTls;
+    }
+
     public void setPrefix ( final String prefix )
     {
         this.prefix = prefix;

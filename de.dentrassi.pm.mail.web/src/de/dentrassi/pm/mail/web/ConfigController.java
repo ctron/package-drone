@@ -146,6 +146,10 @@ public class ConfigController implements InterfaceExtender
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.transport.protocol", "smtp" );
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.host", settings.getHost () );
             put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.port", settings.getPort () );
+            if ( settings.isEnableStartTls () )
+            {
+                put ( properties, DefaultMailService.PROPERTY_PREFIX + "mail.smtp.starttls.enable", "true" );
+            }
 
             cfg.update ( properties );
         }
