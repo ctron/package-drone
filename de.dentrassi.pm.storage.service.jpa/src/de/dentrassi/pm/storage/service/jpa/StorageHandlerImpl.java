@@ -81,7 +81,7 @@ import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 
-public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
+public class StorageHandlerImpl extends AbstractHandler implements StorageAccessor, StreamServiceHelper
 {
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
@@ -243,39 +243,14 @@ public class StorageHandlerImpl implements StorageAccessor, StreamServiceHelper
         }
     }
 
-    private final EntityManager em;
-
     private final GeneratorProcessor generatorProcessor;
 
     private final ChannelAspectProcessor channelAspectProcessor = Activator.getChannelAspects ();
 
-    private final LockManager<String> lockManager;
-
     public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager )
     {
-        this.em = em;
+        super ( em, lockManager );
         this.generatorProcessor = generatorProcessor;
-        this.lockManager = lockManager;
-    }
-
-    protected ChannelEntity getCheckedChannel ( final String channelId )
-    {
-        final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
-        if ( channel == null )
-        {
-            throw new IllegalArgumentException ( String.format ( "Channel %s unknown", channelId ) );
-        }
-        return channel;
-    }
-
-    protected ArtifactEntity getCheckedArtifact ( final String artifactId )
-    {
-        final ArtifactEntity artifact = this.em.find ( ArtifactEntity.class, artifactId );
-        if ( artifact == null )
-        {
-            throw new IllegalArgumentException ( String.format ( "Artifact %s unknown", artifactId ) );
-        }
-        return artifact;
     }
 
     @Override

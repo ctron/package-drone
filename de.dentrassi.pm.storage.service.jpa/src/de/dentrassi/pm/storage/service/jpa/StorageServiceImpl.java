@@ -11,7 +11,9 @@
 package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -858,6 +860,28 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
     {
         return doWithHandler ( ( handler ) -> handler.getAllCacheEntries ( channelId ) );
+    }
+
+    protected <R> R doWithTransferHandler ( final ManagerFunction<R, TransferHandler> consumer )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final TransferHandler handler = new TransferHandler ( em, this.lockManager );
+            return consumer.process ( handler );
+        } );
+    }
+
+    protected void doWithTransferHandlerVoid ( final ThrowingConsumer<TransferHandler> consumer )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final TransferHandler handler = new TransferHandler ( em, this.lockManager );
+            consumer.accept ( handler );
+        } );
+    }
+
+    @Override
+    public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException
+    {
+        doWithTransferHandlerVoid ( ( handler ) -> handler.exportChannel ( channelId, stream ) );
     }
 
 }

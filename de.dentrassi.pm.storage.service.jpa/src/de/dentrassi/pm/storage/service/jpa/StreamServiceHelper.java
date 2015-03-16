@@ -100,7 +100,7 @@ public interface StreamServiceHelper
                     throw new FileNotFoundException ( String.format ( "Data for artifact '%s' not found", artifactId ) );
                 }
 
-                try ( InputStream stream = rs.getBinaryStream ( 2 ) )
+                try ( InputStream stream = rs.getBinaryStream ( 1 ) )
                 {
                     receiver.accept ( stream );
                 }

@@ -12,13 +12,23 @@ package de.dentrassi.pm.storage.web.channel;
 
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +38,7 @@ import java.util.function.BiConsumer;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -605,6 +616,7 @@ public class ChannelController implements InterfaceExtender
             if ( request.getRemoteUser () != null )
             {
                 result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Maintenance", 160, "Export channel", 200, LinkTarget.createFromController ( ChannelController.class, "exportChannel" ).expand ( model ), Modifier.DEFAULT, "export" ) );
             }
 
             return result;
@@ -682,6 +694,52 @@ public class ChannelController implements InterfaceExtender
         {
             ctx.error ( "name", String.format ( "The channel name '%s' is already in use", data.getName () ) );
         }
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/export", method = RequestMethod.GET )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
+    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response )
+    {
+        try
+        {
+            final Path tmp = Files.createTempFile ( "export-", null );
+
+            try
+            {
+                try ( OutputStream tmpStream = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
+                {
+                    // first we spool this out to  temp file, so that we don't block the channel for too long
+                    this.service.exportChannel ( channelId, tmpStream );
+                }
+
+                response.setContentLengthLong ( tmp.toFile ().length () );
+                response.setContentType ( "application/zip" );
+                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", makeExportFileName ( channelId ) ) );
+
+                try ( InputStream inStream = new BufferedInputStream ( new FileInputStream ( tmp.toFile () ) ) )
+                {
+                    ByteStreams.copy ( inStream, response.getOutputStream () );
+                }
+
+                return null;
+            }
+            finally
+            {
+                Files.deleteIfExists ( tmp );
+            }
+        }
+        catch ( final IOException e )
+        {
+            return CommonController.createError ( "Failed to export", null, e );
+        }
+
+    }
+
+    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
+
+    private String makeExportFileName ( final String channelId )
+    {
+        return EXPORT_PATTERN.format ( new Object[] { channelId, new Date () } );
     }
 
 }

@@ -11,7 +11,9 @@
 package de.dentrassi.pm.storage.service;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Map;
 
@@ -94,4 +96,31 @@ public interface StorageService
     public void refreshChannelAspect ( String channelId, String aspectFactoryId );
 
     public void refreshAllChannelAspects ( String channelId );
+
+    /**
+     * Export the content of a channel
+     * <p>
+     * This will export this content of the channel to a ZIP file. The layout of
+     * the ZIP file is considered an internal format which package drone itself
+     * can re-import.
+     * </p>
+     * <p>
+     * Only deployed content will be exported. Virtual artifacts, extracted meta
+     * data, etc.. will <em>not</em> be exported, since these can be
+     * re-generated. Also the channel aspects will be exported.
+     * </p>
+     * <p>
+     * This only thing which does not get exported are the assignments to the
+     * deploy keys.
+     * </p>
+     *
+     * @param channelId
+     *            the channel to export
+     * @param stream
+     *            the stream to write the exported zip file to
+     * @throws IOException
+     *             if there is an export error or an error writing to the output
+     *             stream
+     */
+    public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException;
 }
