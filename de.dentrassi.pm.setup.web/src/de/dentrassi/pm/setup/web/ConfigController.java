@@ -11,17 +11,26 @@
 package de.dentrassi.pm.setup.web;
 
 import java.lang.reflect.Method;
+import java.sql.Driver;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.eclipse.scada.utils.ExceptionHelper;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.jdbc.DataSourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
@@ -31,7 +40,11 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
+import de.dentrassi.osgi.web.controller.binding.ExceptionError;
+import de.dentrassi.osgi.web.controller.binding.MessageBindingError;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
+import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
@@ -56,6 +69,9 @@ import de.dentrassi.pm.setup.web.internal.Activator;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
+
+    private final static Logger logger = LoggerFactory.getLogger ( ConfigController.class );
+
     private final static Method METHOD_MAIN = LinkTarget.getControllerMethod ( ConfigController.class, "main" );
 
     @Override
@@ -150,6 +166,86 @@ public class ConfigController implements InterfaceExtender
             final Throwable root = ExceptionHelper.getRootCause ( testResult );
             model.put ( "testResultMessage", ExceptionHelper.extractMessage ( root ) );
             model.put ( "testStackTrace", ExceptionHelper.formatted ( root ) );
+        }
+    }
+
+    @ControllerValidator ( formDataClass = DatabaseConnectionData.class )
+    public void validateDatabase ( final DatabaseConnectionData data, final ValidationContext context )
+    {
+        final String driverName = data.getJdbcDriver ();
+        if ( driverName == null || driverName.isEmpty () )
+        {
+            return;
+        }
+
+        if ( data.getUrl () != null && !data.getUrl ().isEmpty () )
+        {
+            doWithDriver ( driverName, ( driver ) -> {
+                try
+                {
+                    if ( !driver.acceptsURL ( data.getUrl () ) )
+                    {
+                        context.error ( "url", new MessageBindingError ( "The JDBC driver does not accept the connection URL" ) );
+                    }
+                }
+                catch ( final Exception e )
+                {
+                    context.error ( "url", new ExceptionError ( e ) );
+                }
+            } );
+        }
+    }
+
+    private void doWithDriver ( final String driverName, final Consumer<Driver> driverConsumer )
+    {
+        doWithFactory ( driverName, ( factory ) -> {
+            try
+            {
+                final Driver driver = factory.createDriver ( null );
+                driverConsumer.accept ( driver );
+            }
+            catch ( final Exception e )
+            {
+                logger.info ( "Failed to create driver", e );
+            }
+        } );
+    }
+
+    /**
+     * Call the consumer with the data source factory
+     * <p>
+     * Note: The consumer will not be called if the factory was not found
+     * </p>
+     *
+     * @param driverName
+     *            the jdbc driver name
+     * @param factoryConsumer
+     *            the consumer
+     */
+    private void doWithFactory ( final String driverName, final Consumer<DataSourceFactory> factoryConsumer )
+    {
+        final BundleContext ctx = FrameworkUtil.getBundle ( ConfigController.class ).getBundleContext ();
+        try
+        {
+            final Collection<ServiceReference<DataSourceFactory>> refs = ctx.getServiceReferences ( DataSourceFactory.class, String.format ( "(osgi.jdbc.driver.class=%s)", driverName ) );
+            if ( refs == null || refs.isEmpty () )
+            {
+                return;
+            }
+
+            final ServiceReference<DataSourceFactory> ref = refs.iterator ().next ();
+            final DataSourceFactory service = ctx.getService ( ref );
+            try
+            {
+                factoryConsumer.accept ( service );
+            }
+            finally
+            {
+                ctx.ungetService ( ref );
+            }
+        }
+        catch ( final InvalidSyntaxException e )
+        {
         }
     }
 
