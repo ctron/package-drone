@@ -12,26 +12,48 @@
     <div class="row">
     
         <div class="col-sm-6">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-trash"></span> Wipe storage</h3></div>
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-import"></span> Import channels</h3></div>
                 <div class="panel-body">
-	                This options allows you to wipe out the whole storage. All channels and artifacts
-	                will be deleted.
+                    <p>
+                    Import all channels from a full export or from a channel export.
+                    </p>
+                    <p>
+                    Depending on the import operation you have to provide the correct export file type. A full import requires a full export file and
+                    a single channel import requires a single channel export file. At the moment it is not possible to do partial imports. 
+                    </p>
                 </div>
                 <div class="panel-body text-right">
-                    <button class="btn btn-danger" data-toggle="modal" data-target="#wipe-modal"><span class="glyphicon glyphicon-trash"></span> Really Wipe</button>
+                    <a href="<c:url value="/channel/import"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-import"></span> Import Channel</a>
+                    <a href="<c:url value="/channel/importAll"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-import"></span> Import Full</a>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-import"></span> Export all channels</h3></div>
+                <div class="panel-body">
+                    <p>
+                    Export all channels at once.
+                    </p>
+                    <p>
+                    In order to export a single channel only, go to that channel and use the <q>Export</q> action.
+                    </p>
+                </div>
+                <div class="panel-body text-right">
+                    <a href="<c:url value="/channel/export"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-export"></span> Export</a>
                 </div>
             </div>
         </div>
         
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-import"></span> Import all channels</h3></div>
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-trash"></span> Wipe storage</h3></div>
                 <div class="panel-body">
-                    Import all channels from a full export.
+                    This options allows you to wipe out the whole storage. All channels and artifacts
+                    will be deleted.
                 </div>
                 <div class="panel-body text-right">
-                    <a href="<c:url value="/channel/importAll"/>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-import"></span> Import</a>
+                    <button class="btn btn-danger" data-toggle="modal" data-target="#wipe-modal"><span class="glyphicon glyphicon-trash"></span> Really Wipe</button>
                 </div>
             </div>
         </div>
