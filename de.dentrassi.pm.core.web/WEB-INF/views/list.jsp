@@ -9,11 +9,7 @@
 
 <h:main title="Global Properties">
 
-<%--
-<h:buttonbar menu="${menuManager.getActions(channel) }"/>
- --%>
-
-<table class="table table-striped table-striped">
+<table class="table table-striped table-condensed table-hover">
 
 <thead>
     <tr>
