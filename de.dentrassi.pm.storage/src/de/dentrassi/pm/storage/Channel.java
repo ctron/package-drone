@@ -63,10 +63,12 @@ public interface Channel
     boolean isLocked ();
 
     /**
-     * Lock the channel for further modifications <br/>
+     * Lock the channel for further modifications
+     * <p>
      * Note that the channel can still be renamed and data can be accessed.
      * However the channel cannot be deleted or any contained artifacts be
      * modified.
+     * </p>
      * <p>
      * If the channel is already locked nothing will happen.
      * </p>
@@ -74,8 +76,10 @@ public interface Channel
     public void lock ();
 
     /**
-     * Reverses a channel lock <br/>
-     * Undoes the effects of {@link #lock()}
+     * Reverses a channel lock
+     * <p>
+     * Reverses the effects of {@link #lock()}
+     * </p>
      * <p>
      * If the channel is already unlocked nothing will happen.
      * </p>
