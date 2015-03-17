@@ -42,6 +42,7 @@ import com.google.common.io.CharStreams;
 import de.dentrassi.pm.aspect.group.Group;
 import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.Version;
 
 public class ChannelAspectProcessor
 {
@@ -255,10 +256,11 @@ public class ChannelAspectProcessor
         }
 
         final String groupId = getString ( ref, ChannelAspectFactory.GROUP_ID, null );
+        final Version version = Version.valueOf ( getString ( ref, ChannelAspectFactory.VERSION, null ) );
 
         final SortedSet<String> requires = makeRequires ( ref );
 
-        final ChannelAspectInformation info = new ChannelAspectInformation ( factoryId, label, description, groupId, requires );
+        final ChannelAspectInformation info = new ChannelAspectInformation ( factoryId, label, description, groupId, requires, version );
 
         return new FactoryEntry ( info, context.getService ( ref ) );
     }

@@ -82,7 +82,8 @@ function doAction ( action, factoryId )
 							<div class="panel panel-default" id="${aspect.factoryId }">
 							    <div class="panel-heading">
 							        <h3 class="panel-title">${fn:escapeXml(aspect.name) }
-							        <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
+                                        <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
+							            <small>${fn:escapeXml(aspect.version) }</small>
 							        </h3>
 							    </div>
 							    <div class="panel-body">
@@ -140,7 +141,9 @@ function doAction ( action, factoryId )
 		      
 		    	<c:forEach items="${addAspects[group] }" var="aspect">
 					<div class="panel panel-default" id="${aspect.factoryId }">
-					    <div class="panel-heading"><h3 class="panel-title">${fn:escapeXml(aspect.name) }</h3></div>
+					    <div class="panel-heading">
+					       <h3 class="panel-title">${fn:escapeXml(aspect.name) } <small>${fn:escapeXml(aspect.version) }</small></h3>
+					    </div>
 					    <div class="panel-body">
 						    <div class="panel-body-section">${aspect.information.description }</div>
 			                <web:call name="requires" requires="${aspect.requires }"/>

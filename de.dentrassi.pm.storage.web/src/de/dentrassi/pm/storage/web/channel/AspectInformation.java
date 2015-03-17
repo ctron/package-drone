@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.Version;
 
 /**
  * More UI suited channel aspect information
@@ -76,6 +77,11 @@ public class AspectInformation
     public boolean isResolved ()
     {
         return this.information.isResolved ();
+    }
+
+    public Version getVersion ()
+    {
+        return this.information.getVersion ();
     }
 
     public List<AspectInformation> getRequires ()

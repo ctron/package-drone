@@ -27,6 +27,8 @@ public class ChannelAspectInformation
 
     private final String groupId;
 
+    private final Version version;
+
     private ChannelAspectInformation ( final String factoryId )
     {
         this.factoryId = factoryId;
@@ -35,17 +37,24 @@ public class ChannelAspectInformation
         this.groupId = null;
         this.label = null;
         this.description = null;
+        this.version = Version.EMPTY;
         this.requires = Collections.emptySortedSet ();
     }
 
-    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final String groupId, final SortedSet<String> requires )
+    public ChannelAspectInformation ( final String factoryId, final String label, final String description, final String groupId, final SortedSet<String> requires, final Version version )
     {
         this.factoryId = factoryId;
         this.groupId = groupId == null || groupId.isEmpty () ? "other" : groupId;
         this.label = label;
         this.description = description;
         this.requires = requires == null ? Collections.emptySortedSet () : Collections.unmodifiableSortedSet ( requires );
+        this.version = version;
         this.resolved = true;
+    }
+
+    public Version getVersion ()
+    {
+        return this.version;
     }
 
     /**
