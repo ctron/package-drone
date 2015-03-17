@@ -43,7 +43,7 @@ import org.eclipse.persistence.annotations.UuidGenerator;
 
 @Entity ( name = "ARTIFACTS" )
 @Inheritance ( strategy = InheritanceType.SINGLE_TABLE )
-@DiscriminatorColumn ( name = "TYPE" )
+@DiscriminatorColumn ( name = "\"TYPE\"" )
 @UuidGenerator ( name = "CHAN_UUID_GEN" )
 public abstract class ArtifactEntity
 {

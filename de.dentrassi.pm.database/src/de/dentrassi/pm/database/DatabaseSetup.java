@@ -188,7 +188,8 @@ public class DatabaseSetup implements AutoCloseable
     {
         try
         {
-            try ( final PreparedStatement stmt = con.prepareStatement ( "select VALUE from PROPERTIES where \"KEY\"=?" ) )
+        	con.setAutoCommit ( true ); // temporarily enable autocommit to prevent failure in next transaction if this statement fails
+            try ( final PreparedStatement stmt = con.prepareStatement ( "select \"VALUE\" from PROPERTIES where \"KEY\"=?" ) )
             {
                 stmt.setString ( 1, KEY_DATABASE_SCHEMA_VERSION );
                 try ( final ResultSet rs = stmt.executeQuery () )
@@ -207,6 +208,10 @@ public class DatabaseSetup implements AutoCloseable
                         return null;
                     }
                 }
+            }
+            finally
+            {
+            	con.setAutoCommit( false );
             }
         }
         catch ( final SQLException e )
