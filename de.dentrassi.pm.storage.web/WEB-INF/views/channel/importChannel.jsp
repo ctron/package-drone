@@ -21,6 +21,13 @@
                     Select the export file to use for the import. This must be an export file created by Package Drone.
 			        </span>
 			    </h:formEntry>
+			    
+                <h:formCheckbox label="Use channel name" path="useName" command="command">
+                    <span class="help-block">
+                    This will set the name of the channel (the alias) to the name of the exported channel in the archive.
+                    If this channel name is already in use in the current system, then the import process will fail!
+                    </span>
+                </h:formCheckbox>
 			    			    
 				<h:formButtons>
 			        <input type="submit" value="Import" class="btn btn-primary">

@@ -765,11 +765,12 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/import", method = RequestMethod.POST )
-    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part )
+    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part, @RequestParameter ( value = "useName",
+            required = false ) final boolean useName )
     {
         try
         {
-            final Channel channel = this.service.importChannel ( part.getInputStream (), false );
+            final Channel channel = this.service.importChannel ( part.getInputStream (), useName );
             return new ModelAndView ( "redirect:/channel/" + channel.getId () + "/view" );
         }
         catch ( final Exception e )
