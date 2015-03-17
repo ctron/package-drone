@@ -58,7 +58,7 @@
                             <input  name="file" id="file" type="file"/>
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-default" type="submit" href="">Import</button>
+                            <button class="btn btn-default" type="submit">Import</button>
                         </div>
                     </form>
                 </div>
