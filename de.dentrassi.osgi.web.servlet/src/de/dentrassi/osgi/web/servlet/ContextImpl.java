@@ -56,7 +56,11 @@ public class ContextImpl extends WebAppContext
         final ServletHolder holder = addServlet ( DispatcherServlet.class, "/" );
 
         final Dynamic reg = holder.getRegistration ();
-        reg.setMultipartConfig ( new MultipartConfigElement ( "", /* 1GB */1024 * 1024 * 1024, /* 1GB */1024 * 1024 * 1024, /* 1MB */1024 * 1024 ) );
+
+        final long maxLen = Long.getLong ( "drone.web.maxRequestBytes", /* 1GB */1024 * 1024 * 1024 );
+        final int fileThreshold = Integer.getInteger ( "drone.web.fileThresholdBytes", /* 1MB */1024 * 1024 );
+
+        reg.setMultipartConfig ( new MultipartConfigElement ( "", maxLen, maxLen, fileThreshold ) );
 
         this.filterTracker = new FilterTracker ( this.context, getServletContext () );
 
