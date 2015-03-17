@@ -17,6 +17,8 @@ public class ModelAndView
 {
     public static final String REDIRECT_PREFIX = "redirect:";
 
+    public static final String REFERER_PREFIX = "referer:";
+
     private String viewName;
 
     private Map<String, Object> model = new HashMap<> ();
@@ -105,11 +107,32 @@ public class ModelAndView
         return this.viewName.startsWith ( REDIRECT_PREFIX );
     }
 
+    public boolean isReferer ()
+    {
+        if ( this.viewName == null )
+        {
+            return false;
+        }
+        return this.viewName.startsWith ( REFERER_PREFIX );
+    }
+
     public String getRedirect ()
     {
         if ( isRedirect () )
         {
             return this.viewName.substring ( REDIRECT_PREFIX.length () );
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public String getReferer ()
+    {
+        if ( isRedirect () )
+        {
+            return this.viewName.substring ( REFERER_PREFIX.length () );
         }
         else
         {

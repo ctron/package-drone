@@ -307,7 +307,7 @@ public class ChannelController implements InterfaceExtender
             return CommonController.createError ( "Upload", "Upload failed", e );
         }
 
-        return redirectDefaultView ( channelId );
+        return redirectDefaultView ( channelId, true );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/drop", method = RequestMethod.POST )
@@ -341,12 +341,12 @@ public class ChannelController implements InterfaceExtender
     {
         this.service.clearChannel ( channelId );
 
-        return redirectDefaultView ( channelId );
+        return redirectDefaultView ( channelId, true );
     }
 
-    protected ModelAndView redirectDefaultView ( final String channelId )
+    protected ModelAndView redirectDefaultView ( final String channelId, final boolean force )
     {
-        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+        return new ModelAndView ( ( force ? "redirect" : "referer" ) + ":/channel/" + channelId + "/view" );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/deployKeys" )
@@ -475,7 +475,7 @@ public class ChannelController implements InterfaceExtender
 
         channel.lock ();
 
-        return redirectDefaultView ( channelId );
+        return redirectDefaultView ( channelId, false );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/unlock", method = RequestMethod.GET )
@@ -489,7 +489,7 @@ public class ChannelController implements InterfaceExtender
 
         channel.unlock ();
 
-        return redirectDefaultView ( channelId );
+        return redirectDefaultView ( channelId, false );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
@@ -521,10 +521,11 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
-    public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request )
     {
+        final String value = request.getHeader ( "Referer" );
         this.service.refreshAllChannelAspects ( channelId );
-        return redirectDefaultView ( channelId );
+        return redirectDefaultView ( channelId, false );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
@@ -557,7 +558,7 @@ public class ChannelController implements InterfaceExtender
         if ( !result.hasErrors () )
         {
             this.service.updateChannel ( channelId, data.getName (), data.getDescription () );
-            return redirectDefaultView ( channelId );
+            return redirectDefaultView ( channelId, true );
         }
         else
         {

@@ -12,6 +12,7 @@ package de.dentrassi.osgi.web.controller;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -58,6 +59,26 @@ public class ModelAndViewRequestHandler implements RequestHandler
         {
             logger.debug ( "Processed redirect: {}", redir );
             response.sendRedirect ( redir );
+            return;
+        }
+
+        if ( this.modelAndView.isReferer () )
+        {
+            final String ref = request.getHeader ( "Referer" );
+
+            if ( ref == null )
+            {
+                response.sendRedirect ( this.modelAndView.getReferer () );
+            }
+
+            final URL url = new URL ( ref );
+            String path = url.getPath ();
+            if ( path.startsWith ( request.getContextPath () ) )
+            {
+                path = path.substring ( request.getContextPath ().length () );
+            }
+
+            response.sendRedirect ( path );
             return;
         }
 
