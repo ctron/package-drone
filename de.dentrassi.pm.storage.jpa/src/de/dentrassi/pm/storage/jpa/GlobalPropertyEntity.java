@@ -25,6 +25,7 @@ public class GlobalPropertyEntity
     private String key;
 
     @Lob
+    @Column ( name = "\"VALUE\"" )
     private String value;
 
     public void setKey ( final String key )
