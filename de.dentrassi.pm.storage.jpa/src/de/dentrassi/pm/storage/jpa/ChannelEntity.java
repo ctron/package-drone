@@ -13,8 +13,10 @@ package de.dentrassi.pm.storage.jpa;
 import static javax.persistence.CascadeType.ALL;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -25,6 +27,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import org.eclipse.persistence.annotations.UuidGenerator;
@@ -48,8 +51,9 @@ public class ChannelEntity
 
     @ElementCollection
     @CollectionTable ( name = "CHANNEL_ASPECTS", joinColumns = @JoinColumn ( name = "CHANNEL_ID", nullable = false ) )
-    @Column ( nullable = false, unique = true, name = "ASPECT" )
-    private Set<String> aspects = new HashSet<> ();
+    @MapKeyColumn ( name = "ASPECT" )
+    @Column ( name = "VERSION", nullable = true )
+    private Map<String, String> aspects = new HashMap<> ();
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "channel" )
     private Collection<ExtractedChannelPropertyEntity> extractedProperties = new LinkedList<> ();
@@ -125,12 +129,12 @@ public class ChannelEntity
         this.artifacts = artifacts;
     }
 
-    public Set<String> getAspects ()
+    public Map<String, String> getAspects ()
     {
         return this.aspects;
     }
 
-    public void setAspects ( final Set<String> aspects )
+    public void setAspects ( final Map<String, String> aspects )
     {
         this.aspects = aspects;
     }

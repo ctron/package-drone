@@ -74,8 +74,7 @@ public class ChannelImpl implements Channel
     @Override
     public boolean hasAspect ( final String id )
     {
-        final Set<String> result = this.service.getChannelAspects ( this.id );
-        return result.contains ( id );
+        return this.service.getChannelAspects ( this.id ).containsKey ( id );
     }
 
     @Override
@@ -162,6 +161,12 @@ public class ChannelImpl implements Channel
 
     @Override
     public Set<String> getAspectIds ()
+    {
+        return this.service.getChannelAspects ( this.id ).keySet ();
+    }
+
+    @Override
+    public Map<String, String> getAspectStates ()
     {
         return this.service.getChannelAspects ( this.id );
     }

@@ -425,7 +425,7 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
             putDataEntry ( zos, "description", channel.getDescription () );
             putDirEntry ( zos, "artifacts" );
             putProperties ( zos, "properties.xml", channel.getProvidedProperties () );
-            putAspects ( zos, channel.getAspects () );
+            putAspects ( zos, channel.getAspects ().keySet () );
             putArtifacts ( zos, "artifacts/", channel.getArtifacts (), true );
 
             zos.finish ();

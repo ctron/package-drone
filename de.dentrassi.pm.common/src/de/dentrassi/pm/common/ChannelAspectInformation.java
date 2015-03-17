@@ -11,10 +11,25 @@
 package de.dentrassi.pm.common;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.SortedSet;
 
 public class ChannelAspectInformation
 {
+    public static final Comparator<ChannelAspectInformation> NAME_COMPARATOR = new Comparator<ChannelAspectInformation> () {
+
+        @Override
+        public int compare ( final ChannelAspectInformation o1, final ChannelAspectInformation o2 )
+        {
+            final int rc = o1.label.compareTo ( o2.label );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+            return o1.factoryId.compareTo ( o2.factoryId );
+        }
+    };
+
     private final String factoryId;
 
     private final String description;

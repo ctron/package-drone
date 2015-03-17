@@ -318,7 +318,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithTransaction ( em -> {
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
-            return Activator.getChannelAspects ().resolve ( channel.getAspects () );
+            return Activator.getChannelAspects ().resolve ( channel.getAspects ().keySet () );
         } );
     }
 
@@ -338,7 +338,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 testLocked ( channel );
 
-                if ( channel.getAspects ().contains ( aspectFactoryId ) )
+                if ( channel.getAspects ().containsKey ( aspectFactoryId ) )
                 {
                     new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspects ( channel, Collections.singleton ( aspectFactoryId ) );
                 }
@@ -356,7 +356,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 testLocked ( channel );
 
-                new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspects ( channel, channel.getAspects () );
+                new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspects ( channel, channel.getAspects ().keySet () );
             } );
         } );
     }
@@ -725,11 +725,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    public Set<String> getChannelAspects ( final String channelId )
+    public Map<String, String> getChannelAspects ( final String channelId )
     {
         return doWithTransaction ( em -> {
             final ChannelEntity channel = getCheckedChannel ( em, channelId );
-            return new HashSet<> ( channel.getAspects () );
+            return new HashMap<> ( channel.getAspects () );
         } );
     }
 

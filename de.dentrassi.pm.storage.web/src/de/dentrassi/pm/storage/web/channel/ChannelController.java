@@ -68,6 +68,7 @@ import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.utils.IOConsumer;
@@ -440,6 +441,29 @@ public class ChannelController implements InterfaceExtender
         return model;
     }
 
+    @RequestMapping ( value = "/channel/{channelId}/viewAspectVersions", method = RequestMethod.GET )
+    public ModelAndView viewAspectVersions ( @PathVariable ( "channelId" ) final String channelId )
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        final Map<String, String> states = channel.getAspectStates ();
+
+        final Map<String, Object> model = new HashMap<> ( 3 );
+
+        final List<ChannelAspectInformation> aspects = channel.getAspects ();
+        Collections.sort ( aspects, ChannelAspectInformation.NAME_COMPARATOR );
+
+        model.put ( "channel", channel );
+        model.put ( "states", states );
+        model.put ( "aspects", aspects );
+
+        return new ModelAndView ( "channel/viewAspectVersions", model );
+    }
+
     @RequestMapping ( value = "/channel/{channelId}/lock", method = RequestMethod.GET )
     public ModelAndView lock ( @PathVariable ( "channelId" ) final String channelId )
     {
@@ -670,7 +694,8 @@ public class ChannelController implements InterfaceExtender
 
             if ( request.isUserInRole ( "MANAGER" ) || request.isUserInRole ( "ADMIN" ) )
             {
-                result.add ( new MenuEntry ( "Cache", 4_00, LinkTarget.createFromController ( ChannelController.class, "viewCache" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Internal", 400, "View Cache", 100, LinkTarget.createFromController ( ChannelController.class, "viewCache" ).expand ( model ), Modifier.DEFAULT, null ) );
+                result.add ( new MenuEntry ( "Internal", 400, "Aspect Versions", 100, LinkTarget.createFromController ( ChannelController.class, "viewAspectVersions" ).expand ( model ), Modifier.DEFAULT, null ) );
             }
 
             return result;

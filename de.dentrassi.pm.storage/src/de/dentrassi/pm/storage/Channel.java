@@ -95,7 +95,12 @@ public interface Channel
      *
      * @return the set of assigned IDs, never returns <code>null</code>
      */
-    public Set<String> getAspectIds ();
+    public default Set<String> getAspectIds ()
+    {
+        return getAspectStates ().keySet ();
+    }
+
+    public Map<String, String> getAspectStates ();
 
     public boolean hasAspect ( String id );
 

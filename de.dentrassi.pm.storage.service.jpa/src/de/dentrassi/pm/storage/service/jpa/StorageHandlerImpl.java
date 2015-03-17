@@ -451,7 +451,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void runChannelTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
     {
-        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getChannelListener, ( t ) -> {
+        Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getChannelListener, ( t ) -> {
             try
             {
                 listener.accept ( t );
@@ -472,7 +472,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        Activator.getChannelAspects ().process ( channel.getAspects (), ChannelAspect::getExtractor, extractor -> {
+        Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
             try
             {
                 final Map<String, String> md = new HashMap<> ();
@@ -506,7 +506,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.debug ( "Creating virtual artifacts for - channel: {}, artifact: {}, runAggregator: {}", channel.getId (), artifact.getId (), runAggregator );
 
-        Activator.getChannelAspects ().processWithAspect ( channel.getAspects (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), tracker, runAggregator ) ) );
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), tracker, runAggregator ) ) );
     }
 
     private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace, final RegenerateTracker tracker, final boolean runAggregator )
@@ -623,7 +623,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             // gather new meta data
             final Map<MetaKey, String> metadata = new HashMap<> ();
 
-            this.channelAspectProcessor.process ( channel.getAspects (), ChannelAspect::getChannelAggregator, aggregator -> {
+            this.channelAspectProcessor.process ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, aggregator -> {
                 try
                 {
                     // create new context for this channel aspect
@@ -721,6 +721,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 this.em.persist ( ae );
                 this.em.flush ();
             } );
+
         }
 
         // re-create virtual artifacts
@@ -730,6 +731,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         tracker.process ( this );
 
         runChannelAggregators ( channel );
+
+        for ( final ChannelAspectInformation aspect : this.channelAspectProcessor.resolve ( aspectFactoryIds ) )
+        {
+            channel.getAspects ().put ( aspect.getFactoryId (), aspect.getVersion ().toString () );
+        }
+
+        this.em.persist ( channel );
+        this.em.flush ();
     }
 
     public void scanArtifacts ( final String channelId, final ThrowingConsumer<ArtifactEntity> consumer )
@@ -1172,8 +1181,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         final Set<String> added = new HashSet<> ();
         for ( final String aspectFactoryId : aspectFactoryIds )
         {
-            if ( channel.getAspects ().add ( aspectFactoryId ) )
+            if ( !channel.getAspects ().containsKey ( aspectFactoryId ) )
             {
+                channel.getAspects ().put ( aspectFactoryId, "0.0.0" ); // always start with empty version
                 added.add ( aspectFactoryId );
             }
         }
