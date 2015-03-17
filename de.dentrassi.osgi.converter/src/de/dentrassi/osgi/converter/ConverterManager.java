@@ -17,6 +17,8 @@ public class ConverterManager
 {
     private final Collection<Converter> converters = new LinkedList<> ();
 
+    private final Collection<DefaultProvider> defaults = new LinkedList<> ();
+
     public static ConverterManager create ()
     {
         final ConverterManager result = new ConverterManager ();
@@ -33,6 +35,8 @@ public class ConverterManager
         result.addConverter ( LongToStringConverter.INSTANCE );
         result.addConverter ( StringToLongConverter.INSTANCE );
 
+        result.addDefault ( PrimitiveBooleanDefault.INSTANCE );
+
         return result;
     }
 
@@ -45,12 +49,17 @@ public class ConverterManager
         this.converters.add ( converter );
     }
 
+    public void addDefault ( final DefaultProvider defaultProvider )
+    {
+        this.defaults.add ( defaultProvider );
+    }
+
     @SuppressWarnings ( "unchecked" )
     public <T> T convertTo ( final Object value, final Class<T> clazz ) throws Exception
     {
         if ( value == null )
         {
-            return null;
+            return getDefault ( clazz );
         }
 
         if ( clazz.isAssignableFrom ( value.getClass () ) )
@@ -85,5 +94,20 @@ public class ConverterManager
             }
         }
         throw new ConversionException ( String.format ( "Unable to convert %s to %s", value.getClass (), clazz.getName () ) );
+    }
+
+    @SuppressWarnings ( "unchecked" )
+    private <T> T getDefault ( final Class<T> clazz )
+    {
+        for ( final DefaultProvider provider : this.defaults )
+        {
+            if ( provider.providesFor ( clazz ) )
+            {
+                return (T)provider.defaultValue ();
+            }
+        }
+
+        // fall back to null
+        return null;
     }
 }

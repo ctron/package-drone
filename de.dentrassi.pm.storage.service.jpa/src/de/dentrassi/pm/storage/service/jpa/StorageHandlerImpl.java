@@ -933,6 +933,27 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         this.em.flush ();
     }
 
+    /**
+     * Delete all channels
+     * <p>
+     * <em>Note:</em> This call will ignore the lock status of the channels
+     * </p>
+     */
+    public void wipeAllChannels ()
+    {
+        // we have to do this one by one in order to honor channel locks
+        for ( final String channelId : getAllChannelIds () )
+        {
+            deleteChannel ( channelId, true );
+        }
+    }
+
+    private List<String> getAllChannelIds ()
+    {
+        final TypedQuery<String> q = this.em.createQuery ( String.format ( "select c.id from %s c", ChannelEntity.class.getName () ), String.class );
+        return q.getResultList ();
+    }
+
     protected void deleteAllCacheEntries ( final ChannelEntity channel )
     {
         final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ) );
@@ -1212,5 +1233,22 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         this.lockManager.modifyRun ( channelId, ( ) -> {
             addChannelAspects ( getCheckedChannel ( channelId ), aspects, withDependencies );
         } );
+    }
+
+    public void deleteChannel ( final String channelId, final boolean ignoreLock )
+    {
+        this.lockManager.modifyRun ( channelId, ( ) -> {
+
+            final ChannelEntity entity = getCheckedChannel ( channelId );
+            if ( !ignoreLock )
+            {
+                testLocked ( entity );
+            }
+            this.em.remove ( entity );
+            this.em.flush ();
+        } );
+
+        // finally remove the channel lock from the cache
+        this.lockManager.removeLock ( channelId );
     }
 }

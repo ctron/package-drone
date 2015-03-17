@@ -130,7 +130,43 @@ public interface StorageService
      *
      * @param inputStream
      *            a stream to the channel export file
+     * @param useChannelName
+     *            whether or not to set the exported channel name
      * @return the newly created channel
+     * @throws IOException
+     *             if there is an error reading the stream
      */
-    public Channel importChannel ( InputStream inputStream );
+    public Channel importChannel ( InputStream inputStream, boolean useChannelName ) throws IOException;
+
+    /**
+     * Export the content of all channels
+     *
+     * @param stream
+     *            the stream to write the export ZIP file to
+     * @throws IOException
+     *             if there is an export error or an error writing to the output
+     *             stream
+     */
+    public void exportAll ( OutputStream stream ) throws IOException;
+
+    /**
+     * Import all channels from an archive exported by
+     * {@link #exportAll(OutputStream)}
+     *
+     * @param stream
+     *            a stream to the channel export file
+     * @param useChannelNames
+     *            whether or not to set the exported channel name
+     * @param wipe
+     *            whether or not to delete all existing channels before
+     *            importing
+     * @throws IOException
+     *             if there is an error reading the stream
+     */
+    public void importAll ( InputStream stream, boolean useChannelNames, boolean wipe ) throws IOException;
+
+    /**
+     * Delete all channels
+     */
+    public void wipeClean ();
 }

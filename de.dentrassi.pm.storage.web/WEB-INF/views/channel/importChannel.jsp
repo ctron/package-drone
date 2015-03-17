@@ -18,10 +18,10 @@
 			    <h:formEntry label="File" command="command" path="file">
 			        <form:input path="file" type="file"/>
 			        <span class="help-block">
-                    Select the channel export file to import. This must be a channel file previously exported by Package Drone.
+                    Select the export file to use for the import. This must be an export file created by Package Drone.
 			        </span>
 			    </h:formEntry>
-			    
+			    			    
 				<h:formButtons>
 			        <input type="submit" value="Import" class="btn btn-primary">
 			    </h:formButtons>

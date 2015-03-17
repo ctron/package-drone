@@ -123,7 +123,7 @@ public class LinkTarget
         if ( m != null )
         {
             final Set<String> paths = getRawPaths ( m );
-            if ( !paths.isEmpty () )
+            if ( paths != null && !paths.isEmpty () )
             {
                 return new LinkTarget ( paths.iterator ().next () );
             }

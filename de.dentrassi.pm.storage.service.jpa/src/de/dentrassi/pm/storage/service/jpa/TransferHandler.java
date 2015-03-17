@@ -38,9 +38,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,68 +82,7 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
         }
     }
 
-    private final XmlHelper xml;
-
-    public TransferHandler ( final EntityManager em, final LockManager<String> lockManager )
-    {
-        super ( em, lockManager );
-
-        this.xml = new XmlHelper ();
-    }
-
-    public ChannelEntity importChannel ( final StorageHandlerImpl handler, final InputStream inputStream ) throws IOException
-    {
-        final Path tmp = Files.createTempFile ( "imp", null );
-        try
-        {
-            try ( OutputStream tmpStream = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
-            {
-                ByteStreams.copy ( inputStream, tmpStream );
-            }
-
-            return processImport ( handler, tmp );
-        }
-        finally
-        {
-            Files.deleteIfExists ( tmp );
-        }
-    }
-
-    private ChannelEntity processImport ( final StorageHandlerImpl storage, final Path tmp ) throws IOException
-    {
-        try ( final ZipFile zip = new ZipFile ( tmp.toFile () ) )
-        {
-            final String version = getData ( zip, "version" );
-            if ( !"1".equals ( version ) )
-            {
-                throw new IllegalArgumentException ( String.format ( "Version '%s' is not supported", version ) );
-            }
-
-            // read basic channel data
-
-            final String description = getData ( zip, "description" );
-            final Map<MetaKey, String> properties = getProperties ( zip, "properties.xml" );
-            final Set<String> aspects = getAspects ( zip );
-
-            // create the channel
-
-            final ChannelEntity channel = storage.createChannel ( null, description, properties );
-            this.em.flush (); // we need the channel id
-
-            this.lockManager.modifyRun ( channel.getId (), ( ) -> {
-                storage.addChannelAspects ( channel, aspects, false );
-
-                // process artifacts
-                processArtifacts ( channel, storage, zip );
-            } );
-
-            storage.runChannelAggregators ( channel );
-
-            return channel;
-        }
-    }
-
-    class Entry
+    private class Entry
     {
         private final Map<String, Entry> children = new HashMap<> ();
 
@@ -228,6 +169,95 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
 
                 child.store ( zip, channel, result, storage, tracker );
             }
+        }
+    }
+
+    private final XmlHelper xml;
+
+    public TransferHandler ( final EntityManager em, final LockManager<String> lockManager )
+    {
+        super ( em, lockManager );
+
+        this.xml = new XmlHelper ();
+    }
+
+    public void importAll ( final StorageHandlerImpl storage, final InputStream inputStream, final boolean useChannelNames, final boolean wipe ) throws IOException
+    {
+        ZipEntry ze;
+
+        if ( wipe )
+        {
+            storage.wipeAllChannels ();
+        }
+
+        final ZipInputStream zis = new ZipInputStream ( inputStream );
+        while ( ( ze = zis.getNextEntry () ) != null )
+        {
+            if ( ze.isDirectory () )
+            {
+                continue;
+            }
+
+            final String name = ze.getName ();
+            if ( !name.endsWith ( ".zip" ) )
+            {
+                continue;
+            }
+
+            importChannel ( storage, zis, useChannelNames );
+        }
+    }
+
+    public ChannelEntity importChannel ( final StorageHandlerImpl handler, final InputStream inputStream, final boolean useChannelName ) throws IOException
+    {
+        final Path tmp = Files.createTempFile ( "imp", null );
+        try
+        {
+            try ( OutputStream tmpStream = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
+            {
+                ByteStreams.copy ( inputStream, tmpStream );
+            }
+
+            return processImport ( handler, tmp, useChannelName );
+        }
+        finally
+        {
+            Files.deleteIfExists ( tmp );
+        }
+    }
+
+    private ChannelEntity processImport ( final StorageHandlerImpl storage, final Path tmp, final boolean useChannelName ) throws IOException
+    {
+        try ( final ZipFile zip = new ZipFile ( tmp.toFile () ) )
+        {
+            final String version = getData ( zip, "version" );
+            if ( !"1".equals ( version ) )
+            {
+                throw new IllegalArgumentException ( String.format ( "Version '%s' is not supported", version ) );
+            }
+
+            // read basic channel data
+
+            final String name = getData ( zip, "name" );
+            final String description = getData ( zip, "description" );
+            final Map<MetaKey, String> properties = getProperties ( zip, "properties.xml" );
+            final Set<String> aspects = getAspects ( zip );
+
+            // create the channel
+
+            final ChannelEntity channel = storage.createChannel ( useChannelName ? name : null, description, properties );
+            this.em.flush (); // we need the channel id
+
+            this.lockManager.modifyRun ( channel.getId (), ( ) -> {
+                storage.addChannelAspects ( channel, aspects, false );
+
+                // process artifacts
+                processArtifacts ( channel, storage, zip );
+            } );
+
+            storage.runChannelAggregators ( channel );
+
+            return channel;
         }
     }
 
@@ -356,6 +386,22 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
             final List<String> lines = CharStreams.readLines ( new InputStreamReader ( stream, StandardCharsets.UTF_8 ) );
             return new HashSet<> ( lines );
         }
+    }
+
+    public void exportAll ( final OutputStream stream ) throws IOException
+    {
+        final ZipOutputStream zos = new ZipOutputStream ( stream );
+
+        putDataEntry ( zos, "version", "1" );
+
+        final TypedQuery<String> q = this.em.createQuery ( String.format ( "select c.id from %s c", ChannelEntity.class.getName () ), String.class );
+        for ( final String channelId : q.getResultList () )
+        {
+            zos.putNextEntry ( new ZipEntry ( String.format ( "%s.zip", channelId ) ) );
+            exportChannel ( channelId, zos );
+            zos.closeEntry ();
+        }
+        zos.finish ();
     }
 
     /**

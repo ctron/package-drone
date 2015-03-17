@@ -104,19 +104,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void deleteChannel ( final String channelId )
     {
-        this.lockManager.modifyRun ( channelId, ( ) -> {
-
-            doWithTransactionVoid ( em -> {
-
-                final ChannelEntity entity = getCheckedChannel ( em, channelId );
-                testLocked ( entity );
-                em.remove ( entity );
-
-            } );
-        } );
-
-        // finally remove the channel lock from the cache
-        this.lockManager.removeLock ( channelId );
+        doWithHandlerVoid ( ( storage ) -> storage.deleteChannel ( channelId, true ) );
     }
 
     @Override
@@ -815,12 +803,34 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     }
 
     @Override
-    public Channel importChannel ( final InputStream inputStream )
+    public Channel importChannel ( final InputStream inputStream, final boolean useChannelName )
     {
         return doWithTransaction ( ( em ) -> {
             final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
             final TransferHandler transfer = new TransferHandler ( em, this.lockManager );
-            return convert ( transfer.importChannel ( storage, inputStream ) );
+            return convert ( transfer.importChannel ( storage, inputStream, useChannelName ) );
         } );
+    }
+
+    @Override
+    public void exportAll ( final OutputStream stream ) throws IOException
+    {
+        doWithTransferHandlerVoid ( ( handler ) -> handler.exportAll ( stream ) );
+    }
+
+    @Override
+    public void importAll ( final InputStream inputStream, final boolean useChannelNames, final boolean wipe )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager );
+            final TransferHandler transfer = new TransferHandler ( em, this.lockManager );
+            transfer.importAll ( storage, inputStream, useChannelNames, wipe );
+        } );
+    }
+
+    @Override
+    public void wipeClean ()
+    {
+        doWithHandlerVoid ( ( storage ) -> storage.wipeAllChannels () );
     }
 }

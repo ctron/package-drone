@@ -57,26 +57,30 @@ public class RequestParameterBinder implements Binder
         {
             final String valueString = this.request.getParameter ( rp.value () );
 
-            if ( valueString == null )
+            try
             {
-                if ( rp.required () )
-                {
-                    throw new IllegalStateException ( String.format ( "Request parameter '%s' is required but missing.", rp.value () ) );
-                }
 
-                return Binding.nullBinding ();
-            }
-            else
-            {
-                try
+                if ( valueString == null )
                 {
+                    if ( rp.required () )
+                    {
+                        throw new IllegalStateException ( String.format ( "Request parameter '%s' is required but missing.", rp.value () ) );
+                    }
+
+                    final Object value = converter.convertTo ( null, type );
+                    return Binding.simpleBinding ( value );
+                }
+                else
+                {
+
                     final Object value = converter.convertTo ( valueString, type );
                     return Binding.simpleBinding ( value );
                 }
-                catch ( final Exception e )
-                {
-                    return Binding.errorBinding ( e );
-                }
+            }
+            catch ( final Exception e )
+            {
+                logger.debug ( "Failed to bind", e );
+                return Binding.errorBinding ( e );
             }
         }
     }

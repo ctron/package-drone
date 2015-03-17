@@ -70,6 +70,7 @@ import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
@@ -98,7 +99,9 @@ public class ChannelController implements InterfaceExtender
 
     private final static Logger logger = LoggerFactory.getLogger ( ChannelController.class );
 
-    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
+    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "export-channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
+
+    private static final MessageFormat EXPORT_ALL_PATTERN = new MessageFormat ( "export-all-{0,date,yyyyMMdd-HHmm}.zip" );
 
     private StorageService service;
 
@@ -635,7 +638,8 @@ public class ChannelController implements InterfaceExtender
             if ( request.isUserInRole ( "MANAGER" ) )
             {
                 result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
-                result.add ( new MenuEntry ( "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
+                result.add ( new MenuEntry ( "Maintenance", 160, "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
+                result.add ( new MenuEntry ( "Maintenance", 160, "Export all channels", 300, LinkTarget.createFromController ( ChannelController.class, "exportAll" ), Modifier.DEFAULT, "export" ) );
             }
 
             return result;
@@ -704,9 +708,7 @@ public class ChannelController implements InterfaceExtender
         }
     }
 
-    @RequestMapping ( value = "/channel/{channelId}/export", method = RequestMethod.GET )
-    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response )
+    protected ModelAndView performExport ( final HttpServletResponse response, final String filename, final IOConsumer<OutputStream> exporter )
     {
         try
         {
@@ -717,12 +719,12 @@ public class ChannelController implements InterfaceExtender
                 try ( OutputStream tmpStream = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
                 {
                     // first we spool this out to  temp file, so that we don't block the channel for too long
-                    this.service.exportChannel ( channelId, tmpStream );
+                    exporter.accept ( tmpStream );
                 }
 
                 response.setContentLengthLong ( tmp.toFile ().length () );
                 response.setContentType ( "application/zip" );
-                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", makeExportFileName ( channelId ) ) );
+                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", filename ) );
 
                 try ( InputStream inStream = new BufferedInputStream ( new FileInputStream ( tmp.toFile () ) ) )
                 {
@@ -740,7 +742,20 @@ public class ChannelController implements InterfaceExtender
         {
             return CommonController.createError ( "Failed to export", null, e );
         }
+    }
 
+    @RequestMapping ( value = "/channel/{channelId}/export", method = RequestMethod.GET )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
+    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response )
+    {
+        return performExport ( response, makeExportFileName ( channelId ), ( stream ) -> this.service.exportChannel ( channelId, stream ) );
+    }
+
+    @RequestMapping ( value = "/channel/export", method = RequestMethod.GET )
+    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
+    public ModelAndView exportAll ( final HttpServletResponse response )
+    {
+        return performExport ( response, makeExportFileName ( null ), this.service::exportAll );
     }
 
     @RequestMapping ( value = "/channel/import", method = RequestMethod.GET )
@@ -754,8 +769,30 @@ public class ChannelController implements InterfaceExtender
     {
         try
         {
-            final Channel channel = this.service.importChannel ( part.getInputStream () );
+            final Channel channel = this.service.importChannel ( part.getInputStream (), false );
             return new ModelAndView ( "redirect:/channel/" + channel.getId () + "/view" );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to import", e );
+            return CommonController.createError ( "Import", "Channel", "Failed to import channel", e, null );
+        }
+    }
+
+    @RequestMapping ( value = "/channel/importAll", method = RequestMethod.GET )
+    public ModelAndView importAll ( final HttpServletResponse response )
+    {
+        return new ModelAndView ( "channel/importAll" );
+    }
+
+    @RequestMapping ( value = "/channel/importAll", method = RequestMethod.POST )
+    public ModelAndView importAllPost ( @RequestParameter ( value = "useNames", required = false ) final boolean useNames, @RequestParameter ( value = "wipe",
+            required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part )
+    {
+        try
+        {
+            this.service.importAll ( part.getInputStream (), useNames, wipe );
+            return new ModelAndView ( "redirect:/channel" );
         }
         catch ( final Exception e )
         {
@@ -766,7 +803,14 @@ public class ChannelController implements InterfaceExtender
 
     private String makeExportFileName ( final String channelId )
     {
-        return EXPORT_PATTERN.format ( new Object[] { channelId, new Date () } );
+        if ( channelId != null )
+        {
+            return EXPORT_PATTERN.format ( new Object[] { channelId, new Date () } );
+        }
+        else
+        {
+            return EXPORT_ALL_PATTERN.format ( new Object[] { new Date () } );
+        }
     }
 
 }
