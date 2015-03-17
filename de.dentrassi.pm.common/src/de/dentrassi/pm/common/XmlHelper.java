@@ -264,8 +264,27 @@ public class XmlHelper
 
     /**
      * Get the text value of the first element with the matching name
+     * <p>
+     * Assuming you have an XML file:
+     *
+     * <pre>
+     * &lt;parent&gt;
+     * &nbsp;&nbsp;&lt;foo&gt;bar&lt;/foo&gt;
+     * &nbsp;&nbsp;&lt;hello&gt;world&lt;/hello&gt;
+     * &lt;/parent&gt;
+     * </pre>
+     *
+     * Calling {@link #getText(Element, String)} with "parent" as element and
+     * "hello" as name, it would return "world".
+     * </p>
+     *
+     * @param ele
+     *            the element to check
+     * @param name
+     *            the name of the child element
+     * @return the text value of the element
      */
-    public static String getText ( final Element ele, final String string )
+    public static String getText ( final Element ele, final String name )
     {
         for ( final Node child : iter ( ele.getChildNodes () ) )
         {
@@ -276,7 +295,7 @@ public class XmlHelper
 
             final Element childEle = (Element)child;
 
-            if ( !childEle.getNodeName ().equals ( string ) )
+            if ( !childEle.getNodeName ().equals ( name ) )
             {
                 continue;
             }

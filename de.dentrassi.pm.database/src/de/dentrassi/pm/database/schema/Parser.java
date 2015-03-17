@@ -15,6 +15,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,34 @@ import org.osgi.framework.Bundle;
 
 import com.google.common.io.CharStreams;
 
+/**
+ * This is a parser for the SQL files
+ * <p>
+ * Basically the parser reads an UTF-8 test file, with Unix line encoding.
+ * Splits the lines and processes each line with the pre-processor. Afterwards
+ * the resulting lines will be concatenated again and split by semicolon (;).
+ * The result is the SQL statements which will be executed.
+ * </p>
+ * <p>
+ * The pre-processor allows to handle different database specific cases. Each
+ * pre-processor command is started in a new line and with "--#". This is an SQL
+ * comment with the additional "#" character. So as long as the SQL structure is
+ * interrupted, this will still be a parsable SQL file.
+ * </p>
+ * <p>
+ * The following commands are available:
+ * <dl>
+ * <dt>IFDEF <code>NAME</code></dt>
+ * <dd>Test if a define is set. Defines are case sensitive</dd>
+ * <dt>ENDIF</dt>
+ * <dd>End an <code>IFDEF</code> section</dd>
+ * <dt>DEFINE <code>NAME</code></dt>
+ * <dd>Set a new define</dd>
+ * <dt>UNDEF <code>NAME</code></dt>
+ * <dd>Unset a define</dd>
+ * </dl>
+ * </p>
+ */
 public class Parser
 {
     private final Bundle bundle;
@@ -50,7 +79,7 @@ public class Parser
     public Parser ( final Bundle bundle, final Set<String> defines )
     {
         this.bundle = bundle;
-        this.defines = defines;
+        this.defines = defines == null ? new HashSet<> () : new HashSet<> ( defines );
     }
 
     public UpgradeTask loadTask ( final String name ) throws Exception
@@ -123,6 +152,13 @@ public class Parser
         {
             case "IFDEF":
                 processIfDef ( toks );
+                break;
+            case "DEFINE":
+                this.defines.add ( toks.poll () );
+                break;
+            case "UNDEFINE":
+            case "UNDEF":
+                this.defines.remove ( toks.poll () );
                 break;
             case "ENDIF":
                 this.states.pop ();
