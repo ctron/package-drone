@@ -211,7 +211,7 @@ public class BackupController implements InterfaceExtender
         {
             final List<MenuEntry> result = new LinkedList<> ();
 
-            result.add ( new MenuEntry ( "System", 20_000, "Backup", 200, LinkTarget.createFromController ( BackupController.class, "main" ), null, null ) );
+            result.add ( new MenuEntry ( "System", 20_000, "Configuration", 200, LinkTarget.createFromController ( BackupController.class, "main" ), null, null ) );
 
             return result;
         }

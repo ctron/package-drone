@@ -5,7 +5,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<h:main title="System" subtitle="Backup">
+<h:main title="Configuration" subtitle="Backup">
 
 <div class="container-fluid">
 
