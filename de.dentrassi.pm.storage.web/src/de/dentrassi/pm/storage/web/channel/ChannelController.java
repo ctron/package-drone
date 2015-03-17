@@ -523,7 +523,6 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
     public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request )
     {
-        final String value = request.getHeader ( "Referer" );
         this.service.refreshAllChannelAspects ( channelId );
         return redirectDefaultView ( channelId, false );
     }
