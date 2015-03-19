@@ -12,17 +12,16 @@ package de.dentrassi.pm.generator.p2;
 
 import javax.validation.constraints.Pattern;
 
+import de.dentrassi.osgi.validation.constraints.VersionString;
 import de.dentrassi.pm.common.MetaKeyBinding;
 
 public class FeatureData
 {
-
     @Pattern ( regexp = "[a-z0-9]+(\\.[a-z0-9]+)*", message = "Must be a valid feature ID" )
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "id" )
     private String id;
 
-    @Pattern ( regexp = "[0-9]+((\\.[0-9]+){1,2}(\\.[^\\.]+)?)",
-            message = "Must be a valid version string: major.minor[.micro[.qualifier]]" )
+    @VersionString
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "version" )
     private String version;
 

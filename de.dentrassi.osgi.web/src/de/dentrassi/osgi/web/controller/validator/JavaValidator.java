@@ -19,11 +19,9 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
 import javax.validation.Path.Node;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
 
+import de.dentrassi.osgi.validation.ValidationBundle;
 import de.dentrassi.osgi.web.controller.binding.BindingError;
-import de.dentrassi.osgi.web.internal.Activator;
 
 public class JavaValidator implements Validator
 {
@@ -43,18 +41,10 @@ public class JavaValidator implements Validator
         }
     }
 
-    private final javax.validation.Validator validator;
-
-    public JavaValidator ()
-    {
-        final ValidatorFactory factory = Validation.byDefaultProvider ().providerResolver ( Activator.getValidationProviderResolver () ).configure ().buildValidatorFactory ();
-        this.validator = factory.getValidator ();
-    }
-
     @Override
     public ValidationResult validate ( final Object target )
     {
-        final Set<ConstraintViolation<Object>> vr = this.validator.validate ( target );
+        final Set<ConstraintViolation<Object>> vr = ValidationBundle.getValidator ().validate ( target );
 
         if ( vr == null || vr.isEmpty () )
         {

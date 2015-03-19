@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.gson;version="2.3.1",
+ de.dentrassi.osgi.validation.constraints;version="1.0.0",
  de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.osgi.web.controller.binding;version="1.0.0",
  de.dentrassi.osgi.web.controller.form;version="1.0.0",

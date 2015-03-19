@@ -42,6 +42,11 @@ public class OsgiValidationProviderTracker implements ValidationProviderResolver
         this.tracker.close ();
     }
 
+    public int getTrackingCount ()
+    {
+        return this.tracker.getTrackingCount ();
+    }
+
     @Override
     public List<ValidationProvider<?>> getValidationProviders ()
     {
