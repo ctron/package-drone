@@ -13,27 +13,19 @@ package de.dentrassi.pm.storage.web.internal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.FrameworkUtil;
-
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.interceptor.ModelAndViewInterceptorAdapter;
+import de.dentrassi.pm.VersionInformation;
 
 public class CommonInterceptor extends ModelAndViewInterceptorAdapter
 {
-    private final String version;
-
-    public CommonInterceptor ()
-    {
-        this.version = FrameworkUtil.getBundle ( CommonInterceptor.class ).getVersion ().toString ();
-    }
-
     @Override
     protected void postHandle ( final HttpServletRequest request, final HttpServletResponse response, final RequestHandler requestHandler, final ModelAndView modelAndView )
     {
         if ( modelAndView != null && !modelAndView.isRedirect () )
         {
-            modelAndView.put ( "droneVersion", this.version );
+            modelAndView.put ( "droneVersion", VersionInformation.VERSION );
         }
     }
 }

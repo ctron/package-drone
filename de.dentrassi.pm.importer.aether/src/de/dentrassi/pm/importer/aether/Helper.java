@@ -13,6 +13,7 @@ package de.dentrassi.pm.importer.aether;
 import java.nio.file.Path;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -27,6 +28,8 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.dentrassi.pm.VersionInformation;
 
 public class Helper
 {
@@ -64,12 +67,14 @@ public class Helper
         // uncomment to generate dirty trees
         // session.setDependencyGraphTransformer( null );
 
+        session.setConfigProperty ( ConfigurationProperties.USER_AGENT, String.format ( "PackageDrone/%s (+htp://packagedrone.org)", VersionInformation.VERSION_UNQUALIFIED ) );
+
         return session;
     }
 
     public static RemoteRepository newCentralRepository ()
     {
-        return new RemoteRepository.Builder ( "central", "default", "http://central.maven.org/maven2/" ).build ();
+        return newRemoteRepository ( "http://central.maven.org/maven2/" );
     }
 
     public static RemoteRepository newRemoteRepository ( final String url )
