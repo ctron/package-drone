@@ -62,7 +62,7 @@ public class ChannelCacheEntity
     @Column ( name = "MIME_TYPE", length = 255, nullable = false )
     private String mimeType;
 
-    @Column ( name = "\"DATA\"" )
+    @Column ( name = "DATA" )
     @Lob
     private byte[] data;
 
