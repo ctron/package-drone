@@ -86,7 +86,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
         {
             logger.debug ( "Setting result for job {}: {}", this.id, data );
             internalSetResult ( this.id, data );
-            complete ();
         }
     }
 
@@ -216,7 +215,19 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
 
     private JobHandle internalStartJob ( final JobRequest request, final JobFactory factory )
     {
-        return doWithTransaction ( ( em ) -> {
+        // create job instance before writing to the database, if we fail, we fail before that
+
+        final JobInstance instance;
+        try
+        {
+            instance = factory.createInstance ( request.getData () );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( "Failed to create job instance", e );
+        }
+
+        final JobHandle result = doWithTransaction ( ( em ) -> {
 
             final JobInstanceEntity ji = new JobInstanceEntity ();
 
@@ -228,16 +239,18 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             em.persist ( ji );
             em.flush ();
 
-            forkJob ( ji.getId (), request, factory );
-
             return convert ( ji );
         } );
+
+        // only start thread after the committed to the database
+
+        forkJob ( result.getId (), request, instance );
+
+        return result;
     }
 
-    private void forkJob ( final String id, final JobRequest request, final JobFactory factory ) throws Exception
+    private void forkJob ( final String id, final JobRequest request, final JobInstance instance )
     {
-        final JobInstance instance = factory.createInstance ( request.getData () );
-
         final Thread t = new Thread () {
             @Override
             public void run ()
@@ -273,6 +286,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             ji.setCurrentWorkLabel ( label );
             ji.setPercentComplete ( 0.0 );
             em.persist ( ji );
+            em.flush ();
         } );
     }
 
@@ -286,6 +300,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             }
             ji.setPercentComplete ( percentComplete );
             em.persist ( ji );
+            em.flush ();
         } );
     }
 
@@ -301,6 +316,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             {
                 ji.setState ( State.RUNNING );
                 em.persist ( ji );
+                em.flush ();
             }
         } );
     }
@@ -316,7 +332,9 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             if ( ji.getState () != State.COMPLETE )
             {
                 ji.setState ( State.COMPLETE );
+                ji.setPercentComplete ( 1.0 );
                 em.persist ( ji );
+                em.flush ();
             }
         } );
     }
@@ -334,6 +352,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             {
                 ji.setResult ( data );
                 em.persist ( ji );
+                em.flush ();
             }
 
         } );
@@ -357,6 +376,7 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
                 ji.setErrorInformation ( this.gson.toJson ( err ) );
                 ji.setState ( State.COMPLETE );
                 em.persist ( ji );
+                em.flush ();
             }
 
         } );
