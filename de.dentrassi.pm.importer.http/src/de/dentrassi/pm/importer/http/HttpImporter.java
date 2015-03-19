@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.job.JobInstance.Context;
+import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.ImportContext;
 import de.dentrassi.pm.importer.Importer;
@@ -90,7 +91,7 @@ public class HttpImporter implements Importer
 
             if ( length > 0 )
             {
-                job.beginWork ( String.format ( "Downloading %s bytes of data", length ), length );
+                job.beginWork ( String.format ( "Downloading %s", Strings.bytes ( length ) ), length );
             }
 
             // manual copy
@@ -114,6 +115,7 @@ public class HttpImporter implements Importer
         }
         catch ( final Exception e )
         {
+            logger.debug ( "Failed to download", e );
             Files.deleteIfExists ( file );
             throw e;
         }

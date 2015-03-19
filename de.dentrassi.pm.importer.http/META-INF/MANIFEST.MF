@@ -8,6 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.io;version="18.0.0",
  com.google.gson;version="2.3.1",
  de.dentrassi.osgi.converter;version="1.0.0",
+ de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.importer;version="1.0.0",
