@@ -11,7 +11,7 @@
 
     <div class="row">
     
-        <div class="col-md-12 table-responsive">
+        <div class="col-md-12">
         
             <c:choose>
             
@@ -23,7 +23,7 @@
                 </c:when>
             
                 <c:otherwise>
-        
+                    <div class="table-responsive">
 		            <table class="table table-striped table-hover">
 		            
 		                <thead>
@@ -40,13 +40,24 @@
 		                            <td><strong>${fn:escapeXml(task.title) }</strong></td>
 		                            <td>${task.description }</td>
 		                            <td>
-		                                <a href="<c:url value="${task.target.render(pageContext.request) }"/>">Link</a>
+		                                <c:choose>
+		                                  <c:when test="${task.targetRequestMethod eq 'GET' }">
+		                                      <a class="btn btn-link" href="<c:url value="${task.target.render(pageContext.request) }"/>">Link</a>
+		                                  </c:when>
+		                                  <c:otherwise>
+		                                      <form action="<c:url value="${task.target.render(pageContext.request) }"/>" method="${task.targetRequestMethod }">
+		                                          <button class="btn btn-default" type="submit">Perform</button>
+		                                      </form>
+		                                  </c:otherwise>
+		                                </c:choose>
+		                                
 		                            </td>
 		                        </tr>
 		                    </c:forEach>
 		                </tbody>
 		            
 		            </table>
+		            </div>
 	            
 	            </c:otherwise>
             

@@ -91,6 +91,7 @@
 		<module>../de.dentrassi.pm.aspect.cleanup</module>
 		<module>../de.dentrassi.pm.aspect.cleanup.web</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
+		<module>../de.dentrassi.pm.aspect.upgrade</module>
 
 		<module>../de.dentrassi.pm.common</module>
 		<module>../de.dentrassi.pm.common.web</module>

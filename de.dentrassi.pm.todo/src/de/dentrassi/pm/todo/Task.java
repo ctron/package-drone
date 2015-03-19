@@ -13,6 +13,7 @@ package de.dentrassi.pm.todo;
 import java.util.Comparator;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.osgi.web.RequestMethod;
 
 public interface Task
 {
@@ -34,6 +35,11 @@ public interface Task
      * @return the link target or <code>null</code>
      */
     public LinkTarget getTarget ();
+
+    public default RequestMethod getTargetRequestMethod ()
+    {
+        return RequestMethod.GET;
+    }
 
     public int getPriority ();
 

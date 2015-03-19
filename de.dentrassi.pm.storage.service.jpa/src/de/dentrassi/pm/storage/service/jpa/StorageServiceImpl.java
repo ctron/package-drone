@@ -37,6 +37,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +81,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
 
     private final LockManager<String> lockManager = new LockManager<> ();
+
+    private EventAdmin eventAdmin;
+
+    public void setEventAdmin ( final EventAdmin eventAdmin )
+    {
+        this.eventAdmin = eventAdmin;
+    }
 
     public void start ()
     {
@@ -344,6 +353,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 }
             } );
         } );
+        postAspectEvent ( channelId, aspectFactoryId, "refresh" );
     }
 
     @Override
@@ -359,6 +369,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager ).reprocessAspects ( channel, channel.getAspects ().keySet () );
             } );
         } );
+        postAspectEvent ( channelId, "all", "refresh" );
+    }
+
+    protected void postAspectEvent ( final String channelId, final String aspectId, final String operation )
+    {
+        this.eventAdmin.postEvent ( new Event ( String.format ( "drone/channel/%s/aspect/%s/%s", channelId, aspectId, operation ), Collections.emptyMap () ) );
     }
 
     @Override
@@ -416,6 +432,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
             } );
 
         } );
+
+        postAspectEvent ( channelId, aspectFactoryId, "remove" );
     }
 
     private ArtifactEntity getArtifact ( final EntityManager em, final String artifactId )

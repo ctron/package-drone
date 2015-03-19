@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.pm.aspect.upgrade.tasks">
+   <implementation class="de.dentrassi.pm.aspect.upgrade.UpgradeTaskProvider"/>
+   <service>
+      <provide interface="de.dentrassi.pm.todo.TaskProvider"/>
+      <provide interface="org.osgi.service.event.EventHandler"/>
+   </service>
+   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
+   <property name="event.topics" type="String" value="drone/channel/*">
+   </property>
+</scr:component>

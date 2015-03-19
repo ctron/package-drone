@@ -11,6 +11,7 @@
 package de.dentrassi.pm.todo;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.osgi.web.RequestMethod;
 
 public class BasicTask implements Task
 {
@@ -24,13 +25,27 @@ public class BasicTask implements Task
 
     private final int priority;
 
+    private final RequestMethod targetRequestMethod;
+
     public BasicTask ( final String title, final int priority, final String description, final LinkTarget target )
+    {
+        this ( title, priority, description, target, null );
+    }
+
+    public BasicTask ( final String title, final int priority, final String description, final LinkTarget target, final RequestMethod method )
     {
         this.state = State.TODO;
         this.priority = priority;
         this.title = title;
         this.description = description;
         this.target = target;
+        this.targetRequestMethod = method == null ? RequestMethod.GET : RequestMethod.POST;
+    }
+
+    @Override
+    public RequestMethod getTargetRequestMethod ()
+    {
+        return this.targetRequestMethod;
     }
 
     public void setState ( final State state )

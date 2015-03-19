@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.function.Function;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
@@ -234,7 +236,56 @@ public class ChannelAspectProcessor
         return result;
     }
 
+    /**
+     * This actively scans for available aspects and returns their information
+     * objects
+     * 
+     * @param context
+     *            the context to use
+     * @return the result map, never returns <code>null</code>
+     */
+    public static Map<String, ChannelAspectInformation> scanAspectInformations ( final BundleContext context )
+    {
+        Collection<ServiceReference<ChannelAspectFactory>> refs;
+        try
+        {
+            refs = context.getServiceReferences ( ChannelAspectFactory.class, null );
+        }
+        catch ( final InvalidSyntaxException e )
+        {
+            // this should never happen since we don't specific a filter
+            return Collections.emptyMap ();
+        }
+
+        if ( refs == null )
+        {
+            return Collections.emptyMap ();
+        }
+
+        final Map<String, ChannelAspectInformation> result = new HashMap<> ( refs.size () );
+
+        for ( final ServiceReference<ChannelAspectFactory> ref : refs )
+        {
+            final ChannelAspectInformation info = makeInformation ( ref );
+            result.put ( info.getFactoryId (), info );
+        }
+
+        return result;
+    }
+
     protected static FactoryEntry makeEntry ( final BundleContext context, final ServiceReference<ChannelAspectFactory> ref )
+    {
+        final ChannelAspectInformation info = makeInformation ( ref );
+
+        if ( info == null )
+        {
+            return null;
+        }
+
+        return new FactoryEntry ( info, context.getService ( ref ) );
+    }
+
+    public static ChannelAspectInformation makeInformation ( final ServiceReference<ChannelAspectFactory> ref )
     {
         final String factoryId = getString ( ref, ChannelAspectFactory.FACTORY_ID, getString ( ref, Constants.SERVICE_PID, null ) );
         if ( factoryId == null )
@@ -260,9 +311,7 @@ public class ChannelAspectProcessor
 
         final SortedSet<String> requires = makeRequires ( ref );
 
-        final ChannelAspectInformation info = new ChannelAspectInformation ( factoryId, label, description, groupId, requires, version );
-
-        return new FactoryEntry ( info, context.getService ( ref ) );
+        return new ChannelAspectInformation ( factoryId, label, description, groupId, requires, version );
     }
 
     private static SortedSet<String> makeRequires ( final ServiceReference<ChannelAspectFactory> ref )

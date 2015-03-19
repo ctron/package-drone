@@ -517,7 +517,7 @@ public class ChannelController implements InterfaceExtender
     public ModelAndView refreshAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
     {
         this.service.refreshChannelAspect ( channelId, aspectFactoryId );
-        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        return new ModelAndView ( String.format ( "referer:/channel/" + channelId + "/aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
