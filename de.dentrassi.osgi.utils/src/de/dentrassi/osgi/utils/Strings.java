@@ -10,8 +10,31 @@
  *******************************************************************************/
 package de.dentrassi.osgi.utils;
 
+import java.math.RoundingMode;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+
 public final class Strings
 {
+
+    private static final Format bytesPattern = new MessageFormat ( "{0,choice,0#0 bytes|1#1 byte|1<{0,number,integer} bytes}" );
+
+    private static final NumberFormat numberPattern1 = NumberFormat.getNumberInstance ();
+
+    private static final NumberFormat numberPattern2 = NumberFormat.getNumberInstance ();
+
+    static
+    {
+        numberPattern1.setRoundingMode ( RoundingMode.HALF_UP );
+        numberPattern1.setMaximumFractionDigits ( 1 );
+        numberPattern1.setGroupingUsed ( false );
+
+        numberPattern2.setRoundingMode ( RoundingMode.HALF_UP );
+        numberPattern2.setMaximumFractionDigits ( 2 );
+        numberPattern2.setGroupingUsed ( false );
+    }
+
     private Strings ()
     {
     }
@@ -26,5 +49,22 @@ public final class Strings
         }
 
         return sb.toString ();
+    }
+
+    public static String bytes ( final long amount )
+    {
+        if ( amount < 1024L )
+        {
+            return bytesPattern.format ( new Object[] { amount } );
+        }
+        if ( amount < 1024L * 1024L )
+        {
+            return numberPattern1.format ( amount / 1024.0 ) + " KiB";
+        }
+        if ( amount < 1024L * 1024L * 1024L )
+        {
+            return numberPattern2.format ( amount / ( 1024.0 * 1024.0 ) ) + " MiB";
+        }
+        return numberPattern2.format ( amount / ( 1024.0 * 1024.0 * 1024.0 ) ) + " GiB";
     }
 }
