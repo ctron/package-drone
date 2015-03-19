@@ -241,11 +241,27 @@ public class FeatureInformation implements TranslatedInformation
         }
 
         @Override
+        public int compareTo ( final PluginInclude o )
+        {
+            int rc;
+
+            rc = this.id.compareTo ( o.id );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+
+            return this.version.compareTo ( o.version );
+
+        }
+
+        @Override
         public int hashCode ()
         {
             final int prime = 31;
             int result = 1;
             result = prime * result + ( this.id == null ? 0 : this.id.hashCode () );
+            result = prime * result + ( this.version == null ? 0 : this.version.hashCode () );
             return result;
         }
 
@@ -276,17 +292,18 @@ public class FeatureInformation implements TranslatedInformation
             {
                 return false;
             }
+            if ( this.version == null )
+            {
+                if ( other.version != null )
+                {
+                    return false;
+                }
+            }
+            else if ( !this.version.equals ( other.version ) )
+            {
+                return false;
+            }
             return true;
-        }
-
-        @Override
-        public int compareTo ( final PluginInclude o )
-        {
-            int rc;
-
-            rc = this.id.compareTo ( o.id );
-
-            return rc;
         }
 
     }
@@ -337,12 +354,39 @@ public class FeatureInformation implements TranslatedInformation
             return this.qualifiers;
         }
 
+        public VersionRange makeVersionRange ()
+        {
+            if ( this.version == null )
+            {
+                return new VersionRange ( "0.0.0" );
+            }
+            else
+            {
+                return new VersionRange ( VersionRange.LEFT_CLOSED, this.version, this.version, VersionRange.RIGHT_CLOSED );
+            }
+        }
+
+        @Override
+        public int compareTo ( final FeatureInclude o )
+        {
+            int rc;
+
+            rc = this.id.compareTo ( o.id );
+            if ( rc != 0 )
+            {
+                return rc;
+            }
+
+            return this.version.compareTo ( o.version );
+        }
+
         @Override
         public int hashCode ()
         {
             final int prime = 31;
             int result = 1;
             result = prime * result + ( this.id == null ? 0 : this.id.hashCode () );
+            result = prime * result + ( this.version == null ? 0 : this.version.hashCode () );
             return result;
         }
 
@@ -373,29 +417,18 @@ public class FeatureInformation implements TranslatedInformation
             {
                 return false;
             }
-            return true;
-        }
-
-        public VersionRange makeVersionRange ()
-        {
             if ( this.version == null )
             {
-                return new VersionRange ( "0.0.0" );
+                if ( other.version != null )
+                {
+                    return false;
+                }
             }
-            else
+            else if ( !this.version.equals ( other.version ) )
             {
-                return new VersionRange ( VersionRange.LEFT_CLOSED, this.version, this.version, VersionRange.RIGHT_CLOSED );
+                return false;
             }
-        }
-
-        @Override
-        public int compareTo ( final FeatureInclude o )
-        {
-            int rc;
-
-            rc = this.id.compareTo ( o.id );
-
-            return rc;
+            return true;
         }
     }
 
