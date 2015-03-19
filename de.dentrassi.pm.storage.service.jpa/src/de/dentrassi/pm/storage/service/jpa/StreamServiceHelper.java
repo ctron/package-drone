@@ -193,13 +193,13 @@ public interface StreamServiceHelper
 
         // set the blob
 
-        if ( Boolean.getBoolean ( "package.drone.binary.streamMode" ) )
+        if ( Boolean.getBoolean ( "drone.binary.storage.jdbc.blobMode" ) )
         {
-            writeBlobAsStream ( em, artifact, stream );
+            writeBlobAsBlob ( em, artifact, stream );
         }
         else
         {
-            writeBlobAsBlob ( em, artifact, stream );
+            writeBlobAsStream ( em, artifact, stream );
         }
 
         return artifact;
