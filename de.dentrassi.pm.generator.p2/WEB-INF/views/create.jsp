@@ -39,9 +39,29 @@
                 <form:input path="provider" cssClass="form-control"/> 
             </h:formEntry>            
 
-            <h:formEntry label="Description" path="description" command="command">
-                <form:textarea path="description" cssClass="form-control"/> 
-            </h:formEntry> 
+	        <h:formEntry label="Description URL" path="descriptionUrl" command="command">
+	            <form:input type="text" path="descriptionUrl" cssClass="form-control"/> 
+	        </h:formEntry> 
+	        
+	        <h:formEntry label="Description" path="description" command="command">
+	            <form:textarea path="description" cssClass="form-control"/> 
+	        </h:formEntry>
+	        
+	        <h:formEntry label="Coypright URL" path="copyrightUrl" command="command">
+	            <form:input type="text" path="copyrightUrl" cssClass="form-control"/> 
+	        </h:formEntry> 
+	        
+	        <h:formEntry label="Copyright" path="copyright" command="command">
+	            <form:textarea path="copyright" cssClass="form-control"/> 
+	        </h:formEntry>
+	        
+	        <h:formEntry label="License URL" path="licenseUrl" command="command">
+	            <form:input type="text" path="licenseUrl" cssClass="form-control"/> 
+	        </h:formEntry> 
+	        
+	        <h:formEntry label="License" path="license" command="command">
+	            <form:textarea path="license" cssClass="form-control"/> 
+	        </h:formEntry>
             
 			<button type="submit" class="btn btn-primary">Create</button>
 		</fieldset>

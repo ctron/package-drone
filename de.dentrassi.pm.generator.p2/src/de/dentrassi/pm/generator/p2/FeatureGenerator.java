@@ -111,6 +111,13 @@ public class FeatureGenerator implements ArtifactGenerator
         final String label = getString ( map, ID, "label" );
 
         final String description = getString ( map, ID, "description" );
+        final String copyright = getString ( map, ID, "copyright" );
+        final String license = getString ( map, ID, "license" );
+
+        final String descriptionUrl = getString ( map, ID, "descriptionUrl" );
+        final String copyrightUrl = getString ( map, ID, "copyrightUrl" );
+        final String licenseUrl = getString ( map, ID, "licenseUrl" );
+
         final String provider = getString ( map, ID, "provider" );
 
         final Document doc = this.xml.create ();
@@ -125,10 +132,10 @@ public class FeatureGenerator implements ArtifactGenerator
         {
             root.setAttribute ( "provider-name", provider );
         }
-        if ( description != null )
-        {
-            XmlHelper.addElement ( root, "description" ).setTextContent ( description );
-        }
+
+        createLegalEntry ( root, "description", description, descriptionUrl );
+        createLegalEntry ( root, "copyright", copyright, copyrightUrl );
+        createLegalEntry ( root, "license", license, licenseUrl );
 
         for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
         {
@@ -136,6 +143,28 @@ public class FeatureGenerator implements ArtifactGenerator
         }
 
         this.xml.write ( doc, out );
+    }
+
+    public void createLegalEntry ( final Element root, final String type, final String text, final String url )
+    {
+        if ( text == null && url == null )
+        {
+            return;
+        }
+
+        final Element ele = XmlHelper.addElement ( root, type );
+        if ( text != null )
+        {
+            ele.setTextContent ( text );
+        }
+        else
+        {
+            ele.setTextContent ( "" );
+        }
+        if ( url != null )
+        {
+            ele.setAttribute ( "url", url );
+        }
     }
 
     private String makeVersion ( String version )

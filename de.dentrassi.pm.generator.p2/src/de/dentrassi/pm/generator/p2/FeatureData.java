@@ -12,6 +12,8 @@ package de.dentrassi.pm.generator.p2;
 
 import javax.validation.constraints.Pattern;
 
+import org.hibernate.validator.constraints.URL;
+
 import de.dentrassi.osgi.validation.constraints.VersionString;
 import de.dentrassi.pm.common.MetaKeyBinding;
 
@@ -25,14 +27,32 @@ public class FeatureData
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "version" )
     private String version;
 
-    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "description" )
-    private String description;
-
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "provider" )
     private String provider;
 
     @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "label" )
     private String label;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "description" )
+    private String description;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "descriptionUrl" )
+    @URL
+    private String descriptionUrl;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "copyright" )
+    private String copyright;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "copyrightUrl" )
+    @URL
+    private String copyrightUrl;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "license" )
+    private String license;
+
+    @MetaKeyBinding ( namespace = FeatureGenerator.ID, key = "licenseUrl" )
+    @URL
+    private String licenseUrl;
 
     public void setId ( final String id )
     {
@@ -82,6 +102,56 @@ public class FeatureData
     public void setLabel ( final String label )
     {
         this.label = label;
+    }
+
+    public String getDescriptionUrl ()
+    {
+        return this.descriptionUrl;
+    }
+
+    public void setDescriptionUrl ( final String descriptionUrl )
+    {
+        this.descriptionUrl = descriptionUrl;
+    }
+
+    public String getCopyright ()
+    {
+        return this.copyright;
+    }
+
+    public void setCopyright ( final String copyright )
+    {
+        this.copyright = copyright;
+    }
+
+    public String getCopyrightUrl ()
+    {
+        return this.copyrightUrl;
+    }
+
+    public void setCopyrightUrl ( final String copyrightUrl )
+    {
+        this.copyrightUrl = copyrightUrl;
+    }
+
+    public String getLicense ()
+    {
+        return this.license;
+    }
+
+    public void setLicense ( final String license )
+    {
+        this.license = license;
+    }
+
+    public String getLicenseUrl ()
+    {
+        return this.licenseUrl;
+    }
+
+    public void setLicenseUrl ( final String licenseUrl )
+    {
+        this.licenseUrl = licenseUrl;
     }
 
 }
