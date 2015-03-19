@@ -31,10 +31,8 @@ import java.util.zip.ZipOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
@@ -169,8 +167,8 @@ public class FeatureGenerator implements ArtifactGenerator
             return;
         }
 
-        final String id = a.getMetaData ().get ( new MetaKey ( "osgi", "name" ) );
-        final String version = a.getMetaData ().get ( new MetaKey ( "osgi", "version" ) );
+        final String id = a.getMetaData ().get ( new MetaKey ( OsgiExtractor.NAMESPACE, OsgiExtractor.KEY_NAME ) );
+        final String version = a.getMetaData ().get ( new MetaKey ( OsgiExtractor.NAMESPACE, OsgiExtractor.KEY_VERSION ) );
         if ( id == null || version == null )
         {
             return;
@@ -180,8 +178,8 @@ public class FeatureGenerator implements ArtifactGenerator
 
         try
         {
-            final Gson gson = new GsonBuilder ().create ();
-            final BundleInformation bi = gson.fromJson ( a.getMetaData ().get ( new MetaKey ( "osgi", "bundle-information" ) ), BundleInformation.class );
+            final String biString = a.getMetaData ().get ( new MetaKey ( OsgiExtractor.NAMESPACE, OsgiExtractor.KEY_BUNDLE_INFORMATION ) );
+            final BundleInformation bi = BundleInformation.fromJson ( biString );
             unpack = "dir".equals ( bi.getEclipseBundleShape () );
         }
         catch ( final Exception e )
