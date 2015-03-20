@@ -4,16 +4,23 @@
 
 	<groupId>de.dentrassi.package.drone</groupId>
 	<artifactId>testing</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>Automated tests for Package Drone</name>
 
 	<properties>
         <!-- Put these in ~.m2/settings.xml -->
+        
         <!-- <mysql.admin.user>user</mysql.admin.user> -->
         <!-- <mysql.admin.password>password</mysql.admin.password> -->
+        
         <!-- <mysql.test.database>database</mysql.test.database> -->
         <!-- <mysql.test.user>user</mysql.test.user> -->
         <!-- <mysql.test.password>password</mysql.test.password> -->
+        
+        <!-- <use.postgres>define or nor</use.postgres> -->
+        
+        <!-- <postgres.admin.user>user</postgres.admin.user> -->
+        <!-- <postgres.admin.password>user</postgres.admin.password> -->
 	</properties>
 
 	<build>
@@ -54,6 +61,7 @@
 						<mysql.test.database>${mysql.test.database}</mysql.test.database>
 						<sauce.username>${sauce.username}</sauce.username>
 						<sauce.accessKey>${sauce.accessKey}</sauce.accessKey>
+						<use.postgres>${use.postgres}</use.postgres>
 					</systemPropertyVariables>
 					<includes>
                         <include>**/TestSuite.java</include>
@@ -169,6 +177,12 @@
 			<version>5.1.34</version>
 			<scope>test</scope>
 		</dependency> 
+		<dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.4-1201-jdbc41</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 </project>

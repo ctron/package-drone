@@ -40,7 +40,19 @@ public class AbstractServerTest
 
     protected String getTestJdbcUrl ()
     {
-        return String.format ( "jdbc:mysql://localhost/%s", System.getProperty ( "mysql.test.database" ) );
+        if ( usePostgres () )
+        {
+            return String.format ( "jdbc:postgresql://localhost/%s", System.getProperty ( "mysql.test.database" ) );
+        }
+        else
+        {
+            return String.format ( "jdbc:mysql://localhost/%s", System.getProperty ( "mysql.test.database" ) );
+        }
+    }
+
+    protected boolean usePostgres ()
+    {
+        return Boolean.getBoolean ( "use.postgres" );
     }
 
     protected URL getUrl () throws MalformedURLException

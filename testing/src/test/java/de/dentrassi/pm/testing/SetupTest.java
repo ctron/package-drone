@@ -64,7 +64,16 @@ public class SetupTest extends AbstractServerTest
         Assert.assertEquals ( resolve ( "/config" ), driver.getCurrentUrl () );
 
         final Select select = new Select ( driver.findElementById ( "jdbcDriver" ) );
-        select.selectByValue ( "com.mysql.jdbc.Driver" );
+        if ( usePostgres () )
+        {
+            select.selectByValue ( "org.postgresql.Driver" );
+        }
+        else
+        {
+            select.selectByValue ( "com.mysql.jdbc.Driver" );
+        }
+
+        System.out.println ( "Using JDBC URL: " + getTestJdbcUrl () );
 
         driver.findElementById ( "url" ).sendKeys ( getTestJdbcUrl () );
         driver.findElementById ( "user" ).sendKeys ( getTestUser () );
