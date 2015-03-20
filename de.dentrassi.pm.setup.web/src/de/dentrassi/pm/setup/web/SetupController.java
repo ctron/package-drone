@@ -93,7 +93,7 @@ public class SetupController
         }
 
         {
-            final BasicTask task = new BasicTask ( "Install or upgdate the database schema", 3, "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null );
+            final BasicTask task = new BasicTask ( "Install or update the database schema", 3, "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", null );
             if ( !needUpgrade && configured )
             {
                 task.setState ( State.DONE );
