@@ -86,7 +86,18 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         this.context = FrameworkUtil.getBundle ( UpgradeTaskProvider.class ).getBundleContext ();
         this.context.addServiceListener ( this.listener, String.format ( "(%s=%s)", Constants.OBJECTCLASS, ChannelAspectFactory.class.getName () ) );
 
-        refresh ();
+        // fork off the initial scan, since the component has to start even if the database is not present
+
+        final Thread t = new Thread () {
+            @Override
+            public void run ()
+            {
+                refresh ();
+            }
+        };
+        t.setName ( "UpgradeTaskProvider/initialScan" );
+        t.setDaemon ( true );
+        t.start ();
     }
 
     public void stop ()
