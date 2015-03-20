@@ -190,6 +190,7 @@ public class ConfigController implements InterfaceExtender
                 }
                 catch ( final Exception e )
                 {
+                    logger.warn ( "Failed to setup", e );
                     context.error ( "url", new ExceptionError ( e ) );
                 }
             } );
@@ -206,7 +207,7 @@ public class ConfigController implements InterfaceExtender
             }
             catch ( final Exception e )
             {
-                logger.info ( "Failed to create driver", e );
+                logger.warn ( "Failed to create driver", e );
             }
         } );
     }

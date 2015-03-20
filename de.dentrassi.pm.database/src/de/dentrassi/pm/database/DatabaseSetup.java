@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,12 +35,16 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.database.schema.Tasks;
 import de.dentrassi.pm.database.schema.UpgradeLog;
 
 public class DatabaseSetup implements AutoCloseable
 {
+    private final static Logger logger = LoggerFactory.getLogger ( DatabaseSetup.class );
+
     public static final String KEY_DATABASE_SCHEMA_VERSION = "database-schema-version";
 
     private final DatabaseConnectionData data;
@@ -168,6 +172,7 @@ public class DatabaseSetup implements AutoCloseable
         }
         catch ( final Exception e )
         {
+            logger.warn ( "Failed to process", e );
             throw new RuntimeException ( e );
         }
     }
@@ -188,7 +193,7 @@ public class DatabaseSetup implements AutoCloseable
     {
         try
         {
-        	con.setAutoCommit ( true ); // temporarily enable autocommit to prevent failure in next transaction if this statement fails
+            con.setAutoCommit ( true ); // temporarily enable autocommit to prevent failure in next transaction if this statement fails
             try ( final PreparedStatement stmt = con.prepareStatement ( "select \"VALUE\" from PROPERTIES where \"KEY\"=?" ) )
             {
                 stmt.setString ( 1, KEY_DATABASE_SCHEMA_VERSION );
@@ -211,11 +216,12 @@ public class DatabaseSetup implements AutoCloseable
             }
             finally
             {
-            	con.setAutoCommit( false );
+                con.setAutoCommit ( false );
             }
         }
         catch ( final SQLException e )
         {
+            logger.info ( "Failed to check schema version", e );
             return null;
         }
     }
@@ -229,6 +235,7 @@ public class DatabaseSetup implements AutoCloseable
         }
         catch ( final IOException e )
         {
+            logger.warn ( "Failed to parse additional properties", e );
         }
         return p;
     }
@@ -305,6 +312,7 @@ public class DatabaseSetup implements AutoCloseable
         }
         catch ( final Exception e )
         {
+            logger.warn ( "Failed to test connection", e );
             return e;
         }
     }
