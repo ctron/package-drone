@@ -14,8 +14,6 @@ import com.google.common.html.HtmlEscapers;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
-import de.dentrassi.pm.common.web.menu.Modal.Button;
-import de.dentrassi.pm.common.web.menu.Modal.ButtonFunction;
 
 /**
  * A menu entry from an extension point
@@ -179,7 +177,7 @@ public class MenuEntry implements Comparable<MenuEntry>
 
     public MenuEntry makeModalMessage ( final String title, final String message )
     {
-        this.modal = new Modal ( title, new Button ( ButtonFunction.CLOSE, "Close" ), new Button ( ButtonFunction.SUBMIT, this.label, this.icon, this.modifier ) );
+        this.modal = new Modal ( title, new FunctionalButton ( ButtonFunction.CLOSE, "Close" ), new FunctionalButton ( ButtonFunction.SUBMIT, this.label, this.icon, this.modifier ) );
         this.modal.setBody ( "<p>" + HtmlEscapers.htmlEscaper ().escape ( message ) + "</p>" );
         return this;
     }

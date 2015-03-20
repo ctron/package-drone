@@ -94,7 +94,7 @@ public class LockManager<I extends Comparable<I>>
 
         if ( rwLock == null )
         {
-            logger.info ( "No lock found for: '{}'", id );
+            logger.warn ( "No lock found for: '{}'", id );
             return run.call ();
         }
 

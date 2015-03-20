@@ -37,10 +37,10 @@
         <c:forEach var="button" items="${entry.modal.buttons }">
             <c:choose>
                 <c:when test="${button.function eq 'CLOSE' }">
-                    <button type="button" class="btn ${pm:modifier('btn-', button.modifier) }" data-dismiss="modal"><c:if test="${not empty button.icon }"><span class="glyphicon glyphicon-${button.icon }"></span> </c:if>${fn:escapeXml(button.label) }</button>
+                    <button type="button" class="btn ${pm:modifier('btn-', button.modifier) }" data-dismiss="modal"><h:iconLabel label="${button.label }" icon="${button.icon }" /></button>
                 </c:when>
                 <c:when test="${button.function eq 'SUBMIT' }">
-                    <a type="button" class="btn ${pm:modifier('btn-', button.modifier) }" href="${url }"><c:if test="${not empty button.icon }"><span class="glyphicon glyphicon-${button.icon }"></span> </c:if>${fn:escapeXml(button.label) }</a>
+                    <a type="button" class="btn ${pm:modifier('btn-', button.modifier) }" href="${url }"><h:iconLabel label="${button.label }" icon="${button.icon }" /></a>
                 </c:when>
             </c:choose>
         </c:forEach>

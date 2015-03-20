@@ -10,60 +10,10 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.web.menu;
 
-import de.dentrassi.pm.common.web.Modifier;
+import de.dentrassi.pm.common.web.Button;
 
 public class Modal
 {
-    public static enum ButtonFunction
-    {
-        CLOSE,
-        SUBMIT
-    }
-
-    public static class Button
-    {
-        private final String label;
-
-        private final String icon;
-
-        private final Object modifier;
-
-        private final ButtonFunction function;
-
-        public Button ( final ButtonFunction function, final String label )
-        {
-            this ( function, label, null, null );
-        }
-
-        public Button ( final ButtonFunction function, final String label, final String icon, final Modifier modifier )
-        {
-            this.function = function;
-            this.label = label;
-            this.icon = icon;
-            this.modifier = modifier != null ? modifier : Modifier.DEFAULT;
-        }
-
-        public ButtonFunction getFunction ()
-        {
-            return this.function;
-        }
-
-        public String getIcon ()
-        {
-            return this.icon;
-        }
-
-        public String getLabel ()
-        {
-            return this.label;
-        }
-
-        public Object getModifier ()
-        {
-            return this.modifier;
-        }
-    }
-
     private String title;
 
     private String body;

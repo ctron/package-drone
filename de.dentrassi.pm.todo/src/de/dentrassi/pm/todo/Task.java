@@ -14,6 +14,8 @@ import java.util.Comparator;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.pm.common.web.Button;
+import de.dentrassi.pm.common.web.Modifier;
 
 public interface Task
 {
@@ -39,6 +41,13 @@ public interface Task
     public default RequestMethod getTargetRequestMethod ()
     {
         return RequestMethod.GET;
+    }
+
+    public static final Button DEFAULT_BUTTON = new Button ( "Link", null, Modifier.LINK );
+
+    public default Button getButton ()
+    {
+        return DEFAULT_BUTTON;
     }
 
     public int getPriority ();

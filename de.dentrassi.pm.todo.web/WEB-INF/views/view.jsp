@@ -4,6 +4,7 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrassi.de/pm" prefix="pm" %>
 
 <h:main title="Maintance tasks" subtitle="Open maintancen tasks">
 
@@ -23,41 +24,23 @@
                 </c:when>
             
                 <c:otherwise>
-                    <div class="table-responsive">
-		            <table class="table table-striped table-hover">
-		            
-		                <thead>
-		                    <tr>
-		                        <th>Task</th>
-		                        <th>Description</th>
-		                        <th></th>
-		                    </tr>
-		                </thead>
-		            
-		                <tbody>
-		                    <c:forEach var="task" items="${ openTasks }">
-		                        <tr>
-		                            <td><strong>${fn:escapeXml(task.title) }</strong></td>
-		                            <td>${task.description }</td>
-		                            <td>
-		                                <c:choose>
-		                                  <c:when test="${task.targetRequestMethod eq 'GET' }">
-		                                      <a class="btn btn-link" href="<c:url value="${task.target.render(pageContext.request) }"/>">Link</a>
-		                                  </c:when>
-		                                  <c:otherwise>
-		                                      <form action="<c:url value="${task.target.render(pageContext.request) }"/>" method="${task.targetRequestMethod }">
-		                                          <button class="btn btn-default" type="submit">Perform</button>
-		                                      </form>
-		                                  </c:otherwise>
-		                                </c:choose>
-		                                
-		                            </td>
-		                        </tr>
-		                    </c:forEach>
-		                </tbody>
-		            
-		            </table>
-		            </div>
+                
+                    <c:forEach var="task" items="${ openTasks }">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">${fn:escapeXml(task.title) }</h3>
+                            </div>
+                            <div class="panel-body">
+	                            <div class="pull-right" style="padding-left: 1em; padding-bottom: 1em;">
+	                                <form action="<c:url value="${task.target.render(pageContext.request) }"/>" method="${task.targetRequestMethod }">
+	                                    <h:button button="${task.button }" type="submit"/>
+	                                </form>
+	                            </div>
+                                ${task.description } <%-- we allow HTML here --%>
+                            </div>
+                        </div>
+                    </c:forEach>
+                
 	            
 	            </c:otherwise>
             

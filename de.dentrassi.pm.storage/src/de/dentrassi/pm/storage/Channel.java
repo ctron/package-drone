@@ -31,6 +31,9 @@ import de.dentrassi.pm.common.utils.ThrowingConsumer;
  * held for a longer period of time in order to operate on this channel. However
  * the channel might get deleted or modified in the meantime.
  * </p>
+ * <p>
+ * Channels have to be equal by ID
+ * </p>
  */
 public interface Channel
 {
@@ -159,5 +162,4 @@ public interface Channel
      * @return the list of information
      */
     public List<CacheEntryInformation> getAllCacheEntries ();
-
 }

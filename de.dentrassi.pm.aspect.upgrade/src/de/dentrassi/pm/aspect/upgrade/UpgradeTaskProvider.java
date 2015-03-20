@@ -37,6 +37,8 @@ import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.Version;
+import de.dentrassi.pm.common.web.Button;
+import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.todo.BasicTask;
@@ -46,6 +48,10 @@ import de.dentrassi.pm.todo.Task;
 public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHandler
 {
     private final static Logger logger = LoggerFactory.getLogger ( UpgradeTaskProvider.class );
+
+    private static final Button PERFORM_BUTTON = new Button ( "Refresh aspect", "refresh", Modifier.DEFAULT );
+
+    private static final Button PERFORM_ALL_BUTTON = new Button ( "Refresh channel", "refresh", Modifier.DEFAULT );
 
     private final ServiceListener listener = new ServiceListener () {
 
@@ -114,6 +120,8 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
 
         final Multimap<String, Channel> missing = HashMultimap.create ();
 
+        final Multimap<Channel, String> channels = HashMultimap.create ();
+
         for ( final Channel channel : this.service.listChannels () )
         {
             logger.debug ( "Checking channel: {}", channel.getId () );
@@ -134,30 +142,43 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
                 if ( !info.getVersion ().equals ( Version.valueOf ( entry.getValue () ) ) )
                 {
                     result.add ( makeUpgradeTask ( channel, info, entry.getValue () ) );
+                    channels.put ( channel, entry.getKey () );
                 }
             }
         }
 
+        for ( final Map.Entry<Channel, Collection<String>> entry : channels.asMap ().entrySet () )
+        {
+            final Channel channel = entry.getKey ();
+            final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", channel.getId () ) );
+            final String description = "Channel aspects active in this channe have been updated. You can refresh the whole channel.";
+            result.add ( new BasicTask ( "Refresh channel: " + makeChannelTitle ( channel ), 100, description, target, RequestMethod.GET, PERFORM_ALL_BUTTON ) );
+        }
+
         for ( final Map.Entry<String, Collection<Channel>> entry : missing.asMap ().entrySet () )
         {
-            final String channels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
-            result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), channels ), null ) );
+            final String missingChannels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
+            result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), missingChannels ), null ) );
         }
 
         return result;
     }
 
-    private Task makeUpgradeTask ( final Channel channel, final ChannelAspectInformation info, final String fromVersion )
+    private String makeChannelTitle ( final Channel channel )
     {
-        final String channelName;
         if ( channel.getName () != null )
         {
-            channelName = String.format ( "%s (%s)", channel.getName (), channel.getId () );
+            return String.format ( "%s (%s)", channel.getName (), channel.getId () );
         }
         else
         {
-            channelName = channel.getId ();
+            return channel.getId ();
         }
+    }
+
+    private Task makeUpgradeTask ( final Channel channel, final ChannelAspectInformation info, final String fromVersion )
+    {
+        final String channelName = makeChannelTitle ( channel );
 
         String factoryId;
         try
@@ -172,7 +193,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAspect?aspect=%s", channel.getId (), factoryId ) );
 
         final String description = String.format ( "The aspect %s (%s) in channel %s was upgraded from version %s to %s. The channel aspect has to be re-processed.", info.getLabel (), info.getFactoryId (), channelName, fromVersion, info.getVersion () );
-        return new BasicTask ( "Upgrade aspect data", 1, description, target, RequestMethod.POST );
+        return new BasicTask ( "Upgrade aspect data", 1_000, description, target, RequestMethod.POST, PERFORM_BUTTON );
     }
 
     @Override

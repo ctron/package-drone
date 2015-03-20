@@ -12,6 +12,8 @@ package de.dentrassi.pm.todo;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.RequestMethod;
+import de.dentrassi.pm.common.web.Button;
+import de.dentrassi.pm.common.web.Modifier;
 
 public class BasicTask implements Task
 {
@@ -27,25 +29,34 @@ public class BasicTask implements Task
 
     private final RequestMethod targetRequestMethod;
 
+    private final Button button;
+
     public BasicTask ( final String title, final int priority, final String description, final LinkTarget target )
     {
-        this ( title, priority, description, target, null );
+        this ( title, priority, description, target, null, null );
     }
 
-    public BasicTask ( final String title, final int priority, final String description, final LinkTarget target, final RequestMethod method )
+    public BasicTask ( final String title, final int priority, final String description, final LinkTarget target, final RequestMethod method, final Button button )
     {
         this.state = State.TODO;
         this.priority = priority;
         this.title = title;
         this.description = description;
         this.target = target;
-        this.targetRequestMethod = method == null ? RequestMethod.GET : RequestMethod.POST;
+        this.targetRequestMethod = method == null ? RequestMethod.GET : method;
+        this.button = button == null ? new Button ( "Link", null, Modifier.LINK ) : button;
     }
 
     @Override
     public RequestMethod getTargetRequestMethod ()
     {
         return this.targetRequestMethod;
+    }
+
+    @Override
+    public Button getButton ()
+    {
+        return this.button;
     }
 
     public void setState ( final State state )

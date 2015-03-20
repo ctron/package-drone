@@ -211,4 +211,44 @@ public class ChannelImpl implements Channel
     {
         return this.service.getAllCacheEntries ( this.id );
     }
+
+    @Override
+    public int hashCode ()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( this.id == null ? 0 : this.id.hashCode () );
+        return result;
+    }
+
+    @Override
+    public boolean equals ( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( ! ( obj instanceof Channel ) )
+        {
+            return false;
+        }
+        final Channel other = (Channel)obj;
+        if ( getId () == null )
+        {
+            if ( other.getId () != null )
+            {
+                return false;
+            }
+        }
+        else if ( !getId ().equals ( other.getId () ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
 }
