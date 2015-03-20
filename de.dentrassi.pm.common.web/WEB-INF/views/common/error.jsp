@@ -6,7 +6,7 @@
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 
 <%
-pageContext.setAttribute ( "showStackTrace", Boolean.getBoolean ( "package.drone.showStackTrace" ) );
+pageContext.setAttribute ( "showStackTrace", Boolean.getBoolean ( "drone.showStackTrace" ) );
 %>
 <h:main title="${title }" subtitle="${subtitle}">
 
@@ -31,7 +31,7 @@ pageContext.setAttribute ( "showStackTrace", Boolean.getBoolean ( "package.drone
         <div class="container">
             <div class="row">
                 <div class="col-md-offset-2 col-md-8">
-                    <div class="alert alert-danger"><c:if test="${not empty result }"><strong>${fn:escapeXml(result }!</strong>${ ' ' }</c:if>${fn:escapeXml(message) }</div>
+                    <div class="alert alert-danger"><c:if test="${not empty result }"><strong>${fn:escapeXml(result) }!</strong>${ ' ' }</c:if>${fn:escapeXml(message) }</div>
                 </div>
             </div>
         </div>
