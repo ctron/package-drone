@@ -224,5 +224,9 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         {
             refresh ();
         }
+        if ( topic.endsWith ( "drone/database/schemaUpgrade" ) )
+        {
+            refresh ();
+        }
     }
 }

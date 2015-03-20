@@ -6,6 +6,7 @@
       <provide interface="org.osgi.service.event.EventHandler"/>
    </service>
    <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
-   <property name="event.topics" type="String" value="drone/channel/*">
+   <property name="event.topics" type="String" value="drone/channel/*">drone/channel/*
+drone/database/schemaUpgrade
    </property>
 </scr:component>

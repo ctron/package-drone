@@ -28,6 +28,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +71,16 @@ import de.dentrassi.pm.setup.web.internal.Activator;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
-
     private final static Logger logger = LoggerFactory.getLogger ( ConfigController.class );
 
     private final static Method METHOD_MAIN = LinkTarget.getControllerMethod ( ConfigController.class, "main" );
+
+    private EventAdmin eventAdmin;
+
+    public void setEventAdmin ( final EventAdmin eventAdmin )
+    {
+        this.eventAdmin = eventAdmin;
+    }
 
     @Override
     public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
@@ -319,6 +327,9 @@ public class ConfigController implements InterfaceExtender
             }
 
             model.put ( "mailServicePresent", isMailServicePresent () );
+
+            this.eventAdmin.postEvent ( new Event ( "drone/database/schemaUpgrade", new HashMap<> ( 1 ) ) );
+
             return new ModelAndView ( "/config/upgrade", model );
         }
         catch ( final Throwable e )
