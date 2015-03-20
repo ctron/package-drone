@@ -151,7 +151,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         {
             final Channel channel = entry.getKey ();
             final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", channel.getId () ) );
-            final String description = "Channel aspects active in this channe have been updated. You can refresh the whole channel.";
+            final String description = "Channel aspects active in this channel have been updated. You can refresh the whole channel.";
             result.add ( new BasicTask ( "Refresh channel: " + makeChannelTitle ( channel ), 100, description, target, RequestMethod.GET, PERFORM_ALL_BUTTON ) );
         }
 
