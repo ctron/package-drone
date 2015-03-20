@@ -10,23 +10,34 @@
 <% 
 JobHandle job = (JobHandle)pageContext.getRequest ().getAttribute ( "job" );
 
-if ( job != null && job.isComplete () && job.getError () == null )
+if ( job != null && job.isComplete () && job.getError () == null ) {
     pageContext.setAttribute ( "type", "success");
-else if ( job != null &&  job.isComplete (  ) && job.getError (   ) != null  )
+} else if ( job != null &&  job.isComplete (  ) && job.getError (   ) != null  ) {
     pageContext.setAttribute ( "type", "danger");
-else
+    pageContext.setAttribute ( "failed", true );
+} else {
     pageContext.setAttribute ( "type", "default");
+}
+
 %>
 
-<h:main title="Job failed" subtitle="${fn:escapeXml(job.label) }">
+<h:main title="Job ${ failed ? 'failed' : 'complete' }" subtitle="${fn:escapeXml(job.label) }">
 
 <div class="container">
 
 	<div class="row">
-		<div class="col-md-12">
+	
+		<div class="${ failed ? 'col-sm-12' : 'col-sm-offset-2 col-sm-8' }">
 		
 			<c:choose>
-			    <c:when test="${empty job }">Job not found!</c:when>
+			    <c:when test="${empty job }">
+			         <div class="alert alert-danger"><strong>Job not found!</strong> The job <q>${fn:escapeXml(jobId) }</q> could not be found.</div>
+			    </c:when>
+			    
+			    <c:when test="${not failed }">
+                    <div class="alert alert-success"><strong>Job complete!</strong> The job <q>${fn:escapeXml(job.label) }</q> has been completed successfully.</div>
+			    </c:when>
+			    
 			    <c:otherwise>
 			
 					<div class="panel panel-${type }">

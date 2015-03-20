@@ -54,7 +54,7 @@ else
 		</c:if>
 		<c:if test="${not job.complete }">
 			<script type="text/javascript">
-			setTimeout ( function (){reload();}, 1000 );
+			triggerReload ();
 			</script>
 		</c:if>
 

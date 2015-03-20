@@ -10,7 +10,16 @@
 <script type="text/javascript">
 
 function reload () {
-	$('#job-${job.id}').load ("<c:url value="/job/${job.id}/monitor"/>");
+	$('#job-${job.id}').load ("<c:url value="/job/${job.id}/monitor"/>", function (response, status, xhr) {
+		if ( status == "error" ) {
+			// retry later
+			setTimeout ( function (){reload();}, 1000 ); 
+		}
+	});
+}
+
+function triggerReload () {
+	setTimeout ( function (){reload();}, 1000 );
 }
 
 reload ();

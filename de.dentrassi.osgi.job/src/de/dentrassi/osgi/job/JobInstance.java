@@ -10,11 +10,14 @@
  *******************************************************************************/
 package de.dentrassi.osgi.job;
 
+@FunctionalInterface
 public interface JobInstance
 {
     public static interface Context
     {
         public void beginWork ( String label, long amount );
+
+        public void setCurrentTaskName ( String name );
 
         public void worked ( long amount );
 

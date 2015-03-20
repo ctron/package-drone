@@ -56,6 +56,8 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
 
         private long worked;
 
+        private String label;
+
         public ContextImpl ( final String id )
         {
             this.id = id;
@@ -65,7 +67,14 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
         public void beginWork ( final String label, final long amount )
         {
             this.totalAmount = amount;
+            this.label = label;
             internalStartWork ( this.id, label );
+        }
+
+        @Override
+        public void setCurrentTaskName ( final String name )
+        {
+            internalSetTaskLabel ( this.id, name == null ? this.label : String.format ( "%s: %s", this.label, name ) );
         }
 
         @Override
@@ -286,7 +295,19 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             ji.setCurrentWorkLabel ( label );
             ji.setPercentComplete ( 0.0 );
             em.persist ( ji );
-            em.flush ();
+        } );
+    }
+
+    protected void internalSetTaskLabel ( final String id, final String label )
+    {
+        doWithTransactionVoid ( ( em ) -> {
+            final JobInstanceEntity ji = em.find ( JobInstanceEntity.class, id, LockModeType.NONE );
+            if ( ji == null )
+            {
+                return;
+            }
+            ji.setCurrentWorkLabel ( label );
+            em.persist ( ji );
         } );
     }
 
@@ -300,7 +321,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             }
             ji.setPercentComplete ( percentComplete );
             em.persist ( ji );
-            em.flush ();
         } );
     }
 
@@ -316,7 +336,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             {
                 ji.setState ( State.RUNNING );
                 em.persist ( ji );
-                em.flush ();
             }
         } );
     }
@@ -334,7 +353,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
                 ji.setState ( State.COMPLETE );
                 ji.setPercentComplete ( 1.0 );
                 em.persist ( ji );
-                em.flush ();
             }
         } );
     }
@@ -352,7 +370,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
             {
                 ji.setResult ( data );
                 em.persist ( ji );
-                em.flush ();
             }
 
         } );
@@ -376,7 +393,6 @@ public class JobManagerImpl extends AbstractJpaServiceImpl implements JobManager
                 ji.setErrorInformation ( this.gson.toJson ( err ) );
                 ji.setState ( State.COMPLETE );
                 em.persist ( ji );
-                em.flush ();
             }
 
         } );

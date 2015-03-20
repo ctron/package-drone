@@ -57,6 +57,26 @@ public interface Channel
     }
 
     /**
+     * Get the name and id in the format "name (id)"
+     * <p>
+     * The the channels does not have a name, then the result is the same as
+     * {@link #getId()}
+     * </p>
+     * 
+     * @return the name and id
+     */
+    public default String getNameAndId ()
+    {
+        final String name = getName ();
+        if ( name == null )
+        {
+            return getId ();
+        }
+
+        return String.format ( "%s (%s)", name, getId () );
+    }
+
+    /**
      * A plain text description of this channel
      *
      * @return the description

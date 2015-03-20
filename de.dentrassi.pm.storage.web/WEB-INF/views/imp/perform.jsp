@@ -9,12 +9,12 @@
 
 <h:main title="Import running">
 
-<div class="container-fluid">
+<div class="container">
 
 <div class="row">
 
     <div class="col-md-6 col-md-offset-3">
-    <job:monitor job="${job }" />
+        <job:monitor job="${job }" />
     </div>
     
 </div></div>

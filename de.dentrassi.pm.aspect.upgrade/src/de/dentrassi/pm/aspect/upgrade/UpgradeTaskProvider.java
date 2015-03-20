@@ -53,6 +53,8 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
 
     private static final Button PERFORM_ALL_BUTTON = new Button ( "Refresh channel", "refresh", Modifier.DEFAULT );
 
+    private static final Button PERFORM_ALL_SUPER_BUTTON = new Button ( "Refresh all channels", "refresh", Modifier.DEFAULT );
+
     private final ServiceListener listener = new ServiceListener () {
 
         @Override
@@ -159,6 +161,11 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         {
             final String missingChannels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
             result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), missingChannels ), null ) );
+        }
+
+        if ( !channels.isEmpty () )
+        {
+            result.add ( new BasicTask ( "Refresh all channels", 1, "Refresh all channels in one big task", new LinkTarget ( String.format ( "/job/%s/create", UpgradeAllChannelsJob.ID ) ), RequestMethod.POST, PERFORM_ALL_SUPER_BUTTON ) );
         }
 
         return result;

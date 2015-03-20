@@ -31,9 +31,11 @@ import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
+import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
+import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.util.Requests;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
@@ -57,12 +59,40 @@ public class JobController
         this.manager = manager;
     }
 
-    @RequestMapping ( "/{id}/monitor" )
+    @RequestMapping ( value = "/{factoryId}/create", method = RequestMethod.POST )
+    @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
+    public ModelAndView create ( @PathVariable ( "factoryId" ) final String factoryId, @RequestParameter ( required = false,
+            value = "data" ) final String data )
+    {
+        final JobHandle job = this.manager.startJob ( factoryId, data );
+
+        // forward to get loose of the POST request, so that we can reload the status page
+        return new ModelAndView ( String.format ( "redirect:/job/%s/view", job.getId () ) );
+    }
+
+    @RequestMapping ( "/{id}/view" )
     public ModelAndView view ( @PathVariable ( "id" ) final String id )
     {
         final JobHandle job = this.manager.getJob ( id );
 
-        final Map<String, Object> model = new HashMap<> ();
+        final Map<String, Object> model = new HashMap<> ( 1 );
+        model.put ( "job", job );
+        return new ModelAndView ( "view", model );
+    }
+
+    /**
+     * Monitor the job, only produces an HTML fragment of the current job state
+     *
+     * @param id
+     *            the job id
+     * @return the view
+     */
+    @RequestMapping ( "/{id}/monitor" )
+    public ModelAndView monitor ( @PathVariable ( "id" ) final String id )
+    {
+        final JobHandle job = this.manager.getJob ( id );
+
+        final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "job", job );
         return new ModelAndView ( "monitor", model );
     }
