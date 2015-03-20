@@ -284,12 +284,21 @@ public class DatabaseSetup implements AutoCloseable
 
     public boolean isNeedUpgrade ()
     {
-        if ( isConfigured () && ( getSchemaVersion () == null || getCurrentVersion () > getSchemaVersion () ) )
+        try
         {
-            return true;
+            final Long schemaVersion = getSchemaVersion ();
+            if ( isConfigured () && ( schemaVersion == null || getCurrentVersion () > schemaVersion ) )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
-        else
+        catch ( final Exception e )
         {
+            logger.warn ( "Failed to evaluate needUpgrade", e );
             return false;
         }
     }
