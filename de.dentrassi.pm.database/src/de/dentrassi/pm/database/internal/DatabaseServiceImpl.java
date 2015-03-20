@@ -320,6 +320,10 @@ public class DatabaseServiceImpl implements ManagedService
             final Dictionary<String, Object> properties = new Hashtable<> ();
             properties.put ( Constants.SERVICE_DESCRIPTION, "Task provider for database configuration" );
             properties.put ( EventConstants.EVENT_TOPIC, new String[] { "packagedrone/database/schema" } );
+            if ( this.properties != null )
+            {
+                this.taskProvider.update ( this.properties );
+            }
             this.handle = this.context.registerService ( new String[] { TaskProvider.class.getName (), EventHandler.class.getName () }, this.taskProvider, properties );
         }
     }
