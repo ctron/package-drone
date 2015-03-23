@@ -85,7 +85,7 @@ public interface StreamServiceHelper
         }
     }
 
-    default void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<InputStream> receiver ) throws Exception
+    default void internalStreamArtifactStream ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<InputStream> receiver ) throws Exception
     {
         final String artifactId = ae.getId ();
 
@@ -105,6 +105,47 @@ public interface StreamServiceHelper
                     receiver.accept ( stream );
                 }
             }
+        }
+    }
+
+    default void internalStreamArtifactBlob ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<InputStream> receiver ) throws Exception
+    {
+        final String artifactId = ae.getId ();
+
+        final Connection c = em.unwrap ( Connection.class );
+        try ( PreparedStatement ps = c.prepareStatement ( "select DATA from ARTIFACTS where ID=?" ) )
+        {
+            ps.setObject ( 1, artifactId );
+            try ( ResultSet rs = ps.executeQuery () )
+            {
+                if ( !rs.next () )
+                {
+                    throw new FileNotFoundException ( String.format ( "Data for artifact '%s' not found", artifactId ) );
+                }
+
+                final Blob blob = rs.getBlob ( 1 );
+                try ( InputStream stream = blob.getBinaryStream () )
+                {
+                    receiver.accept ( stream );
+                }
+                finally
+                {
+                    blob.free ();
+                }
+
+            }
+        }
+    }
+
+    default void internalStreamArtifact ( final EntityManager em, final ArtifactEntity ae, final ThrowingConsumer<InputStream> receiver ) throws Exception
+    {
+        if ( Boolean.getBoolean ( "drone.binary.storage.jdbc.read.blobMode" ) )
+        {
+            internalStreamArtifactBlob ( em, ae, receiver );
+        }
+        else
+        {
+            internalStreamArtifactStream ( em, ae, receiver );
         }
     }
 
@@ -193,7 +234,7 @@ public interface StreamServiceHelper
 
         // set the blob
 
-        if ( Boolean.getBoolean ( "drone.binary.storage.jdbc.blobMode" ) )
+        if ( Boolean.getBoolean ( "drone.binary.storage.jdbc.write.blobMode" ) )
         {
             writeBlobAsBlob ( em, artifact, stream );
         }
