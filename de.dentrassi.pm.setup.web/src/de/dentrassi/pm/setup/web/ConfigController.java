@@ -13,6 +13,7 @@ package de.dentrassi.pm.setup.web;
 import java.lang.reflect.Method;
 import java.sql.Driver;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -328,7 +329,7 @@ public class ConfigController implements InterfaceExtender
 
             model.put ( "mailServicePresent", isMailServicePresent () );
 
-            this.eventAdmin.postEvent ( new Event ( "drone/database/schemaUpgrade", new HashMap<> ( 1 ) ) );
+            this.eventAdmin.postEvent ( new Event ( "drone/database/schemaUpgrade", Collections.emptyMap () ) );
 
             return new ModelAndView ( "/config/upgrade", model );
         }

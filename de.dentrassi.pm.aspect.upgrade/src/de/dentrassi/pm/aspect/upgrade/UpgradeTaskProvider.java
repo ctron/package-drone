@@ -220,9 +220,14 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         logger.debug ( "Received event - {}", event.getTopic () );
 
         final String topic = event.getTopic ();
-        if ( topic.endsWith ( "/refresh" ) || topic.endsWith ( "/remove" ) )
+        final Object op = event.getProperty ( "operation" );
+
+        if ( topic.startsWith ( "drone/channel/" ) )
         {
-            refresh ();
+            if ( "remove".equals ( op ) || "refresh".equals ( op ) )
+            {
+                refresh ();
+            }
         }
         if ( topic.endsWith ( "drone/database/schemaUpgrade" ) )
         {

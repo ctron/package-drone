@@ -374,7 +374,15 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected void postAspectEvent ( final String channelId, final String aspectId, final String operation )
     {
-        this.eventAdmin.postEvent ( new Event ( String.format ( "drone/channel/%s/aspect/%s/%s", channelId, aspectId, operation ), Collections.emptyMap () ) );
+        final Map<String, Object> data = new HashMap<> ( 2 );
+        data.put ( "operation", operation );
+        data.put ( "aspectFactoryId", aspectId );
+        this.eventAdmin.postEvent ( new Event ( String.format ( "drone/channel/%s/aspect", makeSafeTopic ( channelId ) ), data ) );
+    }
+
+    private static String makeSafeTopic ( final String aspectId )
+    {
+        return aspectId.replaceAll ( "[^a-zA-Z0-9_\\-]", "_" );
     }
 
     @Override
