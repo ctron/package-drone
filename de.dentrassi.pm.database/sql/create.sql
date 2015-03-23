@@ -2,8 +2,12 @@
 -- postgresql specifica here ...
 -- we just map the mysql specific types to postgres types, so we can reuse the same ddl
 
+DROP DOMAIN IF EXISTS LONGTEXT;
+DROP DOMAIN IF EXISTS LONGBLOB;
+DROP DOMAIN IF EXISTS TINYINT;
+
 CREATE DOMAIN LONGTEXT AS TEXT;
-CREATE DOMAIN LONGBLOB AS BYTEA;
+CREATE DOMAIN LONGBLOB AS OID;
 CREATE DOMAIN TINYINT AS SMALLINT;
 
 --#endif -- postgres
