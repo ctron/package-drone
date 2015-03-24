@@ -63,7 +63,7 @@ import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 /**
  * A handler for exporting and importing channel data
  */
-public class TransferHandler extends AbstractHandler implements StreamServiceHelper
+public class TransferHandler extends AbstractHandler
 {
 
     public static class PropertyComparator implements Comparator<PropertyEntity>
@@ -172,11 +172,14 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
         }
     }
 
+    private final BlobStore blobStore;
+
     private final XmlHelper xml;
 
-    public TransferHandler ( final EntityManager em, final LockManager<String> lockManager )
+    public TransferHandler ( final EntityManager em, final LockManager<String> lockManager, final BlobStore blobStore )
     {
         super ( em, lockManager );
+        this.blobStore = blobStore;
 
         this.xml = new XmlHelper ();
     }
@@ -478,7 +481,7 @@ public class TransferHandler extends AbstractHandler implements StreamServiceHel
             // put the blob
             try
             {
-                internalStreamArtifact ( this.em, art, ( in ) -> {
+                this.blobStore.streamArtifact ( this.em, art, ( in ) -> {
                     zos.putNextEntry ( new ZipEntry ( name + "data" ) );
                     ByteStreams.copy ( in, zos );
                     zos.closeEntry ();

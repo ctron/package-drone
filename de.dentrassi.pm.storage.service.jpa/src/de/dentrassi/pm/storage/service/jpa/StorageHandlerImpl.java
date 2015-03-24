@@ -10,6 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convert;
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertMetaData;
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.createTempFile;
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.isDeleteable;
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.testLocked;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -24,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -160,7 +167,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             }
             try
             {
-                internalStreamArtifact ( StorageHandlerImpl.this.em, art, receiver );
+                StorageHandlerImpl.this.blobStore.streamArtifact ( StorageHandlerImpl.this.em, art, receiver );
             }
             catch ( final Exception e )
             {
@@ -246,13 +253,16 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    private final GeneratorProcessor generatorProcessor;
-
     private final ChannelAspectProcessor channelAspectProcessor = Activator.getChannelAspects ();
 
-    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager )
+    private final BlobStore blobStore;
+
+    private final GeneratorProcessor generatorProcessor;
+
+    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager, final BlobStore blobStore )
     {
         super ( em, lockManager );
+        this.blobStore = blobStore;
         this.generatorProcessor = generatorProcessor;
     }
 
@@ -331,7 +341,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
         this.lockManager.modifyRun ( ae.getChannel ().getId (), ( ) -> {
-            doStreamed ( this.em, ae, ( file ) -> {
+            this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
                 // first clear old generated artifacts
 
                 deleteGeneratedChildren ( ae );
@@ -404,10 +414,22 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             return this.lockManager.modifyCall ( channel.getId (), ( ) -> {
 
-                ArtifactEntity ae;
+                final ArtifactEntity ae = entityCreator.get ();
+                ae.setName ( name );
+                ae.setChannel ( channel );
+                ae.setCreationTimestamp ( new Date () );
+
+                Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+                Helper.convertProvidedProperties ( providedMetaData, ae, ae.getProvidedProperties () );
+
                 try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
                 {
-                    ae = storeBlob ( entityCreator, this.em, channel, name, in, metadata, providedMetaData );
+                    this.blobStore.storeBlob ( this.em, in, size -> {
+                        ae.setSize ( size );
+                        this.em.persist ( ae );
+                        this.em.flush ();
+                        return ae.getId ();
+                    } );
                 }
 
                 if ( ae instanceof GeneratorArtifactEntity )
@@ -695,7 +717,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             logger.debug ( "Reprocessing artifact - {}", ae.getId () );
 
-            doStreamed ( this.em, ae, ( file ) -> {
+            this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
                 // generate metadata for new factory
 
                 final Map<MetaKey, String> metadata = new HashMap<> ();
@@ -890,7 +912,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         try
         {
-            doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, false ) );
+            this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, false ) );
         }
         catch ( final Exception e )
         {
@@ -928,7 +950,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      */
     private void createAllVirtualArtifacts ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator )
     {
-        scanArtifacts ( channel, ( artifact ) -> doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
+        scanArtifacts ( channel, ( artifact ) -> this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
     }
 
     private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
