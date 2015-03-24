@@ -52,7 +52,12 @@ public class Packages
                     TarArchiveEntry te;
                     while ( ( te = inputStream.getNextTarEntry () ) != null )
                     {
-                        if ( !te.getName ().equals ( "./control" ) )
+                        String name = te.getName ();
+                        if ( name.startsWith ( "./" ) )
+                        {
+                            name = name.substring ( 2 );
+                        }
+                        if ( !name.equals ( "control" ) )
                         {
                             continue;
                         }
