@@ -46,7 +46,7 @@ public class ChannelEntity
     @Column ( name = "DESCRIPTION", nullable = true, length = 255 )
     private String description;
 
-    @OneToMany ( mappedBy = "channel" )
+    @OneToMany ( mappedBy = "channel", orphanRemoval = true )
     private Set<ArtifactEntity> artifacts = new HashSet<> ();
 
     @ElementCollection
