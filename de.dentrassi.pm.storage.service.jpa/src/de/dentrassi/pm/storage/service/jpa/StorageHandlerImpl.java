@@ -353,18 +353,43 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
     }
 
-    protected void deleteGeneratedChildren ( final GeneratorArtifactEntity ae )
+    protected void deleteAllWithParent ( final Class<?> type, final ArtifactEntity parent )
     {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s ga where ga.parent=:parent", GeneratedArtifactEntity.class.getSimpleName () ) );
-        q.setParameter ( "parent", ae );
-        q.executeUpdate ();
+        final Query q = this.em.createQuery ( String.format ( "SELECT from %s ent where ent.parent=:parent", type.getName () ) );
+        q.setParameter ( "parent", parent );
+
+        deleteResult ( q );
+    }
+
+    protected void deleteGeneratedChildren ( final GeneratorArtifactEntity artifact )
+    {
+        deleteAllWithParent ( GeneratedArtifactEntity.class, artifact );
     }
 
     protected void deleteVirtualChildren ( final ArtifactEntity artifact )
     {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s va where va.parent=:parent", VirtualArtifactEntity.class.getSimpleName () ) );
-        q.setParameter ( "parent", artifact );
-        q.executeUpdate ();
+        deleteAllWithParent ( VirtualArtifactEntity.class, artifact );
+    }
+
+    private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
+    {
+        final Query q = this.em.createQuery ( String.format ( "SELECT va from %s va where va.channel=:channel", VirtualArtifactEntity.class.getName () ) );
+        q.setParameter ( "channel", channel );
+
+        final int result = deleteResult ( q );
+
+        logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
+    }
+
+    public int deleteResult ( final Query q )
+    {
+        final List<?> result = q.getResultList ();
+        for ( final Object art : result )
+        {
+            this.em.remove ( art );
+        }
+        this.em.flush ();
+        return result.size ();
     }
 
     public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file, final boolean runAggregator ) throws Exception
@@ -953,17 +978,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         scanArtifacts ( channel, ( artifact ) -> this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
     }
 
-    private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
-    {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s va where va.channel=:channel", VirtualArtifactEntity.class.getSimpleName () ) );
-        q.setParameter ( "channel", channel );
-        final int result = q.executeUpdate ();
-
-        logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
-
-        this.em.flush ();
-    }
-
     /**
      * Delete all channels
      * <p>
@@ -1164,9 +1178,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         testLocked ( channel );
 
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s ae where ae.channel.id=:channelId", ArtifactEntity.class.getName () ) );
-        q.setParameter ( "channelId", channelId );
-        q.executeUpdate ();
+        // processing by "clear" triggers the entity listeners
+
+        channel.getArtifacts ().clear ();
+        this.em.persist ( channel );
 
         runChannelAggregators ( channel );
     }
