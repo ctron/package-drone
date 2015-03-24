@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.core;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
@@ -24,6 +26,38 @@ public interface CoreService
      * @return the value, or <code>null</code> if the property was not found
      */
     public String getCoreProperty ( String key );
+
+    /**
+     * Get multiple core properties
+     * <p>
+     * <em>Note:</em> The keys in the requested key collection must be unique.
+     * The result map will contain keys exactly once.
+     * </p>
+     *
+     * @param keys
+     *            the collection of unique keys to read
+     * @return the map, containing a mapping from the key to the value (may be
+     *         <code>null</code>). Never returns null.
+     */
+    public Map<String, String> getCoreProperties ( Collection<String> keys );
+
+/**
+     * Get multiple core properties
+     * <p>
+     * The method is a convenience method to
+     * {@link #getCoreProperties(Collection)} and will behave as is if {@link
+     * <code>getCoreProperties(Arrays.asList(keys))</code> would have been called.
+     * </p>
+     *
+     * @param keys
+     *            the array of unique keys to read
+     * @return the map, containing a mapping from the key to the value (may be
+     *         <code>null</code>). Never returns null.
+     */
+    public default Map<String, String> getCoreProperties ( final String... keys )
+    {
+        return getCoreProperties ( Arrays.asList ( keys ) );
+    }
 
     /**
      * Get a core property, or a default value instead <br/>

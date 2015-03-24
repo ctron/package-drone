@@ -10,7 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.core.jpa;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -42,6 +47,43 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
     public String getCoreProperty ( final String key )
     {
         return getCoreProperty ( key, null );
+    }
+
+    @Override
+    public Map<String, String> getCoreProperties ( final Collection<String> inputKeys )
+    {
+        if ( inputKeys == null || inputKeys.isEmpty () )
+        {
+            // nothing to do
+            return Collections.emptyMap ();
+        }
+
+        // make a copy
+        final Set<String> keys = new HashSet<> ( inputKeys );
+
+        // make the result holder
+        final Map<String, String> result = new HashMap<> ( keys.size () );
+
+        // access database
+        doWithTransactionVoid ( ( em ) -> {
+            final TypedQuery<Object[]> q = em.createQuery ( String.format ( "SELECT gpe.key,gpe.value from %s gpe where gpe.key in :KEYS", GlobalPropertyEntity.class.getName () ), Object[].class );
+            q.setParameter ( "KEYS", inputKeys );
+
+            for ( final Object[] row : q.getResultList () )
+            {
+                keys.remove ( row[0] );
+                result.put ( (String)row[0], (String)row[1] );
+            }
+        } );
+
+        // fill up the no-found keys with null
+        for ( final String key : keys )
+        {
+            result.put ( key, null );
+        }
+
+        // return the result
+        return result;
     }
 
     @Override
