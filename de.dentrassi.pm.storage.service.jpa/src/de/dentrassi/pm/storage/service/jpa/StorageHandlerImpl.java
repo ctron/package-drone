@@ -90,6 +90,7 @@ import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
+import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
 public class StorageHandlerImpl extends AbstractHandler implements StorageAccessor, StreamServiceHelper
 {

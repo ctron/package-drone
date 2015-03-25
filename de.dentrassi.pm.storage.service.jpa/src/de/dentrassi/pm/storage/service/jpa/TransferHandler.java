@@ -59,6 +59,7 @@ import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.PropertyEntity;
 import de.dentrassi.pm.storage.jpa.RootArtifactEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
+import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
 /**
  * A handler for exporting and importing channel data

@@ -79,9 +79,11 @@ import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.service.StorageServiceAdmin;
+import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 import de.dentrassi.pm.storage.service.jpa.guard.ArtifactGuard;
 
-public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService, StreamServiceHelper
+public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService, StreamServiceHelper, StorageServiceAdmin
 {
     private final static Logger logger = LoggerFactory.getLogger ( StorageServiceImpl.class );
 
@@ -861,8 +863,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         doWithHandlerVoid ( ( storage ) -> storage.wipeAllChannels () );
     }
 
-    public void setBlobStoreLocation ( final File location )
+    @Override
+    public void setBlobStoreLocation ( final File location ) throws IOException
     {
+        logger.info ( "Setting blob store location: {}", location );
         this.blobStore.setLocation ( location );
     }
 }

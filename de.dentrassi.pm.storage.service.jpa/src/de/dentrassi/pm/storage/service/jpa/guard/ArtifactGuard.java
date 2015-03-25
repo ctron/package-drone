@@ -32,7 +32,7 @@ import de.dentrassi.pm.common.service.Guard;
 import de.dentrassi.pm.storage.jpa.ArtifactDeleteRequestEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactTracker;
 import de.dentrassi.pm.storage.jpa.ArtifactTracker.Tracker;
-import de.dentrassi.pm.storage.service.jpa.BlobStore;
+import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
 public class ArtifactGuard implements Guard
 {

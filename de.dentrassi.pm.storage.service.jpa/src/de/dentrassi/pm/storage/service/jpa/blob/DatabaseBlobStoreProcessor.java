@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service.jpa;
+package de.dentrassi.pm.storage.service.jpa.blob;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.service.jpa;
+package de.dentrassi.pm.storage.service.jpa.blob;
 
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convert;
 
@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import javax.persistence.EntityManager;
@@ -38,7 +38,16 @@ import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
+import de.dentrassi.pm.storage.service.jpa.StreamServiceHelper;
 
+/**
+ * Implements a blob store which can work on the database and optionally on the
+ * file system
+ * <p>
+ * This blob store fill fall back from filesystem level to database in order to
+ * make the filesystem layer optional and support legacy systems.
+ * </p>
+ */
 public class BlobStore
 {
     private final static Logger logger = LoggerFactory.getLogger ( BlobStore.class );
@@ -47,15 +56,50 @@ public class BlobStore
 
     private DatabaseBlobStoreProcessor database;
 
+    private final AtomicReference<FilesystemBlobStoreProcessor> filesystem = new AtomicReference<> ();
+
+    private boolean open;
+
     public void open ( final CoreService coreService )
     {
         this.database = new DatabaseBlobStoreProcessor ();
 
         this.coreService = coreService;
-        performOpen ();
+        checkOpen ();
     }
 
-    public void performOpen ()
+    public void close ()
+    {
+        performClose ();
+    }
+
+    private void checkOpen ()
+    {
+        if ( this.open )
+        {
+            return;
+        }
+
+        synchronized ( this )
+        {
+            if ( this.open )
+            {
+                return;
+            }
+
+            try
+            {
+                performOpen ();
+                this.open = true;
+            }
+            catch ( final Exception e )
+            {
+                logger.warn ( "Failed to open store", e );
+            }
+        }
+    }
+
+    private void performOpen ()
     {
         final Map<String, String> map = this.coreService.getCoreProperties ( "blobStoreLocation", "blobStoreId" );
 
@@ -63,33 +107,42 @@ public class BlobStore
         final String id = map.get ( "blobStoreId" );
 
         logger.info ( "Blob store - location: {}, id: {}", location, id );
+        if ( location != null && id != null )
+        {
+            this.filesystem.set ( new FilesystemBlobStoreProcessor ( new File ( location ), id ) );
+        }
     }
 
-    public void close ()
+    private void performClose ()
     {
+        this.open = false;
+        final FilesystemBlobStoreProcessor currentFilesystem = this.filesystem.getAndSet ( null );
+
+        if ( currentFilesystem != null )
+        {
+            currentFilesystem.close ();
+        }
     }
 
-    public void setLocation ( final File location )
+    public void setLocation ( final File location ) throws IOException
     {
-        close ();
+        logger.info ( "Setting blob store location: {}", location );
+        final FilesystemBlobStoreProcessor processor;
+
+        processor = FilesystemBlobStoreProcessor.createOrLoad ( location, this.coreService );
 
         final Map<String, String> properties = new HashMap<> ();
 
         properties.put ( "blobStoreLocation", location.getAbsolutePath () );
-        properties.put ( "blobStoreId", UUID.randomUUID ().toString () );
+        properties.put ( "blobStoreId", processor.getStoreId () );
 
         this.coreService.setProperties ( properties );
-    }
 
-    public void streamArtifact ( final EntityManager em, final ArtifactEntity artifact, final ThrowingConsumer<InputStream> consumer ) throws IOException
-    {
-        try
+        final FilesystemBlobStoreProcessor old = this.filesystem.getAndSet ( processor );
+
+        if ( old != null )
         {
-            this.database.internalStreamArtifact ( em, artifact, consumer );
-        }
-        catch ( final SQLException e )
-        {
-            throw new IOException ( e );
+            old.close ();
         }
     }
 
@@ -130,6 +183,29 @@ public class BlobStore
         streamArtifact ( em, ae, ( stream ) -> receiver.receive ( convert ( ae, null ), stream ) );
     }
 
+    public void streamArtifact ( final EntityManager em, final ArtifactEntity artifact, final ThrowingConsumer<InputStream> consumer ) throws IOException
+    {
+        checkOpen ();
+
+        final FilesystemBlobStoreProcessor currentFilesystem = this.filesystem.get ();
+        if ( currentFilesystem != null )
+        {
+            if ( currentFilesystem.streamArtifact ( artifact.getId (), consumer ) )
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            this.database.internalStreamArtifact ( em, artifact, consumer );
+        }
+        catch ( final SQLException e )
+        {
+            throw new IOException ( e );
+        }
+    }
+
     /**
      * Store a blob in the blob store
      * <p>
@@ -152,7 +228,17 @@ public class BlobStore
      */
     public void storeBlob ( final EntityManager em, final BufferedInputStream in, final Function<Long, String> idFunction ) throws SQLException, IOException
     {
-        this.database.storeBlob ( em, in, idFunction );
+        checkOpen ();
+
+        final FilesystemBlobStoreProcessor currentFilesystem = this.filesystem.get ();
+        if ( currentFilesystem != null )
+        {
+            currentFilesystem.storeBlob ( in, idFunction );
+        }
+        else
+        {
+            this.database.storeBlob ( em, in, idFunction );
+        }
     }
 
     /**
@@ -164,6 +250,14 @@ public class BlobStore
     {
         logger.debug ( "Vacuuming artifact: {}" );
 
+        checkOpen ();
+
         // there is no need to delete this at a database level, since the entity containing the BLOB is already deleted
+
+        final FilesystemBlobStoreProcessor currentFilesystem = this.filesystem.get ();
+        if ( currentFilesystem != null )
+        {
+            currentFilesystem.deleteBlob ( id );
+        }
     }
 }

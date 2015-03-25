@@ -4,6 +4,7 @@
    <reference bind="setEntityManagerFactory" cardinality="1..1" interface="javax.persistence.EntityManagerFactory" name="EntityManagerFactory" policy="static" target="(osgi.unit.name=de.dentrassi.pm.storage.jpa)"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.service.StorageService"/>
+      <provide interface="de.dentrassi.pm.storage.service.StorageServiceAdmin"/>
    </service>
    <reference bind="setEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static"/>
    <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
