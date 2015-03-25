@@ -64,7 +64,7 @@ public class OsgiMessageInterpolator implements MessageInterpolator
 
     public OsgiMessageInterpolator ( final BundleContext context )
     {
-        this.tracker = new BundleTracker<> ( context, Bundle.INSTALLED | Bundle.ACTIVE | Bundle.RESOLVED, new BundleTrackerCustomizer<Resolver> () {
+        this.tracker = new BundleTracker<> ( context, Bundle.ACTIVE | Bundle.RESOLVED, new BundleTrackerCustomizer<Resolver> () {
 
             @Override
             public Resolver addingBundle ( final Bundle bundle, final BundleEvent event )
