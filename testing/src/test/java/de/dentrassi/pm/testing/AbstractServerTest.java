@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.testing;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -75,5 +76,15 @@ public class AbstractServerTest
         {
             throw new RuntimeException ( e );
         }
+    }
+
+    protected File getStoreLocation ()
+    {
+        final String location = System.getProperty ( "test.storageLocation" );
+        if ( location == null )
+        {
+            return new File ( "target/storage" );
+        }
+        return new File ( location );
     }
 }

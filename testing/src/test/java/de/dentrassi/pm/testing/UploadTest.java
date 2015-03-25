@@ -55,11 +55,13 @@ public class UploadTest extends AbstractServerTest
 
         // upload file
 
+        final File input = new File ( getAbsolutePath ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" ) );
+
         {
             final WebElement ele = driver.findElementById ( "file" );
             Assert.assertNotNull ( ele );
 
-            ele.sendKeys ( getAbsolutePath ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" ) );
+            ele.sendKeys ( input.toString () );
 
             ele.submit ();
         }
@@ -70,7 +72,34 @@ public class UploadTest extends AbstractServerTest
 
         // check upload
 
-        Assert.assertEquals ( 1, findArtifacts ().size () );
+        final List<String> arts = findArtifacts ();
+        Assert.assertEquals ( 1, arts.size () );
+
+        final File file = makeStoreFile ( arts.get ( 0 ) );
+
+        System.out.println ( "Looking for: " + file );
+
+        Assert.assertTrue ( file.exists () );
+        Assert.assertTrue ( file.isFile () );
+        Assert.assertTrue ( file.canRead () );
+        Assert.assertEquals ( input.length (), file.length () );
+    }
+
+    private final int LEVEL = 3;
+
+    private File makeStoreFile ( final String id )
+    {
+        final StringBuilder sb = new StringBuilder ();
+
+        File file = new File ( getStoreLocation (), "data" );
+
+        for ( int i = 0; i < this.LEVEL; i++ )
+        {
+            sb.append ( id.charAt ( i ) );
+            file = new File ( file, sb.toString () );
+        }
+
+        return new File ( file, id );
     }
 
     private String getAbsolutePath ( final String localPath )
