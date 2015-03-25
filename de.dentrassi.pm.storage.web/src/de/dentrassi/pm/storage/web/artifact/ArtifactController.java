@@ -85,10 +85,10 @@ public class ArtifactController implements InterfaceExtender
         final SimpleArtifactInformation info = this.service.deleteArtifact ( artifactId );
         if ( info == null )
         {
-            return new ModelAndView ( "redirect:/" );
+            return new ModelAndView ( "referer:/" );
         }
 
-        return new ModelAndView ( "redirect:/channel/" + info.getChannelId () + "/view" );
+        return new ModelAndView ( "referer:/channel/" + info.getChannelId () + "/view" );
     }
 
     @Secured ( false )

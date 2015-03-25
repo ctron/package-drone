@@ -197,5 +197,4 @@ public class ChannelEntity
         }
         return true;
     }
-
 }

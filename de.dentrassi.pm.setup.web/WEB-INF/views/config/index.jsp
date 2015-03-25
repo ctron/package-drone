@@ -82,7 +82,19 @@ function testConnection () {
                 </div>
 			</c:if>
 			
-			<div class="panel panel-info">
+			<c:choose>
+			    <c:when test="${ empty testResultMessage and storageServicePresent and ( not empty databaseSchemaVersion ) and currentVersion eq databaseSchemaVersion }">
+			        <c:set var="serviceStateClass" value="success"/>
+			    </c:when>
+			    <c:when test="${ empty testResultMessage and storageServicePresent }">
+                    <c:set var="serviceStateClass" value="warning"/>
+			    </c:when>
+                <c:otherwise>
+                    <c:set var="serviceStateClass" value="danger"/>
+                </c:otherwise>
+			</c:choose>
+			
+			<div class="panel panel-${serviceStateClass }">
 				<div class="panel-heading">
 				  <h3 class="panel-title">Service status</h3>
 				</div>

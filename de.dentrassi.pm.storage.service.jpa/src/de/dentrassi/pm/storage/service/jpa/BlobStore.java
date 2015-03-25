@@ -154,4 +154,16 @@ public class BlobStore
     {
         this.database.storeBlob ( em, in, idFunction );
     }
+
+    /**
+     * Clean up the BLOB of an already deleted artifact
+     *
+     * @param id
+     */
+    public void vacuumArtifact ( final String id ) throws IOException
+    {
+        logger.debug ( "Vacuuming artifact: {}" );
+
+        // there is no need to delete this at a database level, since the entity containing the BLOB is already deleted
+    }
 }

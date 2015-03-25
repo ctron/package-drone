@@ -79,6 +79,7 @@ import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.service.jpa.guard.ArtifactGuard;
 
 public class StorageServiceImpl extends AbstractJpaServiceImpl implements StorageService, StreamServiceHelper
 {
@@ -298,17 +299,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         {
             throw new FileNotFoundException ( String.format ( "Artifact '%s' could not be found", artifactId ) );
         }
-    }
-
-    private ArtifactEntity getCheckedArtifact ( final EntityManager em, final String artifactId )
-    {
-        final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
-
-        if ( ae == null )
-        {
-            throw new IllegalArgumentException ( String.format ( "Artifact %s not found", artifactId ) );
-        }
-        return ae;
     }
 
     @Override
@@ -791,12 +781,17 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         doWithHandlerVoid ( ( handler ) -> handler.streamCacheEntry ( channelId, namespace, key, consumer ) );
     }
 
+    public ArtifactGuard createArtifactGuard ()
+    {
+        return new ArtifactGuard ( this.entityManagerFactory::createEntityManager, this.blobStore );
+    }
+
     protected void doWithHandlerVoid ( final ThrowingConsumer<StorageHandlerImpl> consumer )
     {
         doWithTransactionVoid ( ( em ) -> {
             final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
             consumer.accept ( handler );
-        } );
+        }, createArtifactGuard () );
     }
 
     protected <R> R doWithHandler ( final ManagerFunction<R, StorageHandlerImpl> consumer )
@@ -804,7 +799,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return doWithTransaction ( ( em ) -> {
             final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
             return consumer.process ( handler );
-        } );
+        }, createArtifactGuard () );
     }
 
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )

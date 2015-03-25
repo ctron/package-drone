@@ -27,6 +27,7 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
@@ -45,6 +46,7 @@ import org.eclipse.persistence.annotations.UuidGenerator;
 @Inheritance ( strategy = InheritanceType.SINGLE_TABLE )
 @DiscriminatorColumn ( name = "\"TYPE\"" )
 @UuidGenerator ( name = "ART_UUID_GEN" )
+@EntityListeners ( ArtifactTracker.class )
 public abstract class ArtifactEntity
 {
     @Id
