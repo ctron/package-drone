@@ -356,7 +356,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void deleteAllWithParent ( final Class<?> type, final ArtifactEntity parent )
     {
-        final Query q = this.em.createQuery ( String.format ( "SELECT from %s ent where ent.parent=:parent", type.getName () ) );
+        final Query q = this.em.createQuery ( String.format ( "SELECT ent from %s ent where ent.parent=:parent", type.getName () ) );
         q.setParameter ( "parent", parent );
 
         deleteResult ( q );
