@@ -30,17 +30,18 @@
             </div>
 
             <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-import"></span> Export all channels</h3></div>
+                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-export"></span> Export all channels</h3></div>
                 <div class="panel-body">
                     <p>
-                    Export all channels at once.
+                    Export all channels at once. It is possible to download the archive immediately or spool it out to the file system of the server. 
                     </p>
                     <p>
                     In order to export a single channel only, go to that channel and use the <q>Export</q> action.
                     </p>
                 </div>
                 <div class="panel-body text-right">
-                    <a href="<c:url value="/channel/export"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-export"></span> Export</a>
+                    <a href="<c:url value="/channel/export"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-export"></span> Download</a>
+                    <a href="<c:url value="/system/storage/exportAllFs"/>" role="button" class="btn btn-default"><span class="glyphicon glyphicon-export"></span> Spool Out</a>
                 </div>
             </div>
         </div>
@@ -78,13 +79,15 @@
 	                </div>
 	                <div class="panel-body">
 						<form method="POST" id="fs-form" action="<c:url value="/system/storage/fileStore"/>">
-						        <div class="col-xs-10">
-								        <label for="location" class="sr-only">Location</label>
-								        <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server"/>
+						    <div class="row">
+						        <div class="col-xs-8">
+							        <label for="location" class="sr-only">Location</label>
+							        <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server"/>
 							    </div>
-							    <div class="col-xs-2 text-right">
+							    <div class="col-xs-4 text-right">
 	                                <button id="fs-convert" type="button" class="btn btn-warning" data-toggle="modal" data-target="#fs-modal">Convert</button>
 							    </div>
+					       </div> 
 						</form>
 	                </div>
 	            </div>
@@ -106,13 +109,15 @@
                     </div>
                     <div class="panel-body">
                         <form method="POST" id="fs-form" action="<c:url value="/system/storage/fileStore"/>">
-                                <div class="col-xs-10">
-                                        <label for="location" class="sr-only">Location</label>
-                                        <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server" value="${fn:escapeXml(blobStoreLocation) }"/>
+                            <div class="row">
+                                <div class="col-xs-8">
+                                    <label for="location" class="sr-only">Location</label>
+                                    <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server" value="${fn:escapeXml(blobStoreLocation) }" required="required"/>
                                 </div>
-                                <div class="col-xs-2 text-right">
+                                <div class="col-xs-4 text-right">
                                     <button id="fs-relocate" type="button" class="btn btn-warning" data-toggle="modal" data-target="#fs-modal">Relocate</button>
                                 </div>
+                             </div>
                         </form>
                     </div>
                 </div>

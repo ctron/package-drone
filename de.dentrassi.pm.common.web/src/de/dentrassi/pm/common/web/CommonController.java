@@ -23,11 +23,15 @@ import de.dentrassi.osgi.web.controller.ModelAndViewRequestHandler;
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 public class CommonController
 {
-    public static final String NOT_FOUND_VIEW = "common/notFound";
+    public static final String SUCCESS_VIEW = "common/success";
 
-    public static final String NOT_FOUND_VIEW_TYPE = "type";
+    public static final String SUCCESS_VIEW_TITLE = "title";
 
-    public static final String NOT_FOUND_VIEW_ID = "id";
+    public static final String SUCCESS_VIEW_SUBTITLE = "subtitle";
+
+    public static final String SUCCESS_VIEW_MESSAGE = "message";
+
+    public static final String ACCESS_DENIED_VIEW = "common/accessDenied";
 
     public static final String ERROR_VIEW = "common/error";
 
@@ -43,7 +47,11 @@ public class CommonController
 
     public static final String ERROR_VIEW_EXCEPTION = "exception";
 
-    public static final String ACCESS_DENIED_VIEW = "common/accessDenied";
+    public static final String NOT_FOUND_VIEW = "common/notFound";
+
+    public static final String NOT_FOUND_VIEW_TYPE = "type";
+
+    public static final String NOT_FOUND_VIEW_ID = "id";
 
     public static ModelAndView createNotFound ( final String type, final String id )
     {
@@ -104,8 +112,22 @@ public class CommonController
         return mav;
     }
 
+    public static ModelAndView createSuccess ( final String title, final String subtitle, final String message )
+    {
+        final ModelAndView mav = new ModelAndView ( SUCCESS_VIEW );
+
+        mav.put ( SUCCESS_VIEW_TITLE, title );
+        mav.put ( SUCCESS_VIEW_SUBTITLE, subtitle );
+        mav.put ( SUCCESS_VIEW_MESSAGE, message );
+
+        mav.setAlternateViewResolver ( CommonController.class );
+
+        return mav;
+    }
+
     public static ModelAndViewRequestHandler wrap ( final Supplier<ModelAndView> supplier )
     {
         return new ModelAndViewRequestHandler ( supplier.get (), CommonController.class, null );
     }
+
 }
