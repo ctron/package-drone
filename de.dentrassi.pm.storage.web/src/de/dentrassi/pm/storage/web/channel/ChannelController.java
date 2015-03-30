@@ -14,6 +14,7 @@ import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -813,11 +814,22 @@ public class ChannelController implements InterfaceExtender
 
     @RequestMapping ( value = "/channel/importAll", method = RequestMethod.POST )
     public ModelAndView importAllPost ( @RequestParameter ( value = "useNames", required = false ) final boolean useNames, @RequestParameter ( value = "wipe",
-            required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part )
+            required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part, @RequestParameter ( value = "location",
+            required = false ) final String location )
     {
         try
         {
-            this.service.importAll ( part.getInputStream (), useNames, wipe );
+            if ( location != null && !location.isEmpty () )
+            {
+                try ( BufferedInputStream stream = new BufferedInputStream ( new FileInputStream ( new File ( location ) ) ) )
+                {
+                    this.service.importAll ( stream, useNames, wipe );
+                }
+            }
+            else
+            {
+                this.service.importAll ( part.getInputStream (), useNames, wipe );
+            }
             return new ModelAndView ( "redirect:/channel" );
         }
         catch ( final Exception e )

@@ -272,7 +272,7 @@ public class FilesystemBlobStoreProcessor
 
         if ( cfgFile.exists () )
         {
-            throw new IllegalStateException ( String.format ( "%s already contains a store", location ) );
+            throw new IllegalStateException ( String.format ( "'%s' already contains a store", location ) );
         }
 
         cfgFile.getParentFile ().mkdirs ();

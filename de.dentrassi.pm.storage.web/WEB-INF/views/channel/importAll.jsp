@@ -15,28 +15,49 @@
 		
 			<form:form action="" method="POST" cssClass="form-horizontal" enctype="multipart/form-data">
 			    
-			    <h:formEntry label="File" command="command" path="file">
-			        <form:input path="file" type="file"/>
-			        <span class="help-block">
-                    Select the channel export file to import. This must be a channel file previously exported by Package Drone.
-			        </span>
-			    </h:formEntry>
+			    <fieldset>
 			    
-                <h:formCheckbox label="Use channel names" path="useNames" command="command">
-                    <span class="help-block">
-                    This will set the names (channel alias) of the exported channels. Since channel names are unique in the system
-                    this will only work, if neither of the imported channel names exists.
-                    </span>
-                </h:formCheckbox>
+			        <legend>Import source</legend>
+			        
+				    <h:formEntry label="Upload" command="command" path="file">
+				        <form:input path="file" type="file"/>
+				        <span class="help-block">
+	                    Select the channel export file to import. This must be a channel file previously exported by Package Drone.
+				        </span>
+				    </h:formEntry>
+				    
+				    <div class="form-group text-center"><em>or</em></div>
+				    
+				    <h:formEntry label="Server file" command="command" path="location">
+	                    <form:input path="location" cssClass="form-control" type="text"/>
+	                    <span class="help-block">
+	                    Server side file to import. Instead of selecting one for upload.
+	                    </span>
+	                </h:formEntry>
                 
-                <div class="text-danger">
-                <h:formCheckbox label="Wipe storage before import" path="wipe" command="command">
-                    <span class="help-block">
-                    This will <em>delete all channels</em> before importing. All channels <em>will be lost</em> unless you do have
-                    a separate backup! 
-                    </span>
-                </h:formCheckbox>
-                </div>
+                </fieldset>
+                
+                <fieldset>
+                
+                    <legend>Import options</legend>
+			    
+	                <h:formCheckbox label="Use channel names" path="useNames" command="command">
+	                    <span class="help-block">
+	                    This will set the names (channel alias) of the exported channels. Since channel names are unique in the system
+	                    this will only work, if neither of the imported channel names exists.
+	                    </span>
+	                </h:formCheckbox>
+	                
+	                <div class="text-danger">
+	                <h:formCheckbox label="Wipe storage before import" path="wipe" command="command">
+	                    <span class="help-block">
+	                    This will <em>delete all channels</em> before importing. All channels <em>will be lost</em> unless you do have
+	                    a separate backup! 
+	                    </span>
+	                </h:formCheckbox>
+	                </div>
+                
+                </fieldset>
 			    
 				<h:formButtons>
 			        <input type="submit" value="Import" class="btn btn-primary">

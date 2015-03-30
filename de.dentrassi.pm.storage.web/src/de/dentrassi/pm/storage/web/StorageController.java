@@ -129,9 +129,9 @@ public class StorageController implements InterfaceExtender
         {
             admin.setBlobStoreLocation ( new File ( data.getLocation () ) );
         }
-        catch ( final IOException e )
+        catch ( final Exception e )
         {
-            return CommonController.createError ( "Convert storage", null, e, true );
+            return CommonController.createError ( "Convert storage", "Error", e, true );
         }
 
         // result
