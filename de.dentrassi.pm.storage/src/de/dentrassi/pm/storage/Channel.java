@@ -62,7 +62,7 @@ public interface Channel
      * The the channels does not have a name, then the result is the same as
      * {@link #getId()}
      * </p>
-     * 
+     *
      * @return the name and id
      */
     public default String getNameAndId ()
@@ -145,11 +145,41 @@ public interface Channel
      */
     public Set<ArtifactInformation> getArtifactInformations ();
 
+    // --- direct meta data
+
     public SortedMap<MetaKey, String> getMetaData ();
+
+    /**
+     * Get a single meta data entry
+     *
+     * @param key
+     *            the qualified key to get
+     * @return the value
+     */
+    public default String getMetaData ( final MetaKey key )
+    {
+        return getMetaData ().get ( key );
+    }
+
+    /**
+     * Get a single meta data entry
+     *
+     * @param namespace
+     *            the namespace
+     * @param key
+     *            the key
+     * @return the value
+     */
+    public default String getMetaData ( final String namespace, final String key )
+    {
+        return getMetaData ( new MetaKey ( namespace, key ) );
+    }
 
     public SortedMap<MetaKey, String> getProvidedMetaData ();
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
+
+    // --- Deploy groups and keys
 
     public Collection<DeployKey> getAllDeployKeys ();
 
