@@ -12,6 +12,10 @@
 <%@ attribute name="title" required="true" %>
 <%@ attribute name="subtitle" %>
 
+<%@attribute name="head" fragment="true"%>
+<%@attribute name="body" fragment="true"%>
+
+
 <!DOCTYPE html>
 <html>
 
@@ -54,6 +58,8 @@ if ( p instanceof UserInformationPrincipal )
     <link rel="stylesheet" href="${fontAwesome}/css/font-awesome.min.css">
     
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
+    
+    <jsp:invoke fragment="head"/>
 </head>
 
 <body>
@@ -73,8 +79,6 @@ if ( p instanceof UserInformationPrincipal )
                 <a href="<c:url value="/login"/>">Sign in</a></p>
         </c:if>
         
-      
-        
         <c:if test="${not empty principal }">
             <p class="navbar-text navbar-right">
                 <c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=24"  width="24" height="24" />&nbsp;</c:if>
@@ -93,21 +97,21 @@ if ( p instanceof UserInformationPrincipal )
         </c:if>
         
         <p class="navbar-text navbar-right">
-	        <c:choose>
-	            <c:when test="${not empty openTasks and not empty principal}">
-	                <a href="/tasks" class="navbar-link">Tasks <span class="badge">${openTasks.size() }</span></a>
-	            </c:when>
-	            <c:when test="${not empty openTasks and empty principal}">
+            <c:choose>
+                <c:when test="${not empty openTasks and not empty principal}">
+                    <a href="/tasks" class="navbar-link">Tasks <span class="badge">${openTasks.size() }</span></a>
+                </c:when>
+                <c:when test="${not empty openTasks and empty principal}">
                     <a href="/tasks" class="navbar-link" data-toggle="tooltip" data-placement="bottom" title="Maintance required!">
-	                   <span class="glyphicon glyphicon-bell"></span>
+                       <span class="glyphicon glyphicon-bell"></span>
                     </a>
                     <script type="text/javascript">
                     $(function () {
-                    	  $('[data-toggle="tooltip"]').tooltip()
-                    	})
+                          $('[data-toggle="tooltip"]').tooltip()
+                        })
                     </script>
-	            </c:when>
-	        </c:choose>
+                </c:when>
+            </c:choose>
         </p>
         
     </jsp:attribute>
@@ -116,27 +120,31 @@ if ( p instanceof UserInformationPrincipal )
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-			<div class="page-header">
-			   <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
-		    </div>
-	    </div>
+            <div class="page-header">
+               <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
+            </div>
+        </div>
     </div>
 </div>
 
 
 <section>
-<div id="content">
-<jsp:doBody/>
-</div>
-
+    <div id="content">
+        <c:choose>
+            <c:when test="${not empty body }">
+                <jsp:invoke fragment="body"/>
+            </c:when>
+            <c:otherwise>
+                <jsp:doBody/>
+            </c:otherwise>
+        </c:choose>
+    </div>
 </section>
 
 <web:pop name="modal"/>
 
 <footer>
-
-<div class="pull-right"><a href="http://packagedrone.org" target="_blank">Package Drone ${droneVersion }</a></div>
-
+    <div class="pull-right"><a href="http://packagedrone.org" target="_blank">Package Drone ${droneVersion }</a></div>
 </footer>
 
 </body>
