@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -54,11 +55,16 @@ public class ResourceRequestHandler implements RequestHandler
             return;
         }
 
-        response.setDateHeader ( Responses.LAST_MODIFIED, this.lastModified );
-
         try ( InputStream in = this.url.openStream () )
         {
+            response.setDateHeader ( Responses.LAST_MODIFIED, this.lastModified );
             ByteStreams.copy ( in, response.getOutputStream () );
         }
+        catch ( final FileNotFoundException e )
+        {
+            // caused by accessing a directory
+            Responses.notFound ( request, response );
+        }
+
     }
 }
