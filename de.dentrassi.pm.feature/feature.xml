@@ -1062,4 +1062,17 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="de.dentrassi.pm.common.web.ckeditor"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.storage.web.description"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
 </feature>

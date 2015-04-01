@@ -95,6 +95,7 @@
 
 		<module>../de.dentrassi.pm.common</module>
 		<module>../de.dentrassi.pm.common.web</module>
+		<module>../de.dentrassi.pm.common.web.ckeditor</module>
 
 		<module>../de.dentrassi.pm.console</module>
 
@@ -157,6 +158,7 @@
 		<module>../de.dentrassi.pm.storage.service</module>
 		<module>../de.dentrassi.pm.storage.service.jpa</module>
 		<module>../de.dentrassi.pm.storage.web</module>
+		<module>../de.dentrassi.pm.storage.web.description</module>
 
 		<module>../de.dentrassi.pm.system</module>
 		<module>../de.dentrassi.pm.system.web</module>

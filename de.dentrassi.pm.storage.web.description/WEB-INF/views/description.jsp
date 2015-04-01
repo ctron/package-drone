@@ -19,6 +19,13 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <jsp:attribute name="head">
     <script src="/ckeditor/ckeditor.js"></script>
+    <style>
+    div[contenteditable='true'] {
+        border: 1pt solid #CCC;
+        padding: 1em;
+        margin: 1em;
+    }
+    </style>
 </jsp:attribute>
 
 <jsp:attribute name="body">
@@ -31,8 +38,10 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
     function startEditor ()  {
     	  $('#description').attr("contenteditable","true");
     	  CKEDITOR.inline( 'description', {
-    		  'startupFocus': true
+    		  'startupFocus': true,
+    		  'uiColor': '#EEEEEE'
     		  } );
+    	  $('#noDescription').hide();
     	  $('#editDescription').hide();
     	  $('#saveDescription').show ();
     }
@@ -55,7 +64,16 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
             </div>
             <c:if test="${manager }">
                 <div class="col-xs-12">
-                    <button id="editDescription" class="btn btn-default" onclick="startEditor();">Edit</button>
+                    <c:choose>
+                        <c:when test="${ empty channel.getMetaData('sys', 'description') }">
+                            <div id="noDescription" class="well well-lg">
+                            No channel description found. <a href="#" onclick="startEditor(); return false;">Create one</a>!
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <button id="editDescription" class="btn btn-default" onclick="startEditor();">Edit</button>
+                        </c:otherwise>
+                    </c:choose>
                     <button id="saveDescription" class="btn btn-primary" style="display: none;" onclick="saveEditor();">Save</button>
                 </div>
                 <form id="form" action="" method="POST">
