@@ -30,6 +30,9 @@ public final class Responses
 
     public static void notFound ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
+        response.setCharacterEncoding ( "UTF-8" );
+        response.setContentType ( "text/plain" );
+
         response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
         response.getWriter ().println ( String.format ( "Resource '%s' could not be found", Requests.getOriginalPath ( request ) ) );
     }
