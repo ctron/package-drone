@@ -65,6 +65,11 @@ public class DatabaseTaskProvider extends DefaultTaskProvider implements EventHa
 
     public void testSchema ()
     {
+        if ( this.properties == null )
+        {
+            return;
+        }
+
         try ( DatabaseSetup db = new DatabaseSetup ( DatabaseConnectionData.fromProperties ( this.properties ) ) )
         {
             final Long active = db.getSchemaVersion ();
@@ -84,6 +89,7 @@ public class DatabaseTaskProvider extends DefaultTaskProvider implements EventHa
         }
         catch ( final Exception e )
         {
+            logger.debug ( "Failed to test schema state", e );
             setSchemaState ( null, null );
         }
     }

@@ -123,6 +123,7 @@ public class DatabaseSetup implements AutoCloseable
         }
         catch ( final Exception e )
         {
+            logger.warn ( "Failed to get schema version", e );
             return null;
         }
     }

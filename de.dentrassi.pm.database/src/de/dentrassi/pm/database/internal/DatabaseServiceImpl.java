@@ -26,6 +26,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -33,8 +34,11 @@ import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -300,10 +304,32 @@ public class DatabaseServiceImpl implements ManagedService
 
     private ScheduledExecutorService executor;
 
+    private final ServiceTracker dataSourceTracker;
+
     public DatabaseServiceImpl ()
     {
         this.context = FrameworkUtil.getBundle ( DatabaseServiceImpl.class ).getBundleContext ();
         this.tracker = new BundleTracker<> ( this.context, Bundle.INSTALLED | Bundle.ACTIVE | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING, this.customizer );
+        this.dataSourceTracker = new ServiceTracker<> ( this.context, DataSourceFactory.class, new ServiceTrackerCustomizer<DataSourceFactory, DataSourceFactory> () {
+
+            @Override
+            public DataSourceFactory addingService ( final ServiceReference<DataSourceFactory> reference )
+            {
+                retestSchema ();
+                return null;
+            }
+
+            @Override
+            public void modifiedService ( final ServiceReference<DataSourceFactory> reference, final DataSourceFactory service )
+            {
+            }
+
+            @Override
+            public void removedService ( final ServiceReference<DataSourceFactory> reference, final DataSourceFactory service )
+            {
+            }
+
+        } );
     }
 
     public void setAdmin ( final ConfigurationAdmin admin )
@@ -326,6 +352,8 @@ public class DatabaseServiceImpl implements ManagedService
             }
             this.handle = this.context.registerService ( new String[] { TaskProvider.class.getName (), EventHandler.class.getName () }, this.taskProvider, properties );
         }
+
+        this.dataSourceTracker.open ();
     }
 
     public void stop ()
@@ -336,6 +364,7 @@ public class DatabaseServiceImpl implements ManagedService
             this.handle = null;
         }
         this.tracker.close ();
+        this.dataSourceTracker.close ();
 
         this.executor.shutdown ();
 
@@ -363,14 +392,12 @@ public class DatabaseServiceImpl implements ManagedService
         this.initialized = true;
 
         // we must not trigger changes inside the handler method
-        this.executor.execute ( new Runnable () {
+        this.executor.execute ( ( ) -> performUpdate ( properties ) );
+    }
 
-            @Override
-            public void run ()
-            {
-                performUpdate ( properties );
-            }
-        } );
+    protected void retestSchema ()
+    {
+        this.executor.execute ( this.taskProvider::testSchema );
     }
 
     private void performUpdate ( final Dictionary<String, ?> properties )
