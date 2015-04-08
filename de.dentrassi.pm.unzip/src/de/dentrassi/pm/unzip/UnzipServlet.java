@@ -536,20 +536,26 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         // TODO: implement cache
 
         getService ().streamArtifact ( artifactId, ( ai, stream ) -> {
-            final ZipInputStream zis = new ZipInputStream ( stream );
-            ZipEntry entry;
-            while ( ( entry = zis.getNextEntry () ) != null )
+            try ( final ZipInputStream zis = new ZipInputStream ( stream ) )
             {
-                if ( entry.getName ().equals ( localPath ) )
+                ZipEntry entry;
+                while ( ( entry = zis.getNextEntry () ) != null )
                 {
-                    final String type = this.fileTypeMap.getContentType ( entry.getName () );
-                    response.setContentType ( type );
-                    response.setContentLengthLong ( entry.getSize () );
-                    ByteStreams.copy ( zis, response.getOutputStream () );
-                    return;
+                    if ( entry.getName ().equals ( localPath ) )
+                    {
+                        final String type = this.fileTypeMap.getContentType ( entry.getName () );
+                        response.setContentType ( type );
+                        response.setContentLengthLong ( entry.getSize () );
+                        response.setDateHeader ( "Last-Modified", ai.getCreationTimestamp ().getTime () );
+                        ByteStreams.copy ( zis, response.getOutputStream () );
+                        break;
+                    }
+                }
+                if ( entry == null || !entry.getName ().equals ( localPath ) )
+                {
+                    handleNotFoundError ( response, String.format ( "File entry '%s' could not be found in artifact '%s'", localPath, artifactId ) );
                 }
             }
-            handleNotFoundError ( response, String.format ( "File entry '%s' could not be found in artifact '%s'", localPath, artifactId ) );
         } );
     }
 
