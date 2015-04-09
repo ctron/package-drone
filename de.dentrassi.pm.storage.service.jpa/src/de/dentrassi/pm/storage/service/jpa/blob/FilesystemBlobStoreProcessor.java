@@ -140,8 +140,8 @@ public class FilesystemBlobStoreProcessor
 
         if ( !storedId.equals ( this.storeId ) )
         {
-            logger.warn ( "Store ID does not match - expected: {}, actual: {}", this.storeId, this.storeId );
-            throw new IllegalStateException ( String.format ( "Store ID does not match - expected: %s, actual: %s", this.storeId, this.storeId ) );
+            logger.warn ( "Store ID does not match - expected: {}, actual: {}", this.storeId, storedId );
+            throw new IllegalStateException ( String.format ( "Store ID does not match - expected: %s, actual: %s", this.storeId, storedId ) );
         }
     }
 
