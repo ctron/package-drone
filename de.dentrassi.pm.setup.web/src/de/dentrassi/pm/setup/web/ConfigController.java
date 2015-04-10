@@ -105,9 +105,16 @@ public class ConfigController implements InterfaceExtender
         {
             final DatabaseConnectionData command = cfg.getDatabaseSettings ();
 
-            try ( DatabaseSetup db = new DatabaseSetup ( command ) )
+            if ( command != null )
             {
-                fillData ( db, model );
+                try ( DatabaseSetup db = new DatabaseSetup ( command ) )
+                {
+                    fillData ( db, model );
+                }
+            }
+            else
+            {
+                fillData ( null, model );
             }
 
             model.put ( "command", command );
@@ -117,7 +124,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/testConnection", method = RequestMethod.POST )
-    public ModelAndView testConnection ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result )
+    public ModelAndView testConnection ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result)
     {
         if ( result.hasErrors () )
         {
@@ -154,28 +161,31 @@ public class ConfigController implements InterfaceExtender
     {
         model.put ( "configured", Boolean.FALSE );
 
-        Exception testResult = null;
-        try
+        if ( setup != null )
         {
-            testResult = setup.testConnection ();
+            Exception testResult = null;
+            try
+            {
+                testResult = setup.testConnection ();
 
-            model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
-            model.put ( "currentVersion", setup.getCurrentVersion () );
-            model.put ( "configured", setup.isConfigured () );
-        }
-        catch ( final Exception e )
-        {
+                model.put ( "databaseSchemaVersion", setup.getSchemaVersion () );
+                model.put ( "currentVersion", setup.getCurrentVersion () );
+                model.put ( "configured", setup.isConfigured () );
+
+                if ( testResult != null )
+                {
+                    final Throwable root = ExceptionHelper.getRootCause ( testResult );
+                    model.put ( "testResultMessage", ExceptionHelper.extractMessage ( root ) );
+                    model.put ( "testStackTrace", ExceptionHelper.formatted ( root ) );
+                }
+            }
+            catch ( final Exception e )
+            {
+            }
         }
 
         model.put ( "storageServicePresent", Activator.getTracker ().getService () != null );
         model.put ( "jdbcDrivers", JdbcHelper.getJdbcDrivers () );
-
-        if ( testResult != null )
-        {
-            final Throwable root = ExceptionHelper.getRootCause ( testResult );
-            model.put ( "testResultMessage", ExceptionHelper.extractMessage ( root ) );
-            model.put ( "testStackTrace", ExceptionHelper.formatted ( root ) );
-        }
     }
 
     @ControllerValidator ( formDataClass = DatabaseConnectionData.class )
@@ -260,7 +270,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView setup ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result )
+    public ModelAndView setup ( @Valid @FormData ( "command" ) final DatabaseConnectionData data, final BindingResult result)
     {
         final Map<String, Object> model = new HashMap<> ();
         model.put ( "command", data );
@@ -285,13 +295,20 @@ public class ConfigController implements InterfaceExtender
             }
         }
 
-        Exception testConnection;
-        boolean needUpgrade;
-        try ( DatabaseSetup db = new DatabaseSetup ( data ) )
+        Exception testConnection = null;
+        boolean needUpgrade = false;
+        if ( data != null )
         {
-            needUpgrade = db.isNeedUpgrade ();
-            testConnection = db.testConnection ();
-            fillData ( db, model );
+            try ( DatabaseSetup db = new DatabaseSetup ( data ) )
+            {
+                needUpgrade = db.isNeedUpgrade ();
+                testConnection = db.testConnection ();
+                fillData ( db, model );
+            }
+        }
+        else
+        {
+            fillData ( null, model );
         }
 
         if ( needUpgrade || isMailServicePresent () || result.hasErrors () || testConnection != null )

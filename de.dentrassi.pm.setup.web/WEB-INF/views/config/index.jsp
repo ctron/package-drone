@@ -24,20 +24,20 @@ function testConnection () {
 	
 		<div class="col-sm-8">
 		
-		<c:if test="${empty jdbcDrivers}">
-			<div class="warning">
-			    <div class="title">No JDBC drivers were found.</div>
-			    <div>You need to install some OSGi compatible JDBC drivers!</div>
-			</div>
-		</c:if>
-		
 		<form:form action="" method="POST"  cssClass="form-horizontal">
 		
 		    <h:formEntry label="JDBC Driver"  command="command" path="jdbcDriver">
-		        <form:select path="jdbcDriver" cssClass="form-control">
-		            <form:option value="" label="Choose JDBC Driver"/>
-		            <form:optionList items="${jdbcDrivers }" itemValue="className"/>
-		        </form:select>
+                <c:if test="${empty jdbcDrivers}">
+                    <div class="alert alert-warning">
+                        <div><strong>No JDBC Drivers!</strong> No JDBC drivers were found. You need to install some OSGi compatible JDBC drivers!</div>
+                    </div>
+                </c:if>
+                <c:if test="${not empty jdbcDrivers}">
+			        <form:select path="jdbcDriver" cssClass="form-control">
+			            <form:option value="" label="Choose JDBC Driver"/>
+			            <form:optionList items="${jdbcDrivers }" itemValue="className"/>
+			        </form:select>
+		        </c:if>
 		    </h:formEntry>
 		
 		    <h:formEntry label="URL"  command="command" path="url">

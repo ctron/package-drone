@@ -28,6 +28,7 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.pm.database.Configurator;
+import de.dentrassi.pm.database.DatabaseConnectionData;
 import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.todo.BasicTask;
@@ -60,10 +61,14 @@ public class SetupController
 
         try ( Configurator cfg = Configurator.create () )
         {
-            try ( DatabaseSetup db = new DatabaseSetup ( cfg.getDatabaseSettings () ) )
+            final DatabaseConnectionData settings = cfg.getDatabaseSettings ();
+            if ( settings != null )
             {
-                needUpgrade = db.isNeedUpgrade ();
-                configured = db.isConfigured ();
+                try ( DatabaseSetup db = new DatabaseSetup ( settings ) )
+                {
+                    needUpgrade = db.isNeedUpgrade ();
+                    configured = db.isConfigured ();
+                }
             }
         }
         catch ( final Exception e )
