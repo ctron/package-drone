@@ -71,6 +71,7 @@ public final class DownloadHelper
 
             response.setStatus ( HttpServletResponse.SC_OK );
             response.setContentType ( mt );
+            response.setDateHeader ( "Last-Modified", info.getCreationTimestamp ().getTime () );
 
             try
             {
