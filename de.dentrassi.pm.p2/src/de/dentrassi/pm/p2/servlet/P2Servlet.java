@@ -12,6 +12,8 @@ package de.dentrassi.pm.p2.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -83,7 +85,7 @@ public class P2Servlet extends HttpServlet
             return;
         }
 
-        final String channelIdOrName = paths[1];
+        final String channelIdOrName = decode ( paths[1] );
         final StorageService service = this.tracker.getService ();
         final Channel channel = service.getChannelWithAlias ( channelIdOrName );
 
@@ -147,6 +149,18 @@ public class P2Servlet extends HttpServlet
         {
             logger.warn ( "Not found for: {}", path );
             notFound ( req, resp, "Resource not found: " + path );
+        }
+    }
+
+    private String decode ( final String string )
+    {
+        try
+        {
+            return URLDecoder.decode ( string, "UTF-8" );
+        }
+        catch ( final UnsupportedEncodingException e )
+        {
+            throw new IllegalStateException ( e );
         }
     }
 
