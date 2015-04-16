@@ -165,7 +165,7 @@ pageContext.setAttribute ( "groups", groups );
 &lt;distributionManagement&gt;
     &lt;repository&gt;
         &lt;id&gt;pdrone.<span class="data-channel"></span>&lt;/id&gt;
-        &lt;url&gt;http://localhost:8080/maven/<span class="data-channel"></span>&lt;/url&gt;
+        &lt;url&gt;${fn:escapeXml(sitePrefix) }/maven/<span class="data-channel"></span>&lt;/url&gt;
     &lt;/repository&gt;
 &lt;/distributionManagement&gt;
 …</pre>

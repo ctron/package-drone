@@ -77,6 +77,7 @@ import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
@@ -89,6 +90,7 @@ import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 import de.dentrassi.pm.storage.web.internal.Activator;
+import de.dentrassi.pm.system.SystemService;
 
 @Secured
 @Controller
@@ -107,7 +109,11 @@ public class ChannelController implements InterfaceExtender
 
     private StorageService service;
 
+    private CoreService coreService;
+
     private DeployAuthService deployAuthService;
+
+    private SystemService systemService;
 
     private final GeneratorProcessor generators = new GeneratorProcessor ( FrameworkUtil.getBundle ( ChannelController.class ).getBundleContext () );
 
@@ -116,9 +122,19 @@ public class ChannelController implements InterfaceExtender
         this.service = service;
     }
 
+    public void setCoreService ( final CoreService coreService )
+    {
+        this.coreService = coreService;
+    }
+
     public void setDeployAuthService ( final DeployAuthService deployAuthService )
     {
         this.deployAuthService = deployAuthService;
+    }
+
+    public void setSystemService ( final SystemService systemService )
+    {
+        this.systemService = systemService;
     }
 
     public void start ()
@@ -174,7 +190,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/createDetailed", method = RequestMethod.POST )
-    public ModelAndView createDetailedPost ( @Valid @FormData ( "command" ) final CreateChannel data, final BindingResult result ) throws UnsupportedEncodingException
+    public ModelAndView createDetailedPost ( @Valid @FormData ( "command" ) final CreateChannel data, final BindingResult result) throws UnsupportedEncodingException
     {
         if ( !result.hasErrors () )
         {
@@ -196,7 +212,7 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/viewPlain", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView viewPlain ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView viewPlain ( @PathVariable ( "channelId" ) final String channelId)
     {
         final ModelAndView result = new ModelAndView ( "channel/view" );
 
@@ -218,7 +234,7 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/tree", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView tree ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView tree ( @PathVariable ( "channelId" ) final String channelId)
     {
         final ModelAndView result = new ModelAndView ( "channel/tree" );
 
@@ -250,7 +266,7 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/details", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId)
     {
         final ModelAndView result = new ModelAndView ( "channel/details" );
 
@@ -269,7 +285,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/delete", method = RequestMethod.GET )
-    public ModelAndView delete ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView delete ( @PathVariable ( "channelId" ) final String channelId)
     {
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
@@ -280,7 +296,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
-    public ModelAndView add ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView add ( @PathVariable ( "channelId" ) final String channelId)
     {
         final ModelAndView mav = new ModelAndView ( "/channel/add" );
 
@@ -291,8 +307,8 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.POST )
-    public ModelAndView addPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
-            value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
+    public ModelAndView addPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter (
+            required = false, value = "name" ) String name, final @RequestParameter ( "file" ) Part file)
     {
         try
         {
@@ -313,7 +329,7 @@ public class ChannelController implements InterfaceExtender
 
     @RequestMapping ( value = "/channel/{channelId}/drop", method = RequestMethod.POST )
     public void drop ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( required = false,
-            value = "name" ) String name, final @RequestParameter ( "file" ) Part file, final HttpServletResponse response ) throws IOException
+            value = "name" ) String name, final @RequestParameter ( "file" ) Part file, final HttpServletResponse response) throws IOException
     {
         response.setContentType ( "text/plain" );
 
@@ -338,7 +354,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
-    public ModelAndView clear ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView clear ( @PathVariable ( "channelId" ) final String channelId)
     {
         this.service.clearChannel ( channelId );
 
@@ -351,7 +367,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/deployKeys" )
-    public ModelAndView deployKeys ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView deployKeys ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
@@ -364,7 +380,19 @@ public class ChannelController implements InterfaceExtender
         model.put ( "channel", channel );
         model.put ( "deployGroups", getGroupsForChannel ( channel ) );
 
+        model.put ( "sitePrefix", getSitePrefix () );
+
         return new ModelAndView ( "channel/deployKeys", model );
+    }
+
+    private String getSitePrefix ()
+    {
+        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        if ( prefix != null )
+        {
+            return prefix;
+        }
+        return "http://localhost:8080";
     }
 
     protected List<DeployGroup> getGroupsForChannel ( final Channel channel )
@@ -376,13 +404,13 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addDeployGroup", method = RequestMethod.POST )
-    public ModelAndView addDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId )
+    public ModelAndView addDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId)
     {
         return modifyDeployGroup ( channelId, groupId, Channel::addDeployGroup );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeDeployGroup", method = RequestMethod.POST )
-    public ModelAndView removeDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId )
+    public ModelAndView removeDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId)
     {
         return modifyDeployGroup ( channelId, groupId, Channel::removeDeployGroup );
     }
@@ -403,7 +431,7 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/aspects", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
@@ -443,7 +471,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/viewAspectVersions", method = RequestMethod.GET )
-    public ModelAndView viewAspectVersions ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView viewAspectVersions ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
@@ -466,7 +494,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/lock", method = RequestMethod.GET )
-    public ModelAndView lock ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView lock ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
@@ -480,7 +508,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/unlock", method = RequestMethod.GET )
-    public ModelAndView unlock ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView unlock ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
         if ( channel == null )
@@ -494,42 +522,42 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
-    public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
+    public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
         this.service.addChannelAspect ( channelId, aspectFactoryId, false );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspectWithDependencies", method = RequestMethod.POST )
-    public ModelAndView addAspectWithDependencies ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
+    public ModelAndView addAspectWithDependencies ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
         this.service.addChannelAspect ( channelId, aspectFactoryId, true );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeAspect", method = RequestMethod.POST )
-    public ModelAndView removeAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
+    public ModelAndView removeAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
         this.service.removeChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAspect", method = RequestMethod.POST )
-    public ModelAndView refreshAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId )
+    public ModelAndView refreshAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
         this.service.refreshChannelAspect ( channelId, aspectFactoryId );
         return new ModelAndView ( String.format ( "referer:/channel/" + channelId + "/aspects", channelId ) );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
-    public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request )
+    public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request)
     {
         this.service.refreshAllChannelAspects ( channelId );
         return redirectDefaultView ( channelId, false );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
-    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -551,7 +579,7 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
-    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final EditChannel data, final BindingResult result )
+    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final EditChannel data, final BindingResult result)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -570,7 +598,7 @@ public class ChannelController implements InterfaceExtender
 
     @RequestMapping ( value = "/channel/{channelId}/viewCache", method = RequestMethod.GET )
     @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
-    public ModelAndView viewCache ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView viewCache ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -588,7 +616,7 @@ public class ChannelController implements InterfaceExtender
 
     @RequestMapping ( value = "/channel/{channelId}/viewCacheEntry", method = RequestMethod.GET )
     @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
-    public ModelAndView viewCacheEntry ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "namespace" ) final String namespace, @RequestParameter ( "key" ) final String key, final HttpServletResponse response )
+    public ModelAndView viewCacheEntry ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "namespace" ) final String namespace, @RequestParameter ( "key" ) final String key, final HttpServletResponse response)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -772,7 +800,7 @@ public class ChannelController implements InterfaceExtender
 
     @RequestMapping ( value = "/channel/{channelId}/export", method = RequestMethod.GET )
     @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response )
+    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response)
     {
         return performExport ( response, makeExportFileName ( channelId ), ( stream ) -> this.service.exportChannel ( channelId, stream ) );
     }
@@ -791,8 +819,8 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/import", method = RequestMethod.POST )
-    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part, @RequestParameter ( value = "useName",
-            required = false ) final boolean useName )
+    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part, @RequestParameter (
+            value = "useName", required = false ) final boolean useName)
     {
         try
         {
@@ -813,9 +841,10 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/importAll", method = RequestMethod.POST )
-    public ModelAndView importAllPost ( @RequestParameter ( value = "useNames", required = false ) final boolean useNames, @RequestParameter ( value = "wipe",
-            required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part, @RequestParameter ( value = "location",
-            required = false ) final String location )
+    public ModelAndView importAllPost ( @RequestParameter ( value = "useNames",
+            required = false ) final boolean useNames, @RequestParameter ( value = "wipe",
+                    required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part, @RequestParameter (
+                            value = "location", required = false ) final String location)
     {
         try
         {
