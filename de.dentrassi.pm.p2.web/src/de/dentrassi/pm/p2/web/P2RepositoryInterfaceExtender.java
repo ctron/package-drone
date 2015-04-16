@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.web;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +41,21 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
 
         final List<MenuEntry> result = new LinkedList<> ();
 
-        result.add ( new MenuEntry ( null, 0, "P2 Repository", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
+        result.add ( new MenuEntry ( null, 0, "P2", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
+
+        if ( channel.getName () != null )
+        {
+            try
+            {
+                String name = channel.getName ();
+                name = URLEncoder.encode ( name, "UTF-8" );
+                result.add ( new MenuEntry ( null, 0, "P2 Alias", 10_000, new LinkTarget ( "/p2/" + name ).expand ( model ), Modifier.LINK, null, false ) );
+            }
+            catch ( final UnsupportedEncodingException e )
+            {
+                // silently ignore
+            }
+        }
 
         if ( request.isUserInRole ( "MANAGER" ) )
         {
