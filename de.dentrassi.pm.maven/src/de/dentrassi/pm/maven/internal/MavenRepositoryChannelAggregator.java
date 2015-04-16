@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +47,11 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
             }
         }
 
-        result.put ( "channel", cs.toJson () );
+        String json = cs.toJson ();
+        result.put ( "channel", json );
+
+        json = cs.toString ();
+        context.createCacheEntry ( "channel", "channel.json", "application/json", new ByteArrayInputStream ( json.getBytes ( StandardCharsets.UTF_8 ) ) );
 
         return result;
     }

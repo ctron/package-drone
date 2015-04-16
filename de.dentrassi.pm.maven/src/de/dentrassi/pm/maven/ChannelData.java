@@ -53,6 +53,8 @@ public class ChannelData
 
     protected static final DateFormat DATE_FORMAT = new SimpleDateFormat ( "yyyyMMddHHmmss" );
 
+    private static final Pattern SNAPSHOT_PATTERN = Pattern.compile ( "(?<ts>[0-9]{8}-[0-9]{6})-1(?<bn>[0-9]+)" );
+
     public static abstract class Node
     {
     }
@@ -293,12 +295,12 @@ public class ChannelData
 
     protected ArtifactMetadataNode addArtifactMetaDataNode ( final MavenInformation info, final DirectoryNode artifactBase )
     {
-        return addMetaDataNode ( info, artifactBase, ArtifactMetadataNode.class, ( ) -> new ArtifactMetadataNode ( info.getGroupId (), info.getArtifactId () ) );
+        return addMetaDataNode ( info, artifactBase, ArtifactMetadataNode.class, () -> new ArtifactMetadataNode ( info.getGroupId (), info.getArtifactId () ) );
     }
 
     protected VersionMetadataNode addVersionMetaDataNode ( final MavenInformation info, final DirectoryNode artifactBase )
     {
-        return addMetaDataNode ( info, artifactBase, VersionMetadataNode.class, ( ) -> new VersionMetadataNode ( info.getGroupId (), info.getArtifactId (), info.getVersion () ) );
+        return addMetaDataNode ( info, artifactBase, VersionMetadataNode.class, () -> new VersionMetadataNode ( info.getGroupId (), info.getArtifactId (), info.getVersion () ) );
     }
 
     protected static Document makeMetaData ( final String groupId, final String artifactId, final BiConsumer<Document, Element> cons )
@@ -318,8 +320,6 @@ public class ChannelData
 
         return doc;
     }
-
-    private static final Pattern SNAPSHOT_PATTERN = Pattern.compile ( "(?<ts>[0-9]{8}-[0-9]{6})-1(?<bn>[0-9]+)" );
 
     public static Document createMetaData ( final String groupId, final String artifactId, final String version, final List<MavenInformation> infos, final Map<MavenInformation, Date> timestamps )
     {
@@ -566,6 +566,7 @@ public class ChannelData
         }
 
         gb.registerTypeAdapter ( Node.class, new NodeAdapter () );
+        gb.registerTypeAdapter ( byte[].class, new ByteArrayAdapter () );
 
         return gb.create ();
     }
