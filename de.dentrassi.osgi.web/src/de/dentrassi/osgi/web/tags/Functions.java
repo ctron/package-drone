@@ -11,6 +11,7 @@
 package de.dentrassi.osgi.web.tags;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -144,4 +145,15 @@ public class Functions
         return result;
     }
 
+    public static String encode ( final String str )
+    {
+        try
+        {
+            return URLEncoder.encode ( str, "UTF-8" );
+        }
+        catch ( final UnsupportedEncodingException e )
+        {
+            throw new IllegalStateException ( e );
+        }
+    }
 }

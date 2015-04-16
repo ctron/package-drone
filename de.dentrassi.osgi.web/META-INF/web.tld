@@ -108,4 +108,10 @@
         <function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
         <function-signature>java.util.List sort(java.util.Collection)</function-signature>
     </function>
+    
+    <function>
+        <name>encode</name>
+        <function-class>de.dentrassi.osgi.web.tags.Functions</function-class>
+        <function-signature>java.lang.String encode(java.lang.String)</function-signature>
+    </function>
 </taglib>

@@ -403,6 +403,25 @@ public class ChannelController implements InterfaceExtender
         return groups;
     }
 
+    @RequestMapping ( "/channel/{channelId}/help.p2" )
+    public ModelAndView helpP2 ( @PathVariable ( "channelId" ) final String channelId)
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "channel", channel );
+        model.put ( "sitePrefix", getSitePrefix () );
+
+        model.put ( "p2Active", channel.hasAspect ( "p2.repo" ) );
+
+        return new ModelAndView ( "channel/help/p2", model );
+    }
+
     @RequestMapping ( value = "/channel/{channelId}/addDeployGroup", method = RequestMethod.POST )
     public ModelAndView addDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId)
     {
@@ -725,6 +744,11 @@ public class ChannelController implements InterfaceExtender
             {
                 result.add ( new MenuEntry ( "Internal", 400, "View Cache", 100, LinkTarget.createFromController ( ChannelController.class, "viewCache" ).expand ( model ), Modifier.DEFAULT, null ) );
                 result.add ( new MenuEntry ( "Internal", 400, "Aspect Versions", 100, LinkTarget.createFromController ( ChannelController.class, "viewAspectVersions" ).expand ( model ), Modifier.DEFAULT, null ) );
+            }
+
+            if ( channel.hasAspect ( "p2.repo" ) )
+            {
+                result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "P2 Repository", 1_000, LinkTarget.createFromController ( ChannelController.class, "helpP2" ).expand ( model ), Modifier.DEFAULT, "info-sign" ) );
             }
 
             return result;
