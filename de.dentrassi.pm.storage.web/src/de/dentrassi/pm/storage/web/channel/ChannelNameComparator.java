@@ -14,8 +14,22 @@ import java.util.Comparator;
 
 import de.dentrassi.pm.storage.Channel;
 
-final class ChannelNameComparator implements Comparator<Channel>
+/**
+ * Sort channels by name and then by id
+ * <p>
+ * Allows sorting channels first by name and then by id, ignoring the case. This
+ * will result in a stable, understandable order. All channels
+ * without name will be last, sorted by ID then.
+ * </p>
+ */
+public class ChannelNameComparator implements Comparator<Channel>
 {
+    public static final Comparator<Channel> INSTANCE = new ChannelNameComparator ();
+
+    private ChannelNameComparator ()
+    {
+    }
+
     @Override
     public int compare ( final Channel o1, final Channel o2 )
     {
@@ -31,7 +45,7 @@ final class ChannelNameComparator implements Comparator<Channel>
             return 1;
         }
 
-        final int rc = n1.compareTo ( n2 );
+        final int rc = n1.compareToIgnoreCase ( n2 );
         if ( rc != 0 )
         {
             return rc;

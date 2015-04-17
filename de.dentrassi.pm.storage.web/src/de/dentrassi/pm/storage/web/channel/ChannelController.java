@@ -155,8 +155,6 @@ public class ChannelController implements InterfaceExtender
         return menuEntries;
     }
 
-    private static final ChannelNameComparator NAME_COMPARATOR = new ChannelNameComparator ();
-
     @Secured ( false )
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
@@ -165,7 +163,7 @@ public class ChannelController implements InterfaceExtender
         final ModelAndView result = new ModelAndView ( "channel/list" );
 
         final List<Channel> channels = new ArrayList<> ( this.service.listChannels () );
-        channels.sort ( NAME_COMPARATOR );
+        channels.sort ( ChannelNameComparator.INSTANCE );
         result.put ( "channels", channels );
 
         return result;
