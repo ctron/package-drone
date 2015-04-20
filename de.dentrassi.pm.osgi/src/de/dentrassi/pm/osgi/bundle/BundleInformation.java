@@ -12,7 +12,7 @@ package de.dentrassi.pm.osgi.bundle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -263,11 +263,11 @@ public class BundleInformation implements TranslatedInformation
 
     private Map<String, Properties> localization = new HashMap<> ();
 
-    private Set<PackageImport> packageImports = new HashSet<> ();
+    private Set<PackageImport> packageImports = new LinkedHashSet<> ();
 
-    private Set<PackageExport> packageExports = new HashSet<> ();
+    private Set<PackageExport> packageExports = new LinkedHashSet<> ();
 
-    private Set<BundleRequirement> bundleRequirements = new HashSet<> ();
+    private Set<BundleRequirement> bundleRequirements = new LinkedHashSet<> ();
 
     private List<String> requiredExecutionEnvironments = new LinkedList<> ();
 
