@@ -143,7 +143,7 @@ public class TransferHandler extends AbstractHandler
                     if ( parent == null && generator != null )
                     {
                         // import a generator
-                        creator = ( ) -> {
+                        creator = () -> {
                             final GeneratorArtifactEntity ent = new GeneratorArtifactEntity ();
                             ent.setGeneratorId ( generator );
                             return ent;
@@ -157,9 +157,10 @@ public class TransferHandler extends AbstractHandler
                     else
                     {
                         // import an attached child
-                        creator = ( ) -> {
+                        creator = () -> {
                             final AttachedArtifactEntity ent = new AttachedArtifactEntity ();
                             ent.setParent ( parent );
+                            parent.getChildArtifacts ().add ( ent );
                             return ent;
                         };
                     }
@@ -252,7 +253,7 @@ public class TransferHandler extends AbstractHandler
             final ChannelEntity channel = storage.createChannel ( useChannelName ? name : null, description, properties );
             this.em.flush (); // we need the channel id
 
-            this.lockManager.modifyRun ( channel.getId (), ( ) -> {
+            this.lockManager.modifyRun ( channel.getId (), () -> {
                 storage.addChannelAspects ( channel, aspects, false );
 
                 // process artifacts
@@ -339,9 +340,9 @@ public class TransferHandler extends AbstractHandler
     {
         try
         {
-            final Document doc = this.xml.parse ( new FilterInputStream ( stream ) {
+            final Document doc = this.xml.parse ( new FilterInputStream ( stream) {
                 @Override
-                public void close ()
+                public void close ( )
                 {
                     // do nothing
                 }
@@ -420,7 +421,7 @@ public class TransferHandler extends AbstractHandler
      */
     public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException
     {
-        this.lockManager.accessCall ( channelId, ( ) -> {
+        this.lockManager.accessCall ( channelId, () -> {
             final ChannelEntity channel = getCheckedChannel ( channelId );
             final ZipOutputStream zos = new ZipOutputStream ( stream );
 

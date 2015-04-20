@@ -110,12 +110,12 @@ public interface StreamServiceHelper
         }
 
         final SortedSet<String> childIds = new TreeSet<> ();
-        for ( final String childId : ae.getChildIds () )
+        for ( final ChildArtifactEntity child : ae.getChildArtifacts () )
         {
-            childIds.add ( childId );
+            childIds.add ( child.getId () );
         }
 
-        SortedMap<MetaKey, String> metaData;
+        final SortedMap<MetaKey, String> metaData;
         if ( properties != null )
         {
             metaData = extract ( ae.getId (), properties );
@@ -171,7 +171,11 @@ public interface StreamServiceHelper
     {
         if ( ae instanceof ChildArtifactEntity )
         {
-            return ( (ChildArtifactEntity)ae ).getParentId ();
+            final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
+            if ( parent != null )
+            {
+                return parent.getId ();
+            }
         }
         return null;
     }

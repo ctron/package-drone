@@ -13,19 +13,14 @@ package de.dentrassi.pm.storage.jpa;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.REMOVE;
 import static org.eclipse.persistence.annotations.JoinFetchType.INNER;
-import static org.eclipse.persistence.annotations.JoinFetchType.OUTER;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 
 import javax.persistence.Basic;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
@@ -38,7 +33,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
@@ -77,22 +71,6 @@ public abstract class ArtifactEntity
 
     @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent" )
     private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
-
-    @ElementCollection
-    @CollectionTable ( name = "ARTIFACTS", joinColumns = @JoinColumn ( name = "PARENT",
-            referencedColumnName = "ID",
-            insertable = false,
-            updatable = false ) )
-    @Column ( name = "ID", updatable = false, insertable = false )
-    @JoinFetch ( OUTER )
-    /* let the database deal with this */
-    @CascadeOnDelete
-    private final Set<String> childIds = new HashSet<> ();
-
-    public Set<String> getChildIds ()
-    {
-        return this.childIds;
-    }
 
     public void setChildArtifacts ( final Collection<ChildArtifactEntity> derivdedArtifacts )
     {

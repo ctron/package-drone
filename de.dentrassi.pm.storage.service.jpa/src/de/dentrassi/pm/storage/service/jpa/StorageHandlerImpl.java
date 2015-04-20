@@ -341,7 +341,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
-        this.lockManager.modifyRun ( ae.getChannel ().getId (), ( ) -> {
+        this.lockManager.modifyRun ( ae.getChannel ().getId (), () -> {
             this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
                 // first clear old generated artifacts
 
@@ -407,15 +407,18 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     private ArtifactContextImpl createGeneratedContext ( final RegenerateTracker tracker, final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final boolean runAggregator )
     {
-        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact, null ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, () -> convert ( artifact, null ), em, () -> {
             final GeneratedArtifactEntity ge = new GeneratedArtifactEntity ();
             ge.setParent ( artifact );
+            artifact.getChildArtifacts ().add ( ge );
             return ge;
         } );
     }
 
     public ArtifactEntity performStoreArtifact ( final ChannelEntity channel, final String name, final InputStream stream, final Supplier<ArtifactEntity> entityCreator, final Map<MetaKey, String> providedMetaData, final RegenerateTracker tracker, final boolean runAggregator, final boolean external ) throws Exception
     {
+        logger.debug ( "Storing artifact: {} in channel: {}", name, channel.getId () );
+
         final Path file = createTempFile ( name );
 
         try
@@ -438,7 +441,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, channel, file );
 
-            return this.lockManager.modifyCall ( channel.getId (), ( ) -> {
+            return this.lockManager.modifyCall ( channel.getId (), () -> {
 
                 final ArtifactEntity ae = entityCreator.get ();
                 ae.setName ( name );
@@ -561,9 +564,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.debug ( "Creating virtual artifact context for: {}", namespace );
 
-        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, ( ) -> convert ( artifact, null ), em, ( ) -> {
+        return new ArtifactContextImpl ( channel, tracker, runAggregator, file, () -> convert ( artifact, null ), em, () -> {
             final VirtualArtifactEntity ve = new VirtualArtifactEntity ();
+
             ve.setParent ( artifact );
+            artifact.getChildArtifacts ().add ( ve );
+
             ve.setNamespace ( namespace );
             return ve;
         } );
@@ -659,12 +665,19 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.info ( "Running channel aggregators - channelId: {}", channel.getId () );
 
-        this.lockManager.modifyRun ( channel.getId (), ( ) -> {
+        this.lockManager.modifyRun ( channel.getId (), () -> {
 
             // delete old cache entries
+
             deleteAllCacheEntries ( channel );
 
+            // flush
+
+            this.em.persist ( channel );
+            this.em.flush ();
+
             // current state for context
+
             final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
             final SortedMap<MetaKey, String> metaData = convertMetaData ( null, channel.getProvidedProperties () );
 
@@ -832,6 +845,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
+
+        // query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
 
         // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         // query.setParameter ( "channel", ce );
@@ -1142,11 +1157,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is not a normal stored artifact", parentArtifact ) );
         }
 
-        final ArtifactEntity newArtifact = internalCreateArtifact ( parentArtifact.getChannel ().getId (), name, ( ) -> {
+        final ArtifactEntity newArtifact = internalCreateArtifact ( parentArtifact.getChannel ().getId (), name, () -> {
             final AttachedArtifactEntity a = new AttachedArtifactEntity ();
             a.setParent ( parentArtifact );
+            parentArtifact.getChildArtifacts ().add ( a );
             return a;
-        }, stream, providedMetaData, true );
+        } , stream, providedMetaData, true );
 
         return newArtifact;
     }
@@ -1278,14 +1294,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     public void addChannelAspects ( final String channelId, final Set<String> aspects, final boolean withDependencies )
     {
         // we must lock this before the get call
-        this.lockManager.modifyRun ( channelId, ( ) -> {
+        this.lockManager.modifyRun ( channelId, () -> {
             addChannelAspects ( getCheckedChannel ( channelId ), aspects, withDependencies );
         } );
     }
 
     public void deleteChannel ( final String channelId, final boolean ignoreLock )
     {
-        this.lockManager.modifyRun ( channelId, ( ) -> {
+        this.lockManager.modifyRun ( channelId, () -> {
 
             final ChannelEntity entity = getCheckedChannel ( channelId );
             if ( !ignoreLock )
