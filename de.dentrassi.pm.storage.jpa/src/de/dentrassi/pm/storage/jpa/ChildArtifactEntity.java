@@ -12,9 +12,11 @@ package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.FetchType.LAZY;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostPersist;
 
 @Entity
 public abstract class ChildArtifactEntity extends ArtifactEntity
@@ -23,8 +25,12 @@ public abstract class ChildArtifactEntity extends ArtifactEntity
     @JoinColumn ( name = "PARENT" )
     private ArtifactEntity parent;
 
+    @Column ( name = "PARENT", updatable = false, insertable = false )
+    private String parentId;
+
     public void setParent ( final ArtifactEntity parent )
     {
+        internalSetParentId ( parent );
         this.parent = parent;
     }
 
@@ -33,4 +39,27 @@ public abstract class ChildArtifactEntity extends ArtifactEntity
         return this.parent;
     }
 
+    public String getParentId ()
+    {
+        return this.parentId;
+    }
+
+    @PostPersist
+    public void updateId ()
+    {
+        // update parent id
+        internalSetParentId ( this.parent );
+    }
+
+    private void internalSetParentId ( final ArtifactEntity parent )
+    {
+        if ( parent == null )
+        {
+            this.parentId = null;
+        }
+        else
+        {
+            this.parentId = parent.getId ();
+        }
+    }
 }

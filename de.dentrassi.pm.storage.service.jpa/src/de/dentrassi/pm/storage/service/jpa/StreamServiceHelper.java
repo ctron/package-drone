@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import com.google.common.collect.Multimap;
 
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.ChannelLockedException;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
@@ -88,7 +89,7 @@ public interface StreamServiceHelper
     }
 
     /**
-     * Convert an artifact entity to an detailed artifact information object
+     * Convert an artifact entity to a full artifact information object
      * <p>
      * If there is an additional properties map provided, then the meta data
      * will be used from the properties map. Otherwise the artifact entity will
@@ -126,6 +127,41 @@ public interface StreamServiceHelper
         }
 
         return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), metaData, childIds );
+    }
+
+    /**
+     * Convert an artifact entity to a detailed artifact information object
+     * <p>
+     * If there is an additional properties map provided, then the meta data
+     * will be used from the properties map. Otherwise the artifact entity will
+     * be used as source of properties, which might trigger another select on
+     * the database.
+     * </p>
+     *
+     * @param ae
+     *            the entity to convert
+     * @param props
+     *            the optional properties
+     * @return the result information object
+     */
+    public static DetailedArtifactInformation convertDetailed ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
+    {
+        if ( ae == null )
+        {
+            return null;
+        }
+
+        final SortedMap<MetaKey, String> metaData;
+        if ( properties != null )
+        {
+            metaData = extract ( ae.getId (), properties );
+        }
+        else
+        {
+            metaData = convertMetaData ( ae );
+        }
+
+        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), metaData );
     }
 
     public static SortedMap<MetaKey, String> extract ( final String id, final Multimap<String, MetaDataEntry> properties )
@@ -171,11 +207,7 @@ public interface StreamServiceHelper
     {
         if ( ae instanceof ChildArtifactEntity )
         {
-            final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
-            if ( parent != null )
-            {
-                return parent.getId ();
-            }
+            return ( (ChildArtifactEntity)ae ).getParentId ();
         }
         return null;
     }

@@ -20,6 +20,7 @@ import java.util.SortedMap;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
@@ -134,16 +135,28 @@ public interface Channel
     public Set<SimpleArtifactInformation> getSimpleArtifacts ();
 
     /**
-     * Get detailed information of all artifacts
+     * Get full information of all artifacts
      * <p>
      * This method behaves exactly like {@link #getSimpleArtifacts()} but
      * provides more details in the returned information. Information is of type
-     * {@link ArtifactInformation}, which mainly includes the meta data.
+     * {@link ArtifactInformation}, which mainly includes child relations.
      * </p>
      *
      * @return the artifact information
      */
     public Set<ArtifactInformation> getArtifactInformations ();
+
+    /**
+     * Get detailed information of all artifacts
+     * <p>
+     * This method behaves exactly like {@link #getSimpleArtifacts()} but
+     * provides more details in the returned information. Information is of type
+     * {@link DetailedArtifactInformation}, which mainly includes the meta data.
+     * </p>
+     *
+     * @return the artifact information
+     */
+    public Set<DetailedArtifactInformation> getDetailedArtifacts ();
 
     // --- direct meta data
 
@@ -212,4 +225,5 @@ public interface Channel
      * @return the list of information
      */
     public List<CacheEntryInformation> getAllCacheEntries ();
+
 }

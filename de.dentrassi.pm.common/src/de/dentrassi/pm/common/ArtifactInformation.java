@@ -24,27 +24,14 @@ import java.util.SortedSet;
  * don't need the meta data information.
  * </p>
  */
-public class ArtifactInformation extends SimpleArtifactInformation
+public class ArtifactInformation extends DetailedArtifactInformation
 {
-    private final SortedMap<MetaKey, String> metaData;
-
     private final SortedSet<String> childIds;
 
     public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets, final SortedMap<MetaKey, String> metaData, final SortedSet<String> childIds )
     {
-        super ( id, parentId, size, name, channelId, creationTimestamp, facets );
-        this.metaData = Collections.unmodifiableSortedMap ( metaData );
+        super ( id, parentId, size, name, channelId, creationTimestamp, facets, metaData );
         this.childIds = Collections.unmodifiableSortedSet ( childIds );
-    }
-
-    /**
-     * Get the combined artifact meta data
-     *
-     * @return an unmodifiable set of meta data
-     */
-    public SortedMap<MetaKey, String> getMetaData ()
-    {
-        return this.metaData;
     }
 
     /**

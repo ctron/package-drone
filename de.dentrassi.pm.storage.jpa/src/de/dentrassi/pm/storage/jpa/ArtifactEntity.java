@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.REMOVE;
+import static javax.persistence.FetchType.LAZY;
 import static org.eclipse.persistence.annotations.JoinFetchType.INNER;
 
 import java.util.Collection;
@@ -69,7 +70,7 @@ public abstract class ArtifactEntity
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
     private Collection<ProvidedArtifactPropertyEntity> providedProperties = new LinkedList<> ();
 
-    @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent" )
+    @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent", fetch = LAZY )
     private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
 
     public void setChildArtifacts ( final Collection<ChildArtifactEntity> derivdedArtifacts )

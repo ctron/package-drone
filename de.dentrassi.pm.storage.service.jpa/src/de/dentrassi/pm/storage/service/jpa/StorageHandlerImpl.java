@@ -11,6 +11,7 @@
 package de.dentrassi.pm.storage.service.jpa;
 
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convert;
+import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertDetailed;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertMetaData;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.createTempFile;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.isDeleteable;
@@ -65,6 +66,7 @@ import de.dentrassi.pm.aspect.listener.PostAddContext;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
+import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
@@ -825,6 +827,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
 
         // fetch
+
         // root.fetch ( ArtifactEntity_.channel );
         // root.fetch ( ArtifactEntity_.providedProperties );
         // root.fetch ( ArtifactEntity_.extractedProperties );
@@ -841,12 +844,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
-
-        // query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
 
         // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         // query.setParameter ( "channel", ce );
@@ -933,10 +934,23 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity ce )
+    protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity channel )
     {
-        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( ce );
-        return listArtifacts ( ce, ( ae ) -> convert ( ae, properties ) );
+        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
+        return listArtifacts ( channel, ( ae ) -> convert ( ae, properties ) );
+    }
+
+    /**
+     * List artifacts with metadata
+     * 
+     * @param channel
+     *            the channel to check
+     * @return the set of detailed meta data object
+     */
+    public Set<DetailedArtifactInformation> getDetailedArtifacts ( final ChannelEntity channel )
+    {
+        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
+        return listArtifacts ( channel, ( ae ) -> convertDetailed ( ae, properties ) );
     }
 
     public void recreateVirtualArtifacts ( final ArtifactEntity artifact )

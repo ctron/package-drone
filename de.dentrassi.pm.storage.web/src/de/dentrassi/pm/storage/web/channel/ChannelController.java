@@ -68,7 +68,6 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -244,7 +243,7 @@ public class ChannelController implements InterfaceExtender
 
         final Map<Object, List<SimpleArtifactInformation>> tree = new HashMap<> ();
 
-        for ( final ArtifactInformation entry : channel.getArtifactInformations () )
+        for ( final SimpleArtifactInformation entry : channel.getDetailedArtifacts () )
         {
             List<SimpleArtifactInformation> list = tree.get ( entry.getParentId () );
             if ( list == null )
