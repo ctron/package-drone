@@ -304,7 +304,7 @@ public class DatabaseServiceImpl implements ManagedService
 
     private ScheduledExecutorService executor;
 
-    private final ServiceTracker dataSourceTracker;
+    private final ServiceTracker<DataSourceFactory, DataSourceFactory> dataSourceTracker;
 
     public DatabaseServiceImpl ()
     {
@@ -392,7 +392,7 @@ public class DatabaseServiceImpl implements ManagedService
         this.initialized = true;
 
         // we must not trigger changes inside the handler method
-        this.executor.execute ( ( ) -> performUpdate ( properties ) );
+        this.executor.execute ( () -> performUpdate ( properties ) );
     }
 
     protected void retestSchema ()
