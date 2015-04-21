@@ -59,6 +59,7 @@ import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
 public class MavenServlet extends HttpServlet
 {
@@ -180,6 +181,12 @@ public class MavenServlet extends HttpServlet
         {
             logger.debug ( "No maven channel data: {}", channel.getId () );
             commitNotConfigured ( response, channelId );
+            return;
+        }
+
+        if ( toks.length == 2 && toks[1].equals ( ".meta/repository-metadata.xml" ) )
+        {
+            new ChannelCacheHandler ( new MetaKey ( "maven.repo", "repo-metadata" ) ).process ( channel, request, response );
             return;
         }
 

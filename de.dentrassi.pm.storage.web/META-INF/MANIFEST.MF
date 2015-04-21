@@ -73,7 +73,21 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/aboutMenu.xml,OSGI-INF/welcome.xml,OSGI-INF/commonInterceptor.xml,OSGI-INF/channel.xml,OSGI-INF/artifact.xml,OSGI-INF/deployAuth.xml,OSGI-INF/imp.xml,
  OSGI-INF/globalController.xml
-Export-Package: de.dentrassi.pm.storage.web;version="1.0.0",
+Export-Package: de.dentrassi.pm.storage.web;version="1.0.0";
+  uses:="de.dentrassi.osgi.web.controller.binding,
+   de.dentrassi.pm.storage.service,
+   de.dentrassi.osgi.web,
+   javax.servlet.http,
+   de.dentrassi.pm.core,
+   de.dentrassi.pm.common.web,
+   de.dentrassi.osgi.web.controller.validator",
  de.dentrassi.pm.storage.web.breadcrumbs;version="1.0.0",
- de.dentrassi.pm.storage.web.deploy;version="1.0.0",
- de.dentrassi.pm.storage.web.tags;version="1.0.0"
+ de.dentrassi.pm.storage.web.deploy;version="1.0.0";
+  uses:="de.dentrassi.osgi.web.controller.binding,
+   de.dentrassi.pm.storage.service,
+   javax.servlet.http,
+   de.dentrassi.osgi.web,
+   de.dentrassi.pm.common.web,
+   de.dentrassi.pm.storage",
+ de.dentrassi.pm.storage.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage",
+ de.dentrassi.pm.storage.web.utils;version="1.0.0";uses:="javax.servlet.http,de.dentrassi.pm.common,de.dentrassi.pm.storage"

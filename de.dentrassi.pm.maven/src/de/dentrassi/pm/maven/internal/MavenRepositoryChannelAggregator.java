@@ -10,20 +10,51 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
+import static de.dentrassi.pm.common.XmlHelper.addElement;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
+import de.dentrassi.pm.system.SystemService;
 
 public class MavenRepositoryChannelAggregator implements ChannelAggregator
 {
+    private final XmlHelper xml = new XmlHelper ();
+
+    private final CoreService coreService;
+
+    private final SystemService systemService;
+
+    public MavenRepositoryChannelAggregator ( final CoreService coreService, final SystemService systemService )
+    {
+        this.coreService = coreService;
+        this.systemService = systemService;
+    }
+
+    protected String getSitePrefix ()
+    {
+        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        if ( prefix != null )
+        {
+            return prefix;
+        }
+        return "http://localhost:8080";
+    }
+
     @Override
     public String getId ()
     {
@@ -54,8 +85,48 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
 
         json = cs.toString ();
         context.createCacheEntry ( "channel", "channel.json", "application/json", new ByteArrayInputStream ( json.getBytes ( StandardCharsets.UTF_8 ) ) );
+        context.createCacheEntry ( "repo-metadata", "repository-metadata.xml", "text/xml", ( stream ) -> {
+            try
+            {
+                this.xml.write ( makeRepoMetaData ( context ), stream );
+            }
+            catch ( final Exception e )
+            {
+                throw new IOException ( e );
+            }
+        } );
 
         return result;
+    }
+
+    /**
+     * Create the repository meta data file, for scraping
+     *
+     * @param context
+     * @return the document
+     */
+    private Document makeRepoMetaData ( final AggregationContext context )
+    {
+        final Document doc = this.xml.create ();
+
+        // create document
+
+        final Element root = doc.createElement ( "repository-metadata" );
+        doc.appendChild ( root );
+
+        addElement ( root, "version", "1.0.0" );
+        addElement ( root, "id", context.getChannelId () );
+        addElement ( root, "name", context.getChannelNameOrId () );
+        addElement ( root, "layout", "maven2" );
+        addElement ( root, "policy", "mixed" );
+        addElement ( root, "url", makeUrl ( context.getChannelId () ) );
+
+        return doc;
+    }
+
+    private String makeUrl ( final String channelId )
+    {
+        return String.format ( "%s/maven/%s", getSitePrefix (), channelId );
     }
 
     private Map<String, ArtifactInformation> makeMap ( final AggregationContext context )

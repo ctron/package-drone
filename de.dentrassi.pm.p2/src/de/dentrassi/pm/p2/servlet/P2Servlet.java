@@ -32,6 +32,7 @@ import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.p2.internal.aspect.ChannelStreamer;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
 public class P2Servlet extends HttpServlet
 {
