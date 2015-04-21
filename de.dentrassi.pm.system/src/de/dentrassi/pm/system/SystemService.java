@@ -17,6 +17,10 @@ public interface SystemService
 {
     /**
      * Get the default site prefix (e.g. <code>http://localhost:8080</code> )
+     * <p>
+     * This only provides the default site prefix, but not the configured one.
+     * This one may be fetched by the CoreService.
+     * </p>
      *
      * @return the default site prefix, may return <code>null</code> when the
      *         hostname cannot be determined
