@@ -41,12 +41,13 @@ public interface CoreService
      */
     public Map<String, String> getCoreProperties ( Collection<String> keys );
 
-/**
+    /**
      * Get multiple core properties
      * <p>
      * The method is a convenience method to
      * {@link #getCoreProperties(Collection)} and will behave as is if {@link
-     * <code>getCoreProperties(Arrays.asList(keys))</code> would have been called.
+     * <code>getCoreProperties(Arrays.asList(keys))</code> would have been
+     * called.
      * </p>
      *
      * @param keys
