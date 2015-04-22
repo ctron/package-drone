@@ -31,6 +31,7 @@ import com.google.gson.GsonBuilder;
 import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.importer.ImportContext;
 import de.dentrassi.pm.importer.Importer;
 import de.dentrassi.pm.importer.ImporterDescription;
@@ -79,6 +80,8 @@ public class HttpImporter implements Importer
         final Path file = Files.createTempFile ( "import", null );
 
         final URLConnection con = url.openConnection ();
+
+        con.setRequestProperty ( "User-Agent", VersionInformation.USER_AGENT );
 
         String name;
 

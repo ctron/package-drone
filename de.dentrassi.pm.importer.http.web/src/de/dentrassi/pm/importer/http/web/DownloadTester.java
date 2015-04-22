@@ -18,6 +18,7 @@ import de.dentrassi.osgi.job.AbstractJsonJobFactory;
 import de.dentrassi.osgi.job.JobFactoryDescriptor;
 import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.importer.http.Configuration;
 import de.dentrassi.pm.importer.http.HttpImporter;
 
@@ -46,6 +47,8 @@ public class DownloadTester extends AbstractJsonJobFactory<Configuration, TestRe
 
         final URL url = new URL ( cfg.getUrl () );
         final URLConnection con = url.openConnection ();
+        con.setRequestProperty ( "User-Agent", VersionInformation.USER_AGENT );
+
         if ( con instanceof HttpURLConnection )
         {
             final HttpURLConnection httpCon = (HttpURLConnection)con;
