@@ -19,6 +19,8 @@ public final class VersionInformation
 
     public static final String VERSION_UNQUALIFIED;
 
+    public static final String USER_AGENT;
+
     private VersionInformation ()
     {
     }
@@ -28,5 +30,7 @@ public final class VersionInformation
         final Version version = FrameworkUtil.getBundle ( VersionInformation.class ).getVersion ();
         VERSION = version.toString ();
         VERSION_UNQUALIFIED = new Version ( version.getMajor (), version.getMinor (), version.getMicro () ).toString ();
+
+        USER_AGENT = String.format ( "PackageDrone/%s (+http://packagedrone.org)", VersionInformation.VERSION_UNQUALIFIED );
     }
 }

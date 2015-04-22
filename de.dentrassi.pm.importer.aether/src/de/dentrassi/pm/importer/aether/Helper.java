@@ -67,7 +67,7 @@ public class Helper
         // uncomment to generate dirty trees
         // session.setDependencyGraphTransformer( null );
 
-        session.setConfigProperty ( ConfigurationProperties.USER_AGENT, String.format ( "PackageDrone/%s (+http://packagedrone.org)", VersionInformation.VERSION_UNQUALIFIED ) );
+        session.setConfigProperty ( ConfigurationProperties.USER_AGENT, VersionInformation.USER_AGENT );
 
         return session;
     }
