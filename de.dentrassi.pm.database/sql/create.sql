@@ -18,7 +18,7 @@ CREATE DOMAIN TINYINT AS SMALLINT;
 --#endif -- mysql
 
 CREATE TABLE PROPERTIES ("KEY" VARCHAR(255) NOT NULL, "VALUE" TEXT, PRIMARY KEY("KEY"));
-INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '11' );
+INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '12' );
 
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,
@@ -62,6 +62,8 @@ CREATE TABLE CHANNEL_CACHE (
     NAME          VARCHAR(255),
     MIME_TYPE     VARCHAR(255) NOT NULL DEFAULT 'application/octet-stream',
     SIZE          NUMERIC NOT NULL,
+    
+    CREATION_TS   TIMESTAMP NOT NULL,
     
     DATA          LONGBLOB,
     

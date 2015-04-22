@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage;
 
+import java.util.Date;
+
 import de.dentrassi.pm.common.MetaKey;
 
 /**
@@ -24,4 +26,6 @@ public interface CacheEntryInformation
     public long getSize ();
 
     public String getMimeType ();
+
+    public Date getTimestamp ();
 }

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.util.Date;
+
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.CacheEntryInformation;
 
@@ -23,12 +25,15 @@ public class CacheEntryInformationImpl implements CacheEntryInformation
 
     private final String mimeType;
 
-    public CacheEntryInformationImpl ( final MetaKey key, final String name, final long size, final String mimeType )
+    private final Date timestamp;
+
+    public CacheEntryInformationImpl ( final MetaKey key, final String name, final long size, final String mimeType, final Date timestamp )
     {
         this.key = key;
         this.name = name;
         this.size = size;
         this.mimeType = mimeType;
+        this.timestamp = timestamp;
     }
 
     @Override
@@ -53,5 +58,11 @@ public class CacheEntryInformationImpl implements CacheEntryInformation
     public MetaKey getKey ()
     {
         return this.key;
+    }
+
+    @Override
+    public Date getTimestamp ()
+    {
+        return this.timestamp;
     }
 }

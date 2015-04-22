@@ -12,6 +12,8 @@ package de.dentrassi.pm.storage.jpa;
 
 import static javax.persistence.FetchType.LAZY;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -20,6 +22,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * An entry in the channel cache
@@ -61,6 +65,10 @@ public class ChannelCacheEntity
 
     @Column ( name = "MIME_TYPE", length = 255, nullable = false )
     private String mimeType;
+
+    @Temporal ( value = TemporalType.TIMESTAMP )
+    @Column ( name = "CREATION_TS", nullable = false, updatable = false )
+    private Date creationTimestamp;
 
     @Column ( name = "DATA" )
     @Lob
@@ -134,6 +142,16 @@ public class ChannelCacheEntity
     public void setMimeType ( final String mimeType )
     {
         this.mimeType = mimeType;
+    }
+
+    public Date getCreationTimestamp ()
+    {
+        return this.creationTimestamp;
+    }
+
+    public void setCreationTimestamp ( final Date creationTimestamp )
+    {
+        this.creationTimestamp = creationTimestamp;
     }
 
 }

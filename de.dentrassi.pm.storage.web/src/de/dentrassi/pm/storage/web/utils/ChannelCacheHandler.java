@@ -16,6 +16,9 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
@@ -23,6 +26,8 @@ import de.dentrassi.pm.storage.Channel;
 
 public class ChannelCacheHandler
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ChannelCacheHandler.class );
+
     private final MetaKey key;
 
     public ChannelCacheHandler ( final MetaKey key )
@@ -37,11 +42,14 @@ public class ChannelCacheHandler
             channel.streamCacheEntry ( this.key, ( cacheEntry ) -> {
                 response.setContentType ( cacheEntry.getMimeType () );
                 response.setContentLengthLong ( cacheEntry.getSize () );
-                ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+                response.setDateHeader ( "Last-Modified", cacheEntry.getTimestamp ().getTime () );
+                final long len = ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+                logger.trace ( "Transfered {} bytes of data from cache entry: {}", len, this.key );
             } );
         }
         catch ( final FileNotFoundException e )
         {
+            logger.warn ( "Unable to find channel cache entry: " + this.key, e );
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.setContentType ( "text/plain" );
             response.getWriter ().format ( "Unable to find: %s", request.getRequestURI () );

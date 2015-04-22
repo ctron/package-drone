@@ -844,7 +844,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -942,7 +942,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     /**
      * List artifacts with metadata
-     * 
+     *
      * @param channel
      *            the channel to check
      * @return the set of detailed meta data object
@@ -1085,7 +1085,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         for ( final ChannelCacheEntity cce : rl )
         {
-            result.add ( new CacheEntryInformationImpl ( new MetaKey ( cce.getNamespace (), cce.getKey () ), cce.getName (), cce.getSize (), cce.getMimeType () ) );
+            result.add ( new CacheEntryInformationImpl ( new MetaKey ( cce.getNamespace (), cce.getKey () ), cce.getName (), cce.getSize (), cce.getMimeType (), cce.getCreationTimestamp () ) );
         }
 
         return result;

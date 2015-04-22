@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Date;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.CacheEntry;
@@ -57,5 +58,11 @@ public class CacheEntryImpl implements CacheEntry
     public long getSize ()
     {
         return this.cce.getSize ();
+    }
+
+    @Override
+    public Date getTimestamp ()
+    {
+        return this.cce.getCreationTimestamp ();
     }
 }
