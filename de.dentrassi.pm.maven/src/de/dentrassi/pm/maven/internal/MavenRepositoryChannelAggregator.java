@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -207,7 +208,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
             if ( info.getGroupId () != null & info.getArtifactId () != null && info.getVersion () != null )
             {
                 // found pom meta data
-                final String ext = makeExtension ( art.getName () );
+                final String ext = FilenameUtils.getExtension ( art.getName () );
                 if ( ext != null )
                 {
                     info.setExtension ( ext );
@@ -219,18 +220,10 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         return null;
     }
 
-    private static String makeExtension ( final String name )
-    {
-        final int idx = name.lastIndexOf ( '.' );
-        if ( idx < 0 )
-        {
-            return null;
-        }
-        return name.substring ( idx + 1 );
-    }
-
     private ArtifactInformation findChildPom ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
     {
+        final String pomName = FilenameUtils.getBaseName ( art.getName () ) + ".pom";
+
         for ( final String childId : art.getChildIds () )
         {
             final ArtifactInformation child = map.get ( childId );
@@ -238,8 +231,12 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
             {
                 continue;
             }
-            if ( !child.getName ().equals ( "pom.xml" ) )
+
+            final String childName = child.getName ();
+
+            if ( !childName.equals ( pomName ) && !child.getName ().equals ( "pom.xml" ) )
             {
+                // we take either basename.pom or pom.xml
                 continue;
             }
 

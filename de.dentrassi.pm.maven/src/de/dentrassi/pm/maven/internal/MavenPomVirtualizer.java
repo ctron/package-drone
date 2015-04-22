@@ -20,6 +20,8 @@ import de.dentrassi.pm.aspect.virtual.Virtualizer;
 public class MavenPomVirtualizer implements Virtualizer
 {
 
+    private static final String DEFAULT_POM_NAME = "pom.xml";
+
     @Override
     public void virtualize ( final Context context )
     {
@@ -48,6 +50,23 @@ public class MavenPomVirtualizer implements Virtualizer
 
     private void extractPom ( final ZipEntry entry, final ZipInputStream zis, final Context context )
     {
-        context.createVirtualArtifact ( "pom.xml", zis, null );
+        final String name = makeName ( context.getArtifactInformation ().getName () );
+        context.createVirtualArtifact ( name, zis, null );
+    }
+
+    private String makeName ( final String name )
+    {
+        if ( name == null )
+        {
+            return DEFAULT_POM_NAME;
+        }
+
+        final int idx = name.lastIndexOf ( '.' );
+        if ( idx < 0 || idx >= name.length () )
+        {
+            return DEFAULT_POM_NAME;
+        }
+
+        return name.substring ( 0, idx ) + ".pom";
     }
 }
