@@ -119,6 +119,8 @@ public class MavenServlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
+        logger.trace ( "get request - {}", request );
+
         if ( "/".equals ( request.getPathInfo () ) )
         {
             response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
@@ -187,6 +189,12 @@ public class MavenServlet extends HttpServlet
         if ( toks.length == 2 && toks[1].equals ( ".meta/repository-metadata.xml" ) )
         {
             new ChannelCacheHandler ( new MetaKey ( "maven.repo", "repo-metadata" ) ).process ( channel, request, response );
+            return;
+        }
+
+        if ( toks.length == 2 && toks[1].equals ( ".meta/prefixes.txt" ) )
+        {
+            new ChannelCacheHandler ( new MetaKey ( "maven.repo", "prefixes" ) ).process ( channel, request, response );
             return;
         }
 

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.ChannelData.ArtifactNode;
 import de.dentrassi.pm.maven.ChannelData.ContentNode;
@@ -133,8 +134,17 @@ public class MavenHandler
 
             for ( final String entry : dirs )
             {
-                final String esc = HtmlEscapers.htmlEscaper ().escape ( entry );
+                final Node node = this.dir.getNodes ().get ( entry );
+
+                String esc = HtmlEscapers.htmlEscaper ().escape ( entry );
                 pw.write ( "<li><a href=\"" );
+
+                if ( node.isDirectory () && !esc.endsWith ( "/" ) )
+                {
+                    // ensure it ends with /
+                    esc = esc + "/";
+                }
+
                 pw.write ( esc );
                 pw.write ( "\">" );
                 pw.write ( esc );
@@ -151,6 +161,7 @@ public class MavenHandler
         final Map<String, Object> model = new HashMap<> ();
         model.put ( "path", path );
         model.put ( "dir", new DirRenderer ( dir ) );
+        model.put ( "version", VersionInformation.VERSION );
         w.write ( StringReplacer.replace ( loadResource ( "content/index.html" ), new ExtendedPropertiesReplacer ( model ), StringReplacer.DEFAULT_PATTERN, true ) );
     }
 

@@ -125,6 +125,7 @@
 
 		<module>../de.dentrassi.pm.maven</module>
 		<module>../de.dentrassi.pm.maven.tests</module>
+		<module>../de.dentrassi.pm.maven.web</module>
 
 		<module>../de.dentrassi.pm.npm</module>
 

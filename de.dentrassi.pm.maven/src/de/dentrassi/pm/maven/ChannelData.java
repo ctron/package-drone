@@ -57,6 +57,10 @@ public class ChannelData
 
     public static abstract class Node
     {
+        public boolean isDirectory ()
+        {
+            return false;
+        }
     }
 
     public static class DirectoryNode extends Node
@@ -66,6 +70,12 @@ public class ChannelData
         public Map<String, Node> getNodes ()
         {
             return this.nodes;
+        }
+
+        @Override
+        public boolean isDirectory ()
+        {
+            return true;
         }
     }
 
