@@ -24,6 +24,7 @@
 			<get-release-2 version="0.3.0"/>
 	        <get-release-2 version="0.4.0"/>
 			<get-release-2 version="0.5.0"/>
+			<get-release-2 version="0.6.0"/>
 		</parallel>
 	</target>
 	
@@ -76,6 +77,7 @@
 		<adddeb src="download/package-drone-server_0.4.0_all.deb" />
 		<adddeb src="download/package-drone-server_0.5.0_all.deb" />
 		<adddeb src="download/package-drone-server_0.6.0_all.deb" />
+		<adddeb src="download/package-drone-server_0.7.0_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
