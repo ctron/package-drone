@@ -33,7 +33,7 @@ public interface ChannelAspect
     }
 
     /**
-     * @return a channel listener or <code>nulll</code>
+     * @return a channel listener or <code>null</code>
      */
     public default ChannelListener getChannelListener ()
     {
@@ -41,7 +41,7 @@ public interface ChannelAspect
     }
 
     /**
-     * @return a virtualizer or <code>nulll</code>
+     * @return a virtualizer or <code>null</code>
      */
     public default Virtualizer getArtifactVirtualizer ()
     {
