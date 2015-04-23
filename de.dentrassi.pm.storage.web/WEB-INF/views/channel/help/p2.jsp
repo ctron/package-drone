@@ -8,11 +8,6 @@
 <%@ taglib uri="http://dentrassi.de/pm/storage" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
-<%--
-<c:set var="idUrl" value="${fn:escapeXml(sitePrefix) }/p2/${channel.id }"/>
-<c:set var="nameUrl" value="${fn:escapeXml(sitePrefix) }/p2/${channel.name }"/>
- --%>
-
 <c:set var="idUrl" value="${ fn:escapeXml(sitePrefix.concat ( '/p2/' ).concat ( channel.id )) }"/>
 <c:set var="nameUrl" value="${ fn:escapeXml(sitePrefix.concat ( '/p2/' ).concat ( web:encode(channel.name) )) }"/>
 
