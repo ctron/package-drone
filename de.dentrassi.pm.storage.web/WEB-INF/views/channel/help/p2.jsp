@@ -63,8 +63,10 @@
                     <div class="panel-heading"><h3 class="panel-title">Maven Tycho</h3></div>
                     <div class="panel-body">
                     Add the following repository configuration to your setup:
+                    </div>
                     
-                    <pre>
+<div class="">
+                    <pre>…
 &lt;repositories&gt;
     …
     &lt;repository&gt;
@@ -75,7 +77,7 @@
     &lt;/repository&gt;
     …
 &lt;/repositories&gt;
-                    </pre>
+…</pre>
                     
                     </div>
                     
@@ -95,7 +97,9 @@
                     
                     Create an new target platform DSL file
                     
+                    </div>
                     
+<div>
                     <pre>
 target "My target platform"
 
@@ -103,8 +107,7 @@ with source, allEnvironments
 
 location "${idUrl }" {
     /* your installable units here */
-}
-                    </pre>
+}</pre>
                     
                                         
                     </div>
