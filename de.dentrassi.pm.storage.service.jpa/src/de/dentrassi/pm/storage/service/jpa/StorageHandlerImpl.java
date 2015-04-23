@@ -844,7 +844,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1061,6 +1061,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         bos.close ();
         final byte[] data = bos.toByteArray ();
 
+        cce.setCreationTimestamp ( new Date () );
         cce.setChannel ( channel );
         cce.setNamespace ( namespace );
         cce.setKey ( id );
