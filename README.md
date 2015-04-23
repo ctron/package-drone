@@ -48,6 +48,8 @@ What it currently can do
 * Allow deep linking inside artifacts
 * Handle and host complete P2 repository ZIPs
 * Unzip zipped P2 repositories on the fly
+* Extract POM files embedded in JARs and build a Maven repository from it
+* Allow scraping of Maven repository channels
 
 How to contribute
 ----------------
@@ -70,4 +72,5 @@ What it is not designed to do
 This is a list of things Package Drone is not designed to be do, as of now! Maybe this changes in the future, although this is highly unlikely at the time of writing:
 
 * Act as "P2 central" - a replication of Maven Central for P2 or OSGi R5 repositories
+
 
