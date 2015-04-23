@@ -149,13 +149,15 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
                 {
                     missing.put ( entry.getKey (), channel );
                 }
-
-                logger.debug ( "\t{} - {} -> {}", info.getFactoryId (), entry.getValue (), info.getVersion () );
-
-                if ( !info.getVersion ().equals ( Version.valueOf ( entry.getValue () ) ) )
+                else
                 {
-                    result.add ( makeUpgradeTask ( channel, info, entry.getValue () ) );
-                    channels.put ( channel, entry.getKey () );
+                    logger.debug ( "\t{} - {} -> {}", info.getFactoryId (), entry.getValue (), info.getVersion () );
+
+                    if ( !info.getVersion ().equals ( Version.valueOf ( entry.getValue () ) ) )
+                    {
+                        result.add ( makeUpgradeTask ( channel, info, entry.getValue () ) );
+                        channels.put ( channel, entry.getKey () );
+                    }
                 }
             }
         }
