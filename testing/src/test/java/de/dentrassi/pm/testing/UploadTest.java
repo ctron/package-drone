@@ -11,6 +11,8 @@
 package de.dentrassi.pm.testing;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class UploadTest extends AbstractServerTest
     private static final String ROW_ID_PREFIX = "row-";
 
     @Test
-    public void test ()
+    public void test () throws Exception
     {
         driver.get ( resolve ( "/channel" ) );
 
@@ -36,6 +38,21 @@ public class UploadTest extends AbstractServerTest
         Assert.assertEquals ( 1, channels.size () );
 
         withChannel ( channels.get ( 0 ) );
+        basicWithChannel ( channels.get ( 0 ) );
+    }
+
+    private void basicWithChannel ( final String channelId ) throws Exception
+    {
+        testUrl ( "/channel/" + channelId + "/description" );
+        testUrl ( "/channel/" + channelId + "/help.maven" );
+    }
+
+    protected void testUrl ( final String suffix ) throws Exception
+    {
+        final URL url = new URL ( resolve ( suffix ) );
+        try ( InputStream is = url.openStream () )
+        {
+        }
     }
 
     private void withChannel ( final String channelId )
