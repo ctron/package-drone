@@ -7,8 +7,13 @@
 <%@ taglib uri="http://dentrassi.de/pm/storage" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form"%>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web"%>
+<%@ taglib uri="http://dentrassi.de/osgi/web/security" prefix="sec" %>
 
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+
+<%
+pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
+%>
 
 <h:main title="Channel" subtitle="${pm:channel(channel) }">
 
@@ -27,7 +32,9 @@
                     <c:when test="${empty channel.deployGroups }">
                         <div class="alert alert-info">
                             <strong>Not configured!</strong> Channel is not configured for receiving artifacts.
-                            <a href="<c:url value="/channel/${channel.id }/deployKeys"/>" class="alert-link">Add some deploy groups and keys</a> to enable this.
+                            <c:if test="${manager}">
+                                <a href="<c:url value="/channel/${channel.id }/deployKeys"/>" class="alert-link">Add some deploy groups and keys</a> to enable this.
+                            </c:if>
                         </div>
                     </c:when>
                     
@@ -74,16 +81,23 @@ Deploy keys are assigned to groups and groups get assigned to channels, for easi
     </div>
 </div>
 
-<p>
-The following deploy keys are configured for this channel:
-</p>
-<ul>
-<c:forEach var="dg" items="${channel.deployGroups }">
-    <c:forEach var="dk" items="${dg.keys }">
-        <li><code>${fn:escapeXml(dk.key) }</code></li>
-    </c:forEach>
-</c:forEach>
-</ul>
+<c:if test="${manager }">
+
+	<p>
+	The following deploy keys are configured for this channel:
+	</p>
+	<ul>
+	<c:forEach var="dg" items="${channel.deployGroups }">
+	    <c:forEach var="dk" items="${dg.keys }">
+	        <li><code>${fn:escapeXml(dk.key) }</code></li>
+	    </c:forEach>
+	</c:forEach>
+	</ul>
+
+</c:if>
+<c:if test="${not manager }">
+    <p>The deploy keys are only visible to users with the role <code>MANAGER</code>.</p>
+</c:if>
                     
                     </c:otherwise>
                     
@@ -100,7 +114,9 @@ The following deploy keys are configured for this channel:
                     <c:when test="${not mavenRepo }">
                         <div class="alert alert-info">
                             <strong>Not configured!</strong> Channel is not configured for providing a Maven repository.
-                            <a href="<c:url value="/channel/${channel.id }/aspects"/>" class="alert-link">Add the Maven Repository aspect</a> to enable this.
+                            <c:if test="${manager}">
+                                <a href="<c:url value="/channel/${channel.id }/aspects"/>" class="alert-link">Add the Maven Repository aspect</a> to enable this.
+                            </c:if>
                         </div>
                     </c:when>
                     <c:otherwise>
