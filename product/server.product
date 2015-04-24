@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.7.0" useFeatures="true" includeLaunchers="false">
+<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.7.1" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -46,6 +46,7 @@
       <plugin id="de.dentrassi.pm.aspect.cleanup.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.upgrade" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.common.web.ckeditor" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.console" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.core.web" autoStart="true" startLevel="0" />
@@ -61,6 +62,7 @@
       <plugin id="de.dentrassi.pm.mail.service" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.mail.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.maven" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.maven.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.npm" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.osgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
@@ -78,6 +80,7 @@
       <plugin id="de.dentrassi.pm.signing.pgp.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.storage.web.description" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.todo" autoStart="true" startLevel="0" />
