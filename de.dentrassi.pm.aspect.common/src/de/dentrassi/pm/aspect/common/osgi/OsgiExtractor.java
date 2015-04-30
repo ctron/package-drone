@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -66,10 +66,10 @@ public class OsgiExtractor implements Extractor
     }
 
     @Override
-    public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        extractBundleInformation ( file, metadata );
-        extractFeatureInformation ( file, metadata );
+        extractBundleInformation ( context.getPath (), metadata );
+        extractFeatureInformation ( context.getPath (), metadata );
     }
 
     private void extractFeatureInformation ( final Path file, final Map<String, String> metadata ) throws Exception

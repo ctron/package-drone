@@ -44,22 +44,22 @@ public class ExtractorImpl implements Extractor
     }
 
     @Override
-    public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        final String probe = Files.probeContentType ( file );
+        final String probe = Files.probeContentType ( context.getPath () );
 
         if ( !probe.equals ( "application/xml" ) )
         {
             return;
         }
 
-        if ( isArtifacts ( file ) )
+        if ( isArtifacts ( context.getPath () ) )
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "artifacts" );
             metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Artifact Information" );
         }
-        else if ( isMetaData ( file ) )
+        else if ( isMetaData ( context.getPath () ) )
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "metadata" );

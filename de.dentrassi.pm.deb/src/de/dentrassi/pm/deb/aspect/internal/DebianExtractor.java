@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb.aspect.internal;
 
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -41,12 +40,12 @@ public class DebianExtractor implements Extractor
     }
 
     @Override
-    public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
         final SortedMap<String, String> controlFile;
         try
         {
-            controlFile = Packages.parseControlFile ( file.toFile () );
+            controlFile = Packages.parseControlFile ( context.getPath ().toFile () );
         }
         catch ( final Exception e )
         {

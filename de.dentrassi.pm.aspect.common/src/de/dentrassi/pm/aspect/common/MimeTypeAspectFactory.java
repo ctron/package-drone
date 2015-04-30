@@ -37,9 +37,9 @@ public class MimeTypeAspectFactory implements ChannelAspectFactory
                 }
 
                 @Override
-                public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+                public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
                 {
-                    final String type = getMimeType ( file );
+                    final String type = getMimeType ( context.getPath () );
                     if ( type != null )
                     {
                         metadata.put ( "type", type );

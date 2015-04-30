@@ -61,6 +61,7 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
+import de.dentrassi.pm.aspect.extract.Extractor.Context;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.listener.PostAddContext;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
@@ -525,11 +526,13 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
+        final Context context = createExtractorContext ( file );
+
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
             try
             {
                 final Map<String, String> md = new HashMap<> ();
-                extractor.extractMetaData ( file, md );
+                extractor.extractMetaData ( context, md );
 
                 convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
             }
@@ -540,6 +543,18 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
 
         return metadata;
+    }
+
+    protected static Context createExtractorContext ( final Path file )
+    {
+        return new Context () {
+
+            @Override
+            public Path getPath ()
+            {
+                return file;
+            }
+        };
     }
 
     private static void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
@@ -766,7 +781,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
-                        extractor.extractMetaData ( file, md );
+                        extractor.extractMetaData ( createExtractorContext ( file ), md );
                         convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
                     catch ( final Exception e )
@@ -844,7 +859,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */

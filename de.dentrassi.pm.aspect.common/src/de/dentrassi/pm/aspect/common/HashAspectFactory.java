@@ -54,9 +54,9 @@ public class HashAspectFactory implements ChannelAspectFactory
             return new Extractor () {
 
                 @Override
-                public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+                public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
                 {
-                    makeChecksumMetadata ( file, metadata );
+                    makeChecksumMetadata ( context.getPath (), metadata );
                 }
 
                 @Override

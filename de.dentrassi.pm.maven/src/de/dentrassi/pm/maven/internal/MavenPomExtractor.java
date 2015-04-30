@@ -12,7 +12,6 @@ package de.dentrassi.pm.maven.internal;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.nio.file.Path;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -40,9 +39,9 @@ public class MavenPomExtractor implements Extractor
     }
 
     @Override
-    public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+        try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( context.getPath ().toFile () ) ) )
         {
             final Document doc = this.xml.parse ( in );
             final Element root = doc.getDocumentElement ();

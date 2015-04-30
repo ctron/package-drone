@@ -45,11 +45,11 @@ public class NpmExtractor implements Extractor
     }
 
     @Override
-    public void extractMetaData ( final Path file, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
         try
         {
-            perform ( file, metadata );
+            perform ( context.getPath (), metadata );
         }
         catch ( final Exception e )
         {
