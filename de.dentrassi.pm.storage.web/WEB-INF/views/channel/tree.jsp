@@ -2,6 +2,8 @@
     pageEncoding="UTF-8"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/storage" prefix="s" %>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -54,16 +56,26 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <h:main title="Channel" subtitle="${storage:channel(channel) }">
 
-<style>
-a.popup-ajax {
-    color: inherit;
-}
-</style>
+<jsp:attribute name="head">
+	<style type="text/css">
+	a.popup-ajax {
+	    color: inherit;
+	}
+	</style>
+	<s:dz_head/>
+</jsp:attribute>
 
-<h:buttonbar menu="${menuManager.getActions(channel) }" />
+<jsp:attribute name="body">
+
+<h:buttonbar menu="${menuManager.getActions(channel) }">
+    <jsp:attribute name="after">
+        <s:dz_button/>
+    </jsp:attribute>
+</h:buttonbar>
+
+<s:dz_container/>
 
 <h:nav menu="${menuManager.getViews(channel) }" />
-
 
 <div class="table-responsive">
 	<table id="artifacts" class="table table-striped table-condensed table-hover">
@@ -115,5 +127,9 @@ $(".expander").click(function (event) {
 
 $('tr[data-level=0]').show ();
 </script>
+
+<s:dz_init/>
+
+</jsp:attribute>
 
 </h:main>
