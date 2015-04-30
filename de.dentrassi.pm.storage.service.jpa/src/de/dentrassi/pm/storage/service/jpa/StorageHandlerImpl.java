@@ -442,7 +442,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 }
             }
 
-            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, channel, file );
+            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, channel, name, file );
 
             return this.lockManager.modifyCall ( channel.getId (), () -> {
 
@@ -522,11 +522,11 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final Path file )
+    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final String name, final Path file )
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        final Context context = createExtractorContext ( file );
+        final Context context = createExtractorContext ( name, file );
 
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
             try
@@ -545,7 +545,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return metadata;
     }
 
-    protected static Context createExtractorContext ( final Path file )
+    protected static Context createExtractorContext ( final String name, final Path file )
     {
         return new Context () {
 
@@ -553,6 +553,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             public Path getPath ()
             {
                 return file;
+            }
+
+            @Override
+            public String getName ()
+            {
+                return name;
             }
         };
     }
@@ -781,7 +787,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
-                        extractor.extractMetaData ( createExtractorContext ( file ), md );
+                        extractor.extractMetaData ( createExtractorContext ( ae.getName (), file ), md );
                         convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
                     catch ( final Exception e )
@@ -859,7 +865,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */

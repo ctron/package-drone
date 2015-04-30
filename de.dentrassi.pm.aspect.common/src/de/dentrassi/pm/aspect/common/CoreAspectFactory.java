@@ -1,0 +1,77 @@
+/*******************************************************************************
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBH SYSTEMS GmbH - initial API and implementation
+ *******************************************************************************/
+package de.dentrassi.pm.aspect.common;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.apache.commons.io.FilenameUtils;
+
+import de.dentrassi.pm.aspect.ChannelAspect;
+import de.dentrassi.pm.aspect.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.extract.Extractor;
+
+/**
+ * Provide core artifact information as meta data
+ */
+public class CoreAspectFactory implements ChannelAspectFactory
+{
+    private static final String ID = "core";
+
+    private static final String KEY_NAME = "name";
+
+    private static final String KEY_EXT = "extension";
+
+    private static final String KEY_BASENAME = "basename";
+
+    private static class ChannelAspectImpl implements ChannelAspect
+    {
+
+        @Override
+        public Extractor getExtractor ()
+        {
+            return new Extractor () {
+
+                @Override
+                public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
+                {
+                    makeMetadata ( context, metadata );
+                }
+
+                @Override
+                public ChannelAspect getAspect ()
+                {
+                    return ChannelAspectImpl.this;
+                }
+            };
+        }
+
+        @Override
+        public String getId ()
+        {
+            return ID;
+        }
+    };
+
+    @Override
+    public ChannelAspect createAspect ()
+    {
+        return new ChannelAspectImpl ();
+    }
+
+    private static void makeMetadata ( final Extractor.Context context, final Map<String, String> metadata ) throws IOException
+    {
+        metadata.put ( KEY_NAME, context.getName () );
+        metadata.put ( KEY_EXT, FilenameUtils.getExtension ( context.getName () ) );
+        metadata.put ( KEY_BASENAME, FilenameUtils.getBaseName ( context.getName () ) );
+    }
+
+}

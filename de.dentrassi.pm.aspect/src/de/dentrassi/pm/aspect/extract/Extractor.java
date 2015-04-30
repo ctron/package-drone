@@ -17,6 +17,18 @@ public interface Extractor extends ChannelAspectFunction
 {
     public interface Context
     {
+        /**
+         * Get the name of the uploaded artifact
+         * 
+         * @return the name of the artifact
+         */
+        public String getName ();
+
+        /**
+         * Get the path to a temporary file where the BLOB is stored
+         *
+         * @return the path to the temporary BLOB file
+         */
         public Path getPath ();
     }
 
