@@ -16,17 +16,19 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
+import org.eclipse.scada.utils.lang.Holder;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -66,6 +69,8 @@ public class MavenServlet extends HttpServlet
     private final static Logger logger = LoggerFactory.getLogger ( MavenServlet.class );
 
     private static final long serialVersionUID = 1L;
+
+    private static final MetaKey CHANNEL_KEY = new MetaKey ( "maven.repo", "channel" );
 
     private ServiceTracker<StorageService, StorageService> tracker;
 
@@ -156,18 +161,22 @@ public class MavenServlet extends HttpServlet
             return;
         }
 
-        final SortedMap<MetaKey, String> md = channel.getMetaData ();
-        final String str = md.get ( new MetaKey ( "maven.repo", "channel" ) );
-        if ( str == null )
+        // init holder
+
+        final Holder<ChannelData> holder = new Holder<> ();
+
+        // fetch structure from cache
+
+        try
+        {
+            channel.streamCacheData ( CHANNEL_KEY, stream -> {
+                holder.value = ChannelData.fromReader ( new InputStreamReader ( stream, StandardCharsets.UTF_8 ) );
+            } );
+        }
+        catch ( final FileNotFoundException e )
         {
             commitNotConfigured ( response, channelId );
             return;
-        }
-
-        final ChannelData channelData;
-        try
-        {
-            channelData = ChannelData.fromJson ( str );
         }
         catch ( final Exception e )
         {
@@ -178,6 +187,12 @@ public class MavenServlet extends HttpServlet
 
             return;
         }
+
+        // get data
+
+        final ChannelData channelData = holder.value;
+
+        // check for null
 
         if ( channelData == null )
         {

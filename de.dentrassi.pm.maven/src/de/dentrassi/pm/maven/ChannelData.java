@@ -13,6 +13,7 @@ package de.dentrassi.pm.maven;
 import static de.dentrassi.pm.common.XmlHelper.addElement;
 import static de.dentrassi.pm.common.XmlHelper.addElementFirst;
 
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.DateFormat;
@@ -566,7 +567,20 @@ public class ChannelData
         return gson.fromJson ( json, ChannelData.class );
     }
 
-    private static Gson makeGson ( final boolean pretty )
+    public static ChannelData fromReader ( final Reader reader )
+    {
+        final Gson gson = makeGson ( false );
+        return gson.fromJson ( reader, ChannelData.class );
+    }
+
+    /**
+     * Make an appropriate Gson parser to processing ChannelData instances
+     *
+     * @param pretty
+     *            if the gson output should be "pretty printed"
+     * @return the new gson instance
+     */
+    public static Gson makeGson ( final boolean pretty )
     {
         final GsonBuilder gb = new GsonBuilder ();
 
