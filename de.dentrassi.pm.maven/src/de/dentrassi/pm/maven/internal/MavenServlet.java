@@ -144,7 +144,7 @@ public class MavenServlet extends HttpServlet
         pathString = pathString.replaceAll ( "^/+", "" );
         pathString = pathString.replaceAll ( "/+$", "" );
 
-        final String[] toks = pathString.split ( "/", 2 );
+        final String[] toks = pathString.split ( "/+", 2 );
         final String channelId = toks[0];
 
         final Channel channel = service.getChannelWithAlias ( channelId );
@@ -238,7 +238,7 @@ public class MavenServlet extends HttpServlet
 
     private void processPut ( final HttpServletRequest request, final HttpServletResponse response, final StorageService service ) throws Exception
     {
-        final String[] toks = request.getPathInfo ().split ( "/" );
+        final String[] toks = request.getPathInfo ().split ( "/+" );
         final String channelId = toks[1];
         final String artifactName = toks[toks.length - 1];
 

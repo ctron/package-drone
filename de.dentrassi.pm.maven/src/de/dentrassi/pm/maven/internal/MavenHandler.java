@@ -61,7 +61,7 @@ public class MavenHandler
 
     public void handle ( final String path, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        final LinkedList<String> segs = path != null ? new LinkedList<> ( Arrays.asList ( path.split ( "/" ) ) ) : new LinkedList<> ();
+        final LinkedList<String> segs = path != null ? new LinkedList<> ( Arrays.asList ( path.split ( "/+" ) ) ) : new LinkedList<> ();
 
         final Node node = this.channelData.findNode ( segs );
         if ( node == null )
