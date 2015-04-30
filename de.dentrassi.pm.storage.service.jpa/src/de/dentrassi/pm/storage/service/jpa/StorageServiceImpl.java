@@ -75,8 +75,6 @@ import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.PropertyEntity;
-import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
-import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -429,21 +427,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 }
 
                 {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ProvidedArtifactPropertyEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
-                    q.setParameter ( "channelId", channelId );
-                    q.executeUpdate ();
-                }
-
-                {
                     final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
-                    q.setParameter ( "channelId", channelId );
-                    q.executeUpdate ();
-                }
-
-                {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ProvidedChannelPropertyEntity.class.getSimpleName () ) );
                     q.setParameter ( "factoryId", aspectFactoryId );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
