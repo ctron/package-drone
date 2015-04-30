@@ -89,6 +89,13 @@ public class HashAspectFactory implements ChannelAspectFactory
         }
     }
 
+    /**
+     * Create virtual checksum files
+     * <p>
+     * <em>Note:</em> This is currently not used and therefore not referenced
+     * in the ChannelAspectImpl class above!
+     * </p>
+     */
     public static class VirtualizerImpl implements Virtualizer
     {
         @Override
