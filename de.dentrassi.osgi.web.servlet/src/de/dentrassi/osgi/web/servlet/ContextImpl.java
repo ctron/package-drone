@@ -12,7 +12,9 @@ package de.dentrassi.osgi.web.servlet;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.MultipartConfigElement;
@@ -118,7 +120,20 @@ public class ContextImpl extends WebAppContext
         super.doStop ();
         this.tagdirTracker.close ();
         this.taglibTracker.close ();
+
+        // clean up the cache
+
+        synchronized ( this.resourceCache )
+        {
+            for ( final Resource r : this.resourceCache.values () )
+            {
+                r.close ();
+            }
+            this.resourceCache.clear ();
+        }
     }
+
+    private final Map<String, Resource> resourceCache = new HashMap<> ();
 
     @Override
     public Resource getResource ( final String name ) throws MalformedURLException
@@ -128,6 +143,63 @@ public class ContextImpl extends WebAppContext
             logger.trace ( "Getting resource: {}", name );
         }
 
+        Resource resource;
+        synchronized ( this.resourceCache )
+        {
+            resource = this.resourceCache.get ( name );
+            if ( resource != null )
+            {
+                // we found something useful in the cache
+                return resource;
+            }
+        }
+
+        // try to create the resource from internal sources
+
+        resource = getInternalResource ( name );
+
+        // process the result
+
+        if ( resource != null )
+        {
+            // we created something
+            synchronized ( this.resourceCache )
+            {
+                if ( !this.resourceCache.containsKey ( name ) )
+                {
+                    // nobody else put somethere here in the meantime
+                    this.resourceCache.put ( name, resource );
+                    return resource;
+                }
+                else
+                {
+                    resource.close (); // close what we just created
+                    resource = this.resourceCache.get ( name );
+                    if ( resource != null )
+                    {
+                        // return what somebody else put here
+                        return resource;
+                    }
+                }
+            }
+        }
+
+        // we now that we cannot provide the resource, pass on to super
+
+        return super.getResource ( name );
+    }
+
+    /**
+     * Get a resource from internal source this implementation controls
+     *
+     * @param name
+     *            the name or the resource
+     * @return the resource, or <code>null</code> if none was found
+     * @throws MalformedURLException
+     *             if the resource name was considered invalid
+     */
+    private Resource getInternalResource ( final String name ) throws MalformedURLException
+    {
         if ( name.startsWith ( "/bundle/" ) )
         {
             return getAsBundleResource ( name );
@@ -152,7 +224,7 @@ public class ContextImpl extends WebAppContext
             }
         }
 
-        return super.getResource ( name );
+        return null;
     }
 
     private Resource getAsBundleResource ( final String name ) throws MalformedURLException
