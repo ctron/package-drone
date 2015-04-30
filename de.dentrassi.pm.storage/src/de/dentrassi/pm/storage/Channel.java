@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.eclipse.scada.utils.lang.Holder;
+
+import com.google.common.io.ByteStreams;
+
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.DetailedArtifactInformation;
@@ -203,7 +207,7 @@ public interface Channel
     public void removeDeployGroup ( String groupId );
 
     /**
-     * Stream the data of a cache entry to the consumer
+     * Stream the cache entry to the consumer
      * <p>
      * The {@link CacheEntry#getStream()} may only be called while consuming the
      * cache entry. The stream will be closed automatically before this method
@@ -218,6 +222,34 @@ public interface Channel
      *             if the cache entry does not exists
      */
     public void streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException;
+
+    /**
+     * Stream the data of a cache entry to the consumer
+     *
+     * @param key
+     *            the key of the cache entry
+     * @param consumer
+     *            the consumer of the input stream
+     * @throws FileNotFoundException
+     *             if the cache entry does not exists
+     */
+    public default void streamCacheData ( final MetaKey key, final ThrowingConsumer<InputStream> consumer ) throws FileNotFoundException
+    {
+        streamCacheEntry ( key, entry -> {
+            consumer.accept ( entry.getStream () );
+        } );
+    }
+
+    public default byte[] getCacheEntry ( final MetaKey key ) throws FileNotFoundException
+    {
+        final Holder<byte[]> holder = new Holder<> ();
+
+        streamCacheEntry ( key, entry -> {
+            holder.value = ByteStreams.toByteArray ( entry.getStream () );
+        } );
+
+        return holder.value;
+    }
 
     /**
      * Get information about all present cache entries
