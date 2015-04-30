@@ -78,7 +78,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 <h:nav menu="${menuManager.getViews(channel) }" />
 
 <div class="table-responsive">
-	<table id="artifacts" class="table table-striped table-condensed table-hover">
+	<table id="artifacts" class="table table-condensed table-hover">
 	
 		<thead>
 		    <tr>
