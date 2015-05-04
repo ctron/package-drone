@@ -20,6 +20,7 @@ pageContext.setAttribute ( "admin", request.isUserInRole ( "ADMIN" ) );
     <div
     class="list-group-item 
     ${ ( task.state eq 'DONE' ) ? 'list-group-item-success' : '' }
+    ${ ( task.state eq 'FAILED' ) ? 'list-group-item-danger' : '' }
     ">
 
 	    <h4 class="list-group-item-heading">${fn:escapeXml(task.title) }

@@ -22,6 +22,7 @@ public interface Task
     public static enum State
     {
         TODO,
+        FAILED,
         DONE;
     }
 
