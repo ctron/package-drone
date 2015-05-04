@@ -65,6 +65,12 @@ public interface StorageService
 
     public Collection<Channel> listChannels ();
 
+    /**
+     * Delete a channel
+     * 
+     * @param channelId
+     *            the id of the channel to delete
+     */
     public void deleteChannel ( String channelId );
 
     public void streamArtifact ( String artifactId, ArtifactReceiver consumer ) throws FileNotFoundException;
@@ -89,7 +95,12 @@ public interface StorageService
 
     public Artifact getArtifact ( String artifactId );
 
-    public void clearChannel ( String id );
+    /**
+     * Delete all artifacts from a channel
+     *
+     * @param channelId
+     */
+    public void clearChannel ( String channelId );
 
     public void updateChannel ( String id, String name, String description );
 
