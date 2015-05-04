@@ -2,6 +2,8 @@
 
 DIR=$(cd $(dirname "$0"); pwd)
 
+test -f /etc/default/package-drone-server && . /etc/default/package-drone-server
+
 JAVA="java"
 
 if [ -n "$JAVA_HOME" ]; then
@@ -10,8 +12,6 @@ fi
 
 echo "Using Java: $JAVA"
 echo "   Options: $JAVA_OPTS"
-
-test -f /etc/default/package-drone-server && . /etc/default/package-drone-server
 
 if [ -n "$PIDFILE" ]; then
     echo $$ > "$PIDFILE"
