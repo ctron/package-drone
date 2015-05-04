@@ -68,8 +68,6 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
 
     private BundleContext context;
 
-    private ChannelAspectProcessor channelProcessor;
-
     public UpgradeTaskProvider ()
     {
     }
@@ -103,7 +101,6 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
     public void stop ()
     {
         this.context.removeServiceListener ( this.listener );
-        this.channelProcessor.close ();
     }
 
     protected void handleServiceChange ( final ServiceEvent event )
