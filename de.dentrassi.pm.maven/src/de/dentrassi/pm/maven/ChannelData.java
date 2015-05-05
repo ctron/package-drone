@@ -470,7 +470,7 @@ public class ChannelData
         return versions.get ( versions.size () - 1 );
     }
 
-    private void addCheckSum ( final DirectoryNode versionNode, final String name, final ArtifactInformation art, final String string )
+    private static void addCheckSum ( final DirectoryNode versionNode, final String name, final ArtifactInformation art, final String string )
     {
         final String data = art.getMetaData ().get ( new MetaKey ( "hasher", string ) );
         if ( data == null )
@@ -494,7 +494,7 @@ public class ChannelData
         return current;
     }
 
-    private <T extends Node> T addNode ( final DirectoryNode current, final String seg, final T node )
+    private static <T extends Node> T addNode ( final DirectoryNode current, final String seg, final T node )
     {
         if ( current.nodes.containsKey ( seg ) )
         {

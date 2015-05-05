@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Maven OSGi Virtualizer Channel Aspect
+Bundle-SymbolicName: de.dentrassi.pm.aspect.mvnosgi
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Markus Rathgeb
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: de.dentrassi.pm.aspect;version="1.0.0",
+ de.dentrassi.pm.aspect.common.osgi;version="1.0.0",
+ de.dentrassi.pm.aspect.extract;version="1.0.0",
+ de.dentrassi.pm.aspect.virtual;version="1.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.osgi.bundle;version="1.0.0",
+ de.dentrassi.pm.osgi.feature;version="1.0.0",
+ org.apache.maven.model,
+ org.apache.maven.model.io.xpp3,
+ org.osgi.framework;version="1.8.0",
+ org.slf4j;version="1.7.2"
+Service-Component: OSGI-INF/aspect.xml

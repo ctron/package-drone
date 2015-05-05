@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
+ *     Markus Rathgeb - support multiple POMs per artifact
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
@@ -18,8 +19,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,12 +86,21 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
 
         for ( final ArtifactInformation art : context.getArtifacts () )
         {
-            final MavenInformation info = makeInfo ( art, map );
-            if ( info != null )
+            final Collection<MavenInformation> infos = getInfos ( art, map );
+
+            for ( final MavenInformation info : infos )
             {
                 // add
-                cs.add ( info, art );
-                groupIds.add ( info.getGroupId () );
+                try
+                {
+                    cs.add ( info, art );
+                    groupIds.add ( info.getGroupId () );
+                }
+                catch ( final IllegalStateException ex )
+                {
+                    // Cannot add the same information made name (info.makeName()) multiple times.
+                    // First-come, first-served.
+                }
             }
         }
 
@@ -174,76 +186,92 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         return result;
     }
 
-    private MavenInformation makeInfo ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    private Collection<MavenInformation> getInfos ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
     {
-        final MavenInformation info = new MavenInformation ();
+        final Collection<MavenInformation> infos = new LinkedList<> ();
+
+        /*
+         * Try to use the info of the artifact them-self.
+         */
 
         try
         {
+            final MavenInformation info = new MavenInformation ();
             MetaKeys.bind ( info, art.getMetaData () );
+            if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
+            {
+                // found direct meta data
+                infos.add ( info );
+            }
         }
         catch ( final Exception e )
         {
-            return null;
         }
 
-        if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
-        {
-            // found direct meta data
-            return info;
-        }
+        /*
+         * Try to add all child POM files.
+         */
 
-        final ArtifactInformation pomArt = findChildPom ( art, map );
-        if ( pomArt != null )
+        final Collection<ArtifactInformation> pomArts = findChildPoms ( art, map );
+        for ( final ArtifactInformation pomArt : pomArts )
         {
             try
             {
+                final MavenInformation info = new MavenInformation ();
                 MetaKeys.bind ( info, pomArt.getMetaData () );
+                if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
+                {
+                    // found pom meta data
+                    final String ext = FilenameUtils.getExtension ( art.getName () );
+                    if ( ext != null )
+                    {
+                        info.setExtension ( ext );
+                        infos.add ( info );
+                    }
+                }
             }
             catch ( final Exception e )
             {
-                return null;
             }
+        }
 
-            if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
+        return infos;
+    }
+
+    /**
+     * Return a set with all child POMs
+     *
+     * @param art
+     * @param map
+     * @return a set with all child POMs, an empty set if no child POM is found.
+     */
+    private Collection<ArtifactInformation> findChildPoms ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    {
+        final Collection<ArtifactInformation> poms = new LinkedList<> ();
+
+        if ( isPomFileName ( art.getName () ) )
+        {
+            poms.add ( art );
+        }
+        else
+        {
+            for ( final ArtifactInformation child : map.values () )
             {
-                // found pom meta data
-                final String ext = FilenameUtils.getExtension ( art.getName () );
-                if ( ext != null )
+                final String childName = child.getName ();
+
+                if ( isPomFileName ( childName ) )
                 {
-                    info.setExtension ( ext );
-                    return info;
+                    poms.add ( child );
                 }
             }
         }
 
-        return null;
+        return poms;
     }
 
-    private ArtifactInformation findChildPom ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    private static boolean isPomFileName ( final String fileName )
     {
-        final String pomName = FilenameUtils.getBaseName ( art.getName () ) + ".pom";
-
-        for ( final String childId : art.getChildIds () )
-        {
-            final ArtifactInformation child = map.get ( childId );
-            if ( child == null )
-            {
-                continue;
-            }
-
-            final String childName = child.getName ();
-
-            if ( !childName.equals ( pomName ) && !child.getName ().equals ( "pom.xml" ) )
-            {
-                // we take either basename.pom or pom.xml
-                continue;
-            }
-
-            return child;
-        }
-
-        return null;
+        return "pom.xml".equals ( fileName ) || "pom".equals ( FilenameUtils.getExtension ( fileName ) );
     }
 
 }
