@@ -85,7 +85,7 @@ public interface StreamServiceHelper
         {
             return null;
         }
-        return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), service );
+        return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), ce.getAggregatedNumberOfWarnings (), ce.getAggregatedNumberOfErrors (), service );
     }
 
     /**
@@ -126,7 +126,7 @@ public interface StreamServiceHelper
             metaData = convertMetaData ( ae );
         }
 
-        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), metaData, childIds );
+        return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData, childIds );
     }
 
     /**
@@ -161,7 +161,7 @@ public interface StreamServiceHelper
             metaData = convertMetaData ( ae );
         }
 
-        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ), metaData );
+        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData );
     }
 
     public static SortedMap<MetaKey, String> extract ( final String id, final Multimap<String, MetaDataEntry> properties )

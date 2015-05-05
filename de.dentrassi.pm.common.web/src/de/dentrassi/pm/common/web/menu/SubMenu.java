@@ -28,7 +28,7 @@ public class SubMenu extends Node
 
     public SubMenu ( final String id, final String label, final List<Node> nodes, final Modifier modifier )
     {
-        super ( id, label, null );
+        super ( id, label, null, 0 );
         this.nodes = Collections.unmodifiableList ( nodes );
         this.modifier = modifier;
     }

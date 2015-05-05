@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage;
 
 import java.io.InputStream;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
@@ -41,6 +42,17 @@ public interface Artifact extends Comparable<Artifact>
      */
     public String getId ();
 
+    // -- validation
+
+    /**
+     * Get the list of validation messages for this artifact
+     *
+     * @return the list of validation messages, never returns <code>null</code>
+     */
+    public List<ValidationMessage> getValidationMessages ();
+
+    // -- data
+
     public void streamData ( ArtifactReceiver receiver );
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
@@ -55,7 +67,7 @@ public interface Artifact extends Comparable<Artifact>
 
     /**
      * Get detail information about this artifact
-     * 
+     *
      * @return the detail information, never <code>null</code>
      */
     public ArtifactInformation getInformation ();

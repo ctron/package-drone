@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -24,6 +25,7 @@ import de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.PropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ValidationSeverity;
 
 public final class Helper
 {
@@ -92,5 +94,23 @@ public final class Helper
         ap.setKey ( entry.getKey ().getKey () );
         ap.setNamespace ( entry.getKey ().getNamespace () );
         ap.setValue ( entry.getValue () );
+    }
+
+    public static ValidationSeverity convert ( final Severity severity )
+    {
+        if ( severity == null )
+        {
+            return null;
+        }
+        return ValidationSeverity.valueOf ( severity.name () );
+    }
+
+    public static Severity convert ( final ValidationSeverity severity )
+    {
+        if ( severity == null )
+        {
+            return null;
+        }
+        return Severity.valueOf ( severity.name () );
     }
 }

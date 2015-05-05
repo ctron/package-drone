@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.storage.Channel;
 
@@ -49,5 +50,30 @@ public class Functions
         Collections.sort ( result, SimpleArtifactInformation.NAME_COMPARATOR );
 
         return result;
+    }
+
+    public static String severity ( final Severity severity )
+    {
+        return severityWithDefault ( severity, "default" );
+    }
+
+    public static String severityWithDefault ( final Severity severity, final String defaultValue )
+    {
+        if ( severity == null )
+        {
+            return defaultValue;
+        }
+
+        switch ( severity )
+        {
+            case INFO:
+                return "info";
+            case WARNING:
+                return "warning";
+            case ERROR:
+                return "danger";
+            default:
+                return defaultValue;
+        }
     }
 }

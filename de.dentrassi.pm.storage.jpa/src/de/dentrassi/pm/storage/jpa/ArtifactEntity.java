@@ -73,6 +73,32 @@ public abstract class ArtifactEntity
     @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent", fetch = LAZY )
     private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
 
+    @Column ( name = "AGR_NUM_WARN", nullable = false )
+    private long aggregatedNumberOfWarnings;
+
+    @Column ( name = "AGR_NUM_ERR", nullable = false )
+    private long aggregatedNumberOfErrors;
+
+    public long getAggregatedNumberOfErrors ()
+    {
+        return this.aggregatedNumberOfErrors;
+    }
+
+    public void setAggregatedNumberOfErrors ( final long aggregatedNumberOfErrors )
+    {
+        this.aggregatedNumberOfErrors = aggregatedNumberOfErrors;
+    }
+
+    public long getAggregatedNumberOfWarnings ()
+    {
+        return this.aggregatedNumberOfWarnings;
+    }
+
+    public void setAggregatedNumberOfWarnings ( final long aggregatedNumberOfWarnings )
+    {
+        this.aggregatedNumberOfWarnings = aggregatedNumberOfWarnings;
+    }
+
     public void setChildArtifacts ( final Collection<ChildArtifactEntity> derivdedArtifacts )
     {
         this.childArtifacts = derivdedArtifacts;

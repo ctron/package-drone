@@ -69,6 +69,7 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.common.utils.IOConsumer;
@@ -92,6 +93,7 @@ import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
@@ -263,11 +265,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     private final GeneratorProcessor generatorProcessor;
 
+    private final ValidationHandler validationHandler;
+
     public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager, final BlobStore blobStore )
     {
         super ( em, lockManager );
         this.blobStore = blobStore;
         this.generatorProcessor = generatorProcessor;
+        this.validationHandler = new ValidationHandler ( em, lockManager );
     }
 
     public ChannelEntity createChannel ( final String name, final String description, final Map<MetaKey, String> providedMetaData )
@@ -442,7 +447,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 }
             }
 
-            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, channel, name, file );
+            final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, file );
 
             return this.lockManager.modifyCall ( channel.getId (), () -> {
 
@@ -459,6 +465,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                     this.blobStore.storeBlob ( this.em, in, size -> {
                         ae.setSize ( size );
                         this.em.persist ( ae );
+                        vms.flush ( this.em, ae );
                         this.em.flush ();
                         return ae.getId ();
                     } );
@@ -522,15 +529,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ChannelEntity channel, final String name, final Path file )
+    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Path file )
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
-
-        final Context context = createExtractorContext ( name, file );
 
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
             try
             {
+                final Context context = createExtractorContext ( extractor.getAspect ().getId (), name, file, vms );
+
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( context, md );
 
@@ -545,7 +552,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return metadata;
     }
 
-    protected static Context createExtractorContext ( final String name, final Path file )
+    protected static Context createExtractorContext ( final String aspectId, final String name, final Path file, final ValidationMessageSink vms )
     {
         return new Context () {
 
@@ -559,6 +566,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             public String getName ()
             {
                 return name;
+            }
+
+            @Override
+            public void validationMessage ( final Severity severity, final String message )
+            {
+                vms.addMessage ( aspectId, severity, message );
             }
         };
     }
@@ -684,6 +697,13 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
     }
 
+    /**
+     * This method will perform all channel aggregation operations after the
+     * channel was modified
+     *
+     * @param channel
+     *            the channel to process
+     */
     public void runChannelAggregators ( final ChannelEntity channel )
     {
         logger.info ( "Running channel aggregators - channelId: {}", channel.getId () );
@@ -735,6 +755,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             this.em.persist ( channel );
             this.em.flush ();
+
+            // aggregate validation states for the channel
+
+            this.validationHandler.agregateChannel ( channel );
         } );
     }
 
@@ -768,6 +792,13 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             q.executeUpdate ();
         }
 
+        {
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace in :ASPECT and vme.channel=:CHANNEL", ValidationMessageEntity.class.getName () ) );
+            q.setParameter ( "ASPECT", aspectFactoryIds );
+            q.setParameter ( "CHANNEL", channel );
+            q.executeUpdate ();
+        }
+
         // process new meta data
 
         for ( final ArtifactEntity ae : channel.getArtifacts () )
@@ -787,7 +818,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
-                        extractor.extractMetaData ( createExtractorContext ( ae.getName (), file ), md );
+                        final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+                        extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), file, vms ), md );
+                        vms.flush ( this.em, ae );
                         convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
                     catch ( final Exception e )

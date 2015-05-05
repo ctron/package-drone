@@ -32,7 +32,7 @@ public class ChannelDataTest
         info.setArtifactId ( "d" );
         info.setVersion ( "v" );
 
-        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
+        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), 0L, 0L, Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
         cd.add ( info, art );
 
         System.out.println ( " == JSON == " );
@@ -50,7 +50,7 @@ public class ChannelDataTest
         info.setArtifactId ( "d" );
         info.setVersion ( "v" );
 
-        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
+        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), 0L, 0L, Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
         cd.add ( info, art );
 
         cd = ChannelData.fromJson ( cd.toJson () );

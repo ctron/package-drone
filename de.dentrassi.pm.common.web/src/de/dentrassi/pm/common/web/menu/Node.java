@@ -21,11 +21,19 @@ public abstract class Node
 
     private final String id;
 
-    public Node ( final String id, final String label, final String icon )
+    private final long badge;
+
+    public Node ( final String id, final String label, final String icon, final long badge )
     {
         this.id = id;
         this.label = label;
         this.icon = icon;
+        this.badge = badge;
+    }
+
+    public long getBadge ()
+    {
+        return this.badge;
     }
 
     public String getId ()

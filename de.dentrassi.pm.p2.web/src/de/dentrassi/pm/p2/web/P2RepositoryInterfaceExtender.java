@@ -41,7 +41,7 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
 
         final List<MenuEntry> result = new LinkedList<> ();
 
-        result.add ( new MenuEntry ( null, 0, "P2", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false ) );
+        result.add ( new MenuEntry ( null, 0, "P2", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false, 0 ) );
 
         if ( channel.getName () != null )
         {
@@ -49,7 +49,7 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
             {
                 String name = channel.getName ();
                 name = URLEncoder.encode ( name, "UTF-8" );
-                result.add ( new MenuEntry ( null, 0, "P2 Alias", 10_000, new LinkTarget ( "/p2/" + name ).expand ( model ), Modifier.LINK, null, false ) );
+                result.add ( new MenuEntry ( null, 0, "P2 Alias", 10_000, new LinkTarget ( "/p2/" + name ).expand ( model ), Modifier.LINK, null, false, 0 ) );
             }
             catch ( final UnsupportedEncodingException e )
             {
@@ -59,7 +59,7 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
 
         if ( request.isUserInRole ( "MANAGER" ) )
         {
-            result.add ( new MenuEntry ( "Edit", Integer.MAX_VALUE, "P2 Repository Information", 10_000, new LinkTarget ( "/p2.repo/{channelId}/edit" ).expand ( model ), Modifier.DEFAULT, null, false ) );
+            result.add ( new MenuEntry ( "Edit", Integer.MAX_VALUE, "P2 Repository Information", 10_000, new LinkTarget ( "/p2.repo/{channelId}/edit" ).expand ( model ), Modifier.DEFAULT, null, false, 0 ) );
         }
 
         return result;
@@ -77,7 +77,7 @@ public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtend
         model.put ( "channelId", channel.getId () );
 
         final List<MenuEntry> result = new LinkedList<> ();
-        result.add ( new MenuEntry ( null, 0, "P2", 1000, new LinkTarget ( "/p2.repo/{channelId}/info" ).expand ( model ), Modifier.INFO, null, false ) );
+        result.add ( new MenuEntry ( null, 0, "P2", 1000, new LinkTarget ( "/p2.repo/{channelId}/info" ).expand ( model ), Modifier.INFO, null, false, 0 ) );
         return result;
     }
 }

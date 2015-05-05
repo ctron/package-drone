@@ -12,6 +12,7 @@ package de.dentrassi.pm.maven.internal;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -23,6 +24,8 @@ import de.dentrassi.pm.common.XmlHelper;
 
 public class MavenPomExtractor implements Extractor
 {
+    private static final String NS = "http://maven.apache.org/POM/4.0.0";
+
     private final ChannelAspect aspect;
 
     private final XmlHelper xml = new XmlHelper ();
@@ -41,6 +44,13 @@ public class MavenPomExtractor implements Extractor
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
+        final String probe = Files.probeContentType ( context.getPath () );
+
+        if ( !probe.equals ( "application/xml" ) )
+        {
+            return;
+        }
+
         try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( context.getPath ().toFile () ) ) )
         {
             final Document doc = this.xml.parse ( in );
@@ -52,8 +62,9 @@ public class MavenPomExtractor implements Extractor
             }
 
             final String ns = root.getNamespaceURI ();
-            if ( ns != null && !ns.equals ( "http://maven.apache.org/POM/4.0.0" ) )
+            if ( ns != null && !ns.equals ( NS ) )
             {
+                context.validationInformation ( "Ignoring POM file: The namespace set but is not: " + NS );
                 return;
             }
 
@@ -73,16 +84,19 @@ public class MavenPomExtractor implements Extractor
 
             if ( groupId == null || groupId.isEmpty () )
             {
+                context.validationInformation ( "Ignoring POM file: There is no group id" );
                 return;
             }
 
             if ( artifactId == null || artifactId.isEmpty () )
             {
+                context.validationInformation ( "Ignoring POM file: There is no artifact id" );
                 return;
             }
 
             if ( version == null || version.isEmpty () )
             {
+                context.validationInformation ( "Ignoring POM file: There is no version" );
                 return;
             }
 

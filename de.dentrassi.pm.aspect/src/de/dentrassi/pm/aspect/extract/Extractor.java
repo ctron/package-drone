@@ -13,13 +13,15 @@ package de.dentrassi.pm.aspect.extract;
 import java.nio.file.Path;
 import java.util.Map;
 
+import de.dentrassi.pm.aspect.ValidationContext;
+
 public interface Extractor extends ChannelAspectFunction
 {
-    public interface Context
+    public interface Context extends ValidationContext
     {
         /**
          * Get the name of the uploaded artifact
-         * 
+         *
          * @return the name of the artifact
          */
         public String getName ();

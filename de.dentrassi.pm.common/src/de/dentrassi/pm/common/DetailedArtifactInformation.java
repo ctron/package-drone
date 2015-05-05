@@ -19,9 +19,9 @@ public class DetailedArtifactInformation extends SimpleArtifactInformation
 {
     private final SortedMap<MetaKey, String> metaData;
 
-    public DetailedArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets, final SortedMap<MetaKey, String> metaData )
+    public DetailedArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final long warnings, final long errors, final Set<String> facets, final SortedMap<MetaKey, String> metaData )
     {
-        super ( id, parentId, size, name, channelId, creationTimestamp, facets );
+        super ( id, parentId, size, name, channelId, creationTimestamp, warnings, errors, facets );
         this.metaData = Collections.unmodifiableSortedMap ( metaData );
     }
 

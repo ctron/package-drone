@@ -73,8 +73,8 @@ public class OsgiController implements InterfaceExtender
 
         model.put ( "channelId", channel.getId () );
 
-        result.add ( new MenuEntry ( "OSGi", 500, "Bundles", 500, LinkTarget.createFromController ( OsgiController.class, "infoBundles" ).expand ( model ), Modifier.DEFAULT, null, false ) );
-        result.add ( new MenuEntry ( "OSGi", 500, "Features", 600, LinkTarget.createFromController ( OsgiController.class, "infoFeatures" ).expand ( model ), Modifier.DEFAULT, null, false ) );
+        result.add ( new MenuEntry ( "OSGi", 500, "Bundles", 500, LinkTarget.createFromController ( OsgiController.class, "infoBundles" ).expand ( model ), Modifier.DEFAULT, null, false, 0 ) );
+        result.add ( new MenuEntry ( "OSGi", 500, "Features", 600, LinkTarget.createFromController ( OsgiController.class, "infoFeatures" ).expand ( model ), Modifier.DEFAULT, null, false, 0 ) );
 
         return result;
     }

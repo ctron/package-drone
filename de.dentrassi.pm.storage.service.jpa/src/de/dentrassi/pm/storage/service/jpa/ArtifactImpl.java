@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
@@ -19,6 +20,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.ValidationMessage;
 
 public class ArtifactImpl implements Artifact
 {
@@ -33,6 +35,12 @@ public class ArtifactImpl implements Artifact
         this.id = id;
         this.channel = channel;
         this.information = information;
+    }
+
+    @Override
+    public List<ValidationMessage> getValidationMessages ()
+    {
+        return this.channel.getValidationMessagesForArtifact ( this.id );
     }
 
     @Override

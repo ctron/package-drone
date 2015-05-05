@@ -8,4 +8,5 @@
 
 <c:if test="${not empty entry }">
 <h:iconLabel label="${entry.label }" icon="${entry.icon }" />
+<c:if test="${entry.badge gt 0 }">${' ' }<span class="badge">${entry.badge }</span></c:if>
 </c:if>

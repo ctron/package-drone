@@ -21,7 +21,7 @@ import java.util.Set;
  * retrieved without join to much tables in the database.
  * </p>
  */
-public class SimpleArtifactInformation implements Comparable<SimpleArtifactInformation>
+public class SimpleArtifactInformation implements Validated, Comparable<SimpleArtifactInformation>
 {
     /**
      * The size of the artifact data in bytes
@@ -60,6 +60,10 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
      */
     private final Date creationTimestamp;
 
+    private final long warnings;
+
+    private final long errors;
+
     /**
      * The different facets of the artifact
      * <p>
@@ -70,7 +74,7 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
      */
     private final Set<String> facets;
 
-    public SimpleArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets )
+    public SimpleArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final long warnings, final long errors, final Set<String> facets )
     {
         this.id = id;
         this.size = size;
@@ -78,7 +82,21 @@ public class SimpleArtifactInformation implements Comparable<SimpleArtifactInfor
         this.channelId = channelId;
         this.parentId = parentId;
         this.creationTimestamp = creationTimestamp;
+        this.warnings = warnings;
+        this.errors = errors;
         this.facets = facets;
+    }
+
+    @Override
+    public long getValidationWarningCount ()
+    {
+        return this.warnings;
+    }
+
+    @Override
+    public long getValidationErrorCount ()
+    {
+        return this.errors;
     }
 
     public Set<String> getFacets ()

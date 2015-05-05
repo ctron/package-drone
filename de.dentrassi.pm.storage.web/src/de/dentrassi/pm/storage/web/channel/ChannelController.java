@@ -261,6 +261,25 @@ public class ChannelController implements InterfaceExtender
     }
 
     @Secured ( false )
+    @RequestMapping ( value = "/channel/{channelId}/validation", method = RequestMethod.GET )
+    @HttpConstraint ( PERMIT )
+    public ModelAndView viewValidation ( @PathVariable ( "channelId" ) final String channelId)
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        final ModelAndView result = new ModelAndView ( "channel/validation" );
+        result.put ( "channel", channel );
+        result.put ( "messages", channel.getValidationMessages () );
+        result.put ( "aspects", Activator.getAspects ().getAspectInformations () );
+
+        return result;
+    }
+
+    @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/details", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
     public ModelAndView details ( @PathVariable ( "channelId" ) final String channelId)
@@ -731,6 +750,8 @@ public class ChannelController implements InterfaceExtender
             result.add ( new MenuEntry ( "Content", 100, LinkTarget.createFromController ( ChannelController.class, "view" ).expand ( model ), Modifier.DEFAULT, null ) );
             result.add ( new MenuEntry ( "List", 120, LinkTarget.createFromController ( ChannelController.class, "viewPlain" ).expand ( model ), Modifier.DEFAULT, null ) );
             result.add ( new MenuEntry ( "Details", 200, LinkTarget.createFromController ( ChannelController.class, "details" ).expand ( model ), Modifier.DEFAULT, null ) );
+
+            result.add ( new MenuEntry ( null, -1, "Validation", 210, LinkTarget.createFromController ( ChannelController.class, "viewValidation" ).expand ( model ), Modifier.DEFAULT, null ).setBadge ( channel.getValidationErrorCount () ) );
 
             if ( request.isUserInRole ( "MANAGER" ) )
             {

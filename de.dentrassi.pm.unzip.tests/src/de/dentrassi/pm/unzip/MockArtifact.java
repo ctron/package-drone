@@ -12,8 +12,10 @@ package de.dentrassi.pm.unzip;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -25,6 +27,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.ValidationMessage;
 
 public class MockArtifact implements Artifact
 {
@@ -36,13 +39,19 @@ public class MockArtifact implements Artifact
     public MockArtifact ( final String id, final String name, final SortedMap<MetaKey, String> metaData )
     {
         this.id = id;
-        this.information = new ArtifactInformation ( id, null, 0, name, "", new Date (), new HashSet<> (), metaData, new TreeSet<> () );
+        this.information = new ArtifactInformation ( id, null, 0, name, "", new Date (), 0L, 0L, new HashSet<> (), metaData, new TreeSet<> () );
     }
 
     @Override
     public int compareTo ( final Artifact o )
     {
         return this.id.compareTo ( o.getId () );
+    }
+
+    @Override
+    public List<ValidationMessage> getValidationMessages ()
+    {
+        return Collections.emptyList ();
     }
 
     @Override

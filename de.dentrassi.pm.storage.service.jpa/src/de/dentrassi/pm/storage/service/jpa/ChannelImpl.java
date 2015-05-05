@@ -31,6 +31,7 @@ import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
+import de.dentrassi.pm.storage.ValidationMessage;
 
 public class ChannelImpl implements Channel
 {
@@ -44,12 +45,19 @@ public class ChannelImpl implements Channel
 
     private final String description;
 
-    public ChannelImpl ( final String id, final String name, final String description, final boolean locked, final StorageServiceImpl service )
+    private final long warnings;
+
+    private final long errors;
+
+    public ChannelImpl ( final String id, final String name, final String description, final boolean locked, final long warnings, final long errors, final StorageServiceImpl service )
     {
         this.id = id;
         this.name = name;
         this.locked = locked;
         this.service = service;
+
+        this.warnings = warnings;
+        this.errors = errors;
 
         this.description = description;
     }
@@ -64,6 +72,24 @@ public class ChannelImpl implements Channel
     public boolean isLocked ()
     {
         return this.locked;
+    }
+
+    @Override
+    public long getValidationWarningCount ()
+    {
+        return this.warnings;
+    }
+
+    @Override
+    public long getValidationErrorCount ()
+    {
+        return this.errors;
+    }
+
+    @Override
+    public List<ValidationMessage> getValidationMessages ()
+    {
+        return this.service.getValidationMessages ( this.id );
     }
 
     @Override
@@ -217,6 +243,11 @@ public class ChannelImpl implements Channel
     public List<CacheEntryInformation> getAllCacheEntries ()
     {
         return this.service.getAllCacheEntries ( this.id );
+    }
+
+    public List<ValidationMessage> getValidationMessagesForArtifact ( final String artifactId )
+    {
+        return this.service.getValidationMessagesForArtifact ( artifactId );
     }
 
     @Override

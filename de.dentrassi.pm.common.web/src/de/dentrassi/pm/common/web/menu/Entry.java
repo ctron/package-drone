@@ -23,9 +23,9 @@ public class Entry extends Node
 
     private final Modal modal;
 
-    public Entry ( final String id, final String label, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow, final Modal modal )
+    public Entry ( final String id, final String label, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow, final long badge, final Modal modal )
     {
-        super ( id, label, icon );
+        super ( id, label, icon, badge );
         this.target = target;
         this.modifier = modifier;
 

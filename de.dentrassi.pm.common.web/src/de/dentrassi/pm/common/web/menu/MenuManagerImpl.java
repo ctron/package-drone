@@ -166,7 +166,7 @@ public class MenuManagerImpl
             else
             {
                 // recorded priority, create new entry with recorded priority
-                result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow () ) );
+                result.add ( new MenuEntry ( entry.getCategory (), prio, entry.getLabel (), entry.getEntryOrder (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow (), entry.getBadge () ) );
             }
         }
 
@@ -175,7 +175,7 @@ public class MenuManagerImpl
 
     private Entry convertEntry ( final MenuEntry entry )
     {
-        return new Entry ( UUID.randomUUID ().toString (), entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow (), entry.getModal () );
+        return new Entry ( UUID.randomUUID ().toString (), entry.getLabel (), entry.getTarget (), entry.getModifier (), entry.getIcon (), entry.isNewWindow (), entry.getBadge (), entry.getModal () );
     }
 
 }

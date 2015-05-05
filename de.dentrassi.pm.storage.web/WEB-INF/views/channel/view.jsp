@@ -30,7 +30,6 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <s:dz_container/>
 
-<%--<h:channelNav channel="${channel}"/> --%>
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
 <table id="artifacts" class="table table-striped table-condensed table-hover">
@@ -49,7 +48,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <tbody>
 <c:forEach items="${sortedArtifacts }" var="artifact">
-    <tr id="row-${artifact.id }">
+    <tr id="row-${artifact.id }" class="${storage:severityWithDefault(artifact.getOverallValidationState(), '') }">
         <td>${fn:escapeXml(artifact.name) }</td>
         <td class="text-right"><web:bytes amount="${ artifact.size}"/></td>
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>

@@ -66,6 +66,7 @@ import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.DeployKey;
+import de.dentrassi.pm.storage.ValidationMessage;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -76,6 +77,7 @@ import de.dentrassi.pm.storage.jpa.ExtractedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.PropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
+import de.dentrassi.pm.storage.jpa.ValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.StorageServiceAdmin;
@@ -264,7 +266,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         logger.trace ( "Convert to simple: {}", ae.getId () );
 
-        return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), getArtifactFacets ( ae ) );
+        return new SimpleArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ) );
     }
 
     private Artifact convert ( final ChannelImpl channel, final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
@@ -435,6 +437,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 {
                     final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryId );
+                    q.setParameter ( "channelId", channelId );
+                    q.executeUpdate ();
+                }
+
+                {
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace=:factoryId and vme.channel.id=:channelId", ValidationMessageEntity.class.getSimpleName () ) );
                     q.setParameter ( "factoryId", aspectFactoryId );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
@@ -810,20 +819,34 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         return doWithHandler ( ( handler ) -> handler.getAllCacheEntries ( channelId ) );
     }
 
+    protected TransferHandler createTransferHandler ( final EntityManager em )
+    {
+        return new TransferHandler ( em, this.lockManager, this.blobStore );
+    }
+
     protected <R> R doWithTransferHandler ( final ManagerFunction<R, TransferHandler> consumer )
     {
-        return doWithTransaction ( ( em ) -> {
-            final TransferHandler handler = new TransferHandler ( em, this.lockManager, this.blobStore );
-            return consumer.process ( handler );
-        } );
+        return doWithTransaction ( em -> consumer.process ( createTransferHandler ( em ) ) );
     }
 
     protected void doWithTransferHandlerVoid ( final ThrowingConsumer<TransferHandler> consumer )
     {
-        doWithTransactionVoid ( ( em ) -> {
-            final TransferHandler handler = new TransferHandler ( em, this.lockManager, this.blobStore );
-            consumer.accept ( handler );
-        } );
+        doWithTransactionVoid ( em -> consumer.accept ( createTransferHandler ( em ) ) );
+    }
+
+    protected ValidationHandler createValidationHandler ( final EntityManager em )
+    {
+        return new ValidationHandler ( em, this.lockManager );
+    }
+
+    protected <R> R doWithValidationHandler ( final ManagerFunction<R, ValidationHandler> consumer )
+    {
+        return doWithTransaction ( em -> consumer.process ( createValidationHandler ( em ) ) );
+    }
+
+    protected void doWithValidationHandlerVoid ( final ThrowingConsumer<ValidationHandler> consumer )
+    {
+        doWithTransactionVoid ( em -> consumer.accept ( createValidationHandler ( em ) ) );
     }
 
     @Override
@@ -869,5 +892,15 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         logger.info ( "Setting blob store location: {}", location );
         this.blobStore.setLocation ( location );
+    }
+
+    public List<ValidationMessage> getValidationMessages ( final String channelId )
+    {
+        return doWithValidationHandler ( handler -> handler.getValidationMessages ( channelId ) );
+    }
+
+    public List<ValidationMessage> getValidationMessagesForArtifact ( final String artifactId )
+    {
+        return doWithValidationHandler ( handler -> handler.getValidationMessagesForArtifact ( artifactId ) );
     }
 }

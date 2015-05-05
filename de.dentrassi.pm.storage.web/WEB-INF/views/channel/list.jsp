@@ -5,6 +5,7 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://dentrassi.de/pm/storage" prefix="storage" %>
 
 <%
 pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
@@ -27,13 +28,14 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 </thead>
 
 <tbody>
-<c:forEach items="${channels}" var="channel">
-<tr>
-    <td class="channel-name"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.name }</a></td>
-    <td class="channel-description">${fn:escapeXml(channel.description) }</td>
-	<td class="channel-id"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.id }</a></td>
-</tr>
-</c:forEach>
+	<c:forEach items="${channels}" var="channel">
+        <%-- the next call to "get" is required since jasper seems to have issues with Java 8 default methods --%>
+		<tr class="${storage:severityWithDefault(channel.getOverallValidationState(), '') }">
+		    <td class="channel-name"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.name }</a></td>
+		    <td class="channel-description">${fn:escapeXml(channel.description) }</td>
+			<td class="channel-id"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.id }</a></td>
+		</tr>
+	</c:forEach>
 </tbody>
 
 </table>

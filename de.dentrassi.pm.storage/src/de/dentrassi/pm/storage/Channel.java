@@ -27,6 +27,7 @@ import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.Validated;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
 
 /**
@@ -40,7 +41,7 @@ import de.dentrassi.pm.common.utils.ThrowingConsumer;
  * Channels have to be equal by ID
  * </p>
  */
-public interface Channel
+public interface Channel extends Validated
 {
     public String getId ();
 
@@ -51,6 +52,12 @@ public interface Channel
      */
     public String getName ();
 
+    /**
+     * Get either the name or the ID of this channel
+     *
+     * @return if the name not null or empty the name will returned, otherwise
+     *         the ID
+     */
     public default String getNameOrId ()
     {
         final String name = getName ();
@@ -88,7 +95,24 @@ public interface Channel
      */
     public String getDescription ();
 
-    boolean isLocked ();
+    // -- validation
+
+    /**
+     * Get the list of validation messages for this channel
+     *
+     * @return the list of validation messages, never returns <code>null</code>
+     */
+    public List<ValidationMessage> getValidationMessages ();
+
+    // -- locks
+
+    /**
+     * Test if the channel is locked
+     *
+     * @return <code>true</code> if the channel is locked, <code>false</code>
+     *         otherwise
+     */
+    public boolean isLocked ();
 
     /**
      * Lock the channel for further modifications
@@ -130,7 +154,15 @@ public interface Channel
 
     public Map<String, String> getAspectStates ();
 
-    public boolean hasAspect ( String id );
+    /**
+     * Check if an aspect is assigned to this channel
+     *
+     * @param aspectId
+     *            the ID of the aspect to check for
+     * @return <code>true</code> if the aspect is assigned, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasAspect ( String aspectId );
 
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
@@ -257,5 +289,4 @@ public interface Channel
      * @return the list of information
      */
     public List<CacheEntryInformation> getAllCacheEntries ();
-
 }

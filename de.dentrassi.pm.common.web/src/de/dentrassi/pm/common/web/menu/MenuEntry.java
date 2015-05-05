@@ -38,12 +38,14 @@ public class MenuEntry implements Comparable<MenuEntry>
 
     private Modal modal;
 
+    private long badge;
+
     public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon )
     {
-        this ( category, categoryOrder, label, entryOrder, target, modifier, icon, false );
+        this ( category, categoryOrder, label, entryOrder, target, modifier, icon, false, 0 );
     }
 
-    public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow )
+    public MenuEntry ( final String category, final int categoryOrder, final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon, final boolean newWindow, final long badge )
     {
         this.category = category;
         this.categoryOrder = category != null ? categoryOrder : entryOrder;
@@ -53,6 +55,7 @@ public class MenuEntry implements Comparable<MenuEntry>
         this.modifier = modifier;
         this.icon = icon;
         this.newWindow = newWindow;
+        this.badge = badge;
     }
 
     public MenuEntry ( final String label, final int entryOrder, final LinkTarget target, final Modifier modifier, final String icon )
@@ -161,6 +164,17 @@ public class MenuEntry implements Comparable<MenuEntry>
     public MenuEntry setIcon ( final String icon )
     {
         this.icon = icon;
+        return this;
+    }
+
+    public long getBadge ()
+    {
+        return this.badge;
+    }
+
+    public MenuEntry setBadge ( final long badge )
+    {
+        this.badge = badge;
         return this;
     }
 

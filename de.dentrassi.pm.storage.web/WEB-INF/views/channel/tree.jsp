@@ -18,7 +18,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <web:define name="list">
 	<c:forEach var="artifact" items="${storage:nameSorted ( artifacts ) }">
-		<tr style="display: none;" data-parent="${parent }" data-parents="${ parents }" data-level="${level }">
+		<tr style="display: none;" data-parent="${parent }" data-parents="${ parents }" data-level="${level }" class="${storage:severityWithDefault(artifact.getOverallValidationState(),'') }">
 		    <td style="padding-left: ${1+(level*2)}em;">
 		      <c:choose>
 		          <c:when test="${not empty map.get(artifact.id) }">

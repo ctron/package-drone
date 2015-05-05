@@ -28,9 +28,9 @@ public class ArtifactInformation extends DetailedArtifactInformation
 {
     private final SortedSet<String> childIds;
 
-    public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final Set<String> facets, final SortedMap<MetaKey, String> metaData, final SortedSet<String> childIds )
+    public ArtifactInformation ( final String id, final String parentId, final long size, final String name, final String channelId, final Date creationTimestamp, final long warnings, final long errors, final Set<String> facets, final SortedMap<MetaKey, String> metaData, final SortedSet<String> childIds )
     {
-        super ( id, parentId, size, name, channelId, creationTimestamp, facets, metaData );
+        super ( id, parentId, size, name, channelId, creationTimestamp, warnings, errors, facets, metaData );
         this.childIds = Collections.unmodifiableSortedSet ( childIds );
     }
 

@@ -90,7 +90,7 @@ public class ConfigController implements InterfaceExtender
 
         if ( HttpConstraints.isCallAllowed ( METHOD_MAIN, request ) )
         {
-            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, LinkTarget.createFromController ( METHOD_MAIN ), Modifier.DEFAULT, null, false ) );
+            result.add ( new MenuEntry ( "Administration", 10_000, "Database Setup", 100, LinkTarget.createFromController ( METHOD_MAIN ), Modifier.DEFAULT, null, false, 0 ) );
         }
 
         return result;

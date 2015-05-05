@@ -62,12 +62,38 @@ public class ChannelEntity
     private Collection<ProvidedChannelPropertyEntity> providedProperties = new LinkedList<> ();
 
     @OneToMany
-    @JoinTable ( name = "CHANNEL_DEPLOY_GROUPS", joinColumns = @JoinColumn ( name = "CHANNEL_ID",
-            referencedColumnName = "id" ), inverseJoinColumns = @JoinColumn ( name = "GROUP_ID",
-            referencedColumnName = "id" ) )
+    @JoinTable ( name = "CHANNEL_DEPLOY_GROUPS",
+            joinColumns = @JoinColumn ( name = "CHANNEL_ID", referencedColumnName = "id" ) ,
+            inverseJoinColumns = @JoinColumn ( name = "GROUP_ID", referencedColumnName = "id" ) )
     private Set<DeployGroupEntity> deployGroups = new HashSet<> ();
 
     private boolean locked;
+
+    @Column ( name = "AGR_NUM_WARN", nullable = false )
+    private long aggregatedNumberOfWarnings;
+
+    @Column ( name = "AGR_NUM_ERR", nullable = false )
+    private long aggregatedNumberOfErrors;
+
+    public long getAggregatedNumberOfErrors ()
+    {
+        return this.aggregatedNumberOfErrors;
+    }
+
+    public void setAggregatedNumberOfErrors ( final long aggregatedNumberOfErrors )
+    {
+        this.aggregatedNumberOfErrors = aggregatedNumberOfErrors;
+    }
+
+    public long getAggregatedNumberOfWarnings ()
+    {
+        return this.aggregatedNumberOfWarnings;
+    }
+
+    public void setAggregatedNumberOfWarnings ( final long aggregatedNumberOfWarnings )
+    {
+        this.aggregatedNumberOfWarnings = aggregatedNumberOfWarnings;
+    }
 
     public void setLocked ( final boolean locked )
     {

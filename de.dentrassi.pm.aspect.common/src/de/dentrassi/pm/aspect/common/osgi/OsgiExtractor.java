@@ -14,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -68,14 +67,14 @@ public class OsgiExtractor implements Extractor
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        extractBundleInformation ( context.getPath (), metadata );
-        extractFeatureInformation ( context.getPath (), metadata );
+        extractBundleInformation ( context, metadata );
+        extractFeatureInformation ( context, metadata );
     }
 
-    private void extractFeatureInformation ( final Path file, final Map<String, String> metadata ) throws Exception
+    private void extractFeatureInformation ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
         final FeatureInformation fi;
-        try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
+        try ( ZipFile zipFile = new ZipFile ( context.getPath ().toFile () ) )
         {
             fi = new FeatureInformationParser ( zipFile ).parse ();
             if ( fi == null )
@@ -98,10 +97,10 @@ public class OsgiExtractor implements Extractor
         metadata.put ( KEY_FEATURE_INFORMATION, fi.toJson () );
     }
 
-    private void extractBundleInformation ( final Path file, final Map<String, String> metadata ) throws Exception
+    private void extractBundleInformation ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
         final BundleInformation bi;
-        try ( ZipFile zipFile = new ZipFile ( file.toFile () ) )
+        try ( ZipFile zipFile = new ZipFile ( context.getPath ().toFile () ) )
         {
 
             final ZipEntry m = zipFile.getEntry ( JarFile.MANIFEST_NAME );
@@ -137,13 +136,23 @@ public class OsgiExtractor implements Extractor
             return;
         }
 
+        // perform in-place validation
+
+        if ( !validateBundle ( context, bi ) )
+        {
+            // invalid ... so ignore
+            return;
+        }
+
         // store main attributes
+
         metadata.put ( KEY_NAME, bi.getId () );
         metadata.put ( KEY_VERSION, bi.getVersion () != null ? bi.getVersion ().toString () : null );
         metadata.put ( KEY_CLASSIFIER, "bundle" );
         metadata.put ( de.dentrassi.pm.aspect.Constants.KEY_ARTIFACT_LABEL, "OSGi Bundle" );
 
         // serialize manifest
+
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
         final Manifest mf = new Manifest ();
         mf.getMainAttributes ().putValue ( Constants.BUNDLE_SYMBOLICNAME, bi.getId () );
@@ -156,5 +165,19 @@ public class OsgiExtractor implements Extractor
         // store bundle information
         metadata.put ( KEY_BUNDLE_INFORMATION, bi.toJson () );
 
+    }
+
+    private boolean validateBundle ( final Context context, final BundleInformation bi )
+    {
+        boolean valid = true;
+
+        final String bsn = bi.getId (); // this is ensured not be null
+        if ( bsn.contains ( "," ) )
+        {
+            context.validationError ( "Bundle Symbolic Name contains a comma: " + bsn );
+            valid = false;
+        }
+
+        return valid;
     }
 }
