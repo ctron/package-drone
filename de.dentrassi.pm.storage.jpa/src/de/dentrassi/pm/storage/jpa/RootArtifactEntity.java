@@ -13,6 +13,6 @@ package de.dentrassi.pm.storage.jpa;
 import javax.persistence.Entity;
 
 @Entity
-public abstract class RootArtifactEntity extends ArtifactEntity
+public class RootArtifactEntity extends ArtifactEntity
 {
 }

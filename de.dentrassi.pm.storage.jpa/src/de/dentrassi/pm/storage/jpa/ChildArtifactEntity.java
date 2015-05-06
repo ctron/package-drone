@@ -19,7 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PostPersist;
 
 @Entity
-public abstract class ChildArtifactEntity extends ArtifactEntity
+public class ChildArtifactEntity extends ArtifactEntity
 {
     @ManyToOne ( fetch = LAZY )
     @JoinColumn ( name = "PARENT" )

@@ -47,6 +47,7 @@ import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.channel.ChannelController;
+import de.dentrassi.pm.storage.web.internal.Activator;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -66,7 +67,7 @@ public class ArtifactController implements InterfaceExtender
     @Secured ( false )
     @HttpConstraint ( PERMIT )
     @RequestMapping ( value = "/artifact/{artifactId}/get", method = RequestMethod.GET )
-    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId ) throws IOException
+    public void get ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId) throws IOException
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, DownloadHelper.APPLICATION_OCTET_STREAM, true );
     }
@@ -74,13 +75,13 @@ public class ArtifactController implements InterfaceExtender
     @Secured ( false )
     @HttpConstraint ( PERMIT )
     @RequestMapping ( value = "/artifact/{artifactId}/dump", method = RequestMethod.GET )
-    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId ) throws IOException
+    public void dump ( final HttpServletResponse response, @PathVariable ( "artifactId" ) final String artifactId) throws IOException
     {
         DownloadHelper.streamArtifact ( response, this.service, artifactId, null, false );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/delete", method = RequestMethod.GET )
-    public ModelAndView delete ( @PathVariable ( "artifactId" ) final String artifactId )
+    public ModelAndView delete ( @PathVariable ( "artifactId" ) final String artifactId)
     {
         final SimpleArtifactInformation info = this.service.deleteArtifact ( artifactId );
         if ( info == null )
@@ -94,7 +95,7 @@ public class ArtifactController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/artifact/{artifactId}/view", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView view ( @PathVariable ( "artifactId" ) final String artifactId )
+    public ModelAndView view ( @PathVariable ( "artifactId" ) final String artifactId)
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
@@ -105,13 +106,14 @@ public class ArtifactController implements InterfaceExtender
 
         final Map<String, Object> model = new HashMap<String, Object> ( 1 );
         model.put ( "artifact", artifact );
+        model.put ( "aspects", Activator.getAspects ().getAspectInformations () );
 
         return new ModelAndView ( "artifact/view", model );
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/generate", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView generate ( @PathVariable ( "artifactId" ) final String artifactId )
+    public ModelAndView generate ( @PathVariable ( "artifactId" ) final String artifactId)
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
         if ( artifact == null )
@@ -128,7 +130,7 @@ public class ArtifactController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/attach", method = RequestMethod.GET )
-    public ModelAndView attach ( @PathVariable ( "artifactId" ) final String artifactId )
+    public ModelAndView attach ( @PathVariable ( "artifactId" ) final String artifactId)
     {
         final Artifact artifact = this.service.getArtifact ( artifactId );
 
@@ -141,8 +143,8 @@ public class ArtifactController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/artifact/{artifactId}/attach", method = RequestMethod.POST )
-    public ModelAndView attachPost ( @PathVariable ( "artifactId" ) final String artifactId, @RequestParameter ( required = false,
-            value = "name" ) String name, final @RequestParameter ( "file" ) Part file )
+    public ModelAndView attachPost ( @PathVariable ( "artifactId" ) final String artifactId, @RequestParameter (
+            required = false, value = "name" ) String name, final @RequestParameter ( "file" ) Part file)
     {
         Artifact artifact;
         try

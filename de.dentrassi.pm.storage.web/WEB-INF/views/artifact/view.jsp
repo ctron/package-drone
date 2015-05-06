@@ -2,6 +2,7 @@
     pageEncoding="UTF-8"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
+<%@ taglib tagdir="/WEB-INF/tags/storage" prefix="s" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/pm" prefix="pm" %>
@@ -10,9 +11,10 @@
 
 <h:buttonbar menu="${menuManager.getActions(artifact) }" />
 
-<ul class="nav nav-tabs" role="tablist">
+<ul class="nav nav-tabs nav" role="tablist">
     <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Information</a></li>
     <li role="presentation"><a href="#md" aria-controls="md" role="tab" data-toggle="tab">Meta Data</a></li>
+    <li role="presentation"><a href="#val" aria-controls="val" role="tab" data-toggle="tab">Validation</a></li>
     <li role="presentation"><a href="#relations" aria-controls="relations" role="tab" data-toggle="tab">Relations</a></li>
 </ul>
 
@@ -52,6 +54,12 @@
 
 <div role="tabpanel" class="tab-pane" id="md">
 <h:metaDataTable metaData="${artifact.information.metaData }"/>
+</div>
+
+<%-- VALIDATION --%>
+
+<div role="tabpanel" class="tab-pane table-responsive" id="val">
+    <s:valTable messages="${artifact.validationMessages }"/>
 </div>
 
 <%-- RELATIONS --%>

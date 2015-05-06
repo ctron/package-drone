@@ -42,7 +42,7 @@ import org.eclipse.persistence.annotations.UuidGenerator;
 @DiscriminatorColumn ( name = "\"TYPE\"" )
 @UuidGenerator ( name = "ART_UUID_GEN" )
 @EntityListeners ( ArtifactTracker.class )
-public abstract class ArtifactEntity
+public class ArtifactEntity
 {
     @Id
     @Column ( name = "ID" )
