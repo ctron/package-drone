@@ -88,12 +88,12 @@ import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ExtractorValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.GeneratorArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ProvidedChannelPropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
-import de.dentrassi.pm.storage.jpa.ValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
@@ -102,7 +102,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
 
-    public class AggregationContextImpl implements AggregationContext
+    public class AggregationContextImpl extends BaseAggregationValidationContext implements AggregationContext
     {
         private final Collection<ArtifactInformation> artifacts;
 
@@ -114,6 +114,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         public AggregationContextImpl ( final Collection<ArtifactInformation> artifacts, final SortedMap<MetaKey, String> metaData, final ChannelEntity channel, final String namespace )
         {
+            super ( channel, namespace );
+
             this.artifacts = artifacts;
             this.metaData = metaData;
             this.channel = channel;
@@ -714,6 +716,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             deleteAllCacheEntries ( channel );
 
+            this.validationHandler.deleteAllAggregatorMessages ( channel );
+
             // flush
 
             this.em.persist ( channel );
@@ -724,18 +728,25 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             final Collection<ArtifactInformation> artifacts = getArtifacts ( channel );
             final SortedMap<MetaKey, String> metaData = convertMetaData ( null, channel.getProvidedProperties () );
 
+            // validation aggregator
+
+            final AggregationValidationHandler aggrValidationHandler = new AggregationValidationHandler ( this.validationHandler );
+
             // gather new meta data
+
             final Map<MetaKey, String> metadata = new HashMap<> ();
 
             this.channelAspectProcessor.process ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, aggregator -> {
                 try
                 {
                     // create new context for this channel aspect
-                    final AggregationContext context = new AggregationContextImpl ( artifacts, metaData, channel, aggregator.getId () );
+                    final AggregationContextImpl context = new AggregationContextImpl ( artifacts, metaData, channel, aggregator.getId () );
 
                     // process
                     final Map<String, String> md = aggregator.aggregateMetaData ( context );
                     convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
+
+                    context.flush ( aggrValidationHandler );
                 }
                 catch ( final Exception e )
                 {
@@ -756,9 +767,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             this.em.persist ( channel );
             this.em.flush ();
 
-            // aggregate validation states for the channel
+            // aggregate validation states for the affected channels and artifacts
 
-            this.validationHandler.agregateChannel ( channel );
+            aggrValidationHandler.flush ();
+            this.validationHandler.aggregateFullChannel ( channel );
         } );
     }
 
@@ -783,17 +795,19 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         deleteAllVirtualArtifacts ( channel );
 
-        // delete all metadata first
+        // delete selected extractor validation messages
 
         {
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace IN :ASPECT and vme.channel=:CHANNEL", ExtractorValidationMessageEntity.class.getName () ) );
             q.setParameter ( "ASPECT", aspectFactoryIds );
             q.setParameter ( "CHANNEL", channel );
             q.executeUpdate ();
         }
 
+        // delete all metadata relevant first
+
         {
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace in :ASPECT and vme.channel=:CHANNEL", ValidationMessageEntity.class.getName () ) );
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
             q.setParameter ( "ASPECT", aspectFactoryIds );
             q.setParameter ( "CHANNEL", channel );
             q.executeUpdate ();
@@ -845,14 +859,22 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         createAllVirtualArtifacts ( channel, tracker, false );
 
+        // process regeneration
+
         tracker.process ( this );
 
+        // finally run the channel aggregators
+
         runChannelAggregators ( channel );
+
+        // write out aspect state information for the channel
 
         for ( final ChannelAspectInformation aspect : this.channelAspectProcessor.resolve ( aspectFactoryIds ) )
         {
             channel.getAspects ().put ( aspect.getFactoryId (), aspect.getVersion ().toString () );
         }
+
+        // persist
 
         this.em.persist ( channel );
         this.em.flush ();

@@ -23,7 +23,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 
-public interface AggregationContext
+public interface AggregationContext extends AggregationValidationContext
 {
     public Collection<ArtifactInformation> getArtifacts ();
 

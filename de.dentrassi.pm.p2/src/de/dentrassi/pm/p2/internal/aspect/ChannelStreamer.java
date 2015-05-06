@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -21,6 +22,8 @@ import de.dentrassi.pm.common.MetaKey;
 public class ChannelStreamer
 {
     private final LinkedList<Processor> processors;
+
+    private ChecksumValidatorProcessor validator;
 
     public ChannelStreamer ( final String channelNameOrId, final Map<MetaKey, String> channelMetaData, final boolean writeCompressed, final boolean writePlain )
     {
@@ -37,6 +40,7 @@ public class ChannelStreamer
             this.processors.add ( new MetaDataProcessor ( title, false ) );
             this.processors.add ( new ArtifactsProcessor ( title, false ) );
         }
+        this.processors.add ( this.validator = new ChecksumValidatorProcessor () );
     }
 
     public static String makeTitle ( final String id, final String name, final Map<MetaKey, String> channelMetaData )
@@ -79,8 +83,16 @@ public class ChannelStreamer
     {
         for ( final Processor processor : this.processors )
         {
-            handler.spoolOut ( processor.getId (), processor.getName (), processor.getMimeType (), ( stream ) -> processor.write ( stream ) );
+            if ( processor.getId () != null )
+            {
+                handler.spoolOut ( processor.getId (), processor.getName (), processor.getMimeType (), ( stream ) -> processor.write ( stream ) );
+            }
         }
+    }
+
+    public Map<String, Set<String>> checkDuplicates ()
+    {
+        return this.validator.checkDuplicates ();
     }
 
 }

@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
@@ -61,7 +62,17 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             result.put ( "last-change-string", DATE_FORMAT.format ( lastTimestamp.getTime () ) );
         }
 
+        // spool out to cache
+
         streamer.spoolOut ( context::createCacheEntry );
+
+        // perform validation
+
+        final Map<String, Set<String>> duplicates = streamer.checkDuplicates ();
+        for ( final Map.Entry<String, Set<String>> arts : duplicates.entrySet () )
+        {
+            context.validationError ( String.format ( "Installable units have the same ID (%s) but different checksums. This will cause an \"MD5 hash is not as expected\" error when working with P2.", arts.getKey () ), arts.getValue () );
+        }
 
         return result;
     }

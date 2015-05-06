@@ -19,7 +19,9 @@ public interface Processor
 {
     public void process ( ArtifactInformation artifact, ArtifactStreamer streamer ) throws Exception;
 
-    public void write ( final OutputStream stream ) throws IOException;
+    public default void write ( final OutputStream stream ) throws IOException
+    {
+    }
 
     public default String getMimeType ()
     {
@@ -31,5 +33,8 @@ public interface Processor
         return getId ();
     }
 
-    public String getId ();
+    public default String getId ()
+    {
+        return null;
+    }
 }

@@ -22,6 +22,8 @@
 		<class>de.dentrassi.pm.storage.jpa.ChannelCacheEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ArtifactDeleteRequestEntity</class>
 		<class>de.dentrassi.pm.storage.jpa.ValidationMessageEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.ExtractorValidationMessageEntity</class>
+		<class>de.dentrassi.pm.storage.jpa.AggregatorValidationMessageEntity</class>
 		<properties>
 			<property name="eclipselink.weaving" value="true"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>

@@ -26,8 +26,7 @@ import de.dentrassi.pm.common.XmlHelper;
 
 public class ArtifactsProcessor extends AbstractRepositoryProcessor
 {
-
-    private static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
+    public static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
 
     private final Element artifacts;
 
@@ -81,6 +80,11 @@ public class ArtifactsProcessor extends AbstractRepositoryProcessor
             final Document mdoc = this.xml.parse ( stream );
             for ( final Node node : XmlHelper.iter ( this.xml.path ( mdoc, "//artifact" ) ) )
             {
+                if ( ! ( node instanceof Element ) )
+                {
+                    continue;
+                }
+
                 final Node nn = artifacts.getOwnerDocument ().adoptNode ( node.cloneNode ( true ) );
                 artifacts.appendChild ( nn );
             }

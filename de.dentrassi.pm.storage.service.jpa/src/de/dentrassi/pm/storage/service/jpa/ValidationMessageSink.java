@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.ExtractorValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.ValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.ValidationSeverity;
 
@@ -78,7 +79,7 @@ public class ValidationMessageSink
     {
         for ( final Entry entry : this.entries )
         {
-            final ValidationMessageEntity vme = new ValidationMessageEntity ();
+            final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
             vme.setChannel ( this.channel );
             vme.setSeverity ( entry.getSeverity () );
             vme.setMessage ( entry.getMessage () );
@@ -89,6 +90,6 @@ public class ValidationMessageSink
         }
         this.entries.clear ();
 
-        this.handler.agregateArtifact ( artifact );
+        this.handler.aggregateArtifact ( artifact );
     }
 }

@@ -20,31 +20,34 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table id="messages" class="table table-striped table-hover">
+<div class="table-responsive">
+	<table id="messages" class="table table-striped table-hover">
+	
+	<thead>
+	    <tr>
+	        <th>Message</th>
+	        <th>Source</th>
+	        <th>Artifacts</th>
+	    </tr>
+	</thead>
+	
+	<tbody>
+	<c:forEach items="${messages }" var="msg">
+	    <tr class="${storage:severity(msg.severity) }">
+	        <td>${fn:escapeXml(msg.message) }</td>
+	        <td nowrap="nowrap">${fn:escapeXml( aspects[msg.aspectId].label ) }</td>
+	        <td nowrap="nowrap">
+	        <ul>
+	            <c:forEach items="${msg.artifactIds }" var="id"><li><a href="<c:url value="/artifact/${id}/view"/>">${id }</a></li></c:forEach>
+	        </ul>
+	        </td>
+	    </tr>
+	</c:forEach>
+	</tbody>
+	
+	</table>
 
-<thead>
-    <tr>
-        <th>Message</th>
-        <th>Source</th>
-        <th>Artifacts</th>
-    </tr>
-</thead>
-
-<tbody>
-<c:forEach items="${messages }" var="msg">
-    <tr class="${storage:severity(msg.severity) }">
-        <td>${fn:escapeXml(msg.message) }</td>
-        <td>${fn:escapeXml( aspects[msg.aspectId].label ) }</td>
-        <td>
-        <ul>
-            <c:forEach items="${msg.artifactIds }" var="id"><li><a href="<c:url value="/artifact/${id}/view"/>">${id }</a></li></c:forEach>
-        </ul>
-        </td>
-    </tr>
-</c:forEach>
-</tbody>
-
-</table>
+</div>
 
 
 </h:main>
