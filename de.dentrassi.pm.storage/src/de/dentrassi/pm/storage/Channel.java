@@ -12,6 +12,7 @@ package de.dentrassi.pm.storage;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -270,6 +271,21 @@ public interface Channel extends Validated
         streamCacheEntry ( key, entry -> {
             consumer.accept ( entry.getStream () );
         } );
+    }
+
+    /**
+     * Stream the data of a cache entry directly to an OutputStream
+     * 
+     * @param key
+     *            the key of the cache entry
+     * @param out
+     *            the output stream which will receive the content
+     * @throws FileNotFoundException
+     *             if the cache entry does not exists
+     */
+    public default void streamCacheData ( final MetaKey key, final OutputStream out ) throws FileNotFoundException
+    {
+        streamCacheData ( key, in -> ByteStreams.copy ( in, out ) );
     }
 
     public default byte[] getCacheEntry ( final MetaKey key ) throws FileNotFoundException

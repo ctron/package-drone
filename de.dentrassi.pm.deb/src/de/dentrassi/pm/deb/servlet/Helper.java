@@ -27,6 +27,8 @@ import org.eclipse.scada.utils.str.StringReplacer;
 
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.VersionInformation;
+
 public class Helper
 {
 
@@ -39,6 +41,8 @@ public class Helper
         final Map<String, Object> m2 = new HashMap<> ( 2 );
         m2.put ( "content", content );
         m2.put ( "title", title );
+        m2.put ( "version", VersionInformation.VERSION );
+
         final String fo = StringReplacer.replace ( loadResource ( Helper.class.getResource ( "content/base.html" ) ), new ExtendedPropertiesReplacer ( m2 ), StringReplacer.DEFAULT_PATTERN, true );
 
         w.write ( fo );

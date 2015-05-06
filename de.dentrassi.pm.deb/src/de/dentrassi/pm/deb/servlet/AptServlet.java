@@ -29,9 +29,9 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.deb.ChannelConfiguration;
 import de.dentrassi.pm.deb.aspect.AptChannelAspectFactory;
+import de.dentrassi.pm.deb.servlet.handler.ChannelCacheHandler;
 import de.dentrassi.pm.deb.servlet.handler.ContentHandler;
 import de.dentrassi.pm.deb.servlet.handler.Handler;
-import de.dentrassi.pm.deb.servlet.handler.MetaDataHandler;
 import de.dentrassi.pm.deb.servlet.handler.PoolHandler;
 import de.dentrassi.pm.deb.servlet.handler.RedirectHandler;
 import de.dentrassi.pm.storage.Channel;
@@ -204,7 +204,7 @@ public class AptServlet extends HttpServlet
 
         if ( toks.length == 1 && "GPG-KEY".equals ( toks[0] ) )
         {
-            return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, "GPG-KEY" ), "text/plain" );
+            return new ChannelCacheHandler ( channel, new MetaKey ( AptChannelAspectFactory.ID, "GPG-KEY" ) );
         }
 
         if ( toks.length == 2 && "dists".equals ( toks[0] ) && cfg.getDistribution ().equals ( toks[1] ) )
@@ -227,7 +227,7 @@ public class AptServlet extends HttpServlet
                 case "InRelease":
                 case "Release":
                 case "Release.gpg":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ), "text/plain" );
+                    return new ChannelCacheHandler ( channel, new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s", cfg.getDistribution (), component ) ) );
             }
 
             // TODO: handle all components when implemented
@@ -280,11 +280,11 @@ public class AptServlet extends HttpServlet
             {
                 case "Release":
                 case "Packages":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "text/plain" );
+                    return new ChannelCacheHandler ( channel, new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ) );
                 case "Packages.gz":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-gzip" );
+                    return new ChannelCacheHandler ( channel, new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ) );
                 case "Packages.bz2":
-                    return new MetaDataHandler ( channel.getMetaData (), new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ), "application/x-bzip2" );
+                    return new ChannelCacheHandler ( channel, new MetaKey ( AptChannelAspectFactory.ID, String.format ( "dists/%s/%s/%s/%s", cfg.getDistribution (), component, type, file ) ) );
             }
         }
 

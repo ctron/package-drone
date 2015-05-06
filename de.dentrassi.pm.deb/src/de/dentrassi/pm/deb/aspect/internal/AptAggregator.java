@@ -10,9 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb.aspect.internal;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,7 +21,6 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -136,7 +132,7 @@ public class AptAggregator implements ChannelAggregator
             }
 
             repo.spoolOut ( ( name, mimeType, stream ) -> {
-                addDistFile ( result, name, mimeType, ByteStreams.toByteArray ( stream ) );
+                context.createCacheEntry ( name, name, mimeType, stream );
             } );
         }
         finally
@@ -154,14 +150,4 @@ public class AptAggregator implements ChannelAggregator
     {
         return String.format ( "pool/%s/%s_%s_%s.deb", art.getId (), packageName, version, arch );
     }
-
-    private void addDistFile ( final Map<String, String> result, final String name, final String mimeType, final byte[] data )
-    {
-        result.put ( name, Base64.getEncoder ().encodeToString ( data ) );
-        if ( "text/plain".equals ( mimeType ) )
-        {
-            result.put ( name + "#text", StandardCharsets.UTF_8.decode ( ByteBuffer.wrap ( data ) ).toString () );
-        }
-    }
-
 }
