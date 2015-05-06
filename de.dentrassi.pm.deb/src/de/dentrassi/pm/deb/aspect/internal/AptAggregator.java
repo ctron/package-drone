@@ -130,7 +130,9 @@ public class AptAggregator implements ChannelAggregator
 
                 // TODO: implement a component selection mechanism
 
-                repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo );
+                repo.addPackage ( cfg.getDistribution (), cfg.getDefaultComponent (), arch, packageInfo, ( severity, msg ) -> {
+                    context.validationMessage ( severity, msg, Collections.singleton ( art.getId () ) );
+                } );
             }
 
             repo.spoolOut ( ( name, mimeType, stream ) -> {

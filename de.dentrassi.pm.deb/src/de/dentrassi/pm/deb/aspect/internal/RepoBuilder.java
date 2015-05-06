@@ -36,6 +36,7 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
+import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.utils.HashHelper;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.signing.SigningService;
@@ -94,7 +95,7 @@ public class RepoBuilder
             return this.name;
         }
 
-        public void addPackage ( final String component, final String architecture, final PackageInformation packageInfo )
+        public void addPackage ( final String component, final String architecture, final PackageInformation packageInfo, final ValidationListener validationListener )
         {
             final Component comp = this.components.get ( component );
             if ( comp == null )
@@ -113,6 +114,10 @@ public class RepoBuilder
             {
                 if ( !this.information.getArchitectures ().contains ( architecture ) )
                 {
+                    if ( validationListener != null )
+                    {
+                        validationListener.validationMessage ( Severity.WARNING, String.format ( "Architecture '%s' is not configured. Package will be ignored.", architecture ) );
+                    }
                     return;
                 }
 
@@ -292,13 +297,18 @@ public class RepoBuilder
 
     public void addPackage ( final String distribution, final String component, final String architecture, final PackageInformation packageInfo )
     {
+        addPackage ( distribution, component, architecture, packageInfo, null );
+    }
+
+    public void addPackage ( final String distribution, final String component, final String architecture, final PackageInformation packageInfo, final ValidationListener validationListener )
+    {
         final Distribution dist = this.distributions.get ( distribution );
         if ( dist == null )
         {
             return; // ignore
         }
 
-        dist.addPackage ( component, architecture, packageInfo );
+        dist.addPackage ( component, architecture, packageInfo, validationListener );
     }
 
     private static class Checksums
@@ -495,7 +505,8 @@ public class RepoBuilder
      *            the field name
      * @param value
      *            the value, should not be <code>null</code> since this would
-     *            cause the string <q>null</q> in the file.
+     *            cause the string
+     *            <q>null</q> in the file.
      */
     protected static void write ( final StringWriter writer, final String fieldName, final String value )
     {
