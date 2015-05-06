@@ -187,7 +187,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
             return null;
         }
 
-        if ( info.getGroupId () != null & info.getArtifactId () != null && info.getVersion () != null )
+        if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
         {
             // found direct meta data
             return info;
@@ -205,7 +205,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
                 return null;
             }
 
-            if ( info.getGroupId () != null & info.getArtifactId () != null && info.getVersion () != null )
+            if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
             {
                 // found pom meta data
                 final String ext = FilenameUtils.getExtension ( art.getName () );
