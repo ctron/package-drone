@@ -241,7 +241,7 @@ public class ChannelController implements InterfaceExtender
             return CommonController.createNotFound ( "channel", channelId );
         }
 
-        final Map<Object, List<SimpleArtifactInformation>> tree = new HashMap<> ();
+        final Map<String, List<SimpleArtifactInformation>> tree = new HashMap<> ();
 
         for ( final SimpleArtifactInformation entry : channel.getDetailedArtifacts () )
         {
@@ -256,6 +256,7 @@ public class ChannelController implements InterfaceExtender
 
         result.put ( "channel", channel );
         result.put ( "treeArtifacts", tree );
+        result.put ( "treeSeverityTester", new TreeTester ( tree ) );
 
         return result;
     }
