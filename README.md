@@ -66,6 +66,8 @@ A lot of things. If there is time it will be implemented. Or you can help by con
 Hopefully some time Package Drone can:
 
 * Provide access to bundles by an OBR layout (it can do R5)
+* Run on Windows - it is known not to work
+* Run on Mac OS X - it is completly untested
 
 What it is not designed to do
 -----------------
