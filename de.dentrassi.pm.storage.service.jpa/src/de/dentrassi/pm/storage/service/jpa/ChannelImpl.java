@@ -12,7 +12,9 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -102,6 +104,18 @@ public class ChannelImpl implements Channel
     public boolean hasAspect ( final String id )
     {
         return this.service.getChannelAspects ( this.id ).containsKey ( id );
+    }
+
+    @Override
+    public void addAspects ( final boolean withDependencies, final String... aspectIds )
+    {
+        this.service.addChannelAspects ( this.id, new HashSet<> ( Arrays.asList ( aspectIds ) ), withDependencies );
+    }
+
+    @Override
+    public void removeAspects ( final String... aspectIds )
+    {
+        this.service.removeChannelAspects ( this.id, new HashSet<> ( Arrays.asList ( aspectIds ) ) );
     }
 
     @Override

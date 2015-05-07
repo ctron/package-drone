@@ -359,6 +359,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
     }
 
+    public void addChannelAspects ( final String channelId, final Set<String> aspectFactoryIds, final boolean withDependencies )
+    {
+        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, aspectFactoryIds, withDependencies ) );
+    }
+
     @Override
     public void refreshChannelAspect ( final String channelId, final String aspectFactoryId )
     {
@@ -410,6 +415,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void removeChannelAspect ( final String channelId, final String aspectFactoryId )
     {
+        removeChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ) );
+    }
+
+    public void removeChannelAspects ( final String channelId, final Set<String> aspectFactoryIds )
+    {
         this.lockManager.modifyRun ( channelId, () -> {
 
             doWithTransactionVoid ( em -> {
@@ -417,34 +427,34 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 testLocked ( channel );
 
-                channel.getAspects ().remove ( aspectFactoryId );
+                channel.getAspects ().keySet ().removeAll ( aspectFactoryIds );
                 em.persist ( channel );
                 em.flush ();
 
                 {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace=:factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s ap where ap.namespace in :factoryId and ap.artifact.channel.id=:channelId", ExtractedArtifactPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryIds );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
                 }
 
                 {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace=:factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s cp where cp.namespace in :factoryId and cp.channel.id=:channelId", ExtractedChannelPropertyEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryIds );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
                 }
 
                 {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace=:factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s va where va.namespace in :factoryId and va.channel.id=:channelId", VirtualArtifactEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryIds );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
                 }
 
                 {
-                    final Query q = em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace=:factoryId and vme.channel.id=:channelId", ValidationMessageEntity.class.getSimpleName () ) );
-                    q.setParameter ( "factoryId", aspectFactoryId );
+                    final Query q = em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace in :factoryId and vme.channel.id=:channelId", ValidationMessageEntity.class.getSimpleName () ) );
+                    q.setParameter ( "factoryId", aspectFactoryIds );
                     q.setParameter ( "channelId", channelId );
                     q.executeUpdate ();
                 }
@@ -456,7 +466,10 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
         } );
 
-        postAspectEvent ( channelId, aspectFactoryId, "remove" );
+        for ( final String aspectFactoryId : aspectFactoryIds )
+        {
+            postAspectEvent ( channelId, aspectFactoryId, "remove" );
+        }
     }
 
     private ArtifactEntity getArtifact ( final EntityManager em, final String artifactId )

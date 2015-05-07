@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
+import de.dentrassi.pm.aspect.recipe.RecipeProcessor;
 import de.dentrassi.pm.storage.web.services.ServiceTracker;
 
 public class Activator implements BundleActivator
@@ -24,6 +25,8 @@ public class Activator implements BundleActivator
     private ServiceTracker tracker;
 
     private ChannelAspectProcessor aspects;
+
+    private RecipeProcessor recipes;
 
     /*
      * (non-Javadoc)
@@ -36,6 +39,7 @@ public class Activator implements BundleActivator
         this.tracker = new ServiceTracker ( bundleContext );
         this.tracker.open ();
         this.aspects = new ChannelAspectProcessor ( bundleContext );
+        this.recipes = new RecipeProcessor ( bundleContext );
     }
 
     /*
@@ -47,6 +51,8 @@ public class Activator implements BundleActivator
     {
         this.tracker.close ();
         this.aspects.close ();
+        this.recipes.dispose ();
+
         Activator.INSTANCE = null;
     }
 
@@ -58,5 +64,10 @@ public class Activator implements BundleActivator
     public static ChannelAspectProcessor getAspects ()
     {
         return INSTANCE.aspects;
+    }
+
+    public static RecipeProcessor getRecipes ()
+    {
+        return INSTANCE.recipes;
     }
 }

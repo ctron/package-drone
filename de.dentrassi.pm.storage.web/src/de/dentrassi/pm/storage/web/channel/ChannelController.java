@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
+import javax.xml.ws.Holder;
 
 import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
@@ -68,6 +69,7 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
+import de.dentrassi.pm.aspect.recipe.RecipeNotFoundException;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
@@ -196,6 +198,65 @@ public class ChannelController implements InterfaceExtender
         }
 
         return new ModelAndView ( "channel/create" );
+    }
+
+    @RequestMapping ( value = "/channel/createWithRecipe", method = RequestMethod.GET )
+    public ModelAndView createWithRecipe ()
+    {
+        final Map<String, Object> model = new HashMap<> ( 2 );
+
+        model.put ( "command", new CreateChannel () );
+        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+
+        return new ModelAndView ( "channel/createWithRecipe", model );
+    }
+
+    @RequestMapping ( value = "/channel/createWithRecipe", method = RequestMethod.POST )
+    public ModelAndView createWithRecipePost ( @Valid @FormData ( "command" ) final CreateChannel data, @RequestParameter (
+            required = false,
+            value = "recipe" ) final String recipeId, final BindingResult result) throws UnsupportedEncodingException, RecipeNotFoundException
+    {
+        if ( !result.hasErrors () )
+        {
+
+            final Holder<Channel> holder = new Holder<> ();
+            final Holder<String> targetHolder = new Holder<> ();
+
+            if ( recipeId == null || recipeId.isEmpty () )
+            {
+                // without recipe
+                holder.value = this.service.createChannel ( data.getName (), data.getDescription () );
+            }
+            else
+            {
+                // with recipe
+                Activator.getRecipes ().process ( recipeId, recipe -> {
+                    final Channel channel = this.service.createChannel ( data.getName (), data.getDescription () );
+                    final LinkTarget target = recipe.setup ( channel );
+
+                    if ( target != null )
+                    {
+                        final Map<String, String> model = new HashMap<> ( 1 );
+                        model.put ( "channelId", channel.getId () );
+                        targetHolder.value = target.expand ( model ).getUrl ();
+                    }
+
+                    holder.value = channel;
+                } );
+
+                if ( targetHolder.value != null )
+                {
+                    return new ModelAndView ( "redirect:" + targetHolder.value );
+                }
+            }
+
+            return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( holder.value.getId (), "UTF-8" ) ) );
+        }
+
+        final Map<String, Object> model = new HashMap<> ( 1 );
+        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+
+        return new ModelAndView ( "channel/createWithRecipe", model );
     }
 
     @Secured ( false )
@@ -726,7 +787,8 @@ public class ChannelController implements InterfaceExtender
 
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
+                // result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
+                result.add ( new MenuEntry ( "Create Channel", 120, LinkTarget.createFromController ( ChannelController.class, "createWithRecipe" ), Modifier.PRIMARY, null ) );
                 result.add ( new MenuEntry ( "Maintenance", 160, "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
                 result.add ( new MenuEntry ( "Maintenance", 160, "Export all channels", 300, LinkTarget.createFromController ( ChannelController.class, "exportAll" ), Modifier.DEFAULT, "export" ) );
             }

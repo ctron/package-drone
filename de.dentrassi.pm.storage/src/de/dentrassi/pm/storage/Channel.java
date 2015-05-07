@@ -153,6 +153,31 @@ public interface Channel extends Validated
         return getAspectStates ().keySet ();
     }
 
+    /**
+     * Add aspects to the channel
+     * <p>
+     * If aspects are already present on the channel the operation ignores it
+     * </p>
+     *
+     * @param withDependencies
+     *            if the aspects should be added with all required dependencies
+     *            pass <code>true</code>
+     * @param aspectIds
+     *            the aspects to add
+     */
+    public void addAspects ( boolean withDependencies, String... aspectIds );
+
+    /**
+     * Remove aspects from a channel
+     * <p>
+     * If the aspects are not present on the channel, this operation ignores it
+     * </p>
+     *
+     * @param aspectIds
+     *            the aspects to remove
+     */
+    public void removeAspects ( String... aspectIds );
+
     public Map<String, String> getAspectStates ();
 
     /**
@@ -275,7 +300,7 @@ public interface Channel extends Validated
 
     /**
      * Stream the data of a cache entry directly to an OutputStream
-     * 
+     *
      * @param key
      *            the key of the cache entry
      * @param out
@@ -305,4 +330,5 @@ public interface Channel extends Validated
      * @return the list of information
      */
     public List<CacheEntryInformation> getAllCacheEntries ();
+
 }

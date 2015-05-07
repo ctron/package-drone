@@ -10,10 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import static de.dentrassi.pm.aspect.PropertiesHelper.loadUrl;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +27,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
@@ -38,8 +35,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.aspect.group.Group;
 import de.dentrassi.pm.aspect.group.GroupInformation;
@@ -239,7 +234,7 @@ public class ChannelAspectProcessor
     /**
      * This actively scans for available aspects and returns their information
      * objects
-     * 
+     *
      * @param context
      *            the context to use
      * @return the result map, never returns <code>null</code>
@@ -326,25 +321,6 @@ public class ChannelAspectProcessor
         {
             final String s = (String)val;
             return new TreeSet<> ( Arrays.asList ( s.split ( "[\\p{Space},]+" ) ) );
-        }
-        return null;
-    }
-
-    private static String loadUrl ( final Bundle bundle, final String descUrl )
-    {
-        final URL url = bundle.getEntry ( descUrl );
-        if ( url == null )
-        {
-            return null;
-        }
-
-        try ( Reader reader = new InputStreamReader ( url.openStream (), StandardCharsets.UTF_8 ) )
-        {
-            return CharStreams.toString ( reader );
-        }
-        catch ( final Exception e )
-        {
-            logger.info ( "Failed to load url", e );
         }
         return null;
     }
