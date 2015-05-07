@@ -10,10 +10,11 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
+import static de.dentrassi.pm.common.FileTypes.isXml;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -46,9 +47,7 @@ public class ExtractorImpl implements Extractor
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        final String probe = Files.probeContentType ( context.getPath () );
-
-        if ( !"application/xml".equals ( probe ) )
+        if ( !isXml ( context.getPath () ) )
         {
             return;
         }

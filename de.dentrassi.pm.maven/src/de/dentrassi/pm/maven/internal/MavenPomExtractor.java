@@ -10,9 +10,10 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
+import static de.dentrassi.pm.common.FileTypes.isXml;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.nio.file.Files;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -44,9 +45,7 @@ public class MavenPomExtractor implements Extractor
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        final String probe = Files.probeContentType ( context.getPath () );
-
-        if ( !"application/xml".equals ( probe ) )
+        if ( !isXml ( context.getPath () ) )
         {
             return;
         }
