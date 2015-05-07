@@ -50,6 +50,7 @@ import org.w3c.dom.Element;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
@@ -393,11 +394,17 @@ public class TransferHandler extends AbstractHandler
         }
     }
 
+    protected void initExportFile ( final ZipOutputStream zos ) throws IOException
+    {
+        putDataEntry ( zos, "version", "1" );
+        putDataEntry ( zos, "droneVersion", VersionInformation.VERSION );
+    }
+
     public void exportAll ( final OutputStream stream ) throws IOException
     {
         final ZipOutputStream zos = new ZipOutputStream ( stream );
 
-        putDataEntry ( zos, "version", "1" );
+        initExportFile ( zos );
 
         final TypedQuery<String> q = this.em.createQuery ( String.format ( "select c.id from %s c", ChannelEntity.class.getName () ), String.class );
         for ( final String channelId : q.getResultList () )
@@ -425,7 +432,8 @@ public class TransferHandler extends AbstractHandler
             final ChannelEntity channel = getCheckedChannel ( channelId );
             final ZipOutputStream zos = new ZipOutputStream ( stream );
 
-            putDataEntry ( zos, "version", "1" );
+            initExportFile ( zos );
+
             putDataEntry ( zos, "name", channel.getName () );
             putDataEntry ( zos, "description", channel.getDescription () );
             putDirEntry ( zos, "artifacts" );
