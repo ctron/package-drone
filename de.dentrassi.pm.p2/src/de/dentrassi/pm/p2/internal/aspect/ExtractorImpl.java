@@ -48,7 +48,7 @@ public class ExtractorImpl implements Extractor
     {
         final String probe = Files.probeContentType ( context.getPath () );
 
-        if ( !probe.equals ( "application/xml" ) )
+        if ( !"application/xml".equals ( probe ) )
         {
             return;
         }
