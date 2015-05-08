@@ -21,8 +21,9 @@
 
 <c:choose>
     <c:when test="${not p2Active }">
-    <div class="well well-lg">This is not a P2 repository channel</div>
+        <div class="well well-lg">This is not a P2 repository channel</div>
     </c:when>
+    
     <c:otherwise>
         <div class="row">
             <div class="col-xs-12">

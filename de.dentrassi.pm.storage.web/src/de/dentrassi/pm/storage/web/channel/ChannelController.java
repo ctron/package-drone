@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +47,7 @@ import javax.servlet.http.Part;
 import javax.validation.Valid;
 import javax.xml.ws.Holder;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
@@ -85,6 +87,7 @@ import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
+import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.DeployAuthService;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Tags;
@@ -101,6 +104,8 @@ import de.dentrassi.pm.system.SystemService;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
+
+    private static final String DEFAULT_EXAMPLE_KEY = "xxxxx";
 
     private final static Logger logger = LoggerFactory.getLogger ( ChannelController.class );
 
@@ -481,7 +486,7 @@ public class ChannelController implements InterfaceExtender
         return groups;
     }
 
-    @RequestMapping ( "/channel/{channelId}/help.p2" )
+    @RequestMapping ( "/channel/{channelId}/help/p2" )
     public ModelAndView helpP2 ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
@@ -498,6 +503,52 @@ public class ChannelController implements InterfaceExtender
         model.put ( "p2Active", channel.hasAspect ( "p2.repo" ) );
 
         return new ModelAndView ( "channel/help/p2", model );
+    }
+
+    @RequestMapping ( "/channel/{channelId}/help/api" )
+    public ModelAndView helpApi ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request)
+    {
+        final Channel channel = this.service.getChannel ( channelId );
+        if ( channel == null )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+
+        final Map<String, Object> model = new HashMap<> ();
+
+        model.put ( "channel", channel );
+        model.put ( "sitePrefix", getSitePrefix () );
+
+        final String exampleKey;
+        if ( request.isUserInRole ( "MANAGER" ) )
+        {
+            exampleKey = channel.getDeployGroups ().stream ().flatMap ( dg -> dg.getKeys ().stream () ).map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
+        }
+        else
+        {
+            exampleKey = DEFAULT_EXAMPLE_KEY;
+        }
+
+        model.put ( "exampleKey", exampleKey );
+        model.put ( "exampleSitePrefix", makeCredentialsPrefix ( getSitePrefix (), "deploy", exampleKey ) );
+
+        return new ModelAndView ( "channel/help/api", model );
+    }
+
+    private String makeCredentialsPrefix ( final String sitePrefix, final String name, final String password )
+    {
+        try
+        {
+            final URIBuilder builder = new URIBuilder ( sitePrefix );
+
+            builder.setUserInfo ( name, password );
+
+            return builder.build ().toString ();
+        }
+        catch ( final URISyntaxException e )
+        {
+            return sitePrefix;
+        }
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addDeployGroup", method = RequestMethod.POST )
@@ -829,8 +880,10 @@ public class ChannelController implements InterfaceExtender
 
             if ( channel.hasAspect ( "p2.repo" ) )
             {
-                result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "P2 Repository", 1_000, LinkTarget.createFromController ( ChannelController.class, "helpP2" ).expand ( model ), Modifier.DEFAULT, "info-sign" ) );
+                result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "P2 Repository", 2_000, LinkTarget.createFromController ( ChannelController.class, "helpP2" ).expand ( model ), Modifier.DEFAULT, "info-sign" ) );
             }
+
+            result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "API Upload", 1_100, LinkTarget.createFromController ( ChannelController.class, "helpApi" ).expand ( model ), Modifier.DEFAULT, "upload" ) );
 
             return result;
         }
