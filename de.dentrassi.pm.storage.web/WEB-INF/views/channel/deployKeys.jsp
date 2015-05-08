@@ -74,7 +74,7 @@ pageContext.setAttribute ( "groups", groups );
 			                                   data-target="#settings-modal"
 			                                   data-token="${dk.key}"
 			                                   data-channel="${channel.id }"
-			                                   ><small>View settings</small></a>)
+			                                   ><small>View Maven settings</small></a>)
 			                               <br/>
 			                               <code title="username">deploy</code> / <code title="password">${fn:escapeXml(dk.key) }</code> 
 			                            </li>
