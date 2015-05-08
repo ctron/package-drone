@@ -10,8 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.internal;
 
-import static de.dentrassi.osgi.web.util.BasicAuthentication.parseAuthorization;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -34,15 +32,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
 import org.eclipse.scada.utils.lang.Holder;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -52,7 +46,6 @@ import org.w3c.dom.Node;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
-import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
@@ -60,19 +53,17 @@ import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
-public class MavenServlet extends HttpServlet
+public class MavenServlet extends AbstractStorageServiceServlet
 {
     private final static Logger logger = LoggerFactory.getLogger ( MavenServlet.class );
 
     private static final long serialVersionUID = 1L;
 
     private static final MetaKey CHANNEL_KEY = new MetaKey ( "maven.repo", "channel" );
-
-    private ServiceTracker<StorageService, StorageService> tracker;
 
     private XmlHelper xml;
 
@@ -93,15 +84,13 @@ public class MavenServlet extends HttpServlet
         }
 
         this.xml = new XmlHelper ();
-
-        final BundleContext context = FrameworkUtil.getBundle ( MavenServlet.class ).getBundleContext ();
-        this.tracker = new ServiceTracker<> ( context, StorageService.class, null );
-        this.tracker.open ();
     }
 
     @Override
     public void destroy ()
     {
+        super.destroy ();
+
         try
         {
             deleteTemp ();
@@ -110,9 +99,6 @@ public class MavenServlet extends HttpServlet
         {
             logger.warn ( "Failed to clean up temp directory: " + this.tempRoot, e );
         }
-
-        this.tracker.close ();
-        super.destroy ();
     }
 
     private void deleteTemp () throws IOException
@@ -136,15 +122,7 @@ public class MavenServlet extends HttpServlet
 
         String pathString = request.getPathInfo ();
 
-        final StorageService service = this.tracker.getService ();
-
-        if ( service == null )
-        {
-            response.getWriter ().write ( "System not operational" );
-            response.setContentType ( "text/plain" );
-            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
-            return;
-        }
+        final StorageService service = getService ( request ); // ensured not be null
 
         pathString = pathString.replaceAll ( "^/+", "" );
         pathString = pathString.replaceAll ( "/+$", "" );
@@ -228,18 +206,9 @@ public class MavenServlet extends HttpServlet
     {
         try
         {
-            final StorageService service = this.tracker.getService ();
-
-            if ( service == null )
-            {
-                response.getWriter ().write ( "System not operational" );
-                response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
-                return;
-            }
-
             logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
 
-            processPut ( request, response, service );
+            processPut ( request, response, getService ( request ) );
         }
         catch ( final IOException e )
         {
@@ -641,46 +610,5 @@ public class MavenServlet extends HttpServlet
             return false;
         }
         return true;
-    }
-
-    private boolean authenticate ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
-    {
-        if ( isAuthenticated ( channel, request ) )
-        {
-            return true;
-        }
-
-        BasicAuthentication.request ( response, "channel-" + channel.getId (), "Please authenticate" );
-
-        return false;
-    }
-
-    private boolean isAuthenticated ( final Channel channel, final HttpServletRequest request )
-    {
-        final String[] authToks = parseAuthorization ( request );
-
-        if ( authToks == null )
-        {
-            return false;
-        }
-
-        if ( !authToks[0].equals ( "deploy" ) )
-        {
-            return false;
-        }
-
-        final String deployKey = authToks[1];
-
-        logger.debug ( "Deploy key: '{}'", deployKey );
-
-        for ( final DeployKey key : channel.getAllDeployKeys () )
-        {
-            if ( key.getKey ().equals ( deployKey ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

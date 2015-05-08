@@ -142,7 +142,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
     protected void handleMaven ( final HttpServletRequest request, final HttpServletResponse response, final LinkedList<String> path ) throws IOException
     {
         final IOConsumer<MavenVersionedArtifact> consumer = ( artifact ) -> {
-            streamArtifactEntry ( response, artifact.getArtifact ().getId (), path );
+            streamArtifactEntry ( request, response, artifact.getArtifact ().getId (), path );
         };
 
         if ( path.isEmpty () )
@@ -159,8 +159,8 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         final String channelIdOrName = path.pop ();
 
-        final Supplier<Collection<Artifact>> artifactSupplier = ( ) -> {
-            final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
+        final Supplier<Collection<Artifact>> artifactSupplier = () -> {
+            final Channel channel = getService ( request ).getChannelWithAlias ( channelIdOrName );
             if ( channel == null )
             {
                 throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
@@ -204,7 +204,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         final String channelIdOrName = path.pop ();
 
-        final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
+        final Channel channel = getService ( request ).getChannelWithAlias ( channelIdOrName );
         if ( channel == null )
         {
             throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
@@ -228,7 +228,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         logger.debug ( "Streaming artifact {} for channel {}", artifact.getId (), channelIdOrName );
 
-        streamArtifactEntry ( response, artifact.getId (), path );
+        streamArtifactEntry ( request, response, artifact.getId (), path );
     }
 
     protected static void processArtifacts ( final String sourceName, final List<MavenVersionedArtifact> arts, final IOConsumer<MavenVersionedArtifact> consumer ) throws IOException
@@ -477,7 +477,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         final String channelIdOrName = path.pop ();
         final String name = path.pop ();
 
-        final Channel channel = getService ().getChannelWithAlias ( channelIdOrName );
+        final Channel channel = getService ( request ).getChannelWithAlias ( channelIdOrName );
         if ( channel == null )
         {
             throw new IllegalStateException ( String.format ( "Channel with ID or name '%s' not found", channelIdOrName ) );
@@ -496,7 +496,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         logger.debug ( "Streaming artifact {} for name {} in channel {}", artifact.getId (), name, channelIdOrName );
 
-        streamArtifactEntry ( response, artifact.getId (), path );
+        streamArtifactEntry ( request, response, artifact.getId (), path );
     }
 
     private static void requirePathPrefix ( final LinkedList<String> path, final int pathPrefixCount, final String message )
@@ -514,7 +514,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         final String artifactId = path.pop ();
         try
         {
-            streamArtifactEntry ( response, artifactId, path );
+            streamArtifactEntry ( request, response, artifactId, path );
         }
         catch ( final FileNotFoundException e )
         {
@@ -523,19 +523,19 @@ public class UnzipServlet extends AbstractStorageServiceServlet
         }
     }
 
-    protected void streamArtifactEntry ( final HttpServletResponse response, final String artifactId, final List<String> path ) throws IOException
+    protected void streamArtifactEntry ( final HttpServletRequest request, final HttpServletResponse response, final String artifactId, final List<String> path ) throws IOException
     {
         final String localPath = StringHelper.join ( path, "/" );
 
         if ( localPath.isEmpty () )
         {
-            DownloadHelper.streamArtifact ( response, getService (), artifactId, null, true );
+            DownloadHelper.streamArtifact ( response, getService ( request ), artifactId, null, true );
             return;
         }
 
         // TODO: implement cache
 
-        getService ().streamArtifact ( artifactId, ( ai, stream ) -> {
+        getService ( request ).streamArtifact ( artifactId, ( ai, stream ) -> {
             try ( final ZipInputStream zis = new ZipInputStream ( stream ) )
             {
                 ZipEntry entry;
