@@ -267,9 +267,18 @@ public class ChannelController implements InterfaceExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel/{channelId}/view", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public void view ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
+    public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
     {
-        request.getRequestDispatcher ( "tree" ).forward ( request, response );
+        final Channel channel = this.service.getChannelByAlias ( channelId );
+        if ( channel != null )
+        {
+            return new ModelAndView ( String.format ( "redirect:/channel/%s/view", channel.getId () ) );
+        }
+        else
+        {
+            request.getRequestDispatcher ( "tree" ).forward ( request, response );
+            return null;
+        }
     }
 
     @Secured ( false )

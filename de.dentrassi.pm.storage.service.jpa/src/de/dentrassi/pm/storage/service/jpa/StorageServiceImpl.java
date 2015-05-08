@@ -159,6 +159,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    @Override
+    public Channel getChannelByAlias ( final String channelName )
+    {
+        return doWithTransaction ( em -> convert ( findByName ( em, channelName ) ) );
+    }
+
     protected ChannelEntity findByName ( final EntityManager em, final String channelName )
     {
         final TypedQuery<ChannelEntity> q = em.createQuery ( String.format ( "SELECT c FROM %s AS c WHERE c.name=:name", ChannelEntity.class.getName () ), ChannelEntity.class );

@@ -35,8 +35,34 @@ public interface StorageService
 
     public Channel createChannel ( String alias, String description );
 
+    /**
+     * Get a channel by ID only
+     *
+     * @param channelId
+     *            the channel id
+     * @return the channel or <code>null</code> if the channel could not be
+     *         found
+     */
     public Channel getChannel ( String channelId );
 
+    /**
+     * Get a channel by name only
+     *
+     * @param channelName
+     *            the channel name
+     * @return the channel or <code>null</code> if the channel could not be
+     *         found
+     */
+    public Channel getChannelByAlias ( String channelName );
+
+    /**
+     * Get a channel by ID or name
+     *
+     * @param channelIdOrName
+     *            the channel id or name
+     * @return the channel or <code>null</code> if the channel could not be
+     *         found
+     */
     public Channel getChannelWithAlias ( String channelIdOrName );
 
     /**
@@ -67,7 +93,7 @@ public interface StorageService
 
     /**
      * Delete a channel
-     * 
+     *
      * @param channelId
      *            the id of the channel to delete
      */
