@@ -95,12 +95,6 @@ public class MetaKey implements Comparable<MetaKey>
     }
 
     @Override
-    public String toString ()
-    {
-        return "[" + this.namespace + ":" + this.key + "]";
-    }
-
-    @Override
     public int compareTo ( final MetaKey o )
     {
         int rc;
@@ -112,5 +106,37 @@ public class MetaKey implements Comparable<MetaKey>
         }
 
         return this.key.compareTo ( o.key );
+    }
+
+    @Override
+    public String toString ()
+    {
+        return this.namespace + ":" + this.key;
+    }
+
+    /**
+     * Convert a string to a MetaKey if possible
+     * 
+     * @param string
+     *            the string to convert
+     * @return the new MetaKey instance or <code>null</code> if the format was
+     *         invalid
+     */
+    public static MetaKey fromString ( final String string )
+    {
+        final int idx = string.indexOf ( ':' );
+        if ( idx < 1 )
+        {
+            // -1: none at all, 0: empty namespace
+            return null;
+        }
+
+        if ( idx + 1 >= string.length () )
+        {
+            // empty key segment
+            return null;
+        }
+
+        return new MetaKey ( string.substring ( 0, idx ), string.substring ( idx + 1 ) );
     }
 }
