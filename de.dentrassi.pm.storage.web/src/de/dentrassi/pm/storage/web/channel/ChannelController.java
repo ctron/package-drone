@@ -487,6 +487,8 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( "/channel/{channelId}/help/p2" )
+    @Secured ( false )
+    @HttpConstraint ( PERMIT )
     public ModelAndView helpP2 ( @PathVariable ( "channelId" ) final String channelId)
     {
         final Channel channel = this.service.getChannel ( channelId );
@@ -506,6 +508,8 @@ public class ChannelController implements InterfaceExtender
     }
 
     @RequestMapping ( "/channel/{channelId}/help/api" )
+    @Secured ( false )
+    @HttpConstraint ( PERMIT )
     public ModelAndView helpApi ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request)
     {
         final Channel channel = this.service.getChannel ( channelId );
