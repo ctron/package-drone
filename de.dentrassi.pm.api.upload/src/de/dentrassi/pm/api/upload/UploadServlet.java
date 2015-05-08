@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.scada.utils.ExceptionHelper;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
 
@@ -120,9 +121,14 @@ public class UploadServlet extends AbstractStorageServiceServlet
     {
         try
         {
-            channel.createArtifact ( name, request.getInputStream (), makeMetaData ( request ) );
+            final Artifact art = channel.createArtifact ( name, request.getInputStream (), makeMetaData ( request ) );
+
             response.setStatus ( HttpServletResponse.SC_OK );
-            response.getWriter ().println ( "OK" );
+            if ( art != null )
+            {
+                // no veto
+                response.getWriter ().println ( art.getId () );
+            }
         }
         catch ( final IllegalArgumentException e )
         {
