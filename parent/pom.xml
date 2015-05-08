@@ -86,6 +86,8 @@
 		<module>../de.dentrassi.osgi.web.tests</module>
 		
 		<module>../de.dentrassi.pm</module>
+		
+		<module>../de.dentrassi.pm.api.upload</module>
 
 		<module>../de.dentrassi.pm.aspect</module>
 		<module>../de.dentrassi.pm.aspect.cleanup</module>
