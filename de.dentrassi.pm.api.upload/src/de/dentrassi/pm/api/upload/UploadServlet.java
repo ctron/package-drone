@@ -34,6 +34,17 @@ public class UploadServlet extends AbstractStorageServiceServlet
     @Override
     protected void doPut ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
+        processUpload ( req, resp );
+    }
+
+    @Override
+    protected void doPost ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
+    {
+        processUpload ( req, resp );
+    }
+
+    private void processUpload ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
+    {
         String path = req.getPathInfo ();
 
         path = path.replaceFirst ( "^/+", "" );
@@ -71,7 +82,6 @@ public class UploadServlet extends AbstractStorageServiceServlet
                 sendError ( resp, HttpServletResponse.SC_BAD_REQUEST, "Unkown target type: " + targetType );
                 break;
         }
-
     }
 
     private void processChannel ( final HttpServletRequest req, final HttpServletResponse resp, final String channelIdOrName, final String artifactName ) throws IOException
