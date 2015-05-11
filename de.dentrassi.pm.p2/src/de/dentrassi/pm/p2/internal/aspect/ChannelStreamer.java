@@ -12,6 +12,7 @@ package de.dentrassi.pm.p2.internal.aspect;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -25,11 +26,16 @@ public class ChannelStreamer
 
     private ChecksumValidatorProcessor validator;
 
+    private final Map<String, Object> context = new HashMap<> ();
+
     public ChannelStreamer ( final String channelNameOrId, final Map<MetaKey, String> channelMetaData, final boolean writeCompressed, final boolean writePlain )
     {
         final String title = makeTitle ( channelNameOrId, null, channelMetaData );
 
         this.processors = new LinkedList<> ();
+
+        this.processors.add ( this.validator = new ChecksumValidatorProcessor () );
+
         if ( writeCompressed )
         {
             this.processors.add ( new MetaDataProcessor ( title, true ) );
@@ -40,7 +46,6 @@ public class ChannelStreamer
             this.processors.add ( new MetaDataProcessor ( title, false ) );
             this.processors.add ( new ArtifactsProcessor ( title, false ) );
         }
-        this.processors.add ( this.validator = new ChecksumValidatorProcessor () );
     }
 
     public static String makeTitle ( final String id, final String name, final Map<MetaKey, String> channelMetaData )
@@ -70,7 +75,11 @@ public class ChannelStreamer
         {
             try
             {
-                processor.process ( artifact, streamer );
+                if ( !processor.process ( artifact, streamer, this.context ) )
+                {
+                    // a processor can veto the process
+                    break;
+                }
             }
             catch ( final Exception e )
             {

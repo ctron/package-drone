@@ -32,26 +32,32 @@ import de.dentrassi.pm.common.XmlHelper;
 
 public class ChecksumValidatorProcessor implements Processor
 {
+    public static String CTX_KEY_SKIP_SET = ChecksumValidatorProcessor.class.getName () + ".skipSet";
+
     private final static Logger logger = LoggerFactory.getLogger ( ChecksumValidatorProcessor.class );
 
     private final XmlHelper xml = new XmlHelper ();
+
+    private final Set<String> installableUnits = new HashSet<> ();
 
     private final Multimap<String, String> checksums = HashMultimap.create ();
 
     private final Multimap<String, String> checksumArtifacts = HashMultimap.create ();
 
     @Override
-    public void process ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
+    public boolean process ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         final String ft = artifact.getMetaData ().get ( ArtifactsProcessor.MK_FRAGMENT_TYPE );
 
         if ( "artifacts".equals ( ft ) )
         {
-            processP2Artifact ( artifact, streamer );
+            processP2Artifact ( artifact, streamer, context );
         }
+
+        return true;
     }
 
-    private void processP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
+    private void processP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         streamer.stream ( artifact.getId (), ( info, stream ) -> {
             final Document mdoc = this.xml.parse ( stream );
@@ -62,7 +68,7 @@ public class ChecksumValidatorProcessor implements Processor
                     continue;
                 }
 
-                recordArtifact ( artifact, (Element)node );
+                recordArtifact ( artifact, (Element)node, context );
             }
         } );
     }
@@ -72,18 +78,17 @@ public class ChecksumValidatorProcessor implements Processor
      *
      * @param artifact
      *            the current artifact
+     * @param context
      * @param node
      *            the artifact node
+     * @return <code>true</code> if the artifact does not cause any problems,
+     *         <code>false</code> otherwise
      */
-    private void recordArtifact ( final ArtifactInformation artifact, final Element ele )
+    private void recordArtifact ( final ArtifactInformation artifact, final Element ele, final Map<String, Object> context )
     {
-        final String classifier = ele.getAttribute ( "classifier" );
-        final String id = ele.getAttribute ( "id" );
-        final String version = ele.getAttribute ( "version" );
+        final String key = makeKey ( ele );
 
-        final String key = String.format ( "%s::%s::%s", classifier, id, version );
-
-        String value;
+        final String value;
         try
         {
             value = this.xml.getElementValue ( ele, "./properties/property[@name='download.md5']/@value" );
@@ -96,13 +101,19 @@ public class ChecksumValidatorProcessor implements Processor
         if ( value == null || value.isEmpty () )
         {
             logger.debug ( "Artifact {} did not have a checksum", key );
-            return;
+        }
+
+        final boolean result = this.installableUnits.add ( key );
+
+        if ( !result )
+        {
+            markSkip ( context, key );
         }
 
         this.checksums.put ( key, value );
         this.checksumArtifacts.put ( fullKey ( key, value ), artifact.getId () );
 
-        logger.debug ( "Recording artifact - id: {}, md5: {}, artifact: {}", key, value, artifact.getId () );
+        logger.debug ( "Recording artifact - id: {}, md5: {}, artifact: {} -> result: {}", key, value, artifact.getId (), result );
     }
 
     /**
@@ -135,6 +146,40 @@ public class ChecksumValidatorProcessor implements Processor
         }
 
         return result;
+    }
+
+    @SuppressWarnings ( "unchecked" )
+    private static void markSkip ( final Map<String, Object> context, final String key )
+    {
+        Object value = context.get ( CTX_KEY_SKIP_SET );
+        if ( value == null || ! ( value instanceof Set ) )
+        {
+            value = new HashSet<String> ();
+            context.put ( CTX_KEY_SKIP_SET, value );
+        }
+
+        final Set<String> set = (Set<String>)value;
+        set.add ( key );
+    }
+
+    public static boolean shouldSkip ( final Map<String, Object> context, final String key )
+    {
+        final Object value = context.get ( CTX_KEY_SKIP_SET );
+        if ( value == null || ! ( value instanceof Set ) )
+        {
+            return false;
+        }
+
+        return ( (Set<?>)value ).contains ( key );
+    }
+
+    public static String makeKey ( final Element ele )
+    {
+        final String classifier = ele.getAttribute ( "classifier" );
+        final String id = ele.getAttribute ( "id" );
+        final String version = ele.getAttribute ( "version" );
+
+        return String.format ( "%s::%s::%s", classifier, id, version );
     }
 
     private static String fullKey ( final String key, final String checksum )

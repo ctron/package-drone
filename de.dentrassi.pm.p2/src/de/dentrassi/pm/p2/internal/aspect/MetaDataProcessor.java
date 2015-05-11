@@ -15,6 +15,7 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,7 +55,7 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
     }
 
     @Override
-    public void process ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
+    public boolean process ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         final String ft = artifact.getMetaData ().get ( MK_FRAGMENT_TYPE );
 
@@ -62,6 +63,8 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
         {
             attachP2Artifact ( artifact, this.units, streamer );
         }
+
+        return true;
     }
 
     private void attachP2Artifact ( final ArtifactInformation artifact, final Element units2, final ArtifactStreamer streamer ) throws Exception

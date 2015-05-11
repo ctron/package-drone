@@ -12,12 +12,13 @@ package de.dentrassi.pm.p2.internal.aspect;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 
 public interface Processor
 {
-    public void process ( ArtifactInformation artifact, ArtifactStreamer streamer ) throws Exception;
+    public boolean process ( ArtifactInformation artifact, ArtifactStreamer streamer, Map<String, Object> context ) throws Exception;
 
     public default void write ( final OutputStream stream ) throws IOException
     {

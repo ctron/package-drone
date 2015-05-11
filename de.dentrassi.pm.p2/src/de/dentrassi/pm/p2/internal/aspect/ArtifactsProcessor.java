@@ -15,7 +15,10 @@ import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,6 +29,8 @@ import de.dentrassi.pm.common.XmlHelper;
 
 public class ArtifactsProcessor extends AbstractRepositoryProcessor
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ArtifactsProcessor.class );
+
     public static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
 
     private final Element artifacts;
@@ -64,17 +69,19 @@ public class ArtifactsProcessor extends AbstractRepositoryProcessor
     }
 
     @Override
-    public void process ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
+    public boolean process ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         final String ft = artifact.getMetaData ().get ( MK_FRAGMENT_TYPE );
 
         if ( "artifacts".equals ( ft ) )
         {
-            attachP2Artifact ( artifact, this.artifacts, streamer );
+            attachP2Artifact ( artifact, this.artifacts, streamer, context );
         }
+
+        return true;
     }
 
-    private void attachP2Artifact ( final ArtifactInformation artifact, final Element artifacts, final ArtifactStreamer streamer ) throws Exception
+    private void attachP2Artifact ( final ArtifactInformation artifact, final Element artifacts, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         streamer.stream ( artifact.getId (), ( info, stream ) -> {
             final Document mdoc = this.xml.parse ( stream );
@@ -82,6 +89,13 @@ public class ArtifactsProcessor extends AbstractRepositoryProcessor
             {
                 if ( ! ( node instanceof Element ) )
                 {
+                    continue;
+                }
+
+                final String key = ChecksumValidatorProcessor.makeKey ( (Element)node );
+                if ( ChecksumValidatorProcessor.shouldSkip ( context, key ) )
+                {
+                    logger.trace ( "IU {} of artifact {} should be skipped", key, artifact.getId () );
                     continue;
                 }
 
