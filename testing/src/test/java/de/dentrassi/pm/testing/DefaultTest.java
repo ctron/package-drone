@@ -76,6 +76,12 @@ public class DefaultTest extends AbstractServerTest
         simpleTest ( "/system/backup" );
     }
 
+    @Test
+    public void testSystemInfo ()
+    {
+        simpleTest ( "/system/info" );
+    }
+
     protected void simpleTest ( final String url )
     {
         final String full = resolve ( url );
