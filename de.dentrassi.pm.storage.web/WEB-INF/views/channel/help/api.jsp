@@ -56,11 +56,11 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
         Using the command line tool <code>curl</code> you can deploy the file <code>my.jar</code> in the local directory to this channel:
     </p>
     
-    <pre>curl -X PUT --data @<strong>my.jar</strong> ${exampleUrl }</pre>
+    <pre>curl -X PUT --data @<strong>my.jar</strong> ${exampleUrl }/<strong>my.jar</strong></pre>
     
     <p>If you want to set the provided meta data field <code>test:foo</code> to <code>bar</code> add these as request parameters:
     
-    <pre>curl -X PUT --data @my.jar ${exampleUrl }<strong>?test:foo=bar</strong></pre>
+    <pre>curl -X PUT --data @my.jar ${exampleUrl }/my.jar<strong>?test:foo=bar</strong></pre>
     
 </div>
 
