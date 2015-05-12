@@ -12,9 +12,7 @@
 	<name>Package Drone</name>
 	<inceptionYear>2014</inceptionYear>
 
-	<description>
-	   Package Drone is an extensible software artifact repository with primary focus on OSGi.
-	</description>
+	<description>Package Drone is an extensible software artifact repository with a primary focus on OSGi.</description>
 
 	<developers>
 		<developer>
