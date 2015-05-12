@@ -8,7 +8,7 @@
 	<version>0.8.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<url>https://github.com/ctron/package-drone</url>
+	<url>http://packagedrone.org</url>
 	<name>Package Drone</name>
 	<inceptionYear>2014</inceptionYear>
 
@@ -18,6 +18,7 @@
 		<developer>
 			<name>Jens Reimann</name>
 			<email>ctron@dentrassi.de</email>
+			<id>ctron</id>
 			<organization>IBH SYSTEMS GmbH</organization>
 			<organizationUrl>http://ibh-systems.com</organizationUrl>
 			<url>http://dentrassi.de</url>
@@ -34,7 +35,8 @@
 	</scm>
 
 	<issueManagement>
-		<url>https://github.com/ctron/package-drone</url>
+		<url>https://github.com/ctron/package-drone/issues</url>
+		<system>GitHub Issues</system>
 	</issueManagement>
 
 	<licenses>
