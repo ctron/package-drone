@@ -54,8 +54,8 @@
             <!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
         	-->
-        	
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM6-201503200800/equinox-SDK-MarsM6.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM7-201504301445/equinox-SDK-MarsM7.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.2/milestones/gemini-jpa-1.2.0.M1.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
