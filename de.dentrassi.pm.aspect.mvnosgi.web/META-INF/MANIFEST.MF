@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Maven OSGi Channel Aspect Web UI
+Bundle-SymbolicName: de.dentrassi.pm.aspect.mvnosgi.web
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Markus Rathgeb
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
