@@ -42,6 +42,8 @@
         <parallel threadcount="4">
 
         	<get src="http://eclipse.org/downloads/download.php?file=/jetty/${jetty.version}/dist/jetty-distribution-${jetty.version}.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
+        	
+        	<!-- !HttpService -->
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-server/${jetty.version}/jetty-server-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-servlet/${jetty.version}/jetty-servlet-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-util/${jetty.version}/jetty-util-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
@@ -53,6 +55,11 @@
         	
             <!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
+        	-->
+        	
+        	<!-- HttpService : JDT core -->
+        	<!--
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5M7-201504301445/ecj-4.5M7.jar&amp;r=1" dest="download/bundles" usetimestamp="true" />
         	-->
 
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM7-201504301445/equinox-SDK-MarsM7.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
@@ -87,7 +94,7 @@
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xalan_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xml.serializer_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
 
-            <!-- for spring -->
+            <!-- for logging -->
 
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jcl_1.7.2.v20130115-1340.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jul_1.7.2.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
@@ -103,6 +110,7 @@
             <!--
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
             -->
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops//${eclipse.orbit.release}/repository/plugins/javax.xml_1.3.4.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
             <get src="https://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
@@ -164,8 +172,10 @@
     <target name="copy">
         <mkdir dir="lib/plugins" />
         <copy todir="lib/plugins">
+        	
             <fileset dir="unpack/jetty/lib">
 
+            	<!-- !HttpService -->
                 <include name="jetty-util-*.jar" />
                 <include name="jetty-http-*.jar" />
                 <include name="jetty-io-*.jar" />
@@ -185,10 +195,15 @@
                 <include name="jetty-jndi-*.jar" />
                 <include name="jetty-plus-*.jar" />
                 <include name="jetty-annotations-*.jar" />
+            	
+            	<!-- !HttpService -->
 
                 <!-- jsp -->
 
+            	<!-- !HttpService -->
                 <include name="apache-jsp/*.jar" />
+            	<!-- !HttpService -->
+            	
                 <include name="apache-jstl/*.jar" />
 
             </fileset>
@@ -218,6 +233,19 @@
             	
                 <include name="org.slf4j.api_*.jar" />
             	
+            	<include name="org.tukaani.xz_*.jar" />
+            	
+            	
+            	<!-- http & jetty -->
+            	<!-- HttpService
+            	<include name="org.apache.jasper.glassfish*.jar" />
+            	<include name="org.eclipse.jetty*.jar" />
+            	<include name="org.eclipse.equinox.jsp*.jar" />
+            	<include name="org.eclipse.equinox.http*.jar" />
+            	<include name="javax.el*.jar" />
+            	<include name="javax.servlet*.jar" />
+            	-->
+            	
             	<!-- for testing -->
             	
                 <include name="org.eclipse.core.runtime_*.jar" />
@@ -226,7 +254,7 @@
             	<include name="org.eclipse.equinox.preferences_*.jar" />
             	<include name="org.eclipse.core.contenttype_*.jar" />
             	<include name="org.eclipse.equinox.app_*.jar" />
-
+            	
             </fileset>
 
             <fileset dir="unpack/gemini-dbaccess/plugins">
