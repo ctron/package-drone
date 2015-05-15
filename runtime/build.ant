@@ -40,10 +40,10 @@
     	<mkdir dir="download/sources" />
 
         <parallel threadcount="4">
-
         	<get src="http://eclipse.org/downloads/download.php?file=/jetty/${jetty.version}/dist/jetty-distribution-${jetty.version}.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
         	
         	<!-- !HttpService -->
+        	<!--
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-server/${jetty.version}/jetty-server-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-servlet/${jetty.version}/jetty-servlet-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/jetty-util/${jetty.version}/jetty-util-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
@@ -52,15 +52,14 @@
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot/${jetty.version}/jetty-osgi-boot-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/${jetty.version}/jetty-osgi-boot-jsp-${jetty.version}.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://central.maven.org/maven2/org/eclipse/jetty/osgi/jetty-osgi-boot-jsp/${jetty.version}/jetty-osgi-boot-jsp-${jetty.version}-sources.jar" dest="download/bundles" usetimestamp="true" />
+        	-->
         	
             <!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/jetty/updates/jetty-bundles-9.x/9.2.6.v20141205/Jetty-bundles-repository-9.2.6.v20141205.zip&amp;r=1" dest="download/jetty-distribution.zip" usetimestamp="true" />
         	-->
         	
         	<!-- HttpService : JDT core -->
-        	<!--
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5M7-201504301445/ecj-4.5M7.jar&amp;r=1" dest="download/bundles" usetimestamp="true" />
-        	-->
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5M7-201504301445/ecj-4.5M7.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
 
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM7-201504301445/equinox-SDK-MarsM7.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
@@ -105,7 +104,6 @@
         	<get src="http://repo1.maven.org/maven2/com/fasterxml/classmate/1.0.0/classmate-1.0.0-sources.jar" dest="download/sources" usetimestamp="true" />
             <get src="http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar" dest="download/bundles" usetimestamp="true" />
             
-            <!-- jpa -->
             
             <!--
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
@@ -153,7 +151,7 @@
         <mkdir dir="unpack/gemini-dbaccess" />
         <mkdir dir="unpack/gemini-jpa" />
         <mkdir dir="unpack/eclipselink" />
-        <mkdir dir="unpack/openscada" />
+    	<mkdir dir="unpack/glassfish" />
 
     	<untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
             <cutdirsmapper dirs="1" />
@@ -164,6 +162,9 @@
         <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
         <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
     	<unzip src="download/aether-bin.zip" dest="unpack/aether" />
+    	<unzip src="download/glassfish.zip" dest="unpack/glassfish">
+    		<cutdirsmapper dirs="1" />
+		</unzip>
     </target>
 
     <!-- ================================= 
@@ -176,6 +177,7 @@
             <fileset dir="unpack/jetty/lib">
 
             	<!-- !HttpService -->
+            	<!--
                 <include name="jetty-util-*.jar" />
                 <include name="jetty-http-*.jar" />
                 <include name="jetty-io-*.jar" />
@@ -189,23 +191,37 @@
 
                 <include name="servlet-api-3.1.jar" />
                 <include name="jetty-schemas-3.1.jar" />
+                -->
+            	
+            	
 
                 <!-- annotation -->
 
+            	<!--
                 <include name="jetty-jndi-*.jar" />
                 <include name="jetty-plus-*.jar" />
                 <include name="jetty-annotations-*.jar" />
+                -->
             	
             	<!-- !HttpService -->
 
                 <!-- jsp -->
 
             	<!-- !HttpService -->
+            	<!--
                 <include name="apache-jsp/*.jar" />
+                -->
             	<!-- !HttpService -->
             	
-                <include name="apache-jstl/*.jar" />
-
+            	<!--
+            	<include name="apache-jsp/*.jar" />
+            	
+            	-->
+            	
+            	<include name="jetty-schemas-3.1.jar" />
+            	<include name="apache-jsp/*-el-*.jar" />
+            	<include name="apache-jstl/*.jar" />
+            	
             </fileset>
 
             <fileset dir="unpack/equinox/plugins">
@@ -237,14 +253,14 @@
             	
             	
             	<!-- http & jetty -->
-            	<!-- HttpService
+            	
             	<include name="org.apache.jasper.glassfish*.jar" />
+            	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
+            	<include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
             	<include name="org.eclipse.jetty*.jar" />
-            	<include name="org.eclipse.equinox.jsp*.jar" />
+            	
             	<include name="org.eclipse.equinox.http*.jar" />
-            	<include name="javax.el*.jar" />
             	<include name="javax.servlet*.jar" />
-            	-->
             	
             	<!-- for testing -->
             	
@@ -290,10 +306,10 @@
         	    <exclude name="**/*-wagon-*.jar"/>
         	    <include name="*/*.jar"/>
         	</fileset>
-            
+        	
             <fileset dir="download/bundles" />
         	<fileset dir="provided" />
-
+        	
             <mapper type="flatten" />
         </copy>
     </target>
