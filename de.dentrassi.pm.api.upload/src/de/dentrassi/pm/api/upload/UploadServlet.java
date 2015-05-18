@@ -55,13 +55,13 @@ public class UploadServlet extends AbstractStorageServiceServlet
 
         if ( toks.length == 0 )
         {
-            // handle error: missing channel
+            // handle error: missing target specifier
             sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "No target" );
             return;
         }
         if ( toks.length == 1 )
         {
-            // handle error: missing channel
+            // handle error: missing target
             sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "Missing target" );
             return;
         }
