@@ -135,14 +135,14 @@ public class AetherImporter implements Importer
         }
         else
         {
-            repositories = Arrays.asList ( Helper.newRemoteRepository ( cfg.getUrl () ) );
+            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getUrl () ) );
         }
 
         final Collection<ArtifactRequest> requests = new LinkedList<> ();
 
-        final DefaultArtifact artifact = new DefaultArtifact ( cfg.getCoordinates () );
+        // main artifact
 
-        // main
+        final DefaultArtifact artifact = new DefaultArtifact ( cfg.getCoordinates () );
         {
             final ArtifactRequest artifactRequest = new ArtifactRequest ();
             artifactRequest.setArtifact ( artifact );
@@ -152,12 +152,16 @@ public class AetherImporter implements Importer
 
         if ( cfg.isIncludeSources () )
         {
+            // add source artifact
+
             final DefaultArtifact sourcesArtifacts = new DefaultArtifact ( artifact.getGroupId (), artifact.getArtifactId (), "sources", artifact.getExtension (), artifact.getVersion () );
             final ArtifactRequest artifactRequest = new ArtifactRequest ();
             artifactRequest.setArtifact ( sourcesArtifacts );
             artifactRequest.setRepositories ( repositories );
             requests.add ( artifactRequest );
         }
+
+        // process
 
         return system.resolveArtifacts ( session, requests );
     }

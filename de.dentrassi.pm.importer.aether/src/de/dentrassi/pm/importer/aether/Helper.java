@@ -74,11 +74,11 @@ public class Helper
 
     public static RemoteRepository newCentralRepository ()
     {
-        return newRemoteRepository ( "http://central.maven.org/maven2/" );
+        return newRemoteRepository ( "central", System.getProperty ( "drone.importer.aether.central.url", "http://central.maven.org/maven2/" ) );
     }
 
-    public static RemoteRepository newRemoteRepository ( final String url )
+    public static RemoteRepository newRemoteRepository ( final String id, final String url )
     {
-        return new RemoteRepository.Builder ( "central", "default", url ).build ();
+        return new RemoteRepository.Builder ( id, "default", url ).build ();
     }
 }
