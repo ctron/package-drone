@@ -78,7 +78,7 @@ public class AetherImporter implements Importer
     {
         final Path tmpDir = Files.createTempDirectory ( "aether" );
 
-        context.addCleanupTask ( ( ) -> {
+        context.addCleanupTask ( () -> {
             Files.walkFileTree ( tmpDir, new RecursiveDeleteVisitor () );
             Files.deleteIfExists ( tmpDir );
         } );
@@ -128,7 +128,7 @@ public class AetherImporter implements Importer
         final RepositorySystem system = Helper.newRepositorySystem ();
         final RepositorySystemSession session = Helper.newRepositorySystemSession ( tmpDir, system );
 
-        List<RemoteRepository> repositories;
+        final List<RemoteRepository> repositories;
         if ( cfg.getUrl () == null || cfg.getUrl ().isEmpty () )
         {
             repositories = Arrays.asList ( Helper.newCentralRepository () );
