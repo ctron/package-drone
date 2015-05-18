@@ -1,5 +1,6 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 
+<%@ tag import="de.dentrassi.pm.common.web.Activator"%>
 <%@ tag import="de.dentrassi.pm.sec.UserInformationPrincipal"%>
 <%@ tag import="java.security.Principal"%>
 
@@ -60,6 +61,10 @@ if ( p instanceof UserInformationPrincipal )
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
     
     <jsp:invoke fragment="head"/>
+    
+    <%
+    Activator.extendHead ( request, out );
+    %>
 </head>
 
 <body>

@@ -87,6 +87,7 @@
       <plugin id="de.dentrassi.pm.todo" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.todo.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.unzip" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.web.analytics" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.util" autoStart="true" startLevel="0" />
       <plugin id="org.apache.taglibs.standard-impl" autoStart="true" startLevel="0" />

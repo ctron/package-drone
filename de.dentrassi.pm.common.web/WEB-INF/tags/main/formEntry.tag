@@ -8,7 +8,7 @@
 <%@attribute name="label" required="false" type="java.lang.String" %>
 <%@attribute name="optional" required="false" type="java.lang.Boolean" %>
 
-<div class="form-group ${ optional ? ' optional' : '' } ${ (empty path) ?  '' : form:validationState(pageContext,( empty command ) ? 'command' : command ,path, '', 'has-error')}">
+<div class="form-group ${ optional ? ' optional' : '' } ${' ' } ${ (empty path) ?  '' : form:validationState ( pageContext, ( ( empty command ) ? 'command' : command ), path, '', 'has-error')}">
     <form:label path="${path }" cssClass="col-sm-2 control-label">${fn:escapeXml(label) }</form:label>
     
     <div class="col-sm-10">

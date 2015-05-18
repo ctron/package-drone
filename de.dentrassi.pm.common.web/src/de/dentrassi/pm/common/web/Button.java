@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.web;
 
-
 public class Button
 {
     private final String label;

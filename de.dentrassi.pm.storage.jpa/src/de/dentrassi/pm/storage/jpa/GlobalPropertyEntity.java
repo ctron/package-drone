@@ -13,13 +13,19 @@ package de.dentrassi.pm.storage.jpa;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
 @Entity
+@IdClass ( GlobalPropertyKey.class )
 @Table ( name = "PROPERTIES" )
 public class GlobalPropertyEntity
 {
+    @Id
+    @Column ( name = "NS" )
+    private String namespace;
+
     @Id
     @Column ( name = "\"KEY\"", nullable = false, length = 255 )
     private String key;
@@ -27,6 +33,16 @@ public class GlobalPropertyEntity
     @Lob
     @Column ( name = "\"VALUE\"" )
     private String value;
+
+    public void setNamespace ( final String namespace )
+    {
+        this.namespace = namespace;
+    }
+
+    public String getNamespace ()
+    {
+        return this.namespace;
+    }
 
     public void setKey ( final String key )
     {

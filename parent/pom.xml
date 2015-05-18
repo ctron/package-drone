@@ -179,6 +179,8 @@
 
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>
+		
+		<module>../de.dentrassi.pm.web.analytics</module>
 
 		<module>../product</module>
 	</modules>

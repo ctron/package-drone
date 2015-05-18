@@ -26,15 +26,16 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.storage.jpa.GlobalPropertyEntity;
+import de.dentrassi.pm.storage.jpa.GlobalPropertyKey;
 
 public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreService
 {
 
     @Override
-    public String getCoreProperty ( final String key, final String defaultValue )
+    public String getCoreProperty ( final MetaKey key, final String defaultValue )
     {
         return doWithTransaction ( ( em ) -> {
-            final GlobalPropertyEntity pe = em.find ( GlobalPropertyEntity.class, key );
+            final GlobalPropertyEntity pe = em.find ( GlobalPropertyEntity.class, new GlobalPropertyKey ( key.getNamespace (), key.getKey () ) );
             if ( pe == null )
             {
                 return defaultValue;
@@ -44,13 +45,7 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
     }
 
     @Override
-    public String getCoreProperty ( final String key )
-    {
-        return getCoreProperty ( key, null );
-    }
-
-    @Override
-    public Map<String, String> getCoreProperties ( final Collection<String> inputKeys )
+    public Map<MetaKey, String> getCoreProperties ( final Collection<MetaKey> inputKeys )
     {
         if ( inputKeys == null || inputKeys.isEmpty () )
         {
@@ -58,53 +53,65 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
             return Collections.emptyMap ();
         }
 
-        // make a copy
-        final Set<String> keys = new HashSet<> ( inputKeys );
+        // make a copy ... we will remove keys
+
+        final Set<MetaKey> keys = new HashSet<> ( inputKeys );
 
         // make the result holder
-        final Map<String, String> result = new HashMap<> ( keys.size () );
+
+        final Map<MetaKey, String> result = new HashMap<> ( keys.size () );
+
+        // Convert keys
+
+        final Set<String> propKeys = new HashSet<> ( inputKeys.size () );
+        inputKeys.stream ().map ( in -> in.getNamespace () + ":" + in.getKey () ).forEach ( propKeys::add );
 
         // access database
+
         doWithTransactionVoid ( ( em ) -> {
-            final TypedQuery<Object[]> q = em.createQuery ( String.format ( "SELECT gpe.key,gpe.value from %s gpe where gpe.key in :KEYS", GlobalPropertyEntity.class.getName () ), Object[].class );
-            q.setParameter ( "KEYS", inputKeys );
+
+            final TypedQuery<Object[]> q = em.createQuery ( String.format ( "SELECT gpe.namespace,gpe.key,gpe.value from %s gpe where concat(gpe.namespace,':',gpe.key) in :KEYS", GlobalPropertyEntity.class.getName () ), Object[].class );
+            q.setParameter ( "KEYS", propKeys );
 
             for ( final Object[] row : q.getResultList () )
             {
-                keys.remove ( row[0] );
-                result.put ( (String)row[0], (String)row[1] );
+                final MetaKey key = new MetaKey ( (String)row[0], (String)row[1] );
+                keys.remove ( key );
+                result.put ( key, (String)row[2] );
             }
         } );
 
-        // fill up the no-found keys with null
-        for ( final String key : keys )
+        // fill up the not-found keys with null
+
+        for ( final MetaKey key : keys )
         {
             result.put ( key, null );
         }
 
         // return the result
+
         return result;
     }
 
     @Override
-    public void setProperties ( final Map<String, String> properties )
+    public void setCoreProperties ( final Map<MetaKey, String> properties )
     {
         doWithTransactionVoid ( ( em ) -> {
-            properties.forEach ( ( key, value ) -> internalSet ( em, key, value ) );
+            properties.forEach ( ( key, value ) -> internalSet ( em, key.getNamespace (), key.getKey (), value ) );
         } );
     }
 
     @Override
-    public void setCoreProperty ( final String key, final String value )
+    public void setCoreProperty ( final MetaKey key, final String value )
     {
         doWithTransactionVoid ( ( em ) -> {
-            internalSet ( em, key, value );
+            internalSet ( em, key.getNamespace (), key.getKey (), value );
         } );
     }
 
-    protected void internalSet ( final EntityManager em, final String key, final String value )
+    protected void internalSet ( final EntityManager em, final String namespace, final String key, final String value )
     {
-        GlobalPropertyEntity pe = em.find ( GlobalPropertyEntity.class, key );
+        GlobalPropertyEntity pe = em.find ( GlobalPropertyEntity.class, new GlobalPropertyKey ( namespace, key ) );
         if ( value == null )
         {
             // delete
@@ -122,6 +129,7 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
             else
             {
                 pe = new GlobalPropertyEntity ();
+                pe.setNamespace ( namespace );
                 pe.setKey ( key );
                 pe.setValue ( value );
             }
@@ -139,7 +147,7 @@ public class CoreServiceImpl extends AbstractJpaServiceImpl implements CoreServi
 
             for ( final GlobalPropertyEntity gp : q.getResultList () )
             {
-                result.put ( new MetaKey ( "core", gp.getKey () ), gp.getValue () );
+                result.put ( new MetaKey ( gp.getNamespace (), gp.getKey () ), gp.getValue () );
             }
         } );
 
