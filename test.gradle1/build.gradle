@@ -1,13 +1,22 @@
 apply plugin: 'java'
+apply plugin: 'osgi'
 apply plugin: 'maven-publish'
 
 version = '1.0.0'
 group = 'de.dentrassi.pm'
 
+jar {
+    manifest {
+        instruction 'Bundle-Vendor', 'IBH SYSTEMS GmbH'
+        instruction 'Bundle-Description', 'Gradle test bundle #1'
+        instruction 'Export-Package', '*'
+    }
+}
+
 publishing {
-   publications {
-      mavenJava(MavenPublication) { from components.java }
-   }
+    publications {
+        mavenJava(MavenPublication) { from components.java }
+    }
     repositories { 
         maven {
             credentials {
@@ -18,3 +27,4 @@ publishing {
         }
     }
 }
+
