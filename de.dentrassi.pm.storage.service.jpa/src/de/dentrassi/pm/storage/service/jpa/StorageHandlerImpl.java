@@ -203,6 +203,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         private final RegenerateTracker tracker;
 
+        private SortedMap<MetaKey, String> channelMetaData;
+
         private ArtifactContextImpl ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator, final Path file, final Supplier<ArtifactInformation> infoSupplier, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
         {
             this.channel = channel;
@@ -212,6 +214,16 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             this.entitySupplier = entitySupplier;
             this.runAggregator = runAggregator;
             this.tracker = tracker;
+        }
+
+        @Override
+        public Map<MetaKey, String> getProvidedChannelMetaData ()
+        {
+            if ( this.channelMetaData == null )
+            {
+                this.channelMetaData = convertMetaData ( null, this.channel.getProvidedProperties () );
+            }
+            return this.channelMetaData;
         }
 
         @Override
