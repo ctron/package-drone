@@ -73,7 +73,7 @@ if ( p instanceof UserInformationPrincipal )
     <jsp:attribute name="after">
         <c:if test="${empty principal }">
             <p class="navbar-text navbar-right">
-                <c:if test="${siteInformation.allowSelfRegistration }">
+                <c:if test="${not empty siteInformation and siteInformation.allowSelfRegistration }">
                     <a href="<c:url value="/signup"/>">Register</a> or
                 </c:if> 
                 <a href="<c:url value="/login"/>">Sign in</a></p>

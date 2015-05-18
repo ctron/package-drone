@@ -151,7 +151,6 @@
         <mkdir dir="unpack/gemini-dbaccess" />
         <mkdir dir="unpack/gemini-jpa" />
         <mkdir dir="unpack/eclipselink" />
-    	<mkdir dir="unpack/glassfish" />
 
     	<untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
             <cutdirsmapper dirs="1" />
@@ -162,9 +161,6 @@
         <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
         <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
     	<unzip src="download/aether-bin.zip" dest="unpack/aether" />
-    	<unzip src="download/glassfish.zip" dest="unpack/glassfish">
-    		<cutdirsmapper dirs="1" />
-		</unzip>
     </target>
 
     <!-- ================================= 
@@ -259,7 +255,9 @@
             	<include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
             	<include name="org.eclipse.jetty*.jar" />
             	
-            	<include name="org.eclipse.equinox.http*.jar" />
+            	<include name="org.eclipse.equinox.http.jetty*.jar" />
+            	<include name="org.eclipse.equinox.http.servletbridge*.jar" />
+            	<include name="org.eclipse.equinox.http.servlet*.jar" />
             	<include name="javax.servlet*.jar" />
             	
             	<!-- for testing -->

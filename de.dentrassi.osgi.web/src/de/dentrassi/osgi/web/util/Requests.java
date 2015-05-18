@@ -51,12 +51,17 @@ public final class Requests
 
     public static String getOriginalPath ( final HttpServletRequest request )
     {
-        final Object val = request.getAttribute ( RequestDispatcher.FORWARD_SERVLET_PATH );
+        final Object val = request.getAttribute ( RequestDispatcher.FORWARD_PATH_INFO );
         if ( val instanceof String )
         {
             return (String)val;
         }
 
-        return request.getServletPath ();
+        return request.getPathInfo ();
+    }
+
+    public static String getRequestPath ( final HttpServletRequest request )
+    {
+        return request.getPathInfo ();
     }
 }

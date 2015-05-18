@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import de.dentrassi.osgi.web.util.Requests;
+
 public class RequestMappingInformation
 {
     private final PathMatcher[] paths;
@@ -105,7 +107,7 @@ public class RequestMappingInformation
 
     public Match matches ( final HttpServletRequest request )
     {
-        final String rp = request.getServletPath (); // do not use the original path
+        final String rp = Requests.getRequestPath ( request ); // get the simple path
         final String method = request.getMethod ().toUpperCase ();
 
         return matches ( rp, method );

@@ -72,6 +72,7 @@ public class SecurityFilter implements Filter
 
         if ( this.service != null && request instanceof HttpServletRequest && response instanceof HttpServletResponse )
         {
+            logger.trace ( "Injecting request wrapper" );
             processFilter ( (HttpServletRequest)request, (HttpServletResponse)response, filterChain );
         }
         else

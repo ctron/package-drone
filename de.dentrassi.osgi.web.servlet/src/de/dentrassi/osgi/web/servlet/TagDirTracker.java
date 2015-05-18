@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jetty.util.resource.Resource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -26,7 +25,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TagDirTracker
+public class TagDirTracker implements ResourceProvider
 {
     private final static Logger logger = LoggerFactory.getLogger ( TagDirTracker.class );
 
@@ -99,6 +98,7 @@ public class TagDirTracker
     public TagDirTracker ( final BundleContext context )
     {
         this.bundleTracker = new BundleTracker<> ( context, Bundle.RESOLVED | Bundle.ACTIVE, this.customizer );
+        this.bundleTracker.open ();
     }
 
     protected TagDirInfo createTagLibInfo ( final Bundle bundle )
@@ -115,17 +115,14 @@ public class TagDirTracker
         return null;
     }
 
-    public void open ()
-    {
-        this.bundleTracker.open ();
-    }
-
-    public void close ()
+    @Override
+    public void dispose ()
     {
         this.bundleTracker.close ();
     }
 
-    public Resource getTagLib ( final String name )
+    @Override
+    public URL getResource ( final String name )
     {
         logger.trace ( "Getting tag dir for: {}", name );
 
@@ -134,11 +131,11 @@ public class TagDirTracker
             if ( name.startsWith ( tli.getPrefix () ) )
             {
                 logger.trace ( "Trying {} for {}", tli, name );
-                final Resource resource = createResource ( tli, name );
-                if ( resource != null )
+                final URL result = tli.getBundle ().getEntry ( name );
+                if ( result != null )
                 {
                     logger.trace ( "Using {} for {}", tli, name );
-                    return resource;
+                    return result;
                 }
             }
         }
@@ -146,18 +143,8 @@ public class TagDirTracker
         return null;
     }
 
-    private Resource createResource ( final TagDirInfo tli, final String name )
-    {
-        final URL url = tli.getBundle ().getEntry ( name );
-        if ( url == null )
-        {
-            logger.warn ( "Tag lib {} not found in {}", name, tli.getBundle () );
-            return null;
-        }
-        return Resource.newResource ( url );
-    }
-
-    public Set<String> getUrls ( final String name )
+    @Override
+    public Set<String> getPaths ( final String name )
     {
         logger.trace ( "Getting url for: {}", name );
 

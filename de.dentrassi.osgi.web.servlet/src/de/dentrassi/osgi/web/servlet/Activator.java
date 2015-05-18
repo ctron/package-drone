@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,31 +12,70 @@ package de.dentrassi.osgi.web.servlet;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.eclipse.jetty.server.handler.ContextHandler;
+import javax.servlet.Servlet;
+
+import org.eclipse.equinox.jsp.jasper.JspServlet;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.http.context.ServletContextHelper;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
+
+import de.dentrassi.osgi.web.DispatcherServlet;
 
 public class Activator implements BundleActivator
 {
+    private static final String WEB_CONTEXT_NAME = "dispatcher";
 
-    private ServiceRegistration<ContextHandler> handle;
+    private static final String SERVLET_NAME = "dispatcher";
+
+    private final List<ServiceRegistration<?>> regs = new LinkedList<> ();
 
     /*
      * (non-Javadoc)
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
      */
     @Override
-    public void start ( final BundleContext bundleContext ) throws Exception
+    public void start ( final BundleContext context ) throws Exception
     {
-        final Dictionary<String, Object> properties = new Hashtable<> ();
+        {
+            final Dictionary<String, Object> properties = new Hashtable<> ();
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME, WEB_CONTEXT_NAME );
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH, "/" );
 
-        final ContextImpl appContext = new ContextImpl ();
-        properties.put ( "Jetty-WarFolderPath", "." );
-        properties.put ( "contextPath", "/" );
+            final ServletContextImpl sctx = new ServletContextImpl ();
+            addRegistration ( context.registerService ( ServletContextHelper.class, sctx, properties ) );
+        }
 
-        this.handle = bundleContext.registerService ( ContextHandler.class, appContext, properties );
+        final String select = String.format ( "(%s=%s)", HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME, WEB_CONTEXT_NAME );
+
+        {
+            final Dictionary<String, Object> properties = new Hashtable<> ();
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_NAME, SERVLET_NAME );
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN, "/" );
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT, select );
+
+            final Servlet servlet = new DispatcherServlet ();
+            addRegistration ( context.registerService ( Servlet.class, servlet, properties ) );
+        }
+
+        {
+            final Dictionary<String, Object> properties = new Hashtable<> ();
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_NAME, "jsp" );
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN, "*.jsp" );
+            properties.put ( HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT, select );
+
+            final Servlet servlet = new JspServlet ( context.getBundle (), null, null );
+            addRegistration ( context.registerService ( Servlet.class, servlet, properties ) );
+        }
+    }
+
+    private void addRegistration ( final ServiceRegistration<?> reg )
+    {
+        this.regs.add ( reg );
     }
 
     /*
@@ -46,7 +85,11 @@ public class Activator implements BundleActivator
     @Override
     public void stop ( final BundleContext bundleContext ) throws Exception
     {
-        this.handle.unregister ();
+        for ( final ServiceRegistration<?> reg : this.regs )
+        {
+            reg.unregister ();
+        }
+        this.regs.clear ();
     }
 
 }

@@ -28,6 +28,7 @@ import de.dentrassi.osgi.utils.Headers;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.RequestHandlerFactory;
 import de.dentrassi.osgi.web.ResourceRequestHandler;
+import de.dentrassi.osgi.web.util.Requests;
 
 public class ResourceTracker implements RequestHandlerFactory
 {
@@ -160,7 +161,7 @@ public class ResourceTracker implements RequestHandlerFactory
             return null;
         }
 
-        final String requestPath = request.getServletPath ();
+        final String requestPath = Requests.getRequestPath ( request );
 
         for ( final ResourceHandlerProvider entry : this.tracker.getTracked ().values () )
         {
