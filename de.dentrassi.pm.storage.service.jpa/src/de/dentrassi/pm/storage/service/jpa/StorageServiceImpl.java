@@ -41,6 +41,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
@@ -807,9 +808,26 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
-    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer )
+    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
     {
-        doWithHandlerVoid ( ( handler ) -> handler.streamCacheEntry ( channelId, namespace, key, consumer ) );
+        try
+        {
+            doWithHandlerVoid ( ( handler ) -> handler.streamCacheEntry ( channelId, namespace, key, consumer ) );
+        }
+        catch ( final Exception e )
+        {
+            /*
+             * In the case we did not find the entry, we should throw a FileNotFoundException.
+             * However this exception is actually wrapped in a layer of RuntimeExceptions, so we have to
+             * unwrap them in this case.
+             */
+            final Throwable cause = ExceptionHelper.getRootCause ( e );
+            if ( cause instanceof FileNotFoundException )
+            {
+                throw (FileNotFoundException)cause;
+            }
+            throw e;
+        }
     }
 
     public ArtifactGuard createArtifactGuard ()
