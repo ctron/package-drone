@@ -40,7 +40,17 @@ public class AnalyticsWebExtender implements WebExtender
     @Override
     public void processHead ( final HttpServletRequest request, final Writer writer ) throws IOException
     {
-        final Map<String, String> data = this.service.getCoreNamespacePlainProperties ( NAMESPACE, KEY_TRACKING_ID, KEY_ANONYMIZE_IP, KEY_FORCE_SSL );
+        final Map<String, String> data;
+
+        try
+        {
+            data = this.service.getCoreNamespacePlainProperties ( NAMESPACE, KEY_TRACKING_ID, KEY_ANONYMIZE_IP, KEY_FORCE_SSL );
+        }
+        catch ( final Exception e )
+        {
+            // if we don't get any data, still show the web page
+            return;
+        }
 
         final String trackingId = data.get ( KEY_TRACKING_ID );
         if ( trackingId == null || trackingId.isEmpty () )
