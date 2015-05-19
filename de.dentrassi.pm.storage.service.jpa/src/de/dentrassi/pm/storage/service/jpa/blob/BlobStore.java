@@ -248,7 +248,7 @@ public class BlobStore
      */
     public void vacuumArtifact ( final String id ) throws IOException
     {
-        logger.debug ( "Vacuuming artifact: {}" );
+        logger.debug ( "Vacuuming artifact: {}", id );
 
         checkOpen ();
 
