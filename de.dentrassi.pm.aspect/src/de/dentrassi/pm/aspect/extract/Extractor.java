@@ -11,6 +11,7 @@
 package de.dentrassi.pm.aspect.extract;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Map;
 
 import de.dentrassi.pm.aspect.ValidationContext;
@@ -32,6 +33,8 @@ public interface Extractor extends ChannelAspectFunction
          * @return the path to the temporary BLOB file
          */
         public Path getPath ();
+
+        public Instant getCreationTimestamp ();
     }
 
     public void extractMetaData ( Context context, Map<String, String> metadata ) throws Exception;

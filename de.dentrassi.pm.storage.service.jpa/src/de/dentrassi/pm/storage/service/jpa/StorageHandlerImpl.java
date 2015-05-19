@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -461,15 +462,17 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 }
             }
 
+            final Instant creationTimestamp = Instant.now ();
+
             final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
-            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, file );
+            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, creationTimestamp, file );
 
             return this.lockManager.modifyCall ( channel.getId (), () -> {
 
                 final ArtifactEntity ae = entityCreator.get ();
                 ae.setName ( name );
                 ae.setChannel ( channel );
-                ae.setCreationTimestamp ( new Date () );
+                ae.setCreationTimestamp ( Date.from ( creationTimestamp ) );
 
                 Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
                 Helper.convertProvidedProperties ( providedMetaData, ae, ae.getProvidedProperties () );
@@ -543,14 +546,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Path file )
+    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Instant creationTimestamp, final Path file )
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
             try
             {
-                final Context context = createExtractorContext ( extractor.getAspect ().getId (), name, file, vms );
+                final Context context = createExtractorContext ( extractor.getAspect ().getId (), name, creationTimestamp, file, vms );
 
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( context, md );
@@ -566,7 +569,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return metadata;
     }
 
-    protected static Context createExtractorContext ( final String aspectId, final String name, final Path file, final ValidationMessageSink vms )
+    protected static Context createExtractorContext ( final String aspectId, final String name, final Instant creationTimestamp, final Path file, final ValidationMessageSink vms )
     {
         return new Context () {
 
@@ -580,6 +583,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             public String getName ()
             {
                 return name;
+            }
+
+            @Override
+            public Instant getCreationTimestamp ()
+            {
+                return creationTimestamp;
             }
 
             @Override
@@ -845,7 +854,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                     {
                         final Map<String, String> md = new HashMap<> ();
                         final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
-                        extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), file, vms ), md );
+                        extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
                         vms.flush ( this.em, ae );
                         convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
@@ -932,7 +941,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
