@@ -280,7 +280,20 @@ public class MavenServlet extends AbstractStorageServiceServlet
                 return;
             }
 
-            final Artifact parent = getParent ( channel, info.makePlainName () );
+            logger.debug ( "Request to store release artifact: {}", info );
+
+            final Artifact parent;
+
+            if ( info.isPrimary () )
+            {
+                // if it should be parent artifact, don't find a parent
+                parent = null;
+            }
+            else
+            {
+                // should be a child artifact
+                parent = getParent ( channel, info.makePlainName () );
+            }
             storeArtifact ( channel, info, parent, request.getInputStream () );
         }
     }
@@ -361,6 +374,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
     private Artifact getParent ( final Channel channel, final String parentName )
     {
         logger.debug ( "Looking for parent as: '{}'", parentName );
+
         final Collection<Artifact> result = channel.findByName ( parentName );
         if ( result != null && result.size () == 1 )
         {
@@ -372,6 +386,8 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception
     {
+        logger.debug ( "Processing meta data" );
+
         final String groupId = join ( toks, 2, -3 );
         final String artifactId = toks[toks.length - 3];
         final String version = toks[toks.length - 2];
@@ -390,6 +406,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
 
         final String releaseVersion = this.xml.getElementValue ( de, "versioning/release" );
+        logger.debug ( "Release version: {}", releaseVersion );
 
         if ( releaseVersion != null )
         {
@@ -401,6 +418,8 @@ public class MavenServlet extends AbstractStorageServiceServlet
             final String snapshotTimestamp = this.xml.getElementValue ( de, "versioning/snapshot/timestamp" );
             final String snapshotBuildNumber = this.xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
 
+            logger.debug ( "Snapshot version: {} / {}", snapshotTimestamp, snapshotBuildNumber );
+
             Long buildNumber = null;
             if ( snapshotBuildNumber != null )
             {
@@ -410,7 +429,6 @@ public class MavenServlet extends AbstractStorageServiceServlet
             if ( snapshotTimestamp != null && snapshotBuildNumber != null )
             {
                 // snapshot version
-                System.out.format ( "\t%s %s%n", snapshotTimestamp, snapshotBuildNumber );
 
                 final List<MavenInformation> plain = new LinkedList<> ();
                 final List<MavenInformation> classified = new LinkedList<> ();
@@ -486,12 +504,15 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private Artifact store ( final Channel channel, final MavenInformation info, final Artifact parent ) throws Exception
     {
+        logger.debug ( "Request store - parent: {}, info: {}", info, parent );
         return pullFromTemp ( channel, info, ( is ) -> storeArtifact ( channel, info, parent, is ) );
     }
 
     protected Artifact storeArtifact ( final Channel channel, final MavenInformation info, final Artifact parent, final InputStream is )
     {
-        Map<MetaKey, String> md;
+        logger.debug ( "Storing artifact - parent: {}, info: {}", parent, info );
+
+        final Map<MetaKey, String> md;
         try
         {
             md = MetaKeys.unbind ( info );
@@ -500,6 +521,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         {
             throw new RuntimeException ( e );
         }
+
         if ( parent != null )
         {
             return parent.attachArtifact ( info.makeName (), is, md );

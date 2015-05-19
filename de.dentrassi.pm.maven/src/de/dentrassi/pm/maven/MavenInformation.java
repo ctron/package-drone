@@ -130,6 +130,17 @@ public class MavenInformation
         return sb.toString ();
     }
 
+    /**
+     * Check if this artifact should be the parent artifact
+     *
+     * @return <code>true</code> if the artifact should be a primary artifact,
+     *         <code>false</code> otherwise
+     */
+    public boolean isPrimary ()
+    {
+        return this.classifier == null || this.classifier.isEmpty ();
+    }
+
     protected void appendFile ( final StringBuilder sb, final boolean ignoreClassifier )
     {
         sb.append ( this.artifactId );
@@ -165,5 +176,15 @@ public class MavenInformation
     public boolean isSnapshot ()
     {
         return this.version != null && this.version.endsWith ( "-SNAPSHOT" );
+    }
+
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder ();
+        sb.append ( this.groupId );
+        sb.append ( '/' );
+        appendFile ( sb, false );
+        return sb.toString ();
     }
 }
