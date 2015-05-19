@@ -40,5 +40,6 @@ Export-Package: de.dentrassi.pm.maven;version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/mavenRepo.xml,
  OSGI-INF/groupMaven.xml,
- OSGI-INF/mavenExtractor.xml
+ OSGI-INF/mavenExtractor.xml,
+ OSGI-INF/mavenInfo.xml
 

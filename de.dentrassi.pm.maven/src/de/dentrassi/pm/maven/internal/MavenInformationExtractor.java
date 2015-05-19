@@ -23,7 +23,7 @@ import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
 
-public class MavenPomExtractor implements Extractor
+public class MavenInformationExtractor implements Extractor
 {
     private static final String NS = "http://maven.apache.org/POM/4.0.0";
 
@@ -31,7 +31,7 @@ public class MavenPomExtractor implements Extractor
 
     private final XmlHelper xml = new XmlHelper ();
 
-    public MavenPomExtractor ( final ChannelAspect aspect )
+    public MavenInformationExtractor ( final ChannelAspect aspect )
     {
         this.aspect = aspect;
     }

@@ -12,11 +12,11 @@ package de.dentrassi.pm.maven.internal;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.aspect.virtual.Virtualizer;
+import de.dentrassi.pm.aspect.extract.Extractor;
 
-public class MavenPomExtractorFactory implements ChannelAspectFactory
+public class MavenInformationExtractorFactory implements ChannelAspectFactory
 {
-    public static final String ID = "mvn.pom";
+    public static final String ID = "mvn";
 
     @Override
     public ChannelAspect createAspect ()
@@ -30,9 +30,9 @@ public class MavenPomExtractorFactory implements ChannelAspectFactory
             }
 
             @Override
-            public Virtualizer getArtifactVirtualizer ()
+            public Extractor getExtractor ()
             {
-                return new MavenPomVirtualizer ();
+                return new MavenInformationExtractor ( MavenPomExtractorAspect.this );
             }
         };
 
