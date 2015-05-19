@@ -12,21 +12,20 @@ package de.dentrassi.pm.aspect.mvnosgi.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.osgi.framework.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 
 public class VirtualizerImpl implements Virtualizer
 {
-    private final static Logger logger = LoggerFactory.getLogger ( VirtualizerImpl.class );
-
-    private final static String GROUP_ID = "groupid";
+    //private final static Logger logger = LoggerFactory.getLogger ( VirtualizerImpl.class );
 
     @Override
     public void virtualize ( final Context context )
@@ -43,15 +42,41 @@ public class VirtualizerImpl implements Virtualizer
 
     private void processVirtualize ( final Context context ) throws Exception
     {
-        final ArtifactInformation art = context.getArtifactInformation ();
+        // The group ID will be set using the provided channel meta data or the default one.
+        String groupId = null;
 
-        logger.debug ( "Process virtualize - artifactId: {} / {}", art.getId (), art.getName () );
+        // Extract some informations (e.g. group ID) from the provided channel meta data.
+        final Map<MetaKey, String> channelMetaData = context.getProvidedChannelMetaData ();
+        for ( final Entry<MetaKey, String> entry : channelMetaData.entrySet () )
+        {
+            final MetaKey metaKey = entry.getKey ();
+
+            if ( metaKey.getNamespace ().equals ( Constants.METADATA_NAMESPACE ) )
+            {
+                switch ( metaKey.getKey () )
+                {
+                    case Constants.METADATA_KEY_GROUPID:
+                        groupId = entry.getValue ();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // If the group ID is not set or empty, use the default one.
+        if ( groupId == null || groupId.isEmpty () )
+        {
+            groupId = Constants.DEFAULT_GROUPID;
+        }
+
+        final ArtifactInformation art = context.getArtifactInformation ();
 
         final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getMetaData () );
         if ( bi != null )
         {
             final Version version = bi.getVersion ();
-            final Pom pom = new Pom ( GROUP_ID, bi.getId (), version.toString () );
+            final Pom pom = new Pom ( groupId, bi.getId (), version.toString () );
             createArtifact ( context, pom );
             return;
         }
