@@ -191,28 +191,10 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         final Collection<MavenInformation> infos = new LinkedList<> ();
 
         /*
-         * Try to use the info of the artifact them-self.
+         * Try to add all child POM files and the info of the artifact themselves.
          */
 
-        try
-        {
-            final MavenInformation info = new MavenInformation ();
-            MetaKeys.bind ( info, art.getMetaData () );
-            if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
-            {
-                // found direct meta data
-                infos.add ( info );
-            }
-        }
-        catch ( final Exception e )
-        {
-        }
-
-        /*
-         * Try to add all child POM files.
-         */
-
-        final Collection<ArtifactInformation> pomArts = findChildPoms ( art, map );
+        final Collection<ArtifactInformation> pomArts = findChildPoms ( art, map, true );
         for ( final ArtifactInformation pomArt : pomArts )
         {
             try
@@ -243,13 +225,16 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
      *
      * @param art
      * @param map
+     * @param myselfIsChild
+     *            Flag if we should use the artifact themselves as a child, so
+     *            this is could eventually added to the result.
      * @return a set with all child POMs, an empty set if no child POM is found.
      */
-    private Collection<ArtifactInformation> findChildPoms ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    private Collection<ArtifactInformation> findChildPoms ( final ArtifactInformation art, final Map<String, ArtifactInformation> map, final boolean myselfIsChild )
     {
         final Collection<ArtifactInformation> poms = new LinkedList<> ();
 
-        if ( isPomFileName ( art.getName () ) )
+        if ( myselfIsChild && isPomFileName ( art.getName () ) )
         {
             poms.add ( art );
         }
