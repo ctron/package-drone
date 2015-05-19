@@ -253,12 +253,12 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         {
             poms.add ( art );
         }
-        else
+        for ( final String childId : art.getChildIds () )
         {
-            for ( final ArtifactInformation child : map.values () )
+            final ArtifactInformation child = map.get ( childId );
+            if ( child != null )
             {
                 final String childName = child.getName ();
-
                 if ( isPomFileName ( childName ) )
                 {
                     poms.add ( child );
