@@ -88,6 +88,7 @@ import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ExtractorValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
@@ -442,17 +443,23 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.debug ( "Storing artifact: {} in channel: {}", name, channel.getId () );
 
+        // create a temp file
+
         final Path file = createTempFile ( name );
 
         try
         {
             // copy data to temp file
+
             try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
             {
                 ByteStreams.copy ( stream, os );
             }
 
+            // run pre add listeners
+
             {
+                logger.trace ( "Running pre-add listeners" );
                 final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId (), external );
                 runChannelTriggers ( tracker, channel, listener -> listener.artifactPreAdd ( context ), null );
                 if ( context.isVeto () )
@@ -470,39 +477,77 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             return this.lockManager.modifyCall ( channel.getId (), () -> {
 
                 final ArtifactEntity ae = entityCreator.get ();
+
+                // test if this is a child artifact and if the parent is still present
+
+                if ( ae instanceof ChildArtifactEntity )
+                {
+                    final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
+                    if ( parent != null && this.em.find ( ArtifactEntity.class, parent.getId () ) == null )
+                    {
+                        logger.debug ( "Parent artifact got deleted: {}", parent.getId () );
+                        return null;
+                    }
+                }
+
+                // set the basic data
+
                 ae.setName ( name );
                 ae.setChannel ( channel );
                 ae.setCreationTimestamp ( Date.from ( creationTimestamp ) );
 
+                if ( logger.isDebugEnabled () )
+                {
+                    if ( ae instanceof ChildArtifactEntity )
+                    {
+                        logger.debug ( "Storing as child of: {}", ( (ChildArtifactEntity)ae ).getParentId () );
+                    }
+                }
+
+                // convert meta data
+
                 Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
                 Helper.convertProvidedProperties ( providedMetaData, ae, ae.getProvidedProperties () );
+
+                // store blob
 
                 try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
                 {
                     this.blobStore.storeBlob ( this.em, in, size -> {
                         ae.setSize ( size );
                         this.em.persist ( ae );
-                        vms.flush ( this.em, ae );
                         this.em.flush ();
+
+                        logger.debug ( "Storing artifact: {} in channel: {} -> {}", name, channel.getId (), ae.getId () );
+
+                        vms.flush ( this.em, ae );
                         return ae.getId ();
                     } );
                 }
+
+                // generate artifact if this is a generator
 
                 if ( ae instanceof GeneratorArtifactEntity )
                 {
                     generateArtifact ( channel, (GeneratorArtifactEntity)ae, file, runAggregator );
                 }
 
-                final AddedEvent event = new AddedEvent ( ae.getId (), metadata );
-                runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), event );
+                // first create the virtual artifacts, since the following call to runChannelTriggers might actually delete ourself
 
                 createVirtualArtifacts ( channel, ae, file, tracker, runAggregator );
 
+                // run the channel triggers and listeners
+
+                runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), new AddedEvent ( ae.getId (), metadata ) );
+
                 // now run the channel aggregator if requested
+
                 if ( runAggregator )
                 {
                     runChannelAggregators ( channel );
                 }
+
+                // finally return
 
                 return ae;
             } );
@@ -512,12 +557,13 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             try
             {
                 // delete the temp file, if possible
+
                 Files.deleteIfExists ( file );
             }
             catch ( final Exception e )
             {
+                // ignore if the temp file could not be deleted
                 logger.info ( "Failed to delete temp file", e );
-                // ignore this
             }
         }
     }
@@ -529,6 +575,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void runChannelTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
     {
+        logger.debug ( "Running channel triggers - {}", event );
+
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getChannelListener, ( t ) -> {
             try
             {
@@ -849,13 +897,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 // generate metadata for new factory
 
                 final Map<MetaKey, String> metadata = new HashMap<> ();
+                final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+
                 this.channelAspectProcessor.process ( aspectFactoryIds, ChannelAspect::getExtractor, extractor -> {
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
-                        final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+
                         extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
-                        vms.flush ( this.em, ae );
+
                         convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
                     }
                     catch ( final Exception e )
@@ -863,6 +913,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                         throw new RuntimeException ( e );
                     }
                 } );
+
+                // flush validation messages for this artifact
+
+                vms.flush ( this.em, ae );
 
                 // don't clear extracted meta data, since we only process one aspect and we actually add it
 
@@ -915,6 +969,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void scanArtifacts ( final ChannelEntity ce, final ThrowingConsumer<ArtifactEntity> consumer )
     {
+        logger.debug ( "Scanning artifacts: {}", ce.getId () );
+
         final CriteriaBuilder cb = this.em.getCriteriaBuilder ();
         final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
 
@@ -949,11 +1005,11 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
         // query.setParameter ( "channel", ce );
 
-        logger.trace ( "Pre get" );
+        logger.trace ( "Before getResultList ()" );
 
         final List<ArtifactEntity> list = query.getResultList ();
 
-        logger.trace ( "Got result" );
+        logger.trace ( "After getResultList () -> {}", list.size () );
 
         for ( final ArtifactEntity ae : list )
         {

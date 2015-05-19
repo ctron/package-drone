@@ -18,6 +18,9 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -27,6 +30,8 @@ import de.dentrassi.pm.storage.jpa.ValidationSeverity;
 
 public class ValidationMessageSink
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ValidationMessageSink.class );
+
     private static class Entry
     {
         private final String aspectId;
@@ -77,6 +82,11 @@ public class ValidationMessageSink
 
     public void flush ( final EntityManager em, final ArtifactEntity artifact )
     {
+        if ( logger.isDebugEnabled () )
+        {
+            logger.debug ( "Flushing validation messages - artifact: {}", artifact.getId () );
+        }
+
         for ( final Entry entry : this.entries )
         {
             final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
