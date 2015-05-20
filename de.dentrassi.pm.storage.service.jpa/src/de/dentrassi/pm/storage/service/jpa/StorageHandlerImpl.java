@@ -997,7 +997,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1289,7 +1289,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, entityCreator, providedMetaData, tracker, false, external );
             tracker.process ( this );
             runChannelAggregators ( channel );
-            return ae;
+
+            if ( ae == null )
+            {
+                return null;
+            }
+
+            // we do reload in order to check for cases where the artifact got deleted right away
+            return this.em.find ( ArtifactEntity.class, ae.getId () );
         }
         catch ( final Exception e )
         {
