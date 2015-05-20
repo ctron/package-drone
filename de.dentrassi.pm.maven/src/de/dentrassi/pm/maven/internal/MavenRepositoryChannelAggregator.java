@@ -190,11 +190,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
     {
         final Collection<MavenInformation> infos = new LinkedList<> ();
 
-        /*
-         * Try to add all child POM files and the info of the artifact themselves.
-         */
-
-        final Collection<ArtifactInformation> pomArts = findChildPoms ( art, map, true );
+        final Collection<ArtifactInformation> pomArts = findPomArtifacts ( art, map );
         for ( final ArtifactInformation pomArt : pomArts )
         {
             try
@@ -221,39 +217,88 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
     }
 
     /**
-     * Return a set with all child POMs
+     * Return a collection with all POMs candidates for an artifact.
      *
      * @param art
-     * @param map
-     * @param myselfIsChild
-     *            Flag if we should use the artifact themselves as a child, so
-     *            this is could eventually added to the result.
-     * @return a set with all child POMs, an empty set if no child POM is found.
+     *            The artifact that POMs should be found.
+     * @param artifacts
+     *            A containing all artifacts that could be used. The key consist
+     *            of the artifact id, the value of the artifact themselves.
+     * @return a collection with all POM candidates, an empty collection if no
+     *         candidates are found.
      */
-    private Collection<ArtifactInformation> findChildPoms ( final ArtifactInformation art, final Map<String, ArtifactInformation> map, final boolean myselfIsChild )
+    private Collection<ArtifactInformation> findPomArtifacts ( final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
     {
         final Collection<ArtifactInformation> poms = new LinkedList<> ();
 
-        if ( myselfIsChild && isPomFileName ( art.getName () ) )
+        fillPomsFromArtifact ( poms, art );
+        fillPomsFromChildren ( poms, art, artifacts );
+
+        return poms;
+    }
+
+    /**
+     * Fill a collection with all POMs for an artifact themselves.
+     *
+     * @param poms
+     *            the collection that should be filled
+     * @param art
+     *            the artifact that should be evaluated
+     * @return the number of POMs that has been added
+     */
+    private int fillPomsFromArtifact ( final Collection<ArtifactInformation> poms, final ArtifactInformation art )
+    {
+        int cnt = 0;
+
+        if ( isPomFileName ( art.getName () ) )
         {
             poms.add ( art );
+            ++cnt;
         }
+
+        return cnt;
+    }
+
+    /**
+     * Fill a collection with all POMs for the children of an artifact.
+     *
+     * @param poms
+     *            the collection that should be filled
+     * @param art
+     *            the artifact that should be evaluated
+     * @param artifacts
+     *            A containing all artifacts that could be used. The key consist
+     *            of the artifact id, the value of the artifact themselves.
+     * @return the number of POMs that has been added
+     */
+    private int fillPomsFromChildren ( final Collection<ArtifactInformation> poms, final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
+    {
+        int cnt = 0;
+
         for ( final String childId : art.getChildIds () )
         {
-            final ArtifactInformation child = map.get ( childId );
+            final ArtifactInformation child = artifacts.get ( childId );
             if ( child != null )
             {
                 final String childName = child.getName ();
                 if ( isPomFileName ( childName ) )
                 {
                     poms.add ( child );
+                    ++cnt;
                 }
             }
         }
 
-        return poms;
+        return cnt;
     }
 
+    /**
+     * Check if a file name indicates a POM file.
+     *
+     * @param fileName
+     *            the name of the file
+     * @return true if the file name indicates a POM file, otherwise false.
+     */
     private static boolean isPomFileName ( final String fileName )
     {
         return "pom.xml".equals ( fileName ) || "pom".equals ( FilenameUtils.getExtension ( fileName ) );
