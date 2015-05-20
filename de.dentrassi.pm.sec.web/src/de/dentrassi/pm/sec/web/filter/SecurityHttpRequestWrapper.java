@@ -18,6 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.UserInformationPrincipal;
 import de.dentrassi.pm.sec.service.LoginException;
@@ -25,6 +28,8 @@ import de.dentrassi.pm.sec.service.SecurityService;
 
 public class SecurityHttpRequestWrapper extends HttpServletRequestWrapper
 {
+    private final static Logger logger = LoggerFactory.getLogger ( SecurityHttpRequestWrapper.class );
+
     private final SecurityService service;
 
     private final HttpServletRequest parent;
@@ -42,6 +47,7 @@ public class SecurityHttpRequestWrapper extends HttpServletRequestWrapper
         final Object value = getSession ().getAttribute ( SecurityFilter.ATTR_USER_INFORMATION );
         if ( value != null )
         {
+            logger.warn ( "Already logged in as: {}", value );
             throw new ServletException ( "Already logged in" );
         }
 

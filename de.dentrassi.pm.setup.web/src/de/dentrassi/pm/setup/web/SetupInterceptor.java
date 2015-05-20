@@ -44,6 +44,12 @@ public class SetupInterceptor extends ModelAndViewInterceptorAdapter
     {
         final String current = Requests.getOriginalPath ( request );
 
+        if ( current == null )
+        {
+            response.sendRedirect ( request.getContextPath () + "/setup" );
+            return false;
+        }
+
         for ( final String prefix : this.ignoredPrefixes )
         {
             if ( current.startsWith ( prefix ) )
