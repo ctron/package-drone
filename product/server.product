@@ -45,6 +45,8 @@
       <plugin id="de.dentrassi.pm.api.upload" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.cleanup" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.cleanup.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.aspect.mvnosgi" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.aspect.mvnosgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.upgrade" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web.ckeditor" autoStart="true" startLevel="0" />
