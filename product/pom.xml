@@ -13,6 +13,10 @@
 	<version>0.9.0</version>
 	<artifactId>package-drone-server</artifactId>
 	<packaging>eclipse-repository</packaging>
+	
+	<properties>
+	   <releaseBase>1</releaseBase>
+	</properties>
 
 	<build>
 		<plugins>
@@ -165,7 +169,7 @@
 					<defaultUsername>root</defaultUsername>
 					<defaultGroupname>root</defaultGroupname>
 
-					<release>1.%{?dist}</release>
+					<release>${releaseBase}.%{?dist}</release>
 				</configuration>
 
 				<executions>
