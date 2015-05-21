@@ -59,11 +59,11 @@ function doAction ( action, factoryId )
 
 	<div>
 	
-	   <h2>Assigned aspects</h2>
+        <h2>Assigned aspects</h2>
 	
 		<div role="tabpanel">
 	
-	        <ul class="nav nav-pills" role="tablist">
+	        <ul class="nav nav-pills" role="tablist" id="assigned-tab-list">
 	            <c:forEach items="${web:sort ( groupedAssignedAspects.keySet() ) }" var="group" varStatus="s">
 	                <li role="presentation" class="${ s.first ? 'active' : '' }">
 	                    <a role="tab" href="#cgroup-${group.id}" data-toggle="pill" aria-controls="cgroup-${group.id }">${fn:escapeXml(group.name) }</a>
@@ -124,7 +124,7 @@ function doAction ( action, factoryId )
 
     <div role="tabpanel">
 
-        <ul class="nav nav-pills" role="tablist">
+        <ul class="nav nav-pills" role="tablist" id="additional-tab-list">
             <c:forEach items="${web:sort ( addAspects.keySet() ) }" var="group" varStatus="s">
                 <li role="presentation" class="${ s.first ? 'active' : '' }">
                     <a role="tab" href="#group-${group.id}" data-toggle="pill" aria-controls="group-${group.id }">${fn:escapeXml(group.name) }</a>
