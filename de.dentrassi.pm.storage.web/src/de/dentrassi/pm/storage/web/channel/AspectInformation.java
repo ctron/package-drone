@@ -183,19 +183,32 @@ public class AspectInformation
         return list.stream ().filter ( ( i ) -> predicate.test ( i.getFactoryId () ) ).collect ( Collectors.toList () );
     }
 
+    /**
+     * Get all aspect ids which are currently missing but required by this
+     * aspect
+     *
+     * @param assignedAspects
+     *            the aspects which are considered assigned
+     * @return A possibly empty, array of all missing but required aspects.
+     *         Never returns <code>null</code>
+     */
     public String[] getMissingIds ( final List<AspectInformation> assignedAspects )
     {
-        final Set<String> result = new HashSet<> ();
+        final Set<AspectInformation> required = new HashSet<> ();
+        addRequired ( required, this );
 
-        for ( final AspectInformation req : this.requires )
+        return required.stream ().map ( AspectInformation::getFactoryId ).toArray ( size -> new String[size] );
+    }
+
+    private static void addRequired ( final Set<AspectInformation> result, final AspectInformation aspect )
+    {
+        for ( final AspectInformation req : aspect.getRequires () )
         {
-            if ( !assignedAspects.contains ( req ) )
+            if ( result.add ( req ) )
             {
-                result.add ( req.getFactoryId () );
+                addRequired ( result, req );
             }
         }
-
-        return result.toArray ( new String[result.size ()] );
     }
 
     @Override
@@ -273,6 +286,11 @@ public class AspectInformation
             return this.id.compareTo ( o.id );
         }
 
+        @Override
+        public String toString ()
+        {
+            return this.id;
+        }
     }
 
     public static Map<Group, List<AspectInformation>> group ( final List<AspectInformation> aspects )
@@ -291,6 +309,12 @@ public class AspectInformation
         }
 
         return result;
+    }
+
+    @Override
+    public String toString ()
+    {
+        return String.format ( "[%s: %s]", this.information, this.group );
     }
 
 }

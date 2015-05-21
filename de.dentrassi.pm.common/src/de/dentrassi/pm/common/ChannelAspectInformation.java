@@ -124,4 +124,10 @@ public class ChannelAspectInformation
         return new ChannelAspectInformation ( factoryId );
     }
 
+    @Override
+    public String toString ()
+    {
+        return this.factoryId;
+    }
+
 }
