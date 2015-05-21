@@ -79,7 +79,7 @@ function doAction ( action, factoryId )
                     <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="cgroup-${group.id }">
                 
 						<c:forEach items="${groupedAssignedAspects[group] }" var="aspect">
-							<div class="panel panel-default" id="${aspect.factoryId }">
+							<div class="panel panel-default aspect-assigned" id="${aspect.factoryId }">
 							    <div class="panel-heading">
 							        <h3 class="panel-title">${fn:escapeXml(aspect.name) }
                                         <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
@@ -140,7 +140,7 @@ function doAction ( action, factoryId )
 		      <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="group-${group.id }">
 		      
 		    	<c:forEach items="${addAspects[group] }" var="aspect">
-					<div class="panel panel-default" id="${aspect.factoryId }">
+					<div class="panel panel-default aspect-available" id="${aspect.factoryId }">
 					    <div class="panel-heading">
 					       <h3 class="panel-title">${fn:escapeXml(aspect.name) } <small>${fn:escapeXml(aspect.version) } – ${fn:escapeXml(aspect.factoryId) }</small></h3>
 					    </div>
