@@ -62,13 +62,15 @@
 						<sauce.username>${sauce.username}</sauce.username>
 						<sauce.accessKey>${sauce.accessKey}</sauce.accessKey>
 						<use.postgres>${use.postgres}</use.postgres>
+						<jetty.host>localhost</jetty.host>
+						<jetty.port>8081</jetty.port>
 					</systemPropertyVariables>
 					<includes>
                         <include>**/TestSuite.java</include>
                     </includes>
 				</configuration>
 			</plugin>
-
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -99,6 +101,7 @@
 									</fileset>
 								</copy>
 								<mkdir dir="${project.build.directory}/instance" />
+								<!-- unzip with support for the exec bit -->
 								<exec executable="unzip" dir="${project.build.directory}/instance">
 									<arg file="${project.build.directory}/package-drone-server.zip" />
 								</exec>

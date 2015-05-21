@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -29,12 +30,22 @@ import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
-@SuiteClasses ( { SetupTest.class, MailTest.class, FileStorageTest.class, UserTest.class, UploadTest.class, BasicTest.class, DefaultTest.class, } )
+@SuiteClasses ( { //
+        SetupTest.class, //
+        MailTest.class, //
+        FileStorageTest.class, //
+        UserTest.class, //
+        UploadTest.class, //
+        BasicTest.class, //
+        DefaultTest.class, //
+        ChannelTest.class } )
 public class TestSuite
 {
-    private static String SAUCE_USER_NAME = System.getProperty ( "sauce.username" );
+    private static final String SAUCE_USER_NAME = System.getProperty ( "sauce.username" );
 
-    private static String SAUCE_ACCESS_KEY = System.getProperty ( "sauce.accessKey" );
+    private static final String SAUCE_ACCESS_KEY = System.getProperty ( "sauce.accessKey" );
+
+    public static final int JETTY_PORT = Integer.getInteger ( "jetty.port", 8080 );
 
     private static RemoteWebDriver driver;
 
@@ -99,6 +110,8 @@ public class TestSuite
 
         pb.environment ().put ( "JAVA_HOME", javaHome );
 
+        makeProcessSystemProperties ( pb );
+
         pb.inheritIO ();
 
         System.out.println ( "Starting: " + pb );
@@ -109,7 +122,7 @@ public class TestSuite
         int i = 0;
         while ( i < 5 )
         {
-            if ( isOpen ( 8080 ) )
+            if ( isOpen ( JETTY_PORT ) )
             {
                 break;
             }
@@ -129,6 +142,31 @@ public class TestSuite
             // sleep a little bit longer to allow OSGi to fire up all services
             Thread.sleep ( 1000 );
         }
+    }
+
+    private static void makeProcessSystemProperties ( final ProcessBuilder pb )
+    {
+        final StringBuilder sb = new StringBuilder ();
+        for ( final Map.Entry<Object, Object> entry : System.getProperties ().entrySet () )
+        {
+            if ( entry.getKey () == null || entry.getValue () == null )
+            {
+                continue;
+            }
+
+            final String key = entry.getKey ().toString ();
+            final String value = entry.getValue ().toString ();
+
+            if ( key.startsWith ( "jetty." ) )
+            {
+                if ( sb.length () > 0 )
+                {
+                    sb.append ( ' ' );
+                }
+                sb.append ( "-D" ).append ( key ).append ( '=' ).append ( value );
+            }
+        }
+        pb.environment ().put ( "JAVA_OPTS", sb.toString () );
     }
 
     private static boolean isOpen ( final int port )

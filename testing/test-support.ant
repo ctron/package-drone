@@ -17,9 +17,9 @@
           target: pre-flight
          ================================= -->
     <target name="pre-flight" description="Test if test can be run">
-    	<echo message="Checking whether Port 8080 is used"/>
+    	<echo message="Checking whether Port 8081 is used"/>
         <condition property="port.ok">
-            <socket server="localhost" port="8080"/> 
+            <socket server="localhost" port="8081"/> 
         </condition>
     	<echo message="Result: ${port.ok}" />
     	<fail if="${port.ok}"/>
