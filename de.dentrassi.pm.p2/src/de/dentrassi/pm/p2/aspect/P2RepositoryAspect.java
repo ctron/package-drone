@@ -35,7 +35,7 @@ public class P2RepositoryAspect implements ChannelAspectFactory
             @Override
             public Extractor getExtractor ()
             {
-                return new ExtractorImpl ( this );
+                return new ExtractorImpl ();
             }
 
             @Override

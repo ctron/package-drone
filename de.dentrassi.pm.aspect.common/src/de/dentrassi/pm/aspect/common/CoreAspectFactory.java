@@ -53,12 +53,6 @@ public class CoreAspectFactory implements ChannelAspectFactory
                 {
                     makeMetadata ( context, metadata );
                 }
-
-                @Override
-                public ChannelAspect getAspect ()
-                {
-                    return ChannelAspectImpl.this;
-                }
             };
         }
 

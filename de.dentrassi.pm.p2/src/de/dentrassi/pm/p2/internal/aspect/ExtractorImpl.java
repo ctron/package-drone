@@ -21,28 +21,13 @@ import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.Constants;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
 
 public class ExtractorImpl implements Extractor
 {
-
     private final XmlHelper xml = new XmlHelper ();
-
-    private final ChannelAspect channelAspect;
-
-    public ExtractorImpl ( final ChannelAspect channelAspect )
-    {
-        this.channelAspect = channelAspect;
-    }
-
-    @Override
-    public ChannelAspect getAspect ()
-    {
-        return this.channelAspect;
-    }
 
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception

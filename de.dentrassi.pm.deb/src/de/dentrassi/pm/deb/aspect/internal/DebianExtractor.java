@@ -16,27 +16,17 @@ import java.util.SortedMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.Constants;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.utils.deb.Packages;
 
 public class DebianExtractor implements Extractor
 {
-    private final ChannelAspect channelAspect;
-
     private final GsonBuilder builder;
 
-    public DebianExtractor ( final ChannelAspect channelAspect )
+    public DebianExtractor ()
     {
-        this.channelAspect = channelAspect;
         this.builder = new GsonBuilder ();
-    }
-
-    @Override
-    public ChannelAspect getAspect ()
-    {
-        return this.channelAspect;
     }
 
     @Override

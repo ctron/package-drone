@@ -16,7 +16,7 @@ import java.util.Map;
 
 import de.dentrassi.pm.aspect.ValidationContext;
 
-public interface Extractor extends ChannelAspectFunction
+public interface Extractor
 {
     public interface Context extends ValidationContext
     {

@@ -598,15 +598,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, ( aspect, extractor ) -> {
             try
             {
-                final Context context = createExtractorContext ( extractor.getAspect ().getId (), name, creationTimestamp, file, vms );
+                final Context context = createExtractorContext ( aspect.getId (), name, creationTimestamp, file, vms );
 
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( context, md );
 
-                convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
+                convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
             }
             catch ( final Exception e )
             {
@@ -899,14 +899,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 final Map<MetaKey, String> metadata = new HashMap<> ();
                 final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
 
-                this.channelAspectProcessor.process ( aspectFactoryIds, ChannelAspect::getExtractor, extractor -> {
+                this.channelAspectProcessor.processWithAspect ( aspectFactoryIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
                     try
                     {
                         final Map<String, String> md = new HashMap<> ();
 
-                        extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
+                        extractor.extractMetaData ( createExtractorContext ( aspect.getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
 
-                        convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
+                        convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
                     }
                     catch ( final Exception e )
                     {
@@ -997,7 +997,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */

@@ -19,7 +19,6 @@ import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.XmlHelper;
 
@@ -27,20 +26,7 @@ public class MavenInformationExtractor implements Extractor
 {
     private static final String NS = "http://maven.apache.org/POM/4.0.0";
 
-    private final ChannelAspect aspect;
-
     private final XmlHelper xml = new XmlHelper ();
-
-    public MavenInformationExtractor ( final ChannelAspect aspect )
-    {
-        this.aspect = aspect;
-    }
-
-    @Override
-    public ChannelAspect getAspect ()
-    {
-        return this.aspect;
-    }
 
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception

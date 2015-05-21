@@ -58,12 +58,6 @@ public class HashAspectFactory implements ChannelAspectFactory
                 {
                     makeChecksumMetadata ( context.getPath (), metadata );
                 }
-
-                @Override
-                public ChannelAspect getAspect ()
-                {
-                    return ChannelAspectImpl.this;
-                }
             };
         }
 

@@ -21,8 +21,7 @@ public class MavenInformationExtractorFactory implements ChannelAspectFactory
     @Override
     public ChannelAspect createAspect ()
     {
-        class MavenPomExtractorAspect implements ChannelAspect
-        {
+        return new ChannelAspect () {
             @Override
             public String getId ()
             {
@@ -32,11 +31,9 @@ public class MavenInformationExtractorFactory implements ChannelAspectFactory
             @Override
             public Extractor getExtractor ()
             {
-                return new MavenInformationExtractor ( MavenPomExtractorAspect.this );
+                return new MavenInformationExtractor ();
             }
         };
-
-        return new MavenPomExtractorAspect ();
     }
 
 }
