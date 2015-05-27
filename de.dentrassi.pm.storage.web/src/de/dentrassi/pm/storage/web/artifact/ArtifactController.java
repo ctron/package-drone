@@ -217,7 +217,8 @@ public class ArtifactController implements InterfaceExtender
                 }
             }
 
-            result.add ( new MenuEntry ( "Download", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "dump" ).expand ( model ), Modifier.LINK, null ) );
+            result.add ( new MenuEntry ( "Download", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "get" ).expand ( model ), Modifier.LINK, "download" ) );
+            result.add ( new MenuEntry ( "View", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "dump" ).expand ( model ), Modifier.LINK, null ) );
 
             return result;
         }
