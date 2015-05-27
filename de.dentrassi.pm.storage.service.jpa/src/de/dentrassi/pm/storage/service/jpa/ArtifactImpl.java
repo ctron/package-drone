@@ -46,7 +46,7 @@ public class ArtifactImpl implements Artifact
     @Override
     public Artifact attachArtifact ( final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        return this.channel.getService ().createAttachedArtifact ( this.id, name, stream, providedMetaData );
+        return this.channel.getService ().createAttachedArtifact ( this.channel.getId (), this.id, name, stream, providedMetaData );
     }
 
     @Override

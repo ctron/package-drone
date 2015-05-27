@@ -218,6 +218,20 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         } );
     }
 
+    public Artifact createAttachedArtifact ( final String channelId, final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
+    {
+        return this.lockManager.modifyCall ( channelId, () -> {
+            return doWithHandler ( ( hi ) -> {
+                final ArtifactEntity artifact = hi.createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
+                if ( artifact == null )
+                {
+                    return null;
+                }
+                return convert ( convert ( artifact.getChannel () ), artifact, null );
+            } );
+        } );
+    }
+
     protected ChannelEntity getCheckedChannel ( final EntityManager em, final String channelId )
     {
         final ChannelEntity channel = em.find ( ChannelEntity.class, channelId );
@@ -701,19 +715,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void generateArtifact ( final String id )
     {
         doWithHandlerVoid ( hi -> hi.generateArtifact ( id ) );
-    }
-
-    @Override
-    public Artifact createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
-    {
-        return doWithHandler ( ( hi ) -> {
-            final ArtifactEntity artifact = hi.createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
-            if ( artifact == null )
-            {
-                return null;
-            }
-            return convert ( convert ( artifact.getChannel () ), artifact, null );
-        } );
     }
 
     public Collection<DeployKey> getAllDeployKeys ( final String channelId )
