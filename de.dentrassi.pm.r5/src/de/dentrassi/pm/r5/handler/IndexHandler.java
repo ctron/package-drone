@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -83,6 +83,11 @@ public class IndexHandler implements Handler
             return;
         }
 
+        if ( bi.getId () == null || bi.getVersion () == null )
+        {
+            return;
+        }
+
         final Element r = XmlHelper.addElement ( rep, "resource" );
 
         addIdentity ( r, bi );
@@ -116,8 +121,9 @@ public class IndexHandler implements Handler
         {
             final Map<String, String> reqs = new HashMap<> ();
 
-            final String filter = and ( pair ( "osgi.wiring.bundle", br.getId () ), //
-                    versionRange ( "bundle-version", br.getVersionRange () ) //
+            final String filter = and ( //
+            pair ( "osgi.wiring.bundle", br.getId () ), //
+            versionRange ( "bundle-version", br.getVersionRange () ) //
             );
 
             reqs.put ( "filter", filter );
@@ -130,7 +136,11 @@ public class IndexHandler implements Handler
             final Map<String, Object> caps = new HashMap<> ();
 
             caps.put ( "osgi.wiring.package", pe.getName () );
-            caps.put ( "version", pe.getVersion () );
+
+            if ( pe.getVersion () != null )
+            {
+                caps.put ( "version", pe.getVersion () );
+            }
 
             addCapability ( r, "osgi.wiring.package", caps );
         }
@@ -139,8 +149,9 @@ public class IndexHandler implements Handler
         {
             final Map<String, String> reqs = new HashMap<> ();
 
-            final String filter = and ( pair ( "osgi.wiring.package", pi.getName () ), //
-                    versionRange ( "version", pi.getVersionRange () ) //
+            final String filter = and ( //
+            pair ( "osgi.wiring.package", pi.getName () ), //
+            versionRange ( "version", pi.getVersionRange () ) //
             );
 
             reqs.put ( "filter", filter );

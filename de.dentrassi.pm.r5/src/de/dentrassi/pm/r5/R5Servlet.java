@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,6 +68,7 @@ public class R5Servlet extends HttpServlet
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
         Handler handler = findHandler ( req );
+
         if ( handler == null )
         {
             handler = resourceNotFound ( req );
@@ -86,12 +87,14 @@ public class R5Servlet extends HttpServlet
 
     private Handler findHandler ( final HttpServletRequest req )
     {
-        final String[] toks = req.getPathInfo ().split ( "\\/" );
+        final String path = req.getPathInfo ();
 
-        if ( "/".equals ( req.getPathInfo () ) )
+        if ( path == null || path.isEmpty () || "/".equals ( path ) )
         {
             return new HelpHandler ();
         }
+
+        final String[] toks = req.getPathInfo ().split ( "\\/" );
 
         if ( toks.length == 2 )
         {
