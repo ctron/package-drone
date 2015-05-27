@@ -320,6 +320,10 @@ public class ChannelAspectProcessor
         if ( val instanceof String )
         {
             final String s = (String)val;
+            if ( s.isEmpty () )
+            {
+                return null;
+            }
             return new TreeSet<> ( Arrays.asList ( s.split ( "[\\p{Space},]+" ) ) );
         }
         return null;
