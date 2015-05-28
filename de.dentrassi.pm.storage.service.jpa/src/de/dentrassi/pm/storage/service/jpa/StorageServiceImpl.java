@@ -557,40 +557,43 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             testLocked ( artifact.getChannel () );
 
-            final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
+            return this.lockManager.modifyCall ( artifact.getChannel ().getId (), () -> {
 
-            // merge
+                final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
 
-            mergeMetaData ( metadata, result );
+                // merge
 
-            // first clear all
+                mergeMetaData ( metadata, result );
 
-            artifact.getProvidedProperties ().clear ();
+                // first clear all
 
-            em.persist ( artifact );
-            em.flush ();
+                artifact.getProvidedProperties ().clear ();
 
-            // now add the new set
+                em.persist ( artifact );
+                em.flush ();
 
-            Helper.convertProvidedProperties ( result, artifact, artifact.getProvidedProperties () );
+                // now add the new set
 
-            // store
+                Helper.convertProvidedProperties ( result, artifact, artifact.getProvidedProperties () );
 
-            em.persist ( artifact );
-            em.flush ();
+                // store
 
-            // recreate virtual artifacts
+                em.persist ( artifact );
+                em.flush ();
 
-            hi.recreateVirtualArtifacts ( artifact );
+                // recreate virtual artifacts
 
-            // recreate generated artifacts
+                hi.recreateVirtualArtifacts ( artifact );
 
-            if ( artifact instanceof GeneratorArtifactEntity )
-            {
-                hi.regenerateArtifact ( (GeneratorArtifactEntity)artifact, true );
-            }
+                // recreate generated artifacts
 
-            return result;
+                if ( artifact instanceof GeneratorArtifactEntity )
+                {
+                    hi.regenerateArtifact ( (GeneratorArtifactEntity)artifact, true );
+                }
+
+                return result;
+            } );
         } );
     }
 
@@ -700,9 +703,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void clearChannel ( final String channelId )
     {
         this.lockManager.modifyRun ( channelId, () -> {
-
             doWithHandlerVoid ( hi -> hi.clearChannel ( channelId ) );
-
         } );
     }
 
@@ -753,30 +754,34 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public void addDeployGroup ( final String channelId, final String groupId )
     {
-        doWithTransactionVoid ( ( em ) -> {
-            final ChannelEntity channel = getCheckedChannel ( em, channelId );
-            final DeployGroupEntity group = DeployAuthServiceImpl.getGroupChecked ( em, groupId );
-            channel.getDeployGroups ().add ( group );
-            em.persist ( channel );
+        this.lockManager.modifyRun ( channelId, () -> {
+            doWithTransactionVoid ( ( em ) -> {
+                final ChannelEntity channel = getCheckedChannel ( em, channelId );
+                final DeployGroupEntity group = DeployAuthServiceImpl.getGroupChecked ( em, groupId );
+                channel.getDeployGroups ().add ( group );
+                em.persist ( channel );
+            } );
         } );
     }
 
     public void removeDeployGroup ( final String channelId, final String groupId )
     {
-        doWithTransactionVoid ( ( em ) -> {
-            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+        this.lockManager.modifyRun ( channelId, () -> {
+            doWithTransactionVoid ( ( em ) -> {
+                final ChannelEntity channel = getCheckedChannel ( em, channelId );
 
-            final Iterator<DeployGroupEntity> i = channel.getDeployGroups ().iterator ();
-            while ( i.hasNext () )
-            {
-                final DeployGroupEntity dg = i.next ();
-                if ( dg.getId ().equals ( groupId ) )
+                final Iterator<DeployGroupEntity> i = channel.getDeployGroups ().iterator ();
+                while ( i.hasNext () )
                 {
-                    i.remove ();
+                    final DeployGroupEntity dg = i.next ();
+                    if ( dg.getId ().equals ( groupId ) )
+                    {
+                        i.remove ();
+                    }
                 }
-            }
 
-            em.persist ( channel );
+                em.persist ( channel );
+            } );
         } );
     }
 
