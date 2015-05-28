@@ -92,7 +92,6 @@ public class YumServlet extends AbstractStorageServiceServlet
 
         // handle pool
 
-        // FIXME: handle pool
         if ( remPath.startsWith ( "pool/" ) )
         {
             handlePool ( channel, remPath, request, response );
