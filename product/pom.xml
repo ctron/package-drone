@@ -502,7 +502,7 @@ fi
 									<executable>bash</executable>
 									<arguments>
 										<argument>-c</argument>
-										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" && cp "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" ${project.build.directory}/]]></argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el7.noarch.rpm" && cp "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el7.noarch.rpm" ${project.build.directory}/]]></argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -516,7 +516,7 @@ fi
 									<executable>bash</executable>
 									<arguments>
 										<argument>-c</argument>
-										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" && cp "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" ${project.build.directory}/ ]]></argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el6.noarch.rpm" && cp "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el6.noarch.rpm" ${project.build.directory}/ ]]></argument>
 									</arguments>
 								</configuration>
 							</execution>
