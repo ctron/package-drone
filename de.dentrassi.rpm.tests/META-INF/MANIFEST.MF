@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Unit tests for 'de.dentrassi.rpm'
+Bundle-SymbolicName: de.dentrassi.rpm.tests
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: IBH SYSTEMS GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.junit
+Import-Package: de.dentrassi.rpm,
+ org.apache.commons.compress.archivers.cpio;version="1.9.0",
+ org.eclipse.scada.utils.str;version="0.2.0"

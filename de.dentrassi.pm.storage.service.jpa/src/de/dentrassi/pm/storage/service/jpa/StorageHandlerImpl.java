@@ -805,21 +805,21 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             final Map<MetaKey, String> metadata = new HashMap<> ();
 
-            this.channelAspectProcessor.process ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, aggregator -> {
+            this.channelAspectProcessor.processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
                 try
                 {
                     // create new context for this channel aspect
-                    final AggregationContextImpl context = new AggregationContextImpl ( artifacts, metaData, channel, aggregator.getId () );
+                    final AggregationContextImpl context = new AggregationContextImpl ( artifacts, metaData, channel, aspect.getId () );
 
                     // process
                     final Map<String, String> md = aggregator.aggregateMetaData ( context );
-                    convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
+                    convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
 
                     context.flush ( aggrValidationHandler );
                 }
                 catch ( final Exception e )
                 {
-                    throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aggregator.getId () ), e );
+                    throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aspect.getId () ), e );
                 }
             } );
 

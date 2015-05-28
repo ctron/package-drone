@@ -131,6 +131,23 @@ public class ChannelImpl implements Channel
     }
 
     @Override
+    public Artifact getArtifact ( final String artifactId )
+    {
+        final Artifact art = this.service.getArtifact ( artifactId );
+        if ( art == null )
+        {
+            return null;
+        }
+
+        if ( !art.getChannel ().getId ().equals ( this.id ) )
+        {
+            return null;
+        }
+
+        return art;
+    }
+
+    @Override
     public Collection<DeployKey> getAllDeployKeys ()
     {
         return this.service.getAllDeployKeys ( this.id );

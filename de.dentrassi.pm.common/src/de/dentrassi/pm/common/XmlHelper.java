@@ -138,6 +138,7 @@ public class XmlHelper
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
         try
         {
+            dbf.setNamespaceAware ( true );
             this.db = dbf.newDocumentBuilder ();
         }
         catch ( final ParserConfigurationException e )
@@ -224,6 +225,15 @@ public class XmlHelper
         return (NodeList)expression.evaluate ( node, XPathConstants.NODESET );
     }
 
+    /**
+     * Create a new element and add it as the last child
+     *
+     * @param parent
+     *            the parent of the new element
+     * @param name
+     *            the name of the element
+     * @return the new element
+     */
     public static Element addElement ( final Element parent, final String name )
     {
         final Element ele = parent.getOwnerDocument ().createElement ( name );
@@ -241,6 +251,27 @@ public class XmlHelper
         return ele;
     }
 
+    public static Element addOptionalElement ( final Element parent, final String name, final Object value )
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        final Element ele = addElement ( parent, name );
+        ele.setTextContent ( value.toString () );
+        return ele;
+    }
+
+    /**
+     * Create a new element and add it as the first child
+     *
+     * @param parent
+     *            the parent to which to add the element
+     * @param name
+     *            the name of the element
+     * @return the new element
+     */
     public static Element addElementFirst ( final Element parent, final String name )
     {
         final Element ele = parent.getOwnerDocument ().createElement ( name );

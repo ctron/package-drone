@@ -68,12 +68,6 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
     }
 
     @Override
-    public String getId ()
-    {
-        return MavenRepositoryAspectFactory.ID;
-    }
-
-    @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception
     {
         final Map<String, ArtifactInformation> map = makeMap ( context );

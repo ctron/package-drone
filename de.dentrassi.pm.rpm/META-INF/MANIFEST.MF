@@ -1,0 +1,37 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RPM Aspect
+Bundle-SymbolicName: de.dentrassi.pm.rpm
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: IBH SYSTEMS GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Web-ContextPath: /yum
+Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1"
+Import-Package: com.google.common.escape;version="18.0.0",
+ com.google.common.net;version="18.0.0",
+ com.google.gson;version="2.3.1",
+ de.dentrassi.osgi.web;version="1.0.0",
+ de.dentrassi.pm;version="1.0.0",
+ de.dentrassi.pm.aspect;version="1.0.0",
+ de.dentrassi.pm.aspect.aggregate;version="1.0.0",
+ de.dentrassi.pm.aspect.common.spool;version="1.0.0",
+ de.dentrassi.pm.aspect.extract;version="1.0.0",
+ de.dentrassi.pm.aspect.group;version="1.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.common.utils;version="1.0.0",
+ de.dentrassi.pm.common.web;version="1.0.0",
+ de.dentrassi.pm.common.web.menu;version="1.0.0",
+ de.dentrassi.pm.storage;version="1.0.0",
+ de.dentrassi.pm.storage.service;version="1.0.0",
+ de.dentrassi.pm.storage.service.servlet;version="1.0.0",
+ de.dentrassi.pm.storage.service.util;version="1.0.0",
+ de.dentrassi.pm.storage.web.utils;version="1.0.0",
+ de.dentrassi.rpm;version="1.0.0",
+ javax.servlet;version="3.1.0",
+ javax.servlet.http;version="3.1.0",
+ org.apache.commons.compress.archivers.cpio;version="1.9.0",
+ org.slf4j;version="1.7.2"
+Service-Component: OSGI-INF/rpm.xml,
+ OSGI-INF/yum.xml,
+ OSGI-INF/groupRpm.xml,
+ OSGI-INF/yumInterface.xml

@@ -195,18 +195,19 @@ public class AspectInformation
     public String[] getMissingIds ( final List<AspectInformation> assignedAspects )
     {
         final Set<AspectInformation> required = new HashSet<> ();
-        addRequired ( required, this );
+
+        addRequired ( required, this, assignedAspects );
 
         return required.stream ().map ( AspectInformation::getFactoryId ).toArray ( size -> new String[size] );
     }
 
-    private static void addRequired ( final Set<AspectInformation> result, final AspectInformation aspect )
+    private static void addRequired ( final Set<AspectInformation> result, final AspectInformation aspect, final List<AspectInformation> assignedAspects )
     {
         for ( final AspectInformation req : aspect.getRequires () )
         {
-            if ( result.add ( req ) )
+            if ( !assignedAspects.contains ( req ) && result.add ( req ) )
             {
-                addRequired ( result, req );
+                addRequired ( result, req, assignedAspects );
             }
         }
     }

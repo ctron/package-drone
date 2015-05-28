@@ -20,17 +20,10 @@ import java.util.Set;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 
 public class P2RepoChannelAggregator implements ChannelAggregator
 {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss.SSS" );
-
-    @Override
-    public String getId ()
-    {
-        return P2RepositoryAspect.ID;
-    }
 
     @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception

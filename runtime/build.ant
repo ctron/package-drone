@@ -233,9 +233,6 @@
             	
                 <include name="org.slf4j.api_*.jar" />
             	
-            	<include name="org.tukaani.xz_*.jar" />
-            	
-            	
             	<!-- http & jetty -->
             	<!-- HttpService
             	<include name="org.apache.jasper.glassfish*.jar" />
