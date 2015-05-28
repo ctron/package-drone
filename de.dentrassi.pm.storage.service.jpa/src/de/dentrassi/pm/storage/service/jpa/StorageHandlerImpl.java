@@ -304,7 +304,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return channel;
     }
 
-    public void setProvidedMetaData ( final ChannelEntity channel, final Map<MetaKey, String> providedMetaData )
+    protected void setProvidedMetaData ( final ChannelEntity channel, final Map<MetaKey, String> providedMetaData )
     {
         if ( providedMetaData == null )
         {
@@ -329,20 +329,22 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     @Override
     public void updateChannel ( final String channelId, final String name, final String description )
     {
-        final ChannelEntity channel = getCheckedChannel ( channelId );
+        this.lockManager.modifyRun ( channelId, () -> {
+            final ChannelEntity channel = getCheckedChannel ( channelId );
 
-        if ( "".equals ( name ) )
-        {
-            channel.setName ( null );
-        }
-        else
-        {
-            channel.setName ( name );
-        }
+            if ( "".equals ( name ) )
+            {
+                channel.setName ( null );
+            }
+            else
+            {
+                channel.setName ( name );
+            }
 
-        channel.setDescription ( description );
+            channel.setDescription ( description );
 
-        this.em.persist ( channel );
+            this.em.persist ( channel );
+        } );
     }
 
     @Override
@@ -698,8 +700,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             testLocked ( ae.getChannel () );
 
-            regenerateArtifact ( (GeneratorArtifactEntity)ae, false );
-            runChannelAggregators ( ae.getChannel () );
+            this.lockManager.modifyRun ( ae.getChannel ().getId (), () -> {
+                regenerateArtifact ( (GeneratorArtifactEntity)ae, false );
+                runChannelAggregators ( ae.getChannel () );
+            } );
         }
         catch ( final Exception e )
         {
@@ -719,28 +723,32 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         testLocked ( ae.getChannel () );
 
-        if ( !isDeleteable ( ae ) )
-        {
-            throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
-        }
+        return this.lockManager.modifyCall ( ae.getChannel ().getId (), () -> {
 
-        final SortedMap<MetaKey, String> md = convertMetaData ( ae );
+            if ( !isDeleteable ( ae ) )
+            {
+                throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
+            }
 
-        this.em.remove ( ae );
-        this.em.flush ();
+            final SortedMap<MetaKey, String> md = convertMetaData ( ae );
 
-        logger.info ( "Artifact deleted: {}", artifactId );
+            this.em.remove ( ae );
+            this.em.flush ();
 
-        final ChannelEntity channel = ae.getChannel ();
+            logger.info ( "Artifact deleted: {}", artifactId );
 
-        final RegenerateTracker tracker = new RegenerateTracker ();
-        runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
-        tracker.process ( this );
+            final ChannelEntity channel = ae.getChannel ();
 
-        // now run the channel aggregator
-        runChannelAggregators ( channel );
+            final RegenerateTracker tracker = new RegenerateTracker ();
+            runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
+            tracker.process ( this );
 
-        return convert ( ae, null );
+            // now run the channel aggregator
+            runChannelAggregators ( channel );
+
+            return convert ( ae, null );
+
+        } );
     }
 
     private void runGeneratorTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final Object event )
@@ -1366,16 +1374,18 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     public void clearChannel ( final String channelId )
     {
-        final ChannelEntity channel = getCheckedChannel ( channelId );
+        this.lockManager.modifyRun ( channelId, () -> {
+            final ChannelEntity channel = getCheckedChannel ( channelId );
 
-        testLocked ( channel );
+            testLocked ( channel );
 
-        // processing by "clear" triggers the entity listeners
+            // processing by "clear" triggers the entity listeners
 
-        channel.getArtifacts ().clear ();
-        this.em.persist ( channel );
+            channel.getArtifacts ().clear ();
+            this.em.persist ( channel );
 
-        runChannelAggregators ( channel );
+            runChannelAggregators ( channel );
+        } );
     }
 
     private static Set<String> expandDependencies ( final Set<String> aspects )
