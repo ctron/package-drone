@@ -347,24 +347,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
     }
 
-    @Override
-    public void regenerateAll ( final String channelId )
-    {
-        scanArtifacts ( channelId, ( ae ) -> {
-            if ( ae instanceof GeneratorArtifactEntity )
-            {
-                try
-                {
-                    regenerateArtifact ( (GeneratorArtifactEntity)ae, true );
-                }
-                catch ( final Exception e )
-                {
-                    throw new RuntimeException ( e );
-                }
-            }
-        } );
-    }
-
     public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
         this.lockManager.modifyRun ( ae.getChannel ().getId (), () -> {
@@ -1209,7 +1191,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         logger.info ( "Deleted {} cache entries in channel {} for namespace {}", result, channel.getId (), namespace );
     }
 
-    public void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
+    protected void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
     {
         logger.debug ( "Creating cache entry - channel: {}, ns: {}, key: {}, name: {}, mime: {}", channel.getId (), namespace, id, name, mimeType );
 
