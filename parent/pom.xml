@@ -187,6 +187,8 @@
 		<module>../de.dentrassi.rpm</module>
 		<module>../de.dentrassi.rpm.tests</module>
 
+        <module>../org.tukani.xz</module>
+
 		<module>../product</module>
 	</modules>
 
