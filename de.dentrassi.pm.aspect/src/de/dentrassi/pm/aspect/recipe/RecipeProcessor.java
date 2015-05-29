@@ -11,9 +11,12 @@
 package de.dentrassi.pm.aspect.recipe;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.BundleContext;
@@ -26,6 +29,35 @@ import de.dentrassi.pm.aspect.PropertiesHelper;
 
 public class RecipeProcessor
 {
+    public static class GenericComparator<T, C extends Comparable<C>> implements Comparator<T>
+    {
+        private final Function<T, C> func;
+
+        public GenericComparator ( final Function<T, C> func )
+        {
+            this.func = func;
+        }
+
+        @Override
+        public int compare ( final T o1, final T o2 )
+        {
+            final C v1 = this.func.apply ( o1 );
+            final C v2 = this.func.apply ( o2 );
+
+            if ( v1 == v2 )
+            {
+                return 0;
+            }
+
+            if ( v1 == null )
+            {
+                return -1;
+            }
+
+            return v1.compareTo ( v2 );
+        }
+    }
+
     public static class Entry
     {
         private final RecipeInformation information;
@@ -99,6 +131,11 @@ public class RecipeProcessor
     public Collection<RecipeInformation> getRecipes ()
     {
         return this.entries.values ().stream ().map ( Entry::getInformation ).collect ( Collectors.toSet () );
+    }
+
+    public <C extends Comparable<C>> List<RecipeInformation> getSortedRecipes ( final Function<RecipeInformation, C> func )
+    {
+        return this.entries.values ().stream ().map ( Entry::getInformation ).sorted ( new GenericComparator<RecipeInformation, C> ( func ) ).collect ( Collectors.toList () );
     }
 
     public void process ( final String id, final Consumer<Recipe> recipe ) throws RecipeNotFoundException

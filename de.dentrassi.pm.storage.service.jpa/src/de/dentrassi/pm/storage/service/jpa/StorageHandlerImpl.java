@@ -608,7 +608,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( context, md );
 
-                convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
+                convertMetaDataFromAspect ( metadata, aspect.getId (), md );
             }
             catch ( final Exception e )
             {
@@ -649,7 +649,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         };
     }
 
-    private static void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
+    private static void convertMetaDataFromAspect ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
     {
         if ( md == null )
         {
@@ -821,7 +821,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
                     // process
                     final Map<String, String> md = aggregator.aggregateMetaData ( context );
-                    convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
+                    convertMetaDataFromAspect ( metadata, aspect.getId (), md );
 
                     context.flush ( aggrValidationHandler );
                 }
@@ -914,7 +914,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
                         extractor.extractMetaData ( createExtractorContext ( aspect.getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
 
-                        convertMetaDataFromExtractor ( metadata, aspect.getId (), md );
+                        convertMetaDataFromAspect ( metadata, aspect.getId (), md );
                     }
                     catch ( final Exception e )
                     {
@@ -1005,7 +1005,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1215,6 +1215,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     public void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
     {
+        logger.debug ( "Creating cache entry - channel: {}, ns: {}, key: {}, name: {}, mime: {}", channel.getId (), namespace, id, name, mimeType );
+
         final ChannelCacheEntity cce = new ChannelCacheEntity ();
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream ();

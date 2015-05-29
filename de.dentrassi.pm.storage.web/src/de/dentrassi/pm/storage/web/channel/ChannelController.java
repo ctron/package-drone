@@ -71,6 +71,7 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
+import de.dentrassi.pm.aspect.recipe.RecipeInformation;
 import de.dentrassi.pm.aspect.recipe.RecipeNotFoundException;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -211,7 +212,7 @@ public class ChannelController implements InterfaceExtender
         final Map<String, Object> model = new HashMap<> ( 2 );
 
         model.put ( "command", new CreateChannel () );
-        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+        model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
     }
@@ -258,8 +259,8 @@ public class ChannelController implements InterfaceExtender
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( holder.value.getId (), "UTF-8" ) ) );
         }
 
-        final Map<String, Object> model = new HashMap<> ( 1 );
-        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+        final Map<String, Object> model = new HashMap<> ( 2 );
+        model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
     }
