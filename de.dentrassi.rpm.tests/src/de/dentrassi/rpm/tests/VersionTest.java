@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.rpm.tests;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,8 +52,8 @@ public class VersionTest
     private void testVersion ( final String version, final Integer expectedEpoch, final String expectedVersion, final String expectedRelease )
     {
         final RpmVersion v = RpmVersion.valueOf ( version );
-        Assert.assertEquals ( "Epoch", expectedEpoch, v.getEpoch () );
+        Assert.assertEquals ( "Epoch", Optional.ofNullable ( expectedEpoch ), v.getEpoch () );
         Assert.assertEquals ( "Version", expectedVersion, v.getVersion () );
-        Assert.assertEquals ( "Release", expectedRelease, v.getRelease () );
+        Assert.assertEquals ( "Release", Optional.ofNullable ( expectedRelease ), v.getRelease () );
     }
 }
