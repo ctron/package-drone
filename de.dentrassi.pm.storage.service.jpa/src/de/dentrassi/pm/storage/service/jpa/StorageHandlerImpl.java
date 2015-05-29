@@ -1005,7 +1005,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1197,8 +1197,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         final int result = q.executeUpdate ();
 
         logger.info ( "Deleted {} cache entries in channel {}", result, channel.getId () );
-
-        this.em.flush ();
     }
 
     protected void deleteCacheEntries ( final String namespace, final ChannelEntity channel )
@@ -1209,8 +1207,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         final int result = q.executeUpdate ();
 
         logger.info ( "Deleted {} cache entries in channel {} for namespace {}", result, channel.getId (), namespace );
-
-        this.em.flush ();
     }
 
     public void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
