@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.9.1" useFeatures="true" includeLaunchers="false">
+<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.10.0.rc1" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -70,6 +70,7 @@
       <plugin id="de.dentrassi.pm.osgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.r5" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.rpm" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service.admin" autoStart="true" startLevel="0" />

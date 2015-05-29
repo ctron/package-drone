@@ -2,7 +2,7 @@
 <feature
       id="de.dentrassi.pm"
       label="Package Drone Main Feature"
-      version="0.9.1.qualifier"
+      version="0.10.0.qualifier"
       provider-name="Jens Reimann">
 
    <description url="http://packagedrone.org">
@@ -1104,6 +1104,20 @@
 
    <plugin
          id="de.dentrassi.pm.web.analytics"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.rpm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.rpm"
          download-size="0"
          install-size="0"
          version="0.0.0"

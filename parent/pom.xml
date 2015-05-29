@@ -5,7 +5,7 @@
 
 	<groupId>de.dentrassi.package.drone</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.9.1-SNAPSHOT</version>
+	<version>0.10.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<url>http://packagedrone.org</url>
@@ -141,6 +141,8 @@
 		<module>../de.dentrassi.pm.p2.web</module>
 
 		<module>../de.dentrassi.pm.r5</module>
+		
+		<module>../de.dentrassi.pm.rpm</module>
 
 		<module>../de.dentrassi.pm.sec</module>
 		<module>../de.dentrassi.pm.sec.jpa</module>
@@ -181,6 +183,9 @@
 		<module>../de.dentrassi.pm.root.feature</module>
 		
 		<module>../de.dentrassi.pm.web.analytics</module>
+		
+		<module>../de.dentrassi.rpm</module>
+		<module>../de.dentrassi.rpm.tests</module>
 
 		<module>../product</module>
 	</modules>
