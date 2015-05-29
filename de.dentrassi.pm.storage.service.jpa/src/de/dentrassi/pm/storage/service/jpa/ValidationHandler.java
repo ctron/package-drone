@@ -76,6 +76,7 @@ public class ValidationHandler extends AbstractHandler
         }
 
         this.em.persist ( channel );
+        this.em.flush ();
     }
 
     public void aggregateArtifact ( final String artifactId )
@@ -109,6 +110,7 @@ public class ValidationHandler extends AbstractHandler
         }
 
         this.em.persist ( artifact );
+        this.em.flush ();
     }
 
     /**
@@ -184,6 +186,8 @@ public class ValidationHandler extends AbstractHandler
 
         writeSeverity ( warningArts, ArtifactEntity::setAggregatedNumberOfWarnings );
         writeSeverity ( errorArts, ArtifactEntity::setAggregatedNumberOfErrors );
+
+        this.em.flush ();
     }
 
     /**
