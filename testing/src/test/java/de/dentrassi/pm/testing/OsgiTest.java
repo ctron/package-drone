@@ -15,10 +15,10 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ChannelTest extends AbstractServerTest
+public class OsgiTest extends AbstractServerTest
 {
     @Test
-    public void testPlainOsgi1 ()
+    public void testPlainOsgi1 () throws Exception
     {
         final ChannelTester ct = ChannelTester.create ( getWebContext (), "osgi1" );
         ct.addAspect ( "osgi" );
@@ -36,6 +36,8 @@ public class ChannelTest extends AbstractServerTest
             Assert.assertEquals ( 1, result.size () );
         }
         Assert.assertEquals ( 2, ct.getAllArtifactIds ().size () );
+
+        testUrl ( "/r5/" + ct.getId () );
     }
 
     @Test

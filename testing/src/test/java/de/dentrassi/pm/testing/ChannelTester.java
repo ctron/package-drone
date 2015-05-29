@@ -33,6 +33,16 @@ public class ChannelTester
         this.id = id;
     }
 
+    /**
+     * Get the channel id
+     * 
+     * @return the channel id
+     */
+    public String getId ()
+    {
+        return this.id;
+    }
+
     public static ChannelTester create ( final WebContext context, final String name )
     {
         // get before list of channels

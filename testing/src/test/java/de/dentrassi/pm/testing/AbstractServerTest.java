@@ -11,6 +11,7 @@
 package de.dentrassi.pm.testing;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -138,5 +139,13 @@ public class AbstractServerTest
             throw new IllegalStateException ( String.format ( "Unable to find file: %s", localPath ) );
         }
         return file.getAbsoluteFile ();
+    }
+
+    protected void testUrl ( final String suffix ) throws Exception
+    {
+        final URL url = new URL ( resolve ( suffix ) );
+        try ( InputStream is = url.openStream () )
+        {
+        }
     }
 }
