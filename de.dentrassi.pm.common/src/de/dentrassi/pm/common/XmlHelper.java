@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -127,24 +126,16 @@ public class XmlHelper
         }
     }
 
-    private final DocumentBuilder db;
-
     private final TransformerFactory transformerFactory;
 
     private final XPathFactory xpathFactory;
 
+    private final DocumentBuilderFactory dbf;
+
     public XmlHelper ()
     {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
-        try
-        {
-            dbf.setNamespaceAware ( true );
-            this.db = dbf.newDocumentBuilder ();
-        }
-        catch ( final ParserConfigurationException e )
-        {
-            throw new RuntimeException ( e );
-        }
+        this.dbf = DocumentBuilderFactory.newInstance ();
+        this.dbf.setNamespaceAware ( true );
 
         this.transformerFactory = TransformerFactory.newInstance ();
 
@@ -153,12 +144,19 @@ public class XmlHelper
 
     public Document create ()
     {
-        return this.db.newDocument ();
+        try
+        {
+            return this.dbf.newDocumentBuilder ().newDocument ();
+        }
+        catch ( final ParserConfigurationException e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     public Document parse ( final InputStream stream ) throws Exception
     {
-        return this.db.parse ( stream );
+        return this.dbf.newDocumentBuilder ().parse ( stream );
     }
 
     public void write ( final Document doc, final OutputStream stream ) throws Exception
