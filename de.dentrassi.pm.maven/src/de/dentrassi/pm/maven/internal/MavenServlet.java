@@ -65,6 +65,8 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private static final MetaKey CHANNEL_KEY = new MetaKey ( "maven.repo", "channel" );
 
+    private static final String NL = System.lineSeparator ();
+
     private XmlHelper xml;
 
     private Path tempRoot;
@@ -394,10 +396,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
         final Document doc = this.xml.parse ( request.getInputStream () );
 
-        System.out.println ( "----------------------" );
-        this.xml.write ( doc, System.out );
-        System.out.println ();
-        System.out.println ( "----------------------" );
+        logger.debug ( "----------------------" + NL + this.xml.toString ( doc ) + NL + "----------------------" );
 
         final Element de = doc.getDocumentElement ();
         if ( !de.getNodeName ().equals ( "metadata" ) )
@@ -581,10 +580,9 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private void dumpSkip ( final HttpServletRequest request ) throws IOException
     {
-        System.out.println ( "----------------------" );
-        ByteStreams.copy ( request.getInputStream (), System.out );
-        System.out.println ();
-        System.out.println ( "----------------------" );
+        final String str = CharStreams.toString ( new InputStreamReader ( request.getInputStream (), StandardCharsets.UTF_8 ) );
+
+        logger.debug ( "----------------------" + NL + str + NL + "----------------------" );
     }
 
     private static String join ( final String[] toks, final int start, final int remove )
