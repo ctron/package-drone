@@ -1174,6 +1174,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void deleteAllCacheEntries ( final ChannelEntity channel )
     {
+        // flush since the following update will work only on the database, so we need to flush
+        this.em.flush ();
+
         final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ) );
         q.setParameter ( "channel", channel );
         final int result = q.executeUpdate ();
@@ -1183,6 +1186,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void deleteCacheEntries ( final String namespace, final ChannelEntity channel )
     {
+        // flush since the following update will work only on the database, so we need to flush
+        this.em.flush ();
+
         final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel and cce.namepsace=:ns", ChannelCacheEntity.class.getName () ) );
         q.setParameter ( "channel", channel );
         q.setParameter ( "ns", namespace );
