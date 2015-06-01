@@ -54,9 +54,9 @@ public class ArtifactsProcessor extends AbstractRepositoryProcessor
     {
         final Element mappings = addElement ( root, "mappings" );
 
-        addMapping ( mappings, "(& (classifier=osgi.bundle))", "${repoUrl}/plugins/${id}_${version}.jar" );
-        addMapping ( mappings, "(& (classifier=binary))", "${repoUrl}/binary/${id}_${version}" );
-        addMapping ( mappings, "(& (classifier=org.eclipse.update.feature))", "${repoUrl}/features/${id}_${version}.jar" );
+        addMapping ( mappings, "(& (classifier=osgi.bundle))", "${repoUrl}/plugins/${id}/${version}/${id}_${version}.jar" );
+        addMapping ( mappings, "(& (classifier=binary))", "${repoUrl}/binary/${id}/${version}/${id}_${version}" );
+        addMapping ( mappings, "(& (classifier=org.eclipse.update.feature))", "${repoUrl}/features/${id}/${version}/${id}_${version}.jar" );
 
         fixSize ( mappings );
     }

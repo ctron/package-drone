@@ -136,15 +136,21 @@ public class P2Servlet extends HttpServlet
         {
             process ( req, resp, new ZippedHandler ( channel ) );
         }
-        else if ( "plugins".equals ( paths[2] ) )
+        else if ( paths.length == 6 && "plugins".equals ( paths[2] ) )
         {
             logger.warn ( "Download plugin: {}", req.getPathInfo () );
-            process ( req, resp, new DownloadHandler ( channel, paths[3], "bundle" ) );
+            final String id = paths[3];
+            final String version = paths[4];
+            final String fileName = paths[5];
+            process ( req, resp, new DownloadHandler ( channel, id, version, fileName, "bundle" ) );
         }
-        else if ( "features".equals ( paths[2] ) )
+        else if ( paths.length == 6 && "features".equals ( paths[2] ) )
         {
             logger.warn ( "Download feature: {}", path );
-            process ( req, resp, new DownloadHandler ( channel, paths[3], "eclipse.feature" ) );
+            final String id = paths[3];
+            final String version = paths[4];
+            final String fileName = paths[5];
+            process ( req, resp, new DownloadHandler ( channel, id, version, fileName, "eclipse.feature" ) );
         }
         else
         {
