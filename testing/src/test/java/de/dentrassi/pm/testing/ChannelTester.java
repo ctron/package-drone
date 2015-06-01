@@ -32,6 +32,11 @@ public class ChannelTester
         this.context = context;
         this.id = id;
     }
+    
+    public String getId ()
+    {
+		return id;
+	}
 
     public static ChannelTester create ( final WebContext context, final String name )
     {

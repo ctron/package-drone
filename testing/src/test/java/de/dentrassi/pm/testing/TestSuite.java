@@ -38,7 +38,9 @@ import org.openqa.selenium.remote.RemoteWebDriver;
         UploadTest.class, //
         BasicTest.class, //
         DefaultTest.class, //
-        ChannelTest.class } )
+        ChannelTest.class, //
+        MvnOsgiTest.class //
+} )
 public class TestSuite
 {
     private static final String SAUCE_USER_NAME = System.getProperty ( "sauce.username" );
