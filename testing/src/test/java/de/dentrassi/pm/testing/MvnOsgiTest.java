@@ -18,16 +18,16 @@ import org.junit.Test;
 public class MvnOsgiTest extends AbstractServerTest
 {
     @Test
-    public void testRpm1 () throws Exception
+    public void testMvnOsgi1 () throws Exception
     {
         final ChannelTester ct = ChannelTester.create ( getWebContext (), "mvnosgi1" );
         ct.addAspect ( "mvnosgi" );
 
         {
             final Set<String> result = ct.upload ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" );
-            Assert.assertEquals ( 1, result.size () );
+            Assert.assertEquals ( 2, result.size () );
         }
-        Assert.assertEquals ( 1, ct.getAllArtifactIds ().size () );
+        Assert.assertEquals ( 2, ct.getAllArtifactIds ().size () );
 
         testUrl ( String.format ( "/maven/%s/mvnosgi/test.bundle1/maven-metadata.xml", ct.getId () ) );
     }
