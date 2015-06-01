@@ -634,9 +634,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 em.persist ( channel );
                 em.flush ();
 
-                // re-run channel aggregators
+                // reprocess all aspects, the virtualizers might generate different artifacts now
 
-                hi.runChannelAggregators ( channel );
+                hi.reprocessAspects ( channel, channel.getAspects ().keySet () );
 
                 return result;
 
