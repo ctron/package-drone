@@ -271,7 +271,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
      *
      * @param channelId
      *            the channel to query
-     * @return the result set of aritfact information
+     * @return the result set of artifact information
      */
     public Set<DetailedArtifactInformation> listDetailedArtifacts ( final String channelId )
     {
