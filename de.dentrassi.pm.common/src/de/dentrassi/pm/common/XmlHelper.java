@@ -13,6 +13,7 @@ package de.dentrassi.pm.common;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
@@ -160,6 +161,21 @@ public class XmlHelper
     public Document parse ( final InputStream stream ) throws Exception
     {
         return this.dbf.newDocumentBuilder ().parse ( stream );
+    }
+
+    public String toString ( final Document doc )
+    {
+        try
+        {
+            final StringWriter sw = new StringWriter ();
+            write ( doc, sw );
+            sw.close ();
+            return sw.toString ();
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     public void write ( final Document doc, final OutputStream stream ) throws Exception
