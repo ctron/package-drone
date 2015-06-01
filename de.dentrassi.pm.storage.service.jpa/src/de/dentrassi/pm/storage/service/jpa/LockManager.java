@@ -10,8 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -21,41 +21,37 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import de.dentrassi.pm.common.utils.ThrowingRunnable;
 
-public class LockManager<I extends Comparable<I>>
+public class LockManager<I>
 {
     private final static Logger logger = LoggerFactory.getLogger ( LockManager.class );
 
-    private final Lock writeLock;
+    /**
+     * Lock for the <code>locks</code> map
+     */
+    private final Lock mapLock;
 
     public LockManager ()
     {
-        this.writeLock = new ReentrantLock ();
+        this.mapLock = new ReentrantLock ();
     }
 
-    private final Map<I, ReadWriteLock> locks = new TreeMap<> ();
-
-    public void accessRun ( final I id, final ThrowingRunnable run )
-    {
-        act ( id, ReadWriteLock::readLock, ( ) -> {
-            run.run ();
-            return null;
-        } );
-    }
-
-    public void modifyRun ( final I id, final ThrowingRunnable run )
-    {
-        act ( id, ReadWriteLock::writeLock, ( ) -> {
-            run.run ();
-            return null;
-        } );
-    }
+    private final Map<I, ReadWriteLock> locks = new HashMap<> ();
 
     public <T> T accessCall ( final I id, final Callable<T> run )
     {
         return act ( id, ReadWriteLock::readLock, run );
+    }
+
+    public void accessRun ( final I id, final ThrowingRunnable run )
+    {
+        act ( id, ReadWriteLock::readLock, () -> {
+            run.run ();
+            return null;
+        } );
     }
 
     public <T> T modifyCall ( final I id, final Callable<T> run )
@@ -63,21 +59,39 @@ public class LockManager<I extends Comparable<I>>
         return act ( id, ReadWriteLock::writeLock, run );
     }
 
+    public void modifyRun ( final I id, final ThrowingRunnable run )
+    {
+        act ( id, ReadWriteLock::writeLock, () -> {
+            run.run ();
+            return null;
+        } );
+    }
+
     public void removeLock ( final I id )
     {
-        this.writeLock.lock ();
+        this.mapLock.lock ();
         try
         {
+            logger.info ( "Removing lock: {}", id );
             this.locks.remove ( id );
         }
         finally
         {
-            this.writeLock.unlock ();
+            this.mapLock.unlock ();
         }
     }
 
     protected <T> T act ( final I id, final Function<ReadWriteLock, Lock> f, final Callable<T> run )
     {
+        if ( id == null )
+        {
+            throw new NullPointerException ( "'id' must not be null" );
+        }
+
+        logger.trace ( "Acting on: {}", id );
+        final String oldLock = MDC.get ( "lock" );
+        MDC.put ( "lock", id.toString () );
+
         try
         {
             return process ( id, f, run );
@@ -85,6 +99,18 @@ public class LockManager<I extends Comparable<I>>
         catch ( final Exception e )
         {
             throw new RuntimeException ( e );
+        }
+        finally
+        {
+            if ( oldLock == null )
+            {
+                MDC.remove ( "lock" );
+            }
+            else
+            {
+                MDC.put ( "lock", oldLock );
+            }
+            logger.trace ( "Completed on: {}", id );
         }
     }
 
@@ -118,12 +144,13 @@ public class LockManager<I extends Comparable<I>>
 
     private ReadWriteLock getLock ( final I id )
     {
-        this.writeLock.lock ();
+        this.mapLock.lock ();
         try
         {
             ReadWriteLock lock = this.locks.get ( id );
             if ( lock == null )
             {
+                logger.info ( "Creating new lock: {}", id );
                 lock = new ReentrantReadWriteLock ();
                 this.locks.put ( id, lock );
             }
@@ -131,7 +158,7 @@ public class LockManager<I extends Comparable<I>>
         }
         finally
         {
-            this.writeLock.unlock ();
+            this.mapLock.unlock ();
         }
     }
 }
