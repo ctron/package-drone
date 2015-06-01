@@ -89,16 +89,16 @@ public class RepositoryCreator
             this.filelistsStream = filelistsStream;
             this.otherStream = otherStream;
 
-            this.primary = xml.create ();
+            this.primary = xml.createNs ();
             this.primaryRoot = this.primary.createElementNS ( "http://linux.duke.edu/metadata/common", "metadata" );
             this.primaryRoot.setAttribute ( "xmlns:rpm", "http://linux.duke.edu/metadata/rpm" );
             this.primary.appendChild ( this.primaryRoot );
 
-            this.filelists = xml.create ();
+            this.filelists = xml.createNs ();
             this.filelistsRoot = this.filelists.createElementNS ( "http://linux.duke.edu/metadata/filelists", "filelists" );
             this.filelists.appendChild ( this.filelistsRoot );
 
-            this.other = xml.create ();
+            this.other = xml.createNs ();
             this.otherRoot = this.other.createElementNS ( "http://linux.duke.edu/metadata/other", "otherdata" );
             this.other.appendChild ( this.otherRoot );
 
@@ -418,7 +418,7 @@ public class RepositoryCreator
 
     private void writeRepoMd ( final OutputStream stream, final long now ) throws IOException
     {
-        final Document doc = this.xml.create ();
+        final Document doc = this.xml.createNs ();
 
         final Element root = doc.createElementNS ( "http://linux.duke.edu/metadata/repo", "repomd" );
         doc.appendChild ( root );

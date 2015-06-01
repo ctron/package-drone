@@ -136,10 +136,14 @@ public class XmlHelper
 
     private final DocumentBuilderFactory dbf;
 
+    private final DocumentBuilderFactory dbfNs;
+
     public XmlHelper ()
     {
         this.dbf = DocumentBuilderFactory.newInstance ();
-        this.dbf.setNamespaceAware ( true );
+
+        this.dbfNs = DocumentBuilderFactory.newInstance ();
+        this.dbfNs.setNamespaceAware ( true );
 
         this.transformerFactory = TransformerFactory.newInstance ();
 
@@ -158,9 +162,26 @@ public class XmlHelper
         }
     }
 
+    public Document createNs ()
+    {
+        try
+        {
+            return this.dbfNs.newDocumentBuilder ().newDocument ();
+        }
+        catch ( final ParserConfigurationException e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
     public Document parse ( final InputStream stream ) throws Exception
     {
         return this.dbf.newDocumentBuilder ().parse ( stream );
+    }
+
+    public Document parseNs ( final InputStream stream ) throws Exception
+    {
+        return this.dbfNs.newDocumentBuilder ().parse ( stream );
     }
 
     public String toString ( final Document doc )
