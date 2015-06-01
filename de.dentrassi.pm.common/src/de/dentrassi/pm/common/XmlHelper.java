@@ -13,12 +13,15 @@ package de.dentrassi.pm.common;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Iterator;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -161,9 +164,18 @@ public class XmlHelper
 
     public void write ( final Document doc, final OutputStream stream ) throws Exception
     {
+        write ( doc, new StreamResult ( stream ) );
+    }
+
+    public void write ( final Document doc, final Writer writer ) throws Exception
+    {
+        write ( doc, new StreamResult ( writer ) );
+    }
+
+    public void write ( final Document doc, final Result result ) throws TransformerException
+    {
         final Transformer transformer = this.transformerFactory.newTransformer ();
         final DOMSource source = new DOMSource ( doc );
-        final StreamResult result = new StreamResult ( stream );
         transformer.setOutputProperty ( OutputKeys.INDENT, "yes" );
         transformer.setOutputProperty ( OutputKeys.ENCODING, "UTF-8" );
         transformer.setOutputProperty ( "{http://xml.apache.org/xslt}indent-amount", "2" );
