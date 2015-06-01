@@ -377,12 +377,16 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void addChannelAspect ( final String channelId, final String aspectFactoryId, final boolean withDependencies )
     {
-        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
+        this.lockManager.modifyRun ( channelId, () -> {
+            doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
+        } );
     }
 
     public void addChannelAspects ( final String channelId, final Set<String> aspectFactoryIds, final boolean withDependencies )
     {
-        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, aspectFactoryIds, withDependencies ) );
+        this.lockManager.modifyRun ( channelId, () -> {
+            doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, aspectFactoryIds, withDependencies ) );
+        } );
     }
 
     @Override
