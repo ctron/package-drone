@@ -486,10 +486,10 @@ public class InstallableUnit
             switch ( ri.getType () )
             {
                 case FEATURE:
-                    id = ri.getId ();
+                    id = ri.getId () + ".feature.group";
                     break;
                 case PLUGIN:
-                    id = ri.getId () + ".feature.group";
+                    id = ri.getId ();
                     break;
                 default:
                     throw new IllegalStateException ( String.format ( "Feature requirement type %s is unknown", ri.getType () ) );
