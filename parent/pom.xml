@@ -98,6 +98,7 @@
 		<module>../de.dentrassi.pm.aspect.upgrade</module>
 
 		<module>../de.dentrassi.pm.common</module>
+		<module>../de.dentrassi.pm.common.tests</module>
 		<module>../de.dentrassi.pm.common.web</module>
 		<module>../de.dentrassi.pm.common.web.ckeditor</module>
 

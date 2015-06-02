@@ -15,7 +15,7 @@
 	<packaging>eclipse-repository</packaging>
 	
 	<properties>
-	   <releaseBase>1</releaseBase>
+	   <releaseBase>0</releaseBase>
 	</properties>
 
 	<build>
