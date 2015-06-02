@@ -53,6 +53,7 @@ import com.google.common.io.CharStreams;
 import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.common.lm.LockContext;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -179,9 +180,9 @@ public class TransferHandler extends AbstractHandler
 
     private final XmlHelper xml;
 
-    public TransferHandler ( final EntityManager em, final LockManager<String> lockManager, final BlobStore blobStore )
+    public TransferHandler ( final EntityManager em, final BlobStore blobStore )
     {
-        super ( em, lockManager );
+        super ( em );
         this.blobStore = blobStore;
 
         this.xml = new XmlHelper ();
@@ -254,12 +255,19 @@ public class TransferHandler extends AbstractHandler
             final ChannelEntity channel = storage.createChannel ( useChannelName ? name : null, description, properties );
             this.em.flush (); // we need the channel id
 
-            this.lockManager.modifyRun ( channel.getId (), () -> {
-                storage.addChannelAspects ( channel, aspects, false );
+            LockContext.modify ( channel.getId () );
 
-                // process artifacts
-                processArtifacts ( channel, storage, zip );
-            } );
+            try
+            {
+                storage.addChannelAspects ( channel, aspects, false );
+            }
+            catch ( final Exception e )
+            {
+                throw new IOException ( e );
+            }
+
+            // process artifacts
+            processArtifacts ( channel, storage, zip );
 
             storage.runChannelAggregators ( channel );
 
@@ -337,10 +345,13 @@ public class TransferHandler extends AbstractHandler
      * @throws IOException
      *             if anything goes wrong reading the file
      */
+
+    @SuppressWarnings ( "resource" )
     private Map<MetaKey, String> readProperties ( final InputStream stream ) throws IOException
     {
         try
         {
+            // wrap the input stream since we don't want the XML parser to close the stream while parsing
             final Document doc = this.xml.parse ( new FilterInputStream ( stream) {
                 @Override
                 public void close ( )
@@ -428,23 +439,21 @@ public class TransferHandler extends AbstractHandler
      */
     public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException
     {
-        this.lockManager.accessCall ( channelId, () -> {
-            final ChannelEntity channel = getCheckedChannel ( channelId );
-            final ZipOutputStream zos = new ZipOutputStream ( stream );
+        LockContext.access ( channelId );
 
-            initExportFile ( zos );
+        final ChannelEntity channel = getCheckedChannel ( channelId );
+        final ZipOutputStream zos = new ZipOutputStream ( stream );
 
-            putDataEntry ( zos, "name", channel.getName () );
-            putDataEntry ( zos, "description", channel.getDescription () );
-            putDirEntry ( zos, "artifacts" );
-            putProperties ( zos, "properties.xml", channel.getProvidedProperties () );
-            putAspects ( zos, channel.getAspects ().keySet () );
-            putArtifacts ( zos, "artifacts/", channel.getArtifacts (), true );
+        initExportFile ( zos );
 
-            zos.finish ();
+        putDataEntry ( zos, "name", channel.getName () );
+        putDataEntry ( zos, "description", channel.getDescription () );
+        putDirEntry ( zos, "artifacts" );
+        putProperties ( zos, "properties.xml", channel.getProvidedProperties () );
+        putAspects ( zos, channel.getAspects ().keySet () );
+        putArtifacts ( zos, "artifacts/", channel.getArtifacts (), true );
 
-            return null;
-        } );
+        zos.finish ();
     }
 
     private void putArtifacts ( final ZipOutputStream zos, final String baseName, final Collection<? extends ArtifactEntity> artifacts, final boolean onlyRoot ) throws IOException

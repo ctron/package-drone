@@ -19,12 +19,9 @@ public abstract class AbstractHandler
 {
     protected final EntityManager em;
 
-    protected final LockManager<String> lockManager;
-
-    public AbstractHandler ( final EntityManager em, final LockManager<String> lockManager )
+    public AbstractHandler ( final EntityManager em )
     {
         this.em = em;
-        this.lockManager = lockManager;
     }
 
     protected ChannelEntity getCheckedChannel ( final String channelId )

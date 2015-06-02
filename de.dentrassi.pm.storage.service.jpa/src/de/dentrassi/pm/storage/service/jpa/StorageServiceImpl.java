@@ -56,6 +56,8 @@ import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.common.lm.LockContext;
+import de.dentrassi.pm.common.lm.LockManager;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.core.CoreService;
@@ -91,7 +93,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
 
-    private final LockManager<String> lockManager = new LockManager<> ();
+    private final LockManager lockManager = new LockManager ();
 
     private EventAdmin eventAdmin;
 
@@ -200,35 +202,31 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private Artifact internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        return this.lockManager.modifyCall ( channelId, () -> {
-            return doWithHandler ( hi -> {
-                final ChannelEntity channel = hi.getCheckedChannel ( channelId );
+        return doWithHandler ( hi -> {
+            final ChannelEntity channel = hi.getCheckedChannel ( channelId );
 
-                testLocked ( channel );
+            testLocked ( channel );
 
-                final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData, true );
+            final ArtifactEntity artifact = hi.internalCreateArtifact ( channelId, name, entityCreator, stream, providedMetaData, true );
 
-                if ( artifact == null )
-                {
-                    return null;
-                }
+            if ( artifact == null )
+            {
+                return null;
+            }
 
-                return convert ( convert ( artifact.getChannel () ), artifact, null );
-            } );
+            return convert ( convert ( artifact.getChannel () ), artifact, null );
         } );
     }
 
     public Artifact createAttachedArtifact ( final String channelId, final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        return this.lockManager.modifyCall ( channelId, () -> {
-            return doWithHandler ( ( hi ) -> {
-                final ArtifactEntity artifact = hi.createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
-                if ( artifact == null )
-                {
-                    return null;
-                }
-                return convert ( convert ( artifact.getChannel () ), artifact, null );
-            } );
+        return doWithHandler ( ( hi ) -> {
+            final ArtifactEntity artifact = hi.createAttachedArtifact ( parentArtifactId, name, stream, providedMetaData );
+            if ( artifact == null )
+            {
+                return null;
+            }
+            return convert ( convert ( artifact.getChannel () ), artifact, null );
         } );
     }
 
@@ -377,33 +375,27 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void addChannelAspect ( final String channelId, final String aspectFactoryId, final boolean withDependencies )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
-        } );
+        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, Collections.singleton ( aspectFactoryId ), withDependencies ) );
     }
 
     public void addChannelAspects ( final String channelId, final Set<String> aspectFactoryIds, final boolean withDependencies )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, aspectFactoryIds, withDependencies ) );
-        } );
+        doWithHandlerVoid ( ( handler ) -> handler.addChannelAspects ( channelId, aspectFactoryIds, withDependencies ) );
     }
 
     @Override
     public void refreshChannelAspect ( final String channelId, final String aspectFactoryId )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithHandlerVoid ( hi -> {
+        doWithHandlerVoid ( hi -> {
 
-                final ChannelEntity channel = hi.getCheckedChannel ( channelId );
+            final ChannelEntity channel = hi.getCheckedChannel ( channelId );
 
-                testLocked ( channel );
+            testLocked ( channel );
 
-                if ( channel.getAspects ().containsKey ( aspectFactoryId ) )
-                {
-                    hi.reprocessAspects ( channel, Collections.singleton ( aspectFactoryId ) );
-                }
-            } );
+            if ( channel.getAspects ().containsKey ( aspectFactoryId ) )
+            {
+                hi.reprocessAspects ( channel, Collections.singleton ( aspectFactoryId ) );
+            }
         } );
         postAspectEvent ( channelId, aspectFactoryId, "refresh" );
     }
@@ -411,15 +403,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void refreshAllChannelAspects ( final String channelId )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithHandlerVoid ( hi -> {
+        doWithHandlerVoid ( hi -> {
 
-                final ChannelEntity channel = hi.getCheckedChannel ( channelId );
+            final ChannelEntity channel = hi.getCheckedChannel ( channelId );
 
-                testLocked ( channel );
+            testLocked ( channel );
 
-                hi.reprocessAspects ( channel, channel.getAspects ().keySet () );
-            } );
+            hi.reprocessAspects ( channel, channel.getAspects ().keySet () );
         } );
         postAspectEvent ( channelId, "all", "refresh" );
     }
@@ -445,7 +435,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public void removeChannelAspects ( final String channelId, final Set<String> aspectFactoryIds )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
+        this.lockManager.run ( () -> {
+
+            LockContext.modify ( channelId );
 
             doWithTransactionVoid ( em -> {
                 final ChannelEntity channel = getCheckedChannel ( em, channelId );
@@ -484,7 +476,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                     q.executeUpdate ();
                 }
 
-                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
+                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
 
                 hi.recreateAllVirtualArtifacts ( channel );
             } );
@@ -554,14 +546,21 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public Map<MetaKey, String> applyMetaData ( final String artifactId, final Map<MetaKey, String> metadata )
     {
-        return doWithTransaction ( em -> {
-            final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
+        try
+        {
+            return this.lockManager.call ( () -> doWithTransaction ( em -> {
+                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
 
-            final ArtifactEntity artifact = hi.getCheckedArtifact ( artifactId );
+                final ArtifactEntity artifact = hi.getCheckedArtifact ( artifactId );
 
-            testLocked ( artifact.getChannel () );
+                if ( artifact == null )
+                {
+                    return null;
+                }
 
-            return this.lockManager.modifyCall ( artifact.getChannel ().getId (), () -> {
+                LockContext.modify ( artifact.getChannel ().getId () );
+
+                testLocked ( artifact.getChannel () );
 
                 final Map<MetaKey, String> result = convert ( artifact.getProvidedProperties () );
 
@@ -597,18 +596,25 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 }
 
                 return result;
-            } );
-        } );
+            } ) );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     public Map<MetaKey, String> applyChannelMetaData ( final String channelId, final Map<MetaKey, String> metadata )
     {
-        return this.lockManager.modifyCall ( channelId, () -> {
+        try
+        {
+            return this.lockManager.call ( () -> doWithTransaction ( em -> {
 
-            return doWithTransaction ( em -> {
-                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
+                final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
 
                 final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+                LockContext.modify ( channel.getId () );
 
                 testLocked ( channel );
 
@@ -640,8 +646,12 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 return result;
 
-            } );
-        } );
+            } ) );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     protected static void mergeMetaData ( final Map<MetaKey, String> metadata, final Map<MetaKey, String> result )
@@ -706,9 +716,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void clearChannel ( final String channelId )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithHandlerVoid ( hi -> hi.clearChannel ( channelId ) );
-        } );
+        doWithHandlerVoid ( hi -> hi.clearChannel ( channelId ) );
     }
 
     @Override
@@ -758,35 +766,37 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     public void addDeployGroup ( final String channelId, final String groupId )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithTransactionVoid ( ( em ) -> {
-                final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                final DeployGroupEntity group = DeployAuthServiceImpl.getGroupChecked ( em, groupId );
-                channel.getDeployGroups ().add ( group );
-                em.persist ( channel );
-            } );
-        } );
+        this.lockManager.run ( () -> doWithTransactionVoid ( ( em ) -> {
+
+            LockContext.modify ( channelId );
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            final DeployGroupEntity group = DeployAuthServiceImpl.getGroupChecked ( em, groupId );
+            channel.getDeployGroups ().add ( group );
+            em.persist ( channel );
+        } ) );
     }
 
     public void removeDeployGroup ( final String channelId, final String groupId )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithTransactionVoid ( ( em ) -> {
-                final ChannelEntity channel = getCheckedChannel ( em, channelId );
+        this.lockManager.run ( () -> doWithTransactionVoid ( ( em ) -> {
 
-                final Iterator<DeployGroupEntity> i = channel.getDeployGroups ().iterator ();
-                while ( i.hasNext () )
+            LockContext.modify ( channelId );
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+
+            final Iterator<DeployGroupEntity> i = channel.getDeployGroups ().iterator ();
+            while ( i.hasNext () )
+            {
+                final DeployGroupEntity dg = i.next ();
+                if ( dg.getId ().equals ( groupId ) )
                 {
-                    final DeployGroupEntity dg = i.next ();
-                    if ( dg.getId ().equals ( groupId ) )
-                    {
-                        i.remove ();
-                    }
+                    i.remove ();
                 }
+            }
 
-                em.persist ( channel );
-            } );
-        } );
+            em.persist ( channel );
+        } ) );
     }
 
     public Map<String, String> getChannelAspects ( final String channelId )
@@ -809,13 +819,13 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private void setChannelLock ( final String channelId, final boolean state )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
-            doWithTransactionVoid ( em -> {
-                final ChannelEntity channel = getCheckedChannel ( em, channelId );
-                channel.setLocked ( state );
-                em.persist ( channel );
-            } );
-        } );
+        this.lockManager.run ( () -> doWithTransactionVoid ( ( em ) -> {
+            LockContext.modify ( channelId );
+
+            final ChannelEntity channel = getCheckedChannel ( em, channelId );
+            channel.setLocked ( state );
+            em.persist ( channel );
+        } ) );
     }
 
     public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
@@ -847,18 +857,29 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected void doWithHandlerVoid ( final ThrowingConsumer<StorageHandlerImpl> consumer )
     {
-        doWithTransactionVoid ( ( em ) -> {
-            final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
-            consumer.accept ( handler );
-        } , createArtifactGuard () );
+        this.lockManager.run ( () -> {
+            doWithTransactionVoid ( ( em ) -> {
+                final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
+                consumer.accept ( handler );
+            } , createArtifactGuard () );
+        } );
     }
 
     protected <R> R doWithHandler ( final ManagerFunction<R, StorageHandlerImpl> consumer )
     {
-        return doWithTransaction ( ( em ) -> {
-            final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
-            return consumer.process ( handler );
-        } , createArtifactGuard () );
+        try
+        {
+            return this.lockManager.call ( () -> {
+                return doWithTransaction ( ( em ) -> {
+                    final StorageHandlerImpl handler = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
+                    return consumer.process ( handler );
+                } , createArtifactGuard () );
+            } );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
@@ -868,7 +889,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected TransferHandler createTransferHandler ( final EntityManager em )
     {
-        return new TransferHandler ( em, this.lockManager, this.blobStore );
+        return new TransferHandler ( em, this.blobStore );
     }
 
     protected <R> R doWithTransferHandler ( final ManagerFunction<R, TransferHandler> consumer )
@@ -883,7 +904,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected ValidationHandler createValidationHandler ( final EntityManager em )
     {
-        return new ValidationHandler ( em, this.lockManager );
+        return new ValidationHandler ( em );
     }
 
     protected <R> R doWithValidationHandler ( final ManagerFunction<R, ValidationHandler> consumer )
@@ -905,11 +926,18 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public Channel importChannel ( final InputStream inputStream, final boolean useChannelName )
     {
-        return doWithTransaction ( ( em ) -> {
-            final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
-            final TransferHandler transfer = new TransferHandler ( em, this.lockManager, this.blobStore );
-            return convert ( transfer.importChannel ( storage, inputStream, useChannelName ) );
-        } );
+        try
+        {
+            return this.lockManager.call ( () -> doWithTransaction ( ( em ) -> {
+                final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
+                final TransferHandler transfer = new TransferHandler ( em, this.blobStore );
+                return convert ( transfer.importChannel ( storage, inputStream, useChannelName ) );
+            } ) );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     @Override
@@ -921,11 +949,11 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void importAll ( final InputStream inputStream, final boolean useChannelNames, final boolean wipe )
     {
-        doWithTransactionVoid ( ( em ) -> {
-            final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.lockManager, this.blobStore );
-            final TransferHandler transfer = new TransferHandler ( em, this.lockManager, this.blobStore );
+        this.lockManager.run ( () -> doWithTransactionVoid ( ( em ) -> {
+            final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
+            final TransferHandler transfer = new TransferHandler ( em, this.blobStore );
             transfer.importAll ( storage, inputStream, useChannelNames, wipe );
-        } );
+        } ) );
     }
 
     @Override

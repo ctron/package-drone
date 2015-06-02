@@ -46,9 +46,9 @@ public class ValidationHandler extends AbstractHandler
 
     private final static Logger logger = LoggerFactory.getLogger ( ValidationHandler.class );
 
-    public ValidationHandler ( final EntityManager em, final LockManager<String> lockManager )
+    public ValidationHandler ( final EntityManager em )
     {
-        super ( em, lockManager );
+        super ( em );
     }
 
     public void aggregateChannel ( final ChannelEntity channel )
