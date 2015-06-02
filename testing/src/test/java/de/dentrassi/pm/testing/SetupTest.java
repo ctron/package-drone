@@ -12,6 +12,7 @@ package de.dentrassi.pm.testing;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -124,9 +125,9 @@ public class SetupTest extends AbstractServerTest
     private static String loadAdminToken ()
     {
         final Properties p = new Properties ();
-        try
+        try ( InputStream in = new FileInputStream ( System.getProperty ( "user.home" ) + "/.drone-admin-token" ) )
         {
-            p.load ( new FileInputStream ( System.getProperty ( "user.home" ) + "/.drone-admin-token" ) );
+            p.load ( in );
         }
         catch ( final IOException e )
         {
