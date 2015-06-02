@@ -93,6 +93,7 @@
 		<module>../de.dentrassi.pm.aspect.cleanup</module>
 		<module>../de.dentrassi.pm.aspect.cleanup.web</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
+		<module>../de.dentrassi.pm.aspect.common.tests</module>
 		<module>../de.dentrassi.pm.aspect.mvnosgi</module>
 		<module>../de.dentrassi.pm.aspect.mvnosgi.web</module>
 		<module>../de.dentrassi.pm.aspect.upgrade</module>
