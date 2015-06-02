@@ -93,13 +93,28 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private final GeneratorProcessor generatorProcessor = new GeneratorProcessor ( FrameworkUtil.getBundle ( StorageServiceImpl.class ).getBundleContext () );
 
-    private final LockManager lockManager = new LockManager ();
+    private final LockManager lockManager;
 
     private EventAdmin eventAdmin;
 
     private CoreService coreService;
 
     private final BlobStore blobStore = new BlobStore ();
+
+    public StorageServiceImpl ()
+    {
+        final Map<String, Object> props = this.entityManagerFactory.getProperties ();
+        if ( "com.mysql.jdbc.Driver".equals ( props.get ( "driverClassName" ) ) )
+        {
+            // is mysql
+            logger.warn ( "Initializing with MySQL single resource lock manager" );
+            this.lockManager = new LockManager ( true );
+        }
+        else
+        {
+            this.lockManager = new LockManager ();
+        }
+    }
 
     public void setCoreService ( final CoreService coreService )
     {
