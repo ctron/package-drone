@@ -44,6 +44,7 @@ import org.eclipse.scada.utils.str.StringReplacer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.html.HtmlEscapers;
 import com.google.common.io.CharStreams;
 
 import de.dentrassi.pm.core.CoreService;
@@ -323,6 +324,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         final Map<String, String> model = new HashMap<> ();
         model.put ( "token", token );
         model.put ( "link", link );
+        model.put ( "linkEncoded", HtmlEscapers.htmlEscaper ().escape ( link ) );
         sendEmail ( email, "Verify your account", "verify", model );
     }
 
@@ -341,6 +343,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         final Map<String, String> model = new HashMap<> ();
         model.put ( "token", resetToken );
         model.put ( "link", link );
+        model.put ( "linkEncoded", HtmlEscapers.htmlEscaper ().escape ( link ) );
         sendEmail ( email, "Password reset request", "passwordReset", model );
     }
 
@@ -547,6 +550,28 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
             throw new IllegalStateException ( String.format ( "Unable to find message content: %s", resource ) );
         }
 
+        final URL urlHtml = DatabaseUserService.class.getResource ( String.format ( "mails/%s.html", resource ) );
+
+        final String data = loadAndFill ( resource, model, url );
+        final String dataHtml = loadAndFill ( resource, model, urlHtml );
+
+        try
+        {
+            mailService.sendMessage ( email, subject, data, dataHtml );
+        }
+        catch ( final Exception e )
+        {
+            logger.warn ( "Failed to send e-mail to: " + email, e );
+        }
+    }
+
+    private String loadAndFill ( final String resource, final Map<String, ?> model, final URL url )
+    {
+        if ( url == null )
+        {
+            return null;
+        }
+
         String data;
         try ( InputStream is = url.openStream (); Reader r = new InputStreamReader ( is, StandardCharsets.UTF_8 ) )
         {
@@ -562,15 +587,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         {
             data = StringReplacer.replace ( data, StringReplacer.newExtendedSource ( model ), StringReplacer.DEFAULT_PATTERN, true );
         }
-
-        try
-        {
-            mailService.sendMessage ( email, subject, data );
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to send e-mail to: " + email, e );
-        }
+        return data;
     }
 
     private Date nextMailSlot ( final Date date )

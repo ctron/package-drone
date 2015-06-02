@@ -78,7 +78,6 @@
 
             <!-- annotation stuff -->
 
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.transaction_1.1.1.v201105210645.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.0.1/org.apache.aries.spifly.dynamic.bundle-1.0.1.jar" dest="download/bundles" usetimestamp="true" />
@@ -111,18 +110,13 @@
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
             -->
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops//${eclipse.orbit.release}/repository/plugins/javax.xml_1.3.4.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="https://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils.source_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
-
-        	<!-- email -->
-        	
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish.source_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<!-- compress -->
         	

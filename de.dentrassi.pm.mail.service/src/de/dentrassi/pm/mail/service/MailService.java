@@ -10,14 +10,46 @@
  *******************************************************************************/
 package de.dentrassi.pm.mail.service;
 
+/**
+ * A service to send e-mails
+ */
 public interface MailService
 {
-    public void sendMessage ( String to, String subject, String text ) throws Exception;
+    /**
+     * @param to
+     *            the recipient address
+     * @param subject
+     *            the subject (without prefix)
+     * @param text
+     *            the plain text content
+     * @throws Exception
+     *             if anything goes wrong
+     */
+    public default void sendMessage ( final String to, final String subject, final String text ) throws Exception
+    {
+        sendMessage ( to, subject, text, null );
+    }
 
     /**
-     * Send a message <br/>
+     * @param to
+     *            the recipient address
+     * @param subject
+     *            the subject (without prefix)
+     * @param text
+     *            the plain text content
+     * @param html
+     *            optionally the HTML formatted content
+     * @throws Exception
+     *             if anything goes wrong
+     */
+    public void sendMessage ( String to, String subject, String text, String html ) throws Exception;
+
+    /**
+     * Send a message
+     * <p>
      * The content of the message is read from the readable parameter. The
      * method will not close the readable.
+     * </p>
      *
      * @param to
      *            the recipient address
