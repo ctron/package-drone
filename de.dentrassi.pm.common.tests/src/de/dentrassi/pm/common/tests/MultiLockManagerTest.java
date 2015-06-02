@@ -182,14 +182,27 @@ public class MultiLockManagerTest
     }
 
     @Test ( timeout = 10_000 )
-    public void test5 ()
+    public void test5a ()
     {
         MultiLockManagerTest.logger.info ( "test5" );
 
+        performTest5 ( false );
+    }
+
+    @Test ( timeout = 10_000 )
+    public void test5b ()
+    {
+        MultiLockManagerTest.logger.info ( "test5" );
+
+        performTest5 ( true );
+    }
+
+    private void performTest5 ( final boolean single )
+    {
         this.readOps.set ( 0 );
         this.writeOps.set ( 0 );
 
-        try ( LockManager lm = new LockManager () )
+        try ( LockManager lm = new LockManager ( single ) )
         {
             final List<TestThread> threads = new LinkedList<> ();
 
