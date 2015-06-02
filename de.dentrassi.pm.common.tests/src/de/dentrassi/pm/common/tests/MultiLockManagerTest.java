@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,29 +49,33 @@ public class MultiLockManagerTest
     @BeforeClass
     public static void setup ()
     {
-        final LoggerContext ctx = (LoggerContext)LoggerFactory.getILoggerFactory ();
-
-        final PatternLayoutEncoder encoder = new PatternLayoutEncoder ();
-
-        encoder.setPattern ( "%date %level [%thread] %logger{10} [%file:%line] %msg%n" );
-        encoder.setContext ( ctx );
-        encoder.start ();
-
-        final ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<> ();
-        appender.setEncoder ( encoder );
-        appender.start ();
-        appender.setContext ( ctx );
-
-        final ch.qos.logback.classic.Logger rootLogger = ctx.getLogger ( Logger.ROOT_LOGGER_NAME );
-        rootLogger.detachAppender ( "console" );
-        rootLogger.addAppender ( appender );
-        if ( Boolean.getBoolean ( "trace" ) )
+        final ILoggerFactory factory = LoggerFactory.getILoggerFactory ();
+        if ( factory instanceof LoggerContext )
         {
-            rootLogger.setLevel ( Level.TRACE );
-        }
-        else
-        {
-            rootLogger.setLevel ( Level.WARN );
+            final LoggerContext ctx = (LoggerContext)factory;
+
+            final PatternLayoutEncoder encoder = new PatternLayoutEncoder ();
+
+            encoder.setPattern ( "%date %level [%thread] %logger{10} [%file:%line] %msg%n" );
+            encoder.setContext ( ctx );
+            encoder.start ();
+
+            final ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<> ();
+            appender.setEncoder ( encoder );
+            appender.start ();
+            appender.setContext ( ctx );
+
+            final ch.qos.logback.classic.Logger rootLogger = ctx.getLogger ( Logger.ROOT_LOGGER_NAME );
+            rootLogger.detachAppender ( "console" );
+            rootLogger.addAppender ( appender );
+            if ( Boolean.getBoolean ( "trace" ) )
+            {
+                rootLogger.setLevel ( Level.TRACE );
+            }
+            else
+            {
+                rootLogger.setLevel ( Level.WARN );
+            }
         }
     }
 
