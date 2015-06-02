@@ -19,6 +19,28 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A lock manager
+ * <p>
+ * This lock manager implementation works together with the {@link LockContext}
+ * class. A call to {@link #run(Runnable)} or {@link #call(Callable)} wraps the
+ * call with a {@link LockContext} based on the lock manager and allows
+ * {@link LockContext} methods like {@link LockContext#access(String)} to
+ * perform lock operations.
+ * </p>
+ * <p>
+ * Lock operations are access or modify, which follow a simple read/write lock
+ * scheme. The lock manager supports upgrading a lock from access (read) to
+ * modify (write). However it is not guaranteed that between requesting the
+ * modify lock after having already acquired the access lock, that no one else
+ * got the write lock in between. In order words, calling
+ * {@link LockContext#modify(String)} after a successful
+ * {@link LockContext#access(String)} call may block until the write lock could
+ * be acquired, but possibly other writers could have had modify access before
+ * the block is released and the {@link LockContext#modify(String)} method
+ * returns.
+ * </p>
+ */
 public class LockManager implements AutoCloseable
 {
     private final static Logger logger = LoggerFactory.getLogger ( LockManager.class );
@@ -78,7 +100,79 @@ public class LockManager implements AutoCloseable
         }
     }
 
-    private final Map<String, Entry> locks = new HashMap<> ();
+    private interface Locker
+    {
+        public Entry getEntry ( final String id );
+
+        public void putEntry ( final String id, final Entry entry );
+
+        public void removeEntry ( final String id );
+    }
+
+    private static class SeparateLocker implements Locker
+    {
+        private final Map<String, Entry> locks = new HashMap<> ();
+
+        @Override
+        public Entry getEntry ( final String id )
+        {
+            return this.locks.get ( id );
+        }
+
+        @Override
+        public void putEntry ( final String id, final Entry entry )
+        {
+            this.locks.put ( id, entry );
+        }
+
+        @Override
+        public void removeEntry ( final String id )
+        {
+            this.locks.remove ( id );
+        }
+    }
+
+    private static class SingleLocker implements Locker
+    {
+        private Entry entry;
+
+        @Override
+        public Entry getEntry ( final String id )
+        {
+            return this.entry;
+        }
+
+        @Override
+        public void putEntry ( final String id, final Entry entry )
+        {
+            this.entry = entry;
+        }
+
+        @Override
+        public void removeEntry ( final String id )
+        {
+            this.entry = null;
+        }
+    }
+
+    private final Locker locker;
+
+    public LockManager ()
+    {
+        this ( false );
+    }
+
+    public LockManager ( final boolean single )
+    {
+        if ( single )
+        {
+            this.locker = new SingleLocker ();
+        }
+        else
+        {
+            this.locker = new SeparateLocker ();
+        }
+    }
 
     public synchronized void performAccess ( final String id )
     {
@@ -86,7 +180,7 @@ public class LockManager implements AutoCloseable
 
         while ( true )
         {
-            Entry entry = this.locks.get ( id );
+            Entry entry = this.locker.getEntry ( id );
 
             logger.trace ( "Check lock state [access] - {} - {}", id, entry );
 
@@ -95,7 +189,7 @@ public class LockManager implements AutoCloseable
                 // no entry -> not locked at all
                 entry = new Entry ();
                 entry.readers.add ( Thread.currentThread () );
-                this.locks.put ( id, entry );
+                this.locker.putEntry ( id, entry );
                 logger.trace ( "Acquired access by creation - id: {}", id );
                 return;
             }
@@ -135,7 +229,7 @@ public class LockManager implements AutoCloseable
 
         while ( true )
         {
-            Entry entry = this.locks.get ( id );
+            Entry entry = this.locker.getEntry ( id );
 
             logger.trace ( "Check lock state [modify] - {} - {}", id, entry );
 
@@ -144,7 +238,7 @@ public class LockManager implements AutoCloseable
                 // no entry -> not locked at all
                 entry = new Entry ();
                 entry.writer = Thread.currentThread ();
-                this.locks.put ( id, entry );
+                this.locker.putEntry ( id, entry );
                 logger.trace ( "Acquired modify by creation - id: {}", id );
                 return;
             }
@@ -156,7 +250,7 @@ public class LockManager implements AutoCloseable
                 return;
             }
 
-            // check after re-aqcuire check, since we then have passed this test in the past
+            // check after re-acquire check, since we then have passed this test in the past
 
             if ( first )
             {
@@ -197,7 +291,7 @@ public class LockManager implements AutoCloseable
     {
         logger.debug ( "unlockResource: {}", id );
 
-        final Entry entry = this.locks.get ( id );
+        final Entry entry = this.locker.getEntry ( id );
         if ( entry == null )
         {
             return;
@@ -232,7 +326,7 @@ public class LockManager implements AutoCloseable
         if ( entry.readers.isEmpty () && entry.writer == null && entry.writersWaiting.isEmpty () )
         {
             logger.debug ( "remove lock entry: {}", id );
-            this.locks.remove ( id );
+            this.locker.removeEntry ( id );
             return true;
         }
         return false;
@@ -240,7 +334,7 @@ public class LockManager implements AutoCloseable
 
     public synchronized boolean checkAccess ( final String id )
     {
-        final Entry entry = this.locks.get ( id );
+        final Entry entry = this.locker.getEntry ( id );
 
         if ( entry == null )
         {
@@ -258,7 +352,7 @@ public class LockManager implements AutoCloseable
 
     public synchronized boolean checkModify ( final String id )
     {
-        final Entry entry = this.locks.get ( id );
+        final Entry entry = this.locker.getEntry ( id );
 
         if ( entry == null )
         {
@@ -268,15 +362,8 @@ public class LockManager implements AutoCloseable
         return entry.writer == Thread.currentThread ();
     }
 
-    private void testDisposed ()
-    {
-        // FIXME: implement
-    }
-
     public void run ( final Runnable r )
     {
-        testDisposed ();
-
         final LockContextImpl createdCtx = checkCreate ();
 
         try
@@ -291,8 +378,6 @@ public class LockManager implements AutoCloseable
 
     public <V> V call ( final Callable<V> c ) throws Exception
     {
-        testDisposed ();
-
         final LockContextImpl createdCtx = checkCreate ();
 
         try
@@ -334,5 +419,4 @@ public class LockManager implements AutoCloseable
     public void close ()
     {
     }
-
 }
