@@ -20,7 +20,7 @@ public class RpmTest extends AbstractServerTest
     @Test
     public void testRpm1 () throws Exception
     {
-        final ChannelTester ct = ChannelTester.create ( getWebContext (), "rpm11" );
+        final ChannelTester ct = ChannelTester.create ( getWebContext (), "rpm1" );
         ct.addAspect ( "rpm" );
         ct.addAspect ( "yum" );
 
