@@ -22,4 +22,11 @@ public interface WebContext extends SearchContext
     public String resolve ( String url );
 
     public File getTestFile ( String localFileName );
+
+    public default WebDriver getResolved ( final String url )
+    {
+        final WebDriver driver = getDriver ();
+        driver.get ( resolve ( url ) );
+        return driver;
+    }
 }

@@ -35,7 +35,7 @@ public class ChannelTester
 
     /**
      * Get the channel id
-     * 
+     *
      * @return the channel id
      */
     public String getId ()
@@ -207,6 +207,6 @@ public class ChannelTester
 
     protected void get ( final String url )
     {
-        this.context.getDriver ().get ( this.context.resolve ( url ) );
+        this.context.getResolved ( url );
     }
 }

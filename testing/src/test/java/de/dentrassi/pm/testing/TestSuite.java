@@ -40,6 +40,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
         DefaultTest.class, //
         OsgiTest.class, //
         RpmTest.class, //
+        DebTest.class, //
         MvnOsgiTest.class //
 } )
 public class TestSuite
