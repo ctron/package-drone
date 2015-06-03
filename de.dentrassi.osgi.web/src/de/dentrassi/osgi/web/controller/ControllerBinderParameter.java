@@ -11,27 +11,15 @@
 package de.dentrassi.osgi.web.controller;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import de.dentrassi.osgi.web.controller.binding.Binder;
-
 @Retention ( RetentionPolicy.RUNTIME )
-@Target ( ElementType.METHOD )
-@Repeatable ( ControllerBinders.class )
-public @interface ControllerBinder
+@Target ( ElementType.ANNOTATION_TYPE )
+public @interface ControllerBinderParameter
 {
-    /**
-     * The class implementing the binder
-     * <p>
-     * The binder class must have a zero argument constructor
-     * </p>
-     *
-     * @return the class of the binder
-     */
-    Class<? extends Binder>value ();
+    String key ();
 
-    ControllerBinderParameter[]parameters () default {};
+    String value ();
 }

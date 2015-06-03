@@ -23,6 +23,12 @@ public class SiteInformation
     @MetaKeyBinding ( namespace = "core", key = "allow-self-registration" )
     private boolean allowSelfRegistration;
 
+    @MetaKeyBinding ( namespace = "recaptcha", key = "recaptcha-site-key" )
+    private String recaptchaSiteKey;
+
+    @MetaKeyBinding ( namespace = "recaptcha", key = "recaptcha-secret-key" )
+    private String recaptchaSecretKey;
+
     public void setAllowSelfRegistration ( final boolean disableRegistration )
     {
         this.allowSelfRegistration = disableRegistration;
@@ -42,4 +48,25 @@ public class SiteInformation
     {
         return this.prefix;
     }
+
+    public void setRecaptchaSiteKey ( final String recaptchaSiteKey )
+    {
+        this.recaptchaSiteKey = recaptchaSiteKey;
+    }
+
+    public String getRecaptchaSiteKey ()
+    {
+        return this.recaptchaSiteKey;
+    }
+
+    public void setRecaptchaSecretKey ( final String recaptchaSecretKey )
+    {
+        this.recaptchaSecretKey = recaptchaSecretKey;
+    }
+
+    public String getRecaptchaSecretKey ()
+    {
+        return this.recaptchaSecretKey;
+    }
+
 }

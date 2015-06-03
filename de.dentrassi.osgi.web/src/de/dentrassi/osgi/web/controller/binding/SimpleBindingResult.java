@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,25 @@ public class SimpleBindingResult implements BindingResult
         return this.children.get ( name );
     }
 
+    @Override
+    public BindingResult getChildOrAdd ( final String name )
+    {
+        BindingResult child = this.children.get ( name );
+        if ( child == null )
+        {
+            child = new Result ();
+            this.children.put ( name, child );
+        }
+
+        return child;
+    }
+
+    @Override
+    public Map<String, BindingResult> getChildren ()
+    {
+        return Collections.unmodifiableMap ( this.children );
+    }
+
     public void addErrors ( final String name, final List<BindingError> errors )
     {
         BindingResult br;
@@ -91,25 +111,22 @@ public class SimpleBindingResult implements BindingResult
         }
         else
         {
-            br = this.children.get ( name );
-
-            if ( br == null )
-            {
-                br = new Result ();
-                this.children.put ( name, br );
-            }
+            br = getChildOrAdd ( name );
         }
 
-        for ( final BindingError error : errors )
-        {
-            br.addError ( error );
-        }
+        br.addErrors ( errors );
     }
 
     @Override
     public void addError ( final BindingError error )
     {
         this.errors.add ( error );
+    }
+
+    @Override
+    public void addErrors ( final Collection<BindingError> errors )
+    {
+        this.errors.addAll ( errors );
     }
 
     @Override

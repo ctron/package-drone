@@ -44,6 +44,25 @@
                 
                 </fieldset>
                 
+                <fieldset>
+                    <legend>reCAPTCHA</legend>
+                    
+                    <h:formEntry label="Site Key" path="recaptchaSiteKey" command="command">
+                       <form:input path="recaptchaSiteKey" cssClass="form-control"/>
+                       <span class="help-block">
+                           Optionally enter the <a href="http://www.google.com/recaptcha/admin" target="_blank">reCAPTCHA site key</a>.
+                       </span>
+                    </h:formEntry>
+                    
+                    <h:formEntry label="Secret Key" path="recaptchaSecretKey" command="command">
+                       <form:input path="recaptchaSecretKey" cssClass="form-control"/>
+                       <span class="help-block">
+                           The secret key is required if the site key is set.
+                       </span>
+                    </h:formEntry>
+
+                </fieldset>
+                
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-primary">Update</button>

@@ -188,6 +188,10 @@ public class ControllerCall
             try
             {
                 final Binder binderImpl = binder.value ().newInstance ();
+                if ( binderImpl instanceof ControllerBinderParametersAware )
+                {
+                    ( (ControllerBinderParametersAware)binderImpl ).setParameters ( binder.parameters () );
+                }
                 manager.addBinder ( binderImpl );
             }
             catch ( InstantiationException | IllegalAccessException e )
