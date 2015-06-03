@@ -270,7 +270,7 @@
 								</mapping>
 								
                                 <mapping>
-                                    <directory>/usr/lib/${project.artifactId}/profile</directory>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
                                     <username>root</username>
                                     <groupname>root</groupname>
                                     <configuration>false</configuration>
@@ -461,7 +461,7 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 								</mapping>
 								
                                 <mapping>
-                                    <directory>/usr/lib/${project.artifactId}/profile</directory>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
                                     <username>root</username>
                                     <groupname>root</groupname>
                                     <configuration>false</configuration>
