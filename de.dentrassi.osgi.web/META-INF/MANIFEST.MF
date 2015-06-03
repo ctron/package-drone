@@ -39,6 +39,7 @@ Export-Package: de.dentrassi.osgi.web;version="1.0.0";
    javax.servlet.jsp",
  de.dentrassi.osgi.web.controller;version="1.0.0";
   uses:="org.osgi.framework,
+   de.dentrassi.osgi.web.controller.binding,
    javax.servlet.http,
    de.dentrassi.osgi.web,
    de.dentrassi.osgi.web.controller.routing",
