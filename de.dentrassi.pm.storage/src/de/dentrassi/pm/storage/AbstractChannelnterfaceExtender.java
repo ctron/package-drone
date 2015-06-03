@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.web;
+package de.dentrassi.pm.storage;
 
 import java.util.List;
 
@@ -16,21 +16,32 @@ import javax.servlet.http.HttpServletRequest;
 
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
-import de.dentrassi.pm.storage.Channel;
 
+/**
+ * An abstract InterfaceExtender which only processes Channel instances
+ */
 public abstract class AbstractChannelnterfaceExtender implements InterfaceExtender
 {
+    protected boolean filterChannel ( final Channel channel )
+    {
+        return true;
+    }
+
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
         if ( object instanceof Channel )
         {
-            return getChannelAction ( request, (Channel)object );
+            final Channel channel = (Channel)object;
+            if ( filterChannel ( channel ) )
+            {
+                return getChannelActions ( request, channel );
+            }
         }
         return null;
     }
 
-    protected List<MenuEntry> getChannelAction ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
     {
         return null;
     }
@@ -40,7 +51,11 @@ public abstract class AbstractChannelnterfaceExtender implements InterfaceExtend
     {
         if ( object instanceof Channel )
         {
-            return getChannelViews ( request, (Channel)object );
+            final Channel channel = (Channel)object;
+            if ( filterChannel ( channel ) )
+            {
+                return getChannelViews ( request, channel );
+            }
         }
         return null;
     }

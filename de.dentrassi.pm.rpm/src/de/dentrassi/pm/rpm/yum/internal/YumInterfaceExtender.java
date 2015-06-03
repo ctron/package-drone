@@ -19,31 +19,25 @@ import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.rpm.Constants;
+import de.dentrassi.pm.storage.AbstractChannelnterfaceExtender;
 import de.dentrassi.pm.storage.Channel;
 
-public class YumInterfaceExtender implements InterfaceExtender
+public class YumInterfaceExtender extends AbstractChannelnterfaceExtender
 {
     private static final Escaper PATH_ESC = UrlEscapers.urlPathSegmentEscaper ();
 
     @Override
-    public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
+    protected boolean filterChannel ( final Channel channel )
     {
-        if ( ! ( object instanceof Channel ) )
-        {
-            return null;
-        }
+        return channel.hasAspect ( Constants.YUM_ASPECT_ID );
+    }
 
-        final Channel channel = (Channel)object;
-
-        if ( !channel.hasAspect ( Constants.YUM_ASPECT_ID ) )
-        {
-            return null;
-        }
-
+    @Override
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
+    {
         final List<MenuEntry> result = new LinkedList<> ();
         result.add ( new MenuEntry ( "YUM (by ID)", 6_000, new LinkTarget ( String.format ( "/yum/%s", channel.getId () ) ), Modifier.LINK, null ) );
         if ( channel.getName () != null )
@@ -52,4 +46,15 @@ public class YumInterfaceExtender implements InterfaceExtender
         }
         return result;
     }
+
+    @Override
+    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
+    {
+        final List<MenuEntry> result = new LinkedList<> ();
+
+        result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "YUM", 6_000, new LinkTarget ( String.format ( "/ui/yum/help/%s", channel.getId () ) ), Modifier.DEFAULT, "info-sign" ) );
+
+        return result;
+    }
+
 }

@@ -23,13 +23,14 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
+import de.dentrassi.pm.storage.AbstractChannelnterfaceExtender;
 import de.dentrassi.pm.storage.Channel;
 
 public class P2RepositoryInterfaceExtender extends AbstractChannelnterfaceExtender
 {
 
     @Override
-    protected List<MenuEntry> getChannelAction ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
     {
         if ( !channel.hasAspect ( P2RepositoryAspect.ID ) )
         {

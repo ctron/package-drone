@@ -11,6 +11,7 @@
 package de.dentrassi.pm.rpm.yum.internal;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
 import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -28,10 +33,35 @@ import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
+import de.dentrassi.pm.system.SitePrefixService;
 
 public class YumServlet extends AbstractStorageServiceServlet
 {
     private static final long serialVersionUID = 1L;
+
+    private ServiceTracker<SitePrefixService, SitePrefixService> sitePrefixTracker;
+
+    @Override
+    public void init () throws ServletException
+    {
+        super.init ();
+
+        final BundleContext context = FrameworkUtil.getBundle ( getClass () ).getBundleContext ();
+        this.sitePrefixTracker = new ServiceTracker<> ( context, SitePrefixService.class, null );
+        this.sitePrefixTracker.open ();
+    }
+
+    @Override
+    public void destroy ()
+    {
+        this.sitePrefixTracker.close ();
+        super.destroy ();
+    }
+
+    protected SitePrefixService getSitePrefixService ()
+    {
+        return this.sitePrefixTracker.getService ();
+    }
 
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
@@ -90,6 +120,14 @@ public class YumServlet extends AbstractStorageServiceServlet
             return true;
         }
 
+        // handle config
+
+        if ( remPath.equals ( "config.repo" ) )
+        {
+            handleConfig ( channel, request, response );
+            return true;
+        }
+
         // handle pool
 
         if ( remPath.startsWith ( "pool/" ) )
@@ -125,6 +163,43 @@ public class YumServlet extends AbstractStorageServiceServlet
         }
 
         return false;
+    }
+
+    private void handleConfig ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        response.setContentType ( "text/plain" );
+
+        try ( final PrintWriter pw = response.getWriter () )
+        {
+            pw.append ( '[' ).append ( channel.getNameOrId () ).append ( "]\n" );
+            final String name = makeName ( channel.getDescription () );
+            if ( name != null )
+            {
+                pw.append ( "name=" ).append ( name ).append ( "\n" );
+            }
+            pw.append ( "baseurl=" ).append ( getSitePrefixService ().getSitePrefix () ).append ( "/yum/" ).append ( channel.getId () ).append ( "\n" );
+            pw.append ( "enabled=1\n" );
+            pw.append ( "gpgcheck=0\n" );
+        }
+    }
+
+    private String makeName ( final String description )
+    {
+        if ( description == null || description.isEmpty () )
+        {
+            return null;
+        }
+
+        final int idx = description.indexOf ( '\n' );
+
+        if ( idx >= 0 )
+        {
+            return description.substring ( 0, idx );
+        }
+        else
+        {
+            return description;
+        }
     }
 
     private void handlePool ( final Channel channel, final String remPath, final HttpServletRequest request, final HttpServletResponse response ) throws IOException

@@ -145,6 +145,7 @@
 		<module>../de.dentrassi.pm.r5</module>
 		
 		<module>../de.dentrassi.pm.rpm</module>
+		<module>../de.dentrassi.pm.rpm.web</module>
 
 		<module>../de.dentrassi.pm.sec</module>
 		<module>../de.dentrassi.pm.sec.jpa</module>
