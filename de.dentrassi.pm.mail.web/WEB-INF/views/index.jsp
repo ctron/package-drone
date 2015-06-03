@@ -72,7 +72,7 @@ if ( principal instanceof UserInformationPrincipal )
                     <legend>Mail Settings</legend>
                     
                     <h:formEntry label="From" path="from" command="command">
-	                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail"/>
+	                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail" type="email"/>
 	                </h:formEntry>
 	                
 	                <h:formEntry label="Prefix" path="prefix" command="command">
