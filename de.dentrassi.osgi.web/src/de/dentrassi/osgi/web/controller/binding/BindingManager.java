@@ -43,6 +43,22 @@ public class BindingManager
         this.converter = ConverterManager.create ();
     }
 
+    /**
+     * Create a new BindingManager with default binders
+     * <p>
+     * This call creates a new BindingManager instance and add the following
+     * binders:
+     * </p>
+     * <ul>
+     * <li>{@link BindingManager}</li>
+     * <li>{@link BindingManagerBinder}</li>
+     * </ul>
+     *
+     * @param data
+     *            the initial data for the MapBinder
+     * @return
+     *         a new binder manager instance
+     */
     public static final BindingManager create ( final Map<String, Object> data )
     {
         final BindingManager result = new BindingManager ();
