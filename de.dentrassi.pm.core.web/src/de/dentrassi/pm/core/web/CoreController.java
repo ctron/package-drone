@@ -123,7 +123,7 @@ public class CoreController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/site", method = RequestMethod.POST )
-    public ModelAndView sitePost ( @Valid @FormData ( "command" ) final SiteInformation site, final BindingResult result ) throws Exception
+    public ModelAndView sitePost ( @Valid @FormData ( "command" ) final SiteInformation site, final BindingResult result) throws Exception
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -132,13 +132,7 @@ public class CoreController implements InterfaceExtender
             // store
             final Map<MetaKey, String> props = MetaKeys.unbind ( site );
 
-            final Map<String, String> data = new HashMap<> ( props.size () );
-            for ( final Map.Entry<MetaKey, String> entry : props.entrySet () )
-            {
-                data.put ( entry.getKey ().getKey (), entry.getValue () );
-            }
-
-            this.coreService.setProperties ( data );
+            this.coreService.setCoreProperties ( props );
         }
 
         fillModel ( model, site );
