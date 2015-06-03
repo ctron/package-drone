@@ -111,7 +111,7 @@ if ( principal instanceof UserInformationPrincipal )
                  </div>
                  <div class="form-group">
                      <label class="sr-only" for="testEmailReceiver">Receiver Email address</label>
-                     <input type="email" class="form-control"  id="testEmailReceiver" name="testEmailReceiver" placeholder="Receiver of test e-mail" value="${fn:escapeXml(email) }"/>
+                     <input type="email" class="form-control"  id="testEmailReceiver" name="testEmailReceiver" required="required" placeholder="Receiver of test e-mail" value="${fn:escapeXml(email) }"/>
                  </div>
                  <button type="submit" class="btn btn-default">Send</button>
              </form>
