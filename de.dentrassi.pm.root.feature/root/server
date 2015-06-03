@@ -2,6 +2,8 @@
 
 DIR=$(cd $(dirname "$0"); pwd)
 
+
+test -f "$DIR/profile" && . "$DIR/profile"
 test -f /etc/default/package-drone-server && . /etc/default/package-drone-server
 
 JAVA="java"

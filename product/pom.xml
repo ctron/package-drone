@@ -97,7 +97,7 @@
 									<type>archive</type>
 									<mapper>
 										<type>perm</type>
-										<prefix>/usr/lib/package-drone/instance</prefix>
+										<prefix>/usr/lib/${project.artifactId}/instance</prefix>
 										<user>pdrone</user>
 										<group>pdrone</group>
 									</mapper>
@@ -114,6 +114,18 @@
 										<group>root</group>
 									</mapper>
 								</data>
+								
+                                <data>
+                                    <src>src/default/profile</src>
+                                    <dst>usr/lib/${project.artifactId}/profile</dst>
+                                    <type>file</type>
+                                    <conffile>false</conffile>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
 
 								<data>
 									<src>src/deb/${project.artifactId}.conf</src>
@@ -125,6 +137,19 @@
 										<user>root</user>
 										<group>root</group>
 									</mapper>
+								</data>
+								
+								<data>
+								    <type>template</type>
+								    <paths>
+								        <path>var/lib/${project.artifactId}</path>
+								    </paths>
+								    <mapper>
+								        <type>perm</type>
+								        <user>pdrone</user>
+								        <group>pdrone</group>
+								        <dirmode>0750</dirmode>
+								    </mapper>
 								</data>
 
 								<data>
@@ -243,6 +268,18 @@
 										</source>
 									</sources>
 								</mapping>
+								
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}/profile</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <configuration>false</configuration>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/profile</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
 
 								<mapping>
 									<directory>/usr/lib/systemd/system</directory>
@@ -268,6 +305,14 @@
 											<location>src/firewalld/${project.artifactId}.xml</location>
 										</source>
 									</sources>
+								</mapping>
+								
+								<mapping>
+								    <directory>/var/lib/${project.artifactId}</directory>
+								    <username>pdrone</username>
+								    <groupname>pdrone</groupname>
+								    <directoryIncluded>true</directoryIncluded>
+								    <filemode>0750</filemode>
 								</mapping>
 
 							</mappings>
@@ -414,6 +459,26 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 										</source>
 									</sources>
 								</mapping>
+								
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}/profile</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <configuration>false</configuration>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/profile</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+								
+                                <mapping>
+                                    <directory>/var/lib/${project.artifactId}</directory>
+                                    <username>pdrone</username>
+                                    <groupname>pdrone</groupname>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <filemode>0750</filemode>
+                                </mapping>
 
 							</mappings>
 
