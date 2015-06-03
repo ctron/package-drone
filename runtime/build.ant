@@ -30,6 +30,14 @@
         <delete dir="unpack" />
         <delete dir="lib" />
     </target>
+	
+	<!-- ================================= 
+          target: download.provided              
+         ================================= -->
+    <target name="download.provided">
+        <get src="http://download.nextag.com/apache/felix/org.apache.felix.configadmin-1.8.4.jar" dest="provided" usetimestamp="true" />
+    </target>
+
 
     <!-- ================================= 
           target: download
@@ -208,7 +216,9 @@
                 <include name="org.apache.felix.gogo.runtime_*.jar" />
                 <include name="org.apache.felix.gogo.shell_*.jar" />
 
+            	<!--
                 <include name="org.eclipse.equinox.cm_*.jar" />
+                -->
                 <include name="org.eclipse.equinox.common_*.jar" />
                 <include name="org.eclipse.equinox.console_*.jar" />
                 <include name="org.eclipse.equinox.ds_*.jar" />

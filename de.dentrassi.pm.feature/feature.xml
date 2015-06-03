@@ -236,13 +236,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.equinox.cm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.equinox.common"
          download-size="0"
          install-size="0"
@@ -1125,6 +1118,13 @@
 
    <plugin
          id="com.sun.mail.javax.mail"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.felix.configadmin"
          download-size="0"
          install-size="0"
          version="0.0.0"
