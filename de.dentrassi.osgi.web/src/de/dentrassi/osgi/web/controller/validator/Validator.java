@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.validator;
 
-
 public interface Validator
 {
     public ValidationResult validate ( Object target );
