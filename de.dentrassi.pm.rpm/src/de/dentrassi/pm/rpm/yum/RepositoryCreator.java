@@ -222,7 +222,7 @@ public class RepositoryCreator
             addDependencies ( fmt, "rpm:provides", info.getProvides () );
             addDependencies ( fmt, "rpm:requires", info.getRequires () );
             addDependencies ( fmt, "rpm:conflicts", info.getConflicts () );
-            addDependencies ( fmt, "rpm:obseletes", info.getObsoletes () );
+            addDependencies ( fmt, "rpm:obsoletes", info.getObsoletes () );
 
             // add primary files
 
