@@ -39,12 +39,13 @@ import de.dentrassi.pm.importer.SimpleImporterDescription;
 
 public class HttpImporter implements Importer
 {
-
     private final static Logger logger = LoggerFactory.getLogger ( HttpImporter.class );
 
     public static final String ID = "http";
 
     private static final SimpleImporterDescription DESCRIPTION;
+
+    private static final int COPY_BUFFER_SIZE = Integer.getInteger ( "de.dentrassi.pm.importer.http.copyBufferSize", 4096 * 10 );
 
     private final Gson gson;
 
@@ -98,7 +99,7 @@ public class HttpImporter implements Importer
             }
 
             // manual copy
-            final byte[] buffer = new byte[4096];
+            final byte[] buffer = new byte[COPY_BUFFER_SIZE];
             int rc;
             while ( ( rc = in.read ( buffer ) ) > 0 )
             {
