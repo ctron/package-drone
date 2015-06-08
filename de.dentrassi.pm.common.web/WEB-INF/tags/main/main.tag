@@ -35,7 +35,7 @@ if ( p instanceof UserInformationPrincipal )
 <c:set var="fontAwesome" value="${pageContext.request.contextPath}/resources/font-awesome/4.3.0"/>
 
 <head>
-    <title>${fn:escapeXml(title) } | Package Drone</title>
+    <title>${fn:escapeXml(title) } | <c:if test="${not empty subtitle }">${fn:escapeXml(subtitle) }${' '}|${' '}</c:if>Package Drone</title>
     
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
