@@ -5,7 +5,9 @@ Bundle-SymbolicName: de.dentrassi.osgi.web
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: com.google.common.io;version="18.0.0",
+Import-Package: com.google.common.escape;version="18.0.0",
+ com.google.common.io;version="18.0.0",
+ com.google.common.net;version="18.0.0",
  com.google.gson;version="2.3.1",
  de.dentrassi.osgi.converter;version="1.0.0",
  de.dentrassi.osgi.utils;version="1.0.0",
