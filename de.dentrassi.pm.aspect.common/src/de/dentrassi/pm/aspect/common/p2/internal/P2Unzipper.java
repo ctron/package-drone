@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.common.p2;
+package de.dentrassi.pm.aspect.common.p2.internal;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -21,6 +21,7 @@ import java.util.zip.ZipInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.pm.aspect.common.p2.P2UnzipAspectFactory;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;

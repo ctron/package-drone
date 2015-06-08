@@ -8,13 +8,14 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.aspect.common.p2;
+package de.dentrassi.pm.aspect.common.p2.internal;
 
 import static de.dentrassi.pm.common.XmlHelper.addElement;
 import static de.dentrassi.pm.common.XmlHelper.fixSize;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.framework.Version;
 import org.slf4j.Logger;
@@ -23,9 +24,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
+import de.dentrassi.pm.aspect.common.p2.InstallableUnit;
+import de.dentrassi.pm.aspect.common.p2.P2MetaDataInformation;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
@@ -59,14 +63,18 @@ public class P2Virtualizer implements Virtualizer
     {
         final ArtifactInformation art = context.getArtifactInformation ();
 
+        final Map<MetaKey, String> metaData = context.getProvidedChannelMetaData ();
+        final P2MetaDataInformation info = new P2MetaDataInformation ();
+        MetaKeys.bind ( info, metaData );
+
         logger.debug ( "Process virtualize - artifactId: {} / {}", art.getId (), art.getName () );
 
         final BundleInformation bi = OsgiAspectFactory.fetchBundleInformation ( art.getMetaData () );
         if ( bi != null )
         {
             logger.debug ( "Process as bundle: {} ({})- {}", art.getName (), art.getId (), bi );
-            createBundleP2MetaData ( context, art, bi );
-            createBundleP2Artifacts ( context, art, bi );
+            createBundleP2MetaData ( context, info, art, bi );
+            createBundleP2Artifacts ( context, info, art, bi );
             return;
         }
 
@@ -74,8 +82,8 @@ public class P2Virtualizer implements Virtualizer
         if ( fi != null )
         {
             logger.debug ( "Process as feature: {} ({}) - {}", art.getName (), art.getId (), fi );
-            createFeatureP2MetaData ( context, art, fi );
-            createFeatureP2Artifacts ( context, art, fi );
+            createFeatureP2MetaData ( context, info, art, fi );
+            createFeatureP2Artifacts ( context, info, art, fi );
             return;
         }
     }
@@ -112,12 +120,12 @@ public class P2Virtualizer implements Virtualizer
         createXmlVirtualArtifact ( context, artifact, doc, "-p2artifacts.xml" );
     }
 
-    private void createFeatureP2Artifacts ( final Context context, final ArtifactInformation artifact, final FeatureInformation fi ) throws Exception
+    private void createFeatureP2Artifacts ( final Context context, final P2MetaDataInformation info, final ArtifactInformation artifact, final FeatureInformation fi ) throws Exception
     {
         createP2Artifacts ( context, fi.getId (), fi.getVersion (), "org.eclipse.update.feature", artifact, "application/zip" );
     }
 
-    private void createBundleP2Artifacts ( final Context context, final ArtifactInformation artifact, final BundleInformation bi ) throws Exception
+    private void createBundleP2Artifacts ( final Context context, final P2MetaDataInformation info, final ArtifactInformation artifact, final BundleInformation bi ) throws Exception
     {
         createP2Artifacts ( context, bi.getId (), bi.getVersion (), "osgi.bundle", artifact, null );
     }
@@ -134,15 +142,15 @@ public class P2Virtualizer implements Virtualizer
         p.setAttribute ( "value", value );
     }
 
-    private void createFeatureP2MetaData ( final Context context, final SimpleArtifactInformation art, final FeatureInformation fi ) throws Exception
+    private void createFeatureP2MetaData ( final Context context, final P2MetaDataInformation info, final SimpleArtifactInformation art, final FeatureInformation fi ) throws Exception
     {
         final List<InstallableUnit> ius = InstallableUnit.fromFeature ( fi );
         createXmlVirtualArtifact ( context, art, InstallableUnit.toXml ( ius ), "-p2metadata.xml" );
     }
 
-    private void createBundleP2MetaData ( final Context context, final SimpleArtifactInformation art, final BundleInformation bi ) throws Exception
+    private void createBundleP2MetaData ( final Context context, final P2MetaDataInformation info, final SimpleArtifactInformation art, final BundleInformation bi ) throws Exception
     {
-        createXmlVirtualArtifact ( context, art, InstallableUnit.fromBundle ( bi ).toXml (), "-p2metadata.xml" );
+        createXmlVirtualArtifact ( context, art, InstallableUnit.fromBundle ( bi, info ).toXml (), "-p2metadata.xml" );
     }
 
     private void createXmlVirtualArtifact ( final Context context, final SimpleArtifactInformation art, final Document doc, final String suffix ) throws Exception

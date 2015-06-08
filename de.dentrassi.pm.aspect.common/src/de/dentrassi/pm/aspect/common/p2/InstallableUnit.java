@@ -50,6 +50,8 @@ public class InstallableUnit
 {
     private final static Logger logger = LoggerFactory.getLogger ( InstallableUnit.class );
 
+    private static final String DEFAULT_SYSTEM_BUNDLE_ALIAS = "org.eclipse.osgi";
+
     private String id;
 
     private Version version;
@@ -529,6 +531,11 @@ public class InstallableUnit
 
     public static InstallableUnit fromBundle ( final BundleInformation bundle )
     {
+        return fromBundle ( bundle, null );
+    }
+
+    public static InstallableUnit fromBundle ( final BundleInformation bundle, final P2MetaDataInformation info )
+    {
         final InstallableUnit result = new InstallableUnit ();
 
         // core
@@ -566,9 +573,11 @@ public class InstallableUnit
             result.getRequires ().put ( new Key ( "java.package", pi.getName () ), new Requirement ( pi.getVersionRange (), pi.isOptional (), pi.isOptional () ? false : null, null ) );
         }
 
+        final String systemBundleAlias = getSystemBundleAlias ( info );
+
         for ( final BundleRequirement br : bundle.getBundleRequirements () )
         {
-            result.getRequires ().put ( new Key ( "osgi.bundle", br.getId () ), new Requirement ( br.getVersionRange (), br.isOptional (), br.isOptional () ? false : null, null ) );
+            result.getRequires ().put ( new Key ( "osgi.bundle", transformBundleName ( systemBundleAlias, br.getId () ) ), new Requirement ( br.getVersionRange (), br.isOptional (), br.isOptional () ? false : null, null ) );
         }
 
         // artifacts
@@ -583,7 +592,7 @@ public class InstallableUnit
 
         try
         {
-            final Map<String, String> td = new HashMap<String, String> ();
+            final Map<String, String> td = new HashMap<String, String> ( 1 );
             td.put ( "manifest", makeManifest ( bundle.getId (), bundle.getVersion () ) );
             addTouchpoint ( root, "org.eclipse.equinox.p2.osgi", "1.0.0", td );
         }
@@ -595,6 +604,30 @@ public class InstallableUnit
         result.setAdditionalNodes ( root );
 
         return result;
+    }
+
+    private static String getSystemBundleAlias ( final P2MetaDataInformation info )
+    {
+        if ( info.getSystemBundleAlias () != null && !info.getSystemBundleAlias ().isEmpty () )
+        {
+            return info.getSystemBundleAlias ();
+        }
+        else
+        {
+            return DEFAULT_SYSTEM_BUNDLE_ALIAS;
+        }
+    }
+
+    private static String transformBundleName ( final String systemBundleAlias, final String id )
+    {
+        if ( id.equals ( Constants.SYSTEM_BUNDLE_SYMBOLICNAME ) )
+        {
+            return systemBundleAlias;
+        }
+        else
+        {
+            return id;
+        }
     }
 
     /**

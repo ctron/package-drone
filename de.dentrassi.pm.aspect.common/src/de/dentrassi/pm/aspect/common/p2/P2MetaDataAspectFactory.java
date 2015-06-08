@@ -12,6 +12,7 @@ package de.dentrassi.pm.aspect.common.p2;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
+import de.dentrassi.pm.aspect.common.p2.internal.P2Virtualizer;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 
 public class P2MetaDataAspectFactory implements ChannelAspectFactory

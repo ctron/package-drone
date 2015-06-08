@@ -28,6 +28,7 @@ import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.aspect.common.p2.P2MetaDataInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.web.CommonController;

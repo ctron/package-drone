@@ -8,13 +8,13 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.web;
+package de.dentrassi.pm.aspect.common.p2;
 
 import de.dentrassi.pm.common.MetaKeyBinding;
 
 public class P2MetaDataInformation
 {
-    @MetaKeyBinding ( namespace = P2InterfaceExtender.P2_METADATA_ASPECT_ID, key = "system-bundle-alias" )
+    @MetaKeyBinding ( namespace = P2MetaDataAspectFactory.ID, key = "system-bundle-alias" )
     private String systemBundleAlias;
 
     public void setSystemBundleAlias ( final String systemBundleAlias )
