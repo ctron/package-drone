@@ -36,8 +36,6 @@ public class OsgiTest extends AbstractServerTest
             Assert.assertEquals ( 1, result.size () );
         }
         Assert.assertEquals ( 2, ct.getAllArtifactIds ().size () );
-
-        testUrl ( "/r5/" + ct.getId () );
     }
 
     @Test
@@ -61,6 +59,22 @@ public class OsgiTest extends AbstractServerTest
             Assert.assertEquals ( 3, result.size () ); // expect 1 bundle + 2 p2 fragments
         }
         Assert.assertEquals ( 6, ct.getAllArtifactIds ().size () );
+    }
+
+    @Test
+    public void testR5Osgi1 () throws Exception
+    {
+        final ChannelTester ct = ChannelTester.create ( getWebContext (), "osgi3" );
+        ct.addAspect ( "osgi" );
+        ct.addAspect ( "r5.repo" );
+
+        {
+            final Set<String> result = ct.upload ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" );
+            Assert.assertEquals ( 1, result.size () ); // expect 1 bundle
+        }
+        Assert.assertEquals ( 1, ct.getAllArtifactIds ().size () );
+
+        testUrl ( "/r5/" + ct.getId () );
     }
 
 }
