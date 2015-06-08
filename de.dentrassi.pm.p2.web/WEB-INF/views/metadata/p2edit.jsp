@@ -25,6 +25,10 @@
         <span class="help-block">
         See also <a href="http://wiki.osgi.org/wiki/System_Bundle">http://wiki.osgi.org/wiki/System_Bundle</a>.
         </span>
+        <span class="help-block">
+        It is possible to set this value to <code>system.bundle</code> to actually keep the original value.
+        Not setting this value will use <code>org.eclipse.osgi</code> as a default value.
+        </span>
     </h:formEntry>
     
     <h:formButtons>
