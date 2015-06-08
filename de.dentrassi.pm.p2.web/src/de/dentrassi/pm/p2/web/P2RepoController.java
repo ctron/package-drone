@@ -46,7 +46,7 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
 @HttpConstraint ( rolesAllowed = "MANAGER" )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
-public class P2Controller
+public class P2RepoController
 {
     private StorageService service;
 

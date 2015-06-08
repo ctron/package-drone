@@ -16,10 +16,6 @@
 
 <form:form action="" method="POST" cssClass="form-horizontal">
     
-    <h:formEntry label="Title" path="title" command="command">
-        <form:input path="title" cssClass="form-control" placeholder="Optional title for the repository" required="false"/>
-    </h:formEntry>
-    
     <h:formEntry label="System Bundle Alias" path="systemBundleAlias" command="command">
         <form:input path="systemBundleAlias" cssClass="form-control" required="false"/>
         <span class="help-block">
