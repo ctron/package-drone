@@ -21,10 +21,10 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
-import de.dentrassi.pm.storage.AbstractChannelnterfaceExtender;
+import de.dentrassi.pm.storage.AbstractChannelInterfaceExtender;
 import de.dentrassi.pm.storage.Channel;
 
-public class P2InterfaceExtender extends AbstractChannelnterfaceExtender
+public class P2InterfaceExtender extends AbstractChannelInterfaceExtender
 {
     public static final String P2_METADATA_ASPECT_ID = "p2.metadata";
 
@@ -66,11 +66,11 @@ public class P2InterfaceExtender extends AbstractChannelnterfaceExtender
             return;
         }
 
-        result.add ( new MenuEntry ( null, 0, "P2", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false, 0 ) );
+        result.add ( new MenuEntry ( null, 0, "P2 (by ID)", 10_000, new LinkTarget ( "/p2/{channelId}" ).expand ( model ), Modifier.LINK, null, false, 0 ) );
 
         if ( model.containsKey ( "channelAlias" ) )
         {
-            result.add ( new MenuEntry ( null, 0, "P2 Alias", 10_000, new LinkTarget ( "/p2/{channelAlias}" ).expand ( model ), Modifier.LINK, null, false, 0 ) );
+            result.add ( new MenuEntry ( null, 0, "P2 (by name)", 10_000, new LinkTarget ( "/p2/{channelAlias}" ).expand ( model ), Modifier.LINK, null, false, 0 ) );
         }
 
         if ( request.isUserInRole ( "MANAGER" ) )

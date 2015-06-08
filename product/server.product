@@ -70,6 +70,7 @@
       <plugin id="de.dentrassi.pm.osgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.r5" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.r5.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.rpm" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.rpm.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.jpa" autoStart="true" startLevel="0" />

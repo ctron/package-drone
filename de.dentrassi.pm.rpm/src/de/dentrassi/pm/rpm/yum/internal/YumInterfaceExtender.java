@@ -22,10 +22,10 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.rpm.Constants;
-import de.dentrassi.pm.storage.AbstractChannelnterfaceExtender;
+import de.dentrassi.pm.storage.AbstractChannelInterfaceExtender;
 import de.dentrassi.pm.storage.Channel;
 
-public class YumInterfaceExtender extends AbstractChannelnterfaceExtender
+public class YumInterfaceExtender extends AbstractChannelInterfaceExtender
 {
     private static final Escaper PATH_ESC = UrlEscapers.urlPathSegmentEscaper ();
 

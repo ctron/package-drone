@@ -6,7 +6,7 @@
 	
 	<servlet>
 		<servlet-name>main</servlet-name>
-		<servlet-class>de.dentrassi.pm.r5.R5Servlet</servlet-class>
+		<servlet-class>de.dentrassi.pm.r5.internal.R5Servlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	

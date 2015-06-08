@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.r5;
+package de.dentrassi.pm.r5.internal;
 
 import java.io.IOException;
 
@@ -23,14 +23,15 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.r5.handler.DownloadHandler;
-import de.dentrassi.pm.r5.handler.HelpHandler;
-import de.dentrassi.pm.r5.handler.IndexHandler;
-import de.dentrassi.pm.r5.handler.NotFoundHandler;
+import de.dentrassi.pm.r5.internal.handler.DownloadHandler;
+import de.dentrassi.pm.r5.internal.handler.HelpHandler;
+import de.dentrassi.pm.r5.internal.handler.NotFoundHandler;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
 public class R5Servlet extends HttpServlet
 {
@@ -67,7 +68,7 @@ public class R5Servlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        Handler handler = findHandler ( req );
+        Handler handler = findHandler ( req, resp );
 
         if ( handler == null )
         {
@@ -79,13 +80,17 @@ public class R5Servlet extends HttpServlet
             handler.prepare ();
             handler.process ( req, resp );
         }
+        catch ( final IOException e )
+        {
+            throw e;
+        }
         catch ( final Exception e )
         {
             throw new ServletException ( e );
         }
     }
 
-    private Handler findHandler ( final HttpServletRequest req )
+    private Handler findHandler ( final HttpServletRequest req, final HttpServletResponse resp )
     {
         final String path = req.getPathInfo ();
 
@@ -103,7 +108,15 @@ public class R5Servlet extends HttpServlet
             {
                 return new NotFoundHandler ( String.format ( "Channel '%s' not found.", toks[1] ) );
             }
-            return new IndexHandler ( channel );
+
+            final ChannelCacheHandler indexHandler = new ChannelCacheHandler ( new MetaKey ( "r5.repo", "index.xml" ) );
+            return new Handler () {
+                @Override
+                public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+                {
+                    indexHandler.process ( channel, req, resp );
+                }
+            };
         }
 
         // - URL type #1 : /r5/<channel>/artifact/<artifactId>

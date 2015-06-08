@@ -8,23 +8,23 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.r5.handler;
-
-import java.io.PrintWriter;
+package de.dentrassi.pm.r5.internal.handler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.pm.common.servlet.Handler;
+import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
-public class NotFoundHandler implements Handler
+public class DownloadHandler implements Handler
 {
 
-    private final String message;
+    private final Artifact artifact;
 
-    public NotFoundHandler ( final String message )
+    public DownloadHandler ( final Artifact artifact )
     {
-        this.message = message;
+        this.artifact = artifact;
     }
 
     @Override
@@ -35,12 +35,7 @@ public class NotFoundHandler implements Handler
     @Override
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
-        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-
-        final PrintWriter w = resp.getWriter ();
-        resp.setContentType ( "text/plain" );
-
-        w.println ( this.message );
+        DownloadHelper.streamArtifact ( resp, this.artifact, "application/vnd.osgi.bundle", true );
     }
 
 }

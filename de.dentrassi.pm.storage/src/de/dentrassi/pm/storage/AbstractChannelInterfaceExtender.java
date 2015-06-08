@@ -20,7 +20,7 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 /**
  * An abstract InterfaceExtender which only processes Channel instances
  */
-public abstract class AbstractChannelnterfaceExtender implements InterfaceExtender
+public abstract class AbstractChannelInterfaceExtender implements InterfaceExtender
 {
     protected boolean filterChannel ( final Channel channel )
     {

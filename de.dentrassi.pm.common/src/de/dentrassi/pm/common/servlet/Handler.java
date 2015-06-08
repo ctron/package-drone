@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface Handler
 {
-    public void prepare () throws Exception;
+    public default void prepare () throws Exception
+    {
+    }
 
     public void process ( HttpServletRequest req, HttpServletResponse resp ) throws Exception;
 }
