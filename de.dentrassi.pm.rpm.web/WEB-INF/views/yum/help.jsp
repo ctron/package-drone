@@ -19,7 +19,7 @@ pageContext.setAttribute ( "NL", "\n" );
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h3>Using <code>yum-repository-manager</code></h3>
             
             Using the command line tool <code>yum-repository-manager</code>:
@@ -33,8 +33,12 @@ pageContext.setAttribute ( "NL", "\n" );
             </c:if>
         </div>
         
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h3>Manually</h3>
+            
+            <p>
+            Create the following file:
+            </p>
             
 			<div class="panel panel-default">
 			    <div class="panel-heading">/etc/yum/repo.repos.d/${ fn:escapeXml(channel.getNameOrId() ) }.repo</div>
@@ -46,6 +50,12 @@ enabled=1
 gpgcheck=0</pre>
 			    </div>
 			</div>
+			
+			<p>
+			Or download the file by issuing the following command:
+			</p>
+            
+            <pre>wget "${fn:escapeXml(sitePrefix) }/yum/${fn:escapeXml(channel.id) }/config.repo" -O "etc/yum.repos.d/${fn:escapeXml(channel.id) }.repo"</pre>
             
         </div>
         
