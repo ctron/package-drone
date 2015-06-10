@@ -98,7 +98,7 @@ public class XmlProfileDataHandler implements ProfileDataHandler
 
             if ( !Boolean.getBoolean ( "drone.profile.xml.disableAnnounce" ) )
             {
-                System.out.println ( "Wrote profile trace: " + name.toAbsolutePath () + " - " + entry.getOperation () );
+                System.out.format ( "Wrote profile trace: %s ms - %s -> %s%n", entry.getDuration ().toMillis (), entry.getOperation (), name.toAbsolutePath () );
             }
         }
         catch ( final Exception e )

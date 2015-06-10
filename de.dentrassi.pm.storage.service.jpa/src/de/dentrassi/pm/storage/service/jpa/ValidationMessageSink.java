@@ -21,6 +21,8 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -82,24 +84,27 @@ public class ValidationMessageSink
 
     public void flush ( final EntityManager em, final ArtifactEntity artifact )
     {
-        if ( logger.isDebugEnabled () )
+        try ( Handle handle = Profile.start ( this, "flush" ) )
         {
-            logger.debug ( "Flushing validation messages - artifact: {}", artifact.getId () );
+            if ( logger.isDebugEnabled () )
+            {
+                logger.debug ( "Flushing validation messages - artifact: {}", artifact.getId () );
+            }
+
+            for ( final Entry entry : this.entries )
+            {
+                final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
+                vme.setChannel ( this.channel );
+                vme.setSeverity ( entry.getSeverity () );
+                vme.setMessage ( entry.getMessage () );
+                vme.setArtifacts ( Collections.singleton ( artifact ) );
+                vme.setNamespace ( entry.getAspectId () );
+
+                em.persist ( vme );
+            }
+            this.entries.clear ();
+
+            this.handler.aggregateArtifact ( artifact );
         }
-
-        for ( final Entry entry : this.entries )
-        {
-            final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
-            vme.setChannel ( this.channel );
-            vme.setSeverity ( entry.getSeverity () );
-            vme.setMessage ( entry.getMessage () );
-            vme.setArtifacts ( Collections.singleton ( artifact ) );
-            vme.setNamespace ( entry.getAspectId () );
-
-            em.persist ( vme );
-        }
-        this.entries.clear ();
-
-        this.handler.aggregateArtifact ( artifact );
     }
 }

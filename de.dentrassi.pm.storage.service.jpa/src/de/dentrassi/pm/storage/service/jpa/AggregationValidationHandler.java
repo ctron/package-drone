@@ -16,6 +16,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.AggregatorValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -47,19 +49,23 @@ public class AggregationValidationHandler
     {
         logger.debug ( "Flushing validation messages" );
 
-        for ( final ChannelEntity channel : this.affectedChannels )
+        try ( Handle handle = Profile.start ( this, "flush" ) )
         {
-            this.handler.aggregateChannel ( channel );
-        }
 
-        for ( final String artifactId : this.affectedArtifactIds )
-        {
-            this.handler.aggregateArtifact ( artifactId );
-        }
+            for ( final ChannelEntity channel : this.affectedChannels )
+            {
+                this.handler.aggregateChannel ( channel );
+            }
 
-        /*
-        this.affectedChannels.clear ();
-        this.affectedArtifactIds.clear ();
-        */
+            for ( final String artifactId : this.affectedArtifactIds )
+            {
+                this.handler.aggregateArtifact ( artifactId );
+            }
+
+            /*
+            this.affectedChannels.clear ();
+            this.affectedArtifactIds.clear ();
+            */
+        }
     }
 }
