@@ -7,7 +7,7 @@
     	Set up jetty target platform
     </description>
     
-    <property name="eclipse.orbit.release" value="R20150124073747"/>
+    <property name="eclipse.orbit.release" value="R20150519210750"/>
 	<property name="jetty.version" value="9.2.9.v20150224"/>
 
     <!-- ================================= 
@@ -79,10 +79,10 @@
         	<!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.5.2/eclipselink-plugins-2.5.2.v20140319-9ad6abd.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
         	-->
-        	
+
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.classic_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.core_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v201505121915.jar" dest="download/bundles" usetimestamp="true" />
 
             <!-- annotation stuff -->
 
@@ -142,6 +142,17 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
+        	
+        	<!-- jnr -->
+        	
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.constants_0.8.6.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.ffi_2.0.1.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.posix_3.0.9.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.x86asm_1.0.2.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/com.kenai.jffi_1.2.7.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.objectweb.asm.util_5.0.1.v201404251740.jar" dest="download/bundles" usetimestamp="true" />
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.objectweb.asm.analysis_5.0.1.v201505121915.jar" dest="download/bundles" usetimestamp="true" />
+        		
         </parallel>
 
     </target>

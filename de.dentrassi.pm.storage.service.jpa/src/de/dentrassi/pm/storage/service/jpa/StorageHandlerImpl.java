@@ -100,7 +100,7 @@ import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
-public class StorageHandlerImpl extends AbstractHandler implements StorageAccessor, StreamServiceHelper
+public class StorageHandlerImpl extends AbstractHandler implements StorageHandler, StorageAccessor, StreamServiceHelper
 {
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
@@ -292,6 +292,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         this.validationHandler = new ValidationHandler ( em );
     }
 
+    @Override
     public ChannelEntity createChannel ( final String name, final String description, final Map<MetaKey, String> providedMetaData )
     {
         final ChannelEntity channel = new ChannelEntity ();
@@ -665,6 +666,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
     }
 
+    @Override
     public void generateArtifact ( final String id )
     {
         try
@@ -692,6 +694,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public ArtifactInformation deleteArtifact ( final String artifactId )
     {
         logger.debug ( "Request to delete artifact: {}", artifactId );
@@ -834,7 +837,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         runChannelAggregators ( getCheckedChannel ( channelId ) );
     }
 
-    protected void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
+    @Override
+    public void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
     {
         logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
 
@@ -983,7 +987,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+        
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1012,6 +1016,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         logger.trace ( "Scan complete" );
     }
 
+    @Override
     public <T extends Comparable<? super T>> Set<T> listArtifacts ( final ChannelEntity ce, final Function<ArtifactEntity, T> mapper )
     {
         final Set<T> result = new TreeSet<> ();
@@ -1043,6 +1048,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      *            the channel
      * @return all meta data
      */
+    @Override
     public Multimap<String, MetaDataEntry> getChannelArtifactProperties ( final ChannelEntity channel )
     {
         final Multimap<String, MetaDataEntry> result = HashMultimap.create ();
@@ -1086,6 +1092,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      *            the channel to check
      * @return the set of detailed meta data object
      */
+    @Override
     public Set<DetailedArtifactInformation> getDetailedArtifacts ( final ChannelEntity channel )
     {
         final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
@@ -1153,6 +1160,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      * <em>Note:</em> This call will ignore the lock status of the channels
      * </p>
      */
+    @Override
     public void wipeAllChannels ()
     {
         // we have to do this one by one in order to honor channel locks
@@ -1160,6 +1168,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         {
             deleteChannel ( channelId, true );
         }
+    }
+
+    @Override
+    public ChannelEntity getCheckedChannel ( final String channelId )
+    {
+        return super.getCheckedChannel ( channelId );
     }
 
     private List<String> getAllChannelIds ()
@@ -1216,6 +1230,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         this.em.persist ( cce );
     }
 
+    @Override
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
     {
         final ChannelEntity channel = getCheckedChannel ( channelId );
@@ -1235,6 +1250,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return result;
     }
 
+    @Override
     public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
     {
         if ( consumer == null )
@@ -1266,6 +1282,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
         return internalCreateArtifact ( getCheckedChannel ( channelId ), name, entityCreator, stream, providedMetaData, external );
@@ -1306,6 +1323,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public ArtifactEntity createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
         final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
@@ -1332,6 +1350,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return newArtifact;
     }
 
+    @Override
     public SortedMap<MetaKey, String> getChannelMetaData ( final String channelId )
     {
         final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
@@ -1343,6 +1362,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return convertMetaData ( channel );
     }
 
+    @Override
     public SortedMap<MetaKey, String> getChannelProvidedMetaData ( final String channelId )
     {
         final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
@@ -1354,6 +1374,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return convertMetaData ( null, channel.getProvidedProperties () );
     }
 
+    @Override
     public void clearChannel ( final String channelId )
     {
         LockContext.modify ( channelId );
@@ -1460,6 +1481,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      * @param withDependencies
      *            whether to add dependencies or not
      */
+    @Override
     public void addChannelAspects ( final String channelId, final Set<String> aspects, final boolean withDependencies )
     {
         try
@@ -1472,6 +1494,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public void deleteChannel ( final String channelId, final boolean ignoreLock )
     {
         LockContext.modify ( channelId );

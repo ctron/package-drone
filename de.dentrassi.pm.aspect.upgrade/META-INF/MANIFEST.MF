@@ -7,6 +7,7 @@ Bundle-Vendor: IBH SYSTEMS GmbH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.collect;version="18.0.0",
  de.dentrassi.osgi.job;version="1.0.0",
+ de.dentrassi.osgi.profiler;version="1.0.0",
  de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.pm.aspect;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",

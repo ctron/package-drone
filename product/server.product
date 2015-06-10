@@ -95,7 +95,7 @@
       <plugin id="de.dentrassi.pm.web.analytics" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.util" autoStart="true" startLevel="0" />
-      <plugin id="org.apache.felix.configadmin" autoStart="true" startLevel="1" />
+      <plugin id="org.apache.felix.configadmin" autoStart="true" startLevel="6" />
       <plugin id="org.apache.taglibs.standard-impl" autoStart="true" startLevel="0" />
       <plugin id="org.apache.taglibs.taglibs-standard-spec" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.cm" autoStart="true" startLevel="0" />

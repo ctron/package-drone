@@ -16,6 +16,8 @@ import de.dentrassi.osgi.job.JobFactory;
 import de.dentrassi.osgi.job.JobFactoryDescriptor;
 import de.dentrassi.osgi.job.JobInstance;
 import de.dentrassi.osgi.job.JobInstance.Context;
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
@@ -57,17 +59,20 @@ public class UpgradeAllChannelsJob implements JobFactory
 
     private void process ( final Context ctx )
     {
-        final Collection<Channel> channels = this.service.listChannels ();
-        ctx.beginWork ( "Refreshing channels", channels.size () );
-
-        for ( final Channel channel : channels )
+        try ( Handle handle = Profile.start ( this, "process" ) )
         {
-            ctx.setCurrentTaskName ( String.format ( "Processing %s", channel.getNameAndId () ) );
-            this.service.refreshAllChannelAspects ( channel.getId () );
-            ctx.worked ( 1 );
-        }
+            final Collection<Channel> channels = this.service.listChannels ();
+            ctx.beginWork ( "Refreshing channels", channels.size () );
 
-        ctx.complete ();
+            for ( final Channel channel : channels )
+            {
+                ctx.setCurrentTaskName ( String.format ( "Processing %s", channel.getNameAndId () ) );
+                this.service.refreshAllChannelAspects ( channel.getId () );
+                ctx.worked ( 1 );
+            }
+
+            ctx.complete ();
+        }
     }
 
     @Override

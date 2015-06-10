@@ -63,6 +63,7 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
+import de.dentrassi.osgi.web.controller.ProfilerControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
@@ -103,6 +104,7 @@ import de.dentrassi.pm.system.SystemService;
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
 @HttpConstraint ( rolesAllowed = "MANAGER" )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
+@ControllerInterceptor ( ProfilerControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
 
@@ -332,7 +334,7 @@ public class ChannelController implements InterfaceExtender
 
         result.put ( "channel", channel );
         result.put ( "treeArtifacts", tree );
-        result.put ( "treeSeverityTester", new TreeTester ( tree ) );
+        result.put ( "treeSeverityTester", new TreeTesterImpl ( tree ) );
 
         return result;
     }
@@ -480,7 +482,7 @@ public class ChannelController implements InterfaceExtender
 
     private String getSitePrefix ()
     {
-        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        final String prefix = this.coreService.getCoreProperty ( new MetaKey ( "core", "site-prefix" ), this.systemService.getDefaultSitePrefix () );
         if ( prefix != null )
         {
             return prefix;

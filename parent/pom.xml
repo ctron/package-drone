@@ -73,6 +73,8 @@
 		<module>../de.dentrassi.osgi.job.service.jpa</module>
 		<module>../de.dentrassi.osgi.job.web</module>
 
+        <module>../de.dentrassi.osgi.profiler</module>
+
 		<module>../de.dentrassi.osgi.scheduler</module>
 		<module>../de.dentrassi.osgi.scheduler.simple</module>
 

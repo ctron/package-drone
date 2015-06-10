@@ -8,12 +8,11 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.web.channel;
+package de.dentrassi.osgi.profiler;
 
-import de.dentrassi.pm.common.Severity;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.osgi.profiler.Profile.DurationEntry;
 
-public interface TreeTester
+public interface ProfileDataHandler
 {
-    public Severity getState ( SimpleArtifactInformation artifact );
+    public void handle ( DurationEntry entry );
 }
