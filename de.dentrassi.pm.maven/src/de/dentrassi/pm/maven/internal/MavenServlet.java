@@ -160,7 +160,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
         catch ( final Exception e )
         {
-            logger.debug ( "Failed to load maven channel data", e );
+            logger.warn ( "Failed to load maven channel data", e );
 
             response.getWriter ().write ( "Corrupt channel data" );
             response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );

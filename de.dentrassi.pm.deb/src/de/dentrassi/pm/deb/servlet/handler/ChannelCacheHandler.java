@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb.servlet.handler;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -42,15 +41,11 @@ public class ChannelCacheHandler implements Handler
     @Override
     public void process ( final HttpServletResponse response ) throws IOException
     {
-        try
-        {
-            this.channel.streamCacheEntry ( this.key, entry -> {
-                response.setContentType ( entry.getMimeType () );
-                response.setContentLengthLong ( entry.getSize () );
-                ByteStreams.copy ( entry.getStream (), response.getOutputStream () );
-            } );
-        }
-        catch ( final FileNotFoundException e )
+        if ( !this.channel.streamCacheEntry ( this.key, entry -> {
+            response.setContentType ( entry.getMimeType () );
+            response.setContentLengthLong ( entry.getSize () );
+            ByteStreams.copy ( entry.getStream (), response.getOutputStream () );
+        } ) )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.getWriter ().format ( "Content '%s' not found.%n", this.key );

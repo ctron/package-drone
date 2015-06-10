@@ -987,7 +987,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
+
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
         */
@@ -1251,13 +1251,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     }
 
     @Override
-    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    public boolean streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer )
     {
-        if ( consumer == null )
-        {
-            return;
-        }
-
         final ChannelCacheKey ccKey = new ChannelCacheKey ();
         ccKey.setChannel ( channelId );
         ccKey.setNamespace ( namespace );
@@ -1267,19 +1262,23 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
         if ( cce == null )
         {
-            throw new FileNotFoundException ( ccKey.toString () );
+            return false;
         }
 
         try
         {
-            final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );;
-            consumer.accept ( new CacheEntryImpl ( stream, cce ) );
+            final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );
+            if ( consumer != null )
+            {
+                consumer.accept ( new CacheEntryImpl ( stream, cce ) );
+            }
         }
         catch ( final Exception e )
         {
             logger.warn ( "Failed to stream cache entry:  " + ccKey, e );
             throw new RuntimeException ( e );
         }
+        return true;
     }
 
     @Override

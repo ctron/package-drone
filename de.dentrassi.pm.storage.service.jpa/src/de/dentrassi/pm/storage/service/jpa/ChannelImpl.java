@@ -95,9 +95,9 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public void streamCacheEntry ( final MetaKey key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    public boolean streamCacheEntry ( final MetaKey key, final ThrowingConsumer<CacheEntry> consumer )
     {
-        this.service.streamCacheEntry ( this.id, key.getNamespace (), key.getKey (), consumer );
+        return this.service.streamCacheEntry ( this.id, key.getNamespace (), key.getKey (), consumer );
     }
 
     @Override

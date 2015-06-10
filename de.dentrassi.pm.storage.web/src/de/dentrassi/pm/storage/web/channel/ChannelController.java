@@ -16,7 +16,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -792,21 +791,17 @@ public class ChannelController implements InterfaceExtender
 
         model.put ( "channel", channel );
 
-        try
-        {
-            channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
-                response.setContentLengthLong ( cacheEntry.getSize () );
-                response.setContentType ( cacheEntry.getMimeType () );
-                response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
-                // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
-                ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
-            } );
-            return null;
-        }
-        catch ( final FileNotFoundException e )
+        if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
+            response.setContentLengthLong ( cacheEntry.getSize () );
+            response.setContentType ( cacheEntry.getMimeType () );
+            response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
+            // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
+            ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+        } ) )
         {
             return CommonController.createNotFound ( "channel cache entry", String.format ( "%s:%s", namespace, key ) );
         }
+        return null;
     }
 
     @Override

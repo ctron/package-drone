@@ -290,10 +290,10 @@ public interface Channel extends Validated
      *            the key of the cache entry
      * @param consumer
      *            the consumer of the cache entry
-     * @throws FileNotFoundException
-     *             if the cache entry does not exists
+     * @return <code>true</code> if the cache entry was found,
+     *         <code>false</code> otherwise
      */
-    public void streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException;
+    public boolean streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer );
 
     /**
      * Stream the data of a cache entry to the consumer
