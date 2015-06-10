@@ -46,6 +46,8 @@ import org.w3c.dom.Node;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
@@ -109,11 +111,24 @@ public class MavenServlet extends AbstractStorageServiceServlet
         Files.deleteIfExists ( this.tempRoot );
     }
 
+    private static String makeOperation ( final HttpServletRequest request )
+    {
+        return String.format ( "MavenServlet|%s|%s", request.getRequestURI (), request.getMethod () );
+    }
+
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
         logger.trace ( "get request - {}", request );
 
+        try ( Handle handle = Profile.start ( makeOperation ( request ) ) )
+        {
+            handleGetRequest ( request, response );
+        }
+    }
+
+    private void handleGetRequest ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
         if ( "/".equals ( request.getPathInfo () ) )
         {
             response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
@@ -206,7 +221,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
     @Override
     protected void doPut ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
-        try
+        try ( Handle handle = Profile.start ( makeOperation ( request ) ) )
         {
             logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
 

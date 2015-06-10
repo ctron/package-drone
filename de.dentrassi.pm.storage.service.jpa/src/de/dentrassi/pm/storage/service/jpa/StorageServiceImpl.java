@@ -886,7 +886,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     private StorageHandler createStorageHandler ( final EntityManager em )
     {
-        return Profile.proxy ( new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore ), StorageHandler.class );
+        return new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
     }
 
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
