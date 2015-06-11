@@ -11,7 +11,6 @@
 package de.dentrassi.pm.storage.service.jpa;
 
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convert;
-import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertDetailed;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertMetaData;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.createTempFile;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.isDeleteable;
@@ -41,6 +40,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -1028,9 +1028,13 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             logger.trace ( "Before getResultList ()" );
 
+            handle.task ( "query.getResultList()" );
+
             final List<ArtifactEntity> list = query.getResultList ();
 
             logger.trace ( "After getResultList () -> {}", list.size () );
+
+            handle.task ( "process list" );
 
             for ( final ArtifactEntity ae : list )
             {
@@ -1116,10 +1120,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity channel )
     {
-        return Profile.call ( this, "getArtifacts", () -> {
-            final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
-            return listArtifacts ( channel, ( ae ) -> convert ( ae, properties ) );
-        } );
+        return Profile.call ( this, "getArtifacts", () -> getArtifactsHelper ( channel, StreamServiceHelper::convert ) );
     }
 
     /**
@@ -1132,10 +1133,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     @Override
     public Set<DetailedArtifactInformation> getDetailedArtifacts ( final ChannelEntity channel )
     {
+        return Profile.call ( this, "getDetailedArtifacts", () -> getArtifactsHelper ( channel, StreamServiceHelper::convertDetailed ) );
+    }
+
+    protected <T extends Comparable<? super T>> Set<T> getArtifactsHelper ( final ChannelEntity channel, final BiFunction<ArtifactEntity, Multimap<String, MetaDataEntry>, T> cvt )
+    {
         try ( Handle handle = Profile.start ( this, "getDetailedArtifacts" ) )
         {
             final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
-            return listArtifacts ( channel, ( ae ) -> convertDetailed ( ae, properties ) );
+            return listArtifacts ( channel, ( ae ) -> cvt.apply ( ae, properties ) );
         }
     }
 

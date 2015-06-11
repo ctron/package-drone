@@ -14,6 +14,7 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -37,6 +38,14 @@ public final class Profile
         public void close ();
 
         public Handle createChild ( String operation );
+
+        /**
+         * Mark the beginning of a new task
+         *
+         * @param taskName
+         *            the name of the task
+         */
+        public void task ( String taskName );
     }
 
     private static Handle NOP = new Handle () {
@@ -50,6 +59,11 @@ public final class Profile
         public Handle createChild ( final String operation )
         {
             return NOP;
+        }
+
+        @Override
+        public void task ( final String operation )
+        {
         }
     };
 
@@ -100,6 +114,10 @@ public final class Profile
 
         private final LinkedList<DurationEntry> entries = new LinkedList<> ();
 
+        private Instant taskStart;
+
+        private String taskName;
+
         public HandleImpl ( final String operation )
         {
             this ( operation, null );
@@ -128,9 +146,34 @@ public final class Profile
         }
 
         @Override
+        public void task ( final String taskName )
+        {
+            final Instant now = Instant.now ();
+
+            closeTask ( now );
+
+            this.taskStart = now;
+            this.taskName = taskName;
+        }
+
+        private void closeTask ( final Instant now )
+        {
+            if ( this.taskStart != null )
+            {
+                final Duration duration = Duration.between ( this.taskStart, now );
+                final DurationEntry entry = new DurationEntry ( this.taskName, duration, Collections.emptyList () );
+                this.entries.add ( entry );
+            }
+        }
+
+        @Override
         public void close ()
         {
-            final Duration duration = Duration.between ( this.start, Instant.now () );
+            final Instant now = Instant.now ();
+
+            closeTask ( now );
+
+            final Duration duration = Duration.between ( this.start, now );
             final DurationEntry entry = new DurationEntry ( this.operation, duration, this.entries );
 
             activeProfilers.set ( this.parent );

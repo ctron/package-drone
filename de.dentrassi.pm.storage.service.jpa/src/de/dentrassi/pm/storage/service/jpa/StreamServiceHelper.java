@@ -116,15 +116,7 @@ public interface StreamServiceHelper
             childIds.add ( child.getId () );
         }
 
-        final SortedMap<MetaKey, String> metaData;
-        if ( properties != null )
-        {
-            metaData = extract ( ae.getId (), properties );
-        }
-        else
-        {
-            metaData = convertMetaData ( ae );
-        }
+        final SortedMap<MetaKey, String> metaData = makeMetaData ( ae, properties );
 
         return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData, childIds );
     }
@@ -151,6 +143,13 @@ public interface StreamServiceHelper
             return null;
         }
 
+        final SortedMap<MetaKey, String> metaData = makeMetaData ( ae, properties );
+
+        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData );
+    }
+
+    public static SortedMap<MetaKey, String> makeMetaData ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
+    {
         final SortedMap<MetaKey, String> metaData;
         if ( properties != null )
         {
@@ -160,8 +159,7 @@ public interface StreamServiceHelper
         {
             metaData = convertMetaData ( ae );
         }
-
-        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData );
+        return metaData;
     }
 
     public static SortedMap<MetaKey, String> extract ( final String id, final Multimap<String, MetaDataEntry> properties )
