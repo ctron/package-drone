@@ -148,6 +148,8 @@ public final class Profile
         @Override
         public void task ( final String taskName )
         {
+            debug ( "task : %s", taskName );
+
             final Instant now = Instant.now ();
 
             closeTask ( now );

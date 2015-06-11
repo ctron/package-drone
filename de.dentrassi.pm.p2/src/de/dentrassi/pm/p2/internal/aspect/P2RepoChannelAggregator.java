@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
@@ -28,45 +30,52 @@ public class P2RepoChannelAggregator implements ChannelAggregator
     @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception
     {
-        final Map<String, String> result = new HashMap<> ();
-
-        final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelNameOrId (), context.getChannelMetaData (), true, true );
-
-        Date lastTimestamp = null;
-        for ( final ArtifactInformation ai : context.getArtifacts () )
+        try ( Handle handle = Profile.start ( this, "aggregateMetaData" ) )
         {
-            final Date cts = ai.getCreationTimestamp ();
+            handle.task ( "Process" );
 
-            if ( lastTimestamp == null )
+            final Map<String, String> result = new HashMap<> ();
+            final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelNameOrId (), context.getChannelMetaData (), true, true );
+
+            Date lastTimestamp = null;
+            for ( final ArtifactInformation ai : context.getArtifacts () )
             {
-                lastTimestamp = cts;
+                final Date cts = ai.getCreationTimestamp ();
+
+                if ( lastTimestamp == null )
+                {
+                    lastTimestamp = cts;
+                }
+                else if ( lastTimestamp.before ( cts ) )
+                {
+                    lastTimestamp = cts;
+                }
+
+                streamer.process ( ai, context::streamArtifact );
             }
-            else if ( lastTimestamp.before ( cts ) )
+
+            if ( lastTimestamp != null )
             {
-                lastTimestamp = cts;
+                result.put ( "last-change", "" + lastTimestamp.getTime () );
+                result.put ( "last-change-string", DATE_FORMAT.format ( lastTimestamp.getTime () ) );
             }
 
-            streamer.process ( ai, context::streamArtifact );
+            // spool out to cache
+
+            handle.task ( "Spool out" );
+            streamer.spoolOut ( context::createCacheEntry );
+
+            // perform validation
+
+            handle.task ( "Validate" );
+
+            final Map<String, Set<String>> duplicates = streamer.checkDuplicates ();
+            for ( final Map.Entry<String, Set<String>> arts : duplicates.entrySet () )
+            {
+                context.validationError ( String.format ( "Installable units have the same ID (%s) but different checksums. This will cause an \"MD5 hash is not as expected\" error when working with P2.", arts.getKey () ), arts.getValue () );
+            }
+
+            return result;
         }
-
-        if ( lastTimestamp != null )
-        {
-            result.put ( "last-change", "" + lastTimestamp.getTime () );
-            result.put ( "last-change-string", DATE_FORMAT.format ( lastTimestamp.getTime () ) );
-        }
-
-        // spool out to cache
-
-        streamer.spoolOut ( context::createCacheEntry );
-
-        // perform validation
-
-        final Map<String, Set<String>> duplicates = streamer.checkDuplicates ();
-        for ( final Map.Entry<String, Set<String>> arts : duplicates.entrySet () )
-        {
-            context.validationError ( String.format ( "Installable units have the same ID (%s) but different checksums. This will cause an \"MD5 hash is not as expected\" error when working with P2.", arts.getKey () ), arts.getValue () );
-        }
-
-        return result;
     }
 }

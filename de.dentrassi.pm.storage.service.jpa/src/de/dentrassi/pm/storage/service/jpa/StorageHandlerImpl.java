@@ -1034,7 +1034,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             logger.trace ( "After getResultList () -> {}", list.size () );
 
-            handle.task ( "process list" );
+            handle.task ( "process list: " + list.size () );
 
             for ( final ArtifactEntity ae : list )
             {
@@ -1120,7 +1120,27 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity channel )
     {
-        return Profile.call ( this, "getArtifacts", () -> getArtifactsHelper ( channel, StreamServiceHelper::convert ) );
+        final Multimap<String, String> childs = loadChildMap ( channel );
+        return Profile.call ( this, "getArtifacts", () -> getArtifactsHelper ( channel, ( ae, props ) -> StreamServiceHelper.convert ( ae, props, childs.asMap () ) ) );
+    }
+
+    private Multimap<String, String> loadChildMap ( final ChannelEntity channel )
+    {
+        try ( Handle handle = Profile.start ( this, "loadChildMap" ) )
+        {
+            final Query q = this.em.createQuery ( String.format ( "SELECT ae.id, cae.id FROM %s ae JOIN ae.childArtifacts cae WHERE ae.channel=:CHANNEL", ArtifactEntity.class.getName () ) );
+            q.setParameter ( "CHANNEL", channel );
+
+            final List<?> result = q.getResultList ();
+
+            final Multimap<String, String> childs = HashMultimap.create ();
+            for ( final Object o : result )
+            {
+                final Object[] row = (Object[])o;
+                childs.put ( (String)row[0], (String)row[1] );
+            }
+            return childs;
+        }
     }
 
     /**
@@ -1138,7 +1158,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected <T extends Comparable<? super T>> Set<T> getArtifactsHelper ( final ChannelEntity channel, final BiFunction<ArtifactEntity, Multimap<String, MetaDataEntry>, T> cvt )
     {
-        try ( Handle handle = Profile.start ( this, "getDetailedArtifacts" ) )
+        try ( Handle handle = Profile.start ( this, "getArtifactsHelper" ) )
         {
             final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
             return listArtifacts ( channel, ( ae ) -> cvt.apply ( ae, properties ) );
