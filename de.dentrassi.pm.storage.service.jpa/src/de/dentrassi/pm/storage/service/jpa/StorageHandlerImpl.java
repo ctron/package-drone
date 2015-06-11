@@ -1018,7 +1018,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-
+            
             query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
             query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
             */
@@ -1116,8 +1116,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity channel )
     {
-        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
-        return listArtifacts ( channel, ( ae ) -> convert ( ae, properties ) );
+        return Profile.call ( this, "getArtifacts", () -> {
+            final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
+            return listArtifacts ( channel, ( ae ) -> convert ( ae, properties ) );
+        } );
     }
 
     /**
