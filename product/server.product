@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.8.0" useFeatures="true" includeLaunchers="false">
+<product name="Package Drone Server" uid="de.dentrassi.package.drone.server" version="0.10.0.m3" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -45,6 +45,8 @@
       <plugin id="de.dentrassi.pm.api.upload" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.cleanup" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.cleanup.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.aspect.mvnosgi" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.aspect.mvnosgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.aspect.upgrade" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.common.web.ckeditor" autoStart="true" startLevel="0" />
@@ -68,6 +70,9 @@
       <plugin id="de.dentrassi.pm.osgi.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.p2" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.r5" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.r5.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.rpm" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.rpm.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.jpa" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.sec.service.admin" autoStart="true" startLevel="0" />
@@ -87,8 +92,10 @@
       <plugin id="de.dentrassi.pm.todo" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.todo.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.unzip" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.web.analytics" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="0" />
       <plugin id="org.apache.aries.util" autoStart="true" startLevel="0" />
+      <plugin id="org.apache.felix.configadmin" autoStart="true" startLevel="6" />
       <plugin id="org.apache.taglibs.standard-impl" autoStart="true" startLevel="0" />
       <plugin id="org.apache.taglibs.taglibs-standard-spec" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.cm" autoStart="true" startLevel="0" />

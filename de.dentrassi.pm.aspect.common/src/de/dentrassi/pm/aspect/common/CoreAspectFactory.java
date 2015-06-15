@@ -11,6 +11,8 @@
 package de.dentrassi.pm.aspect.common;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +34,12 @@ public class CoreAspectFactory implements ChannelAspectFactory
 
     private static final String KEY_BASENAME = "basename";
 
+    private static final String KEY_ISO_TIMESTAMP = "iso-timestamp";
+
+    private static final String KEY_TIMESTAMP = "timestamp";
+
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern ( "yyyy-MM-dd HH:mm:ss.SSS" );
+
     private static class ChannelAspectImpl implements ChannelAspect
     {
 
@@ -44,12 +52,6 @@ public class CoreAspectFactory implements ChannelAspectFactory
                 public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
                 {
                     makeMetadata ( context, metadata );
-                }
-
-                @Override
-                public ChannelAspect getAspect ()
-                {
-                    return ChannelAspectImpl.this;
                 }
             };
         }
@@ -72,6 +74,8 @@ public class CoreAspectFactory implements ChannelAspectFactory
         metadata.put ( KEY_NAME, context.getName () );
         metadata.put ( KEY_EXT, FilenameUtils.getExtension ( context.getName () ) );
         metadata.put ( KEY_BASENAME, FilenameUtils.getBaseName ( context.getName () ) );
+        metadata.put ( KEY_ISO_TIMESTAMP, context.getCreationTimestamp ().toString () );
+        metadata.put ( KEY_TIMESTAMP, TIMESTAMP_FORMATTER.format ( context.getCreationTimestamp ().atOffset ( ZoneOffset.UTC ) ) );
     }
 
 }

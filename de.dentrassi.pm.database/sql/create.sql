@@ -17,8 +17,17 @@ CREATE DOMAIN TINYINT AS SMALLINT;
 
 --#endif -- mysql
 
-CREATE TABLE PROPERTIES ("KEY" VARCHAR(255) NOT NULL, "VALUE" TEXT, PRIMARY KEY("KEY"));
-INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'database-schema-version', '13' );
+-- the table of global properties
+
+CREATE TABLE PROPERTIES (
+    NS              VARCHAR(255) NOT NULL,
+    "KEY"           VARCHAR(255) NOT NULL,
+    "VALUE"         TEXT,
+    
+    PRIMARY KEY ( NS, "KEY" )
+);
+
+INSERT INTO PROPERTIES ( NS, "KEY", "VALUE" ) VALUES ( 'core', 'database-schema-version', '14' );
 
 CREATE TABLE CHANNELS (
     ID            VARCHAR(36) NOT NULL,

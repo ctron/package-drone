@@ -14,7 +14,7 @@ Be sure to fill in <your-gpg-key-id> with the key you want to use for signing!
 
 # DEB build configuration
 
-Add the following entires to your maven settings file (`~/.m2/settings.xml`):
+Add the following entries to your maven settings file (`~/.m2/settings.xml`):
 ```
 <properties>
    <jdeb.keyring><!-- path to key ring: e.g. /home/user/.gnupg/secring.gpg --></jdeb.keyring>

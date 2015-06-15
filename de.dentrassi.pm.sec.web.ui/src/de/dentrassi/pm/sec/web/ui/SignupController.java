@@ -13,6 +13,7 @@ package de.dentrassi.pm.sec.web.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import de.dentrassi.osgi.web.Controller;
@@ -20,13 +21,17 @@ import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
+import de.dentrassi.osgi.web.controller.ControllerBinder;
+import de.dentrassi.osgi.web.controller.ControllerBinderParameter;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
+import de.dentrassi.pm.sec.web.captcha.CaptchaResult;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -57,11 +62,13 @@ public class SignupController extends AbstractUserCreationController
 
     private boolean isSelfRegistrationAllowed ()
     {
-        return Boolean.parseBoolean ( this.coreService.getCoreProperty ( "allow-self-registration" ) );
+        return Boolean.parseBoolean ( this.coreService.getCoreProperty ( new MetaKey ( "core", "allow-self-registration" ) ) );
     }
 
     @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView signupPost ( @Valid @FormData ( "command" ) final CreateUser data, final BindingResult result )
+    @ControllerBinder ( value = CaptchaBinder.class,
+            parameters = { @ControllerBinderParameter ( key = "name", value = "captcha" ) })
+    public ModelAndView signupPost ( @Valid @FormData ( "command" ) final CreateUser data, final BindingResult result, final HttpServletRequest request, final CaptchaResult captchaResult)
     {
         if ( !isSelfRegistrationAllowed () )
         {
@@ -82,7 +89,7 @@ public class SignupController extends AbstractUserCreationController
     }
 
     @RequestMapping ( value = "/verifyEmail", method = RequestMethod.GET )
-    public ModelAndView verify ( @RequestParameter ( "userId" ) final String userId, @RequestParameter ( "token" ) final String token )
+    public ModelAndView verify ( @RequestParameter ( "userId" ) final String userId, @RequestParameter ( "token" ) final String token)
     {
         final String error = this.storage.verifyEmail ( userId, token );
         if ( error == null )
@@ -100,7 +107,7 @@ public class SignupController extends AbstractUserCreationController
     }
 
     @RequestMapping ( value = "/requestEmail", method = RequestMethod.POST )
-    public ModelAndView requestEmailPost ( @Valid @FormData ( "command" ) final RequestEmail data, final BindingResult result )
+    public ModelAndView requestEmailPost ( @Valid @FormData ( "command" ) final RequestEmail data, final BindingResult result)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -127,7 +134,7 @@ public class SignupController extends AbstractUserCreationController
     }
 
     @RequestMapping ( value = "/reset", method = RequestMethod.POST )
-    public ModelAndView resetPasswordPost ( @Valid @FormData ( "command" ) final RequestEmail data, final BindingResult binding )
+    public ModelAndView resetPasswordPost ( @Valid @FormData ( "command" ) final RequestEmail data, final BindingResult binding)
     {
         if ( binding.hasErrors () )
         {
@@ -147,7 +154,7 @@ public class SignupController extends AbstractUserCreationController
     }
 
     @RequestMapping ( value = "/newPassword", method = RequestMethod.GET )
-    public ModelAndView newPassword ( @RequestParameter ( "email" ) final String email, @RequestParameter ( "token" ) final String token )
+    public ModelAndView newPassword ( @RequestParameter ( "email" ) final String email, @RequestParameter ( "token" ) final String token)
     {
         // TODO: check token first! Will be re-checked and enforced later, but gives better feedback
 
@@ -160,7 +167,7 @@ public class SignupController extends AbstractUserCreationController
     }
 
     @RequestMapping ( value = "/newPassword", method = RequestMethod.POST )
-    public ModelAndView newPasswordPost ( @Valid @FormData ( "command" ) final NewPassword data, final BindingResult binding )
+    public ModelAndView newPasswordPost ( @Valid @FormData ( "command" ) final NewPassword data, final BindingResult binding)
     {
         if ( binding.hasErrors () )
         {

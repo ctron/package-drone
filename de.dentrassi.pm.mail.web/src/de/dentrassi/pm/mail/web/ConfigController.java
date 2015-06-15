@@ -101,7 +101,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView update ( @Valid @FormData ( "command" ) final MailSettings settings, final BindingResult bindingResult )
+    public ModelAndView update ( @Valid @FormData ( "command" ) final MailSettings settings, final BindingResult bindingResult)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -252,7 +252,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/sendTest", method = RequestMethod.POST )
-    public ModelAndView sendTest ( @RequestParameter ( "testEmailReceiver" ) final String email, final Principal principal )
+    public ModelAndView sendTest ( @RequestParameter ( "testEmailReceiver" ) final String email, final Principal principal)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -270,7 +270,14 @@ public class ConfigController implements InterfaceExtender
                 }
             }
 
-            this.mailService.sendMessage ( email, "Test Mail", "This is an automated test message requested by: " + user );
+            final String message = "This is an automated test message requested by: " + user;
+
+            final StringBuilder html = new StringBuilder ();
+            html.append ( "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Package Drone | Account verification</title></head><body>" );
+            html.append ( "<p>" ).append ( message ).append ( "</p>" );
+            html.append ( "</body></html>" );
+
+            this.mailService.sendMessage ( email, "Test Mail", message, html.toString () );
         }
         catch ( final Throwable e )
         {

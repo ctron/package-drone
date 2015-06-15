@@ -33,7 +33,7 @@ public class OsgiAspectFactory implements ChannelAspectFactory
         @Override
         public Extractor getExtractor ()
         {
-            return new OsgiExtractor ( ChannelAspectImpl.this );
+            return new OsgiExtractor ();
         }
 
         @Override

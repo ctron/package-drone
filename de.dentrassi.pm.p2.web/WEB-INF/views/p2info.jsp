@@ -13,7 +13,7 @@
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table class="table">
+<table class="table table-properties">
 
 <tr>
     <th>Repository Title<th><td>${fn:escapeXml(channelInfo.title)}</td>

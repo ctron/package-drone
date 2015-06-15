@@ -21,11 +21,42 @@ import javax.servlet.jsp.PageContext;
 import org.eclipse.scada.utils.str.StringReplacer;
 import org.eclipse.scada.utils.str.StringReplacer.ReplaceSource;
 
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
+
 import de.dentrassi.osgi.web.controller.Controllers;
 import de.dentrassi.osgi.web.controller.routing.RequestMappingInformation;
 
 public class LinkTarget
 {
+    public class EscaperSource implements ReplaceSource
+    {
+        private final ReplaceSource source;
+
+        private final Escaper escaper;
+
+        public EscaperSource ( final ReplaceSource source, final Escaper escaper )
+        {
+            this.source = source;
+            this.escaper = escaper;
+        }
+
+        @Override
+        public String replace ( final String context, final String key )
+        {
+            final String result = this.source.replace ( context, key );
+
+            if ( result != null )
+            {
+                return this.escaper.escape ( result );
+            }
+            else
+            {
+                return result;
+            }
+        }
+    }
+
     private static final Pattern PATTERN = Pattern.compile ( "\\{(.*?)\\}" );
 
     private final String url;
@@ -91,7 +122,9 @@ public class LinkTarget
             return this;
         }
 
-        return new LinkTarget ( StringReplacer.replace ( this.url, source, PATTERN, false ) );
+        final ReplaceSource encodeSource = new EscaperSource ( source, UrlEscapers.urlPathSegmentEscaper () );
+
+        return new LinkTarget ( StringReplacer.replace ( this.url, encodeSource, PATTERN, false ) );
     }
 
     public String getUrl ()

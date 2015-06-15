@@ -10,8 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
-import java.util.HashSet;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.AggregatorValidationMessageEntity;
@@ -19,11 +24,11 @@ import de.dentrassi.pm.storage.jpa.ChannelEntity;
 
 public class AggregationValidationHandler
 {
+    private final static Logger logger = LoggerFactory.getLogger ( AggregationValidationHandler.class );
+
     private final ValidationHandler handler;
 
-    private final Set<String> affectedArtifactIds = new HashSet<> ();
-
-    private final Set<ChannelEntity> affectedChannels = new HashSet<> ();
+    private final Multimap<ChannelEntity, String> affectedMap = HashMultimap.create ();
 
     public AggregationValidationHandler ( final ValidationHandler handler )
     {
@@ -34,25 +39,6 @@ public class AggregationValidationHandler
     {
         this.handler.createMessage ( channel, namespace, severity, message, artifactIds, AggregatorValidationMessageEntity::new );
 
-        this.affectedChannels.add ( channel );
-        this.affectedArtifactIds.addAll ( artifactIds );
-    }
-
-    public void flush ()
-    {
-        for ( final ChannelEntity channel : this.affectedChannels )
-        {
-            this.handler.aggregateChannel ( channel );
-        }
-
-        for ( final String artifactId : this.affectedArtifactIds )
-        {
-            this.handler.aggregateArtifact ( artifactId );
-        }
-
-        /*
-        this.affectedChannels.clear ();
-        this.affectedArtifactIds.clear ();
-        */
+        this.affectedMap.putAll ( channel, artifactIds );
     }
 }

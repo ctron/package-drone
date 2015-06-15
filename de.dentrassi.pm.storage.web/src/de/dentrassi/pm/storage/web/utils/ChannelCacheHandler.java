@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.utils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,19 +36,15 @@ public class ChannelCacheHandler
 
     public void process ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        try
+        if ( !channel.streamCacheEntry ( this.key, ( cacheEntry ) -> {
+            response.setContentType ( cacheEntry.getMimeType () );
+            response.setContentLengthLong ( cacheEntry.getSize () );
+            response.setDateHeader ( "Last-Modified", cacheEntry.getTimestamp ().getTime () );
+            final long len = ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+            logger.trace ( "Transfered {} bytes of data from cache entry: {}", len, this.key );
+        } ) )
         {
-            channel.streamCacheEntry ( this.key, ( cacheEntry ) -> {
-                response.setContentType ( cacheEntry.getMimeType () );
-                response.setContentLengthLong ( cacheEntry.getSize () );
-                response.setDateHeader ( "Last-Modified", cacheEntry.getTimestamp ().getTime () );
-                final long len = ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
-                logger.trace ( "Transfered {} bytes of data from cache entry: {}", len, this.key );
-            } );
-        }
-        catch ( final FileNotFoundException e )
-        {
-            logger.warn ( "Unable to find channel cache entry: " + this.key, e );
+            logger.warn ( "Unable to find channel cache entry: " + this.key );
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.setContentType ( "text/plain" );
             response.getWriter ().format ( "Unable to find: %s", request.getRequestURI () );

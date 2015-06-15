@@ -10,6 +10,10 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.form.tags;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.jsp.PageContext;
 
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
@@ -40,5 +44,31 @@ public class Functions
         }
 
         return result.hasErrors () ? errorCssClass : okCssClass;
+    }
+
+    public static List<String> errors ( final PageContext pageContext, final String command, final String path, final boolean local )
+    {
+        final BindingResult br = (BindingResult)pageContext.getRequest ().getAttribute ( BindingResult.ATTRIBUTE_NAME );
+        if ( br == null )
+        {
+            return Collections.emptyList ();
+        }
+
+        BindingResult result = br.getChild ( command );
+        if ( result == null )
+        {
+            return Collections.emptyList ();
+        }
+
+        if ( path != null && !path.isEmpty () )
+        {
+            result = result.getChild ( path );
+            if ( result == null )
+            {
+                return Collections.emptyList ();
+            }
+        }
+
+        return ( local ? result.getLocalErrors () : result.getErrors () ).stream ().map ( err -> err.getMessage () ).collect ( Collectors.toList () );
     }
 }

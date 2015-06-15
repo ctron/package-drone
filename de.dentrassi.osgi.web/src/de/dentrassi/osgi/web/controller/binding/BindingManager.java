@@ -43,6 +43,22 @@ public class BindingManager
         this.converter = ConverterManager.create ();
     }
 
+    /**
+     * Create a new BindingManager with default binders
+     * <p>
+     * This call creates a new BindingManager instance and add the following
+     * binders:
+     * </p>
+     * <ul>
+     * <li>{@link BindingManager}</li>
+     * <li>{@link BindingManagerBinder}</li>
+     * </ul>
+     *
+     * @param data
+     *            the initial data for the MapBinder
+     * @return
+     *         a new binder manager instance
+     */
     public static final BindingManager create ( final Map<String, Object> data )
     {
         final BindingManager result = new BindingManager ();
@@ -92,6 +108,8 @@ public class BindingManager
             {
                 bindings[i] = binding;
                 target.bind ( binding );
+
+                mergeErrors ( binding.getBindingResult (), this.result );
             }
             else
             {
@@ -115,6 +133,29 @@ public class BindingManager
         };
     }
 
+    /**
+     * Merge all errors of this binding into this result
+     *
+     * @param binding
+     *            the binding to merge
+     * @param result
+     *            the result to merge into
+     */
+    private static void mergeErrors ( final BindingResult bindingResult, final BindingResult result )
+    {
+        if ( bindingResult == null )
+        {
+            return;
+        }
+
+        result.addErrors ( bindingResult.getLocalErrors () );
+
+        for ( final Map.Entry<String, BindingResult> child : bindingResult.getChildren ().entrySet () )
+        {
+            mergeErrors ( child.getValue (), result.getChildOrAdd ( child.getKey () ) );
+        }
+    }
+
     protected Object postProcess ( final Object result )
     {
         if ( result instanceof ModelAndView )
@@ -136,9 +177,47 @@ public class BindingManager
 
     private final Result result = new Result ();
 
+    public void addBinder ( final Binder binder, final boolean initializeBinder )
+    {
+        if ( initializeBinder )
+        {
+            initializeBinder ( binder );
+        }
+        this.binders.add ( binder );
+    }
+
     public void addBinder ( final Binder binder )
     {
-        this.binders.add ( binder );
+        addBinder ( binder, true );
+    }
+
+    /**
+     * Initialize the binder with our current state
+     *
+     * @param binder
+     *            the binder to initialize
+     * @return the list of exceptions or <code>null</code> if there were none
+     */
+    private void initializeBinder ( final Binder binder )
+    {
+        for ( final Method m : binder.getClass ().getMethods () )
+        {
+            if ( !m.isAnnotationPresent ( Binder.Initializer.class ) )
+            {
+                continue;
+            }
+
+            final Call call = bind ( m, binder );
+
+            try
+            {
+                call.invoke ();
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( String.format ( "Failed to initialze binder: %s # %s", binder, m ), e );
+            }
+        }
     }
 
     public void bindProperties ( final Object o ) throws Exception

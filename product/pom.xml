@@ -6,13 +6,17 @@
 	<parent>
 		<groupId>de.dentrassi.package.drone</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.10.0-SNAPSHOT</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
-	<version>0.8.0</version>
+	<version>0.10.0.m3</version>
 	<artifactId>package-drone-server</artifactId>
 	<packaging>eclipse-repository</packaging>
+	
+	<properties>
+	   <releaseBase>0</releaseBase>
+	</properties>
 
 	<build>
 		<plugins>
@@ -93,7 +97,7 @@
 									<type>archive</type>
 									<mapper>
 										<type>perm</type>
-										<prefix>/usr/lib/package-drone/instance</prefix>
+										<prefix>/usr/lib/${project.artifactId}/instance</prefix>
 										<user>pdrone</user>
 										<group>pdrone</group>
 									</mapper>
@@ -110,6 +114,18 @@
 										<group>root</group>
 									</mapper>
 								</data>
+								
+                                <data>
+                                    <src>src/default/profile</src>
+                                    <dst>usr/lib/${project.artifactId}/profile</dst>
+                                    <type>file</type>
+                                    <conffile>false</conffile>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
 
 								<data>
 									<src>src/deb/${project.artifactId}.conf</src>
@@ -121,6 +137,19 @@
 										<user>root</user>
 										<group>root</group>
 									</mapper>
+								</data>
+								
+								<data>
+								    <type>template</type>
+								    <paths>
+								        <path>var/lib/${project.artifactId}</path>
+								    </paths>
+								    <mapper>
+								        <type>perm</type>
+								        <user>pdrone</user>
+								        <group>pdrone</group>
+								        <dirmode>0750</dirmode>
+								    </mapper>
 								</data>
 
 								<data>
@@ -165,7 +194,7 @@
 					<defaultUsername>root</defaultUsername>
 					<defaultGroupname>root</defaultGroupname>
 
-					<release>1.%{?dist}</release>
+					<release>${releaseBase}.%{?dist}</release>
 				</configuration>
 
 				<executions>
@@ -239,6 +268,18 @@
 										</source>
 									</sources>
 								</mapping>
+								
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <configuration>false</configuration>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/profile</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
 
 								<mapping>
 									<directory>/usr/lib/systemd/system</directory>
@@ -264,6 +305,14 @@
 											<location>src/firewalld/${project.artifactId}.xml</location>
 										</source>
 									</sources>
+								</mapping>
+								
+								<mapping>
+								    <directory>/var/lib/${project.artifactId}</directory>
+								    <username>pdrone</username>
+								    <groupname>pdrone</groupname>
+								    <directoryIncluded>true</directoryIncluded>
+								    <filemode>0750</filemode>
 								</mapping>
 
 							</mappings>
@@ -410,6 +459,26 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 										</source>
 									</sources>
 								</mapping>
+								
+                                <mapping>
+                                    <directory>/usr/lib/${project.artifactId}</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <configuration>false</configuration>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/profile</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+								
+                                <mapping>
+                                    <directory>/var/lib/${project.artifactId}</directory>
+                                    <username>pdrone</username>
+                                    <groupname>pdrone</groupname>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <filemode>0750</filemode>
+                                </mapping>
 
 							</mappings>
 
@@ -498,7 +567,7 @@ fi
 									<executable>bash</executable>
 									<arguments>
 										<argument>-c</argument>
-										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" && cp "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el7.noarch.rpm" ${project.build.directory}/]]></argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el7.noarch.rpm" && cp "${project.build.directory}/rpm.el7/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el7.noarch.rpm" ${project.build.directory}/]]></argument>
 									</arguments>
 								</configuration>
 							</execution>
@@ -512,7 +581,7 @@ fi
 									<executable>bash</executable>
 									<arguments>
 										<argument>-c</argument>
-										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" && cp "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-1.el6.noarch.rpm" ${project.build.directory}/ ]]></argument>
+										<argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el6.noarch.rpm" && cp "${project.build.directory}/rpm.el6/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-${releaseBase}.el6.noarch.rpm" ${project.build.directory}/ ]]></argument>
 									</arguments>
 								</configuration>
 							</execution>

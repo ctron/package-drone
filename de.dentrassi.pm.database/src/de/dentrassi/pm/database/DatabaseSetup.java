@@ -47,6 +47,8 @@ public class DatabaseSetup implements AutoCloseable
 
     public static final String KEY_DATABASE_SCHEMA_VERSION = "database-schema-version";
 
+    public static final String NAMESPACE = "core";
+
     private final DatabaseConnectionData data;
 
     private final ServiceTracker<DataSourceFactory, DataSourceFactory> tracker;
@@ -190,40 +192,78 @@ public class DatabaseSetup implements AutoCloseable
         }
     }
 
-    private Long loadSchemaVersion ( final Connection con )
+    private Long loadOldSchemaVersion ( final Connection con )
     {
         try
         {
-            con.setAutoCommit ( true ); // temporarily enable autocommit to prevent failure in next transaction if this statement fails
             try ( final PreparedStatement stmt = con.prepareStatement ( "select \"VALUE\" from PROPERTIES where \"KEY\"=?" ) )
             {
                 stmt.setString ( 1, KEY_DATABASE_SCHEMA_VERSION );
-                try ( final ResultSet rs = stmt.executeQuery () )
-                {
-                    if ( !rs.next () )
-                    {
-                        return null;
-                    }
-                    final String str = rs.getString ( 1 );
-                    try
-                    {
-                        return Long.parseLong ( str );
-                    }
-                    catch ( final NumberFormatException e )
-                    {
-                        return null;
-                    }
-                }
-            }
-            finally
-            {
-                con.setAutoCommit ( false );
+                return fetchSchemaVersion ( con, stmt );
             }
         }
         catch ( final SQLException e )
         {
             logger.info ( "Failed to check schema version", e );
             return null;
+        }
+    }
+
+    private Long loadNewSchemaVersion ( final Connection con )
+    {
+        try
+        {
+            try ( final PreparedStatement stmt = con.prepareStatement ( "select \"VALUE\" from PROPERTIES where NS=?, \"KEY\"=?" ) )
+            {
+                stmt.setString ( 1, NAMESPACE );
+                stmt.setString ( 2, KEY_DATABASE_SCHEMA_VERSION );
+                return fetchSchemaVersion ( con, stmt );
+            }
+        }
+        catch ( final SQLException e )
+        {
+            logger.info ( "Failed to check schema version", e );
+            return null;
+        }
+    }
+
+    private Long loadSchemaVersion ( final Connection con )
+    {
+        Long result;
+
+        // try the new table layout with NS
+        result = loadNewSchemaVersion ( con );
+        if ( result == null )
+        {
+            // try the old one, without NS
+            result = loadOldSchemaVersion ( con );
+        }
+
+        return result;
+    }
+
+    private Long fetchSchemaVersion ( final Connection con, final PreparedStatement stmt ) throws SQLException
+    {
+        con.setAutoCommit ( true ); // temporarily enable autocommit to prevent failure in next transaction if this statement fails
+        try ( final ResultSet rs = stmt.executeQuery () )
+        {
+            if ( !rs.next () )
+            {
+                return null;
+            }
+            final String str = rs.getString ( 1 );
+            try
+            {
+                return Long.parseLong ( str );
+            }
+            catch ( final NumberFormatException e )
+            {
+                return null;
+            }
+        }
+        finally
+        {
+            con.setAutoCommit ( false );
         }
     }
 

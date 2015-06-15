@@ -10,12 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
-import java.io.FileNotFoundException;
+import java.io.InputStream;
 
-import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 
 @FunctionalInterface
 public interface ArtifactStreamer
 {
-    public void stream ( String artifactId, ArtifactReceiver receiver ) throws FileNotFoundException;
+    public void stream ( String artifactId, ThrowingConsumer<InputStream> receiver );
 }

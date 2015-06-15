@@ -17,6 +17,7 @@ import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 
 /**
  * A handle to an artifact
@@ -53,7 +54,17 @@ public interface Artifact extends Comparable<Artifact>
 
     // -- data
 
-    public void streamData ( ArtifactReceiver receiver );
+    public boolean streamData ( ArtifactReceiver receiver );
+
+    /**
+     * Stream the artifact data
+     *
+     * @param receiver
+     *            the receiver of the InputStream providing the artifact data
+     * @return returns <code>true</code> if the artifact was found and streamed,
+     *         <code>false</code> otherwise
+     */
+    public boolean streamData ( ThrowingConsumer<InputStream> receiver );
 
     public void applyMetaData ( Map<MetaKey, String> metadata );
 

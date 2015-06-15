@@ -40,16 +40,8 @@ public final class Helper
 {
     private final static Logger logger = LoggerFactory.getLogger ( Helper.class );
 
-    private static final XmlHelper xml;
-
-    static
-    {
-        xml = new XmlHelper ();
-    }
-
     private Helper ()
     {
-
     }
 
     public static boolean changeOf ( final Object event, final Type first, final Type... rest )
@@ -194,6 +186,8 @@ public final class Helper
 
     public static void createFragmentFile ( final OutputStream out, final Consumer<Element> unitsConsumer ) throws Exception
     {
+        final XmlHelper xml = new XmlHelper ();
+
         final Document doc = xml.create ();
         final Element units = doc.createElement ( "units" );
         doc.appendChild ( units );

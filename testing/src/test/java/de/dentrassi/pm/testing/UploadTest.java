@@ -72,7 +72,7 @@ public class UploadTest extends AbstractServerTest
 
         // upload file
 
-        final File input = new File ( getAbsolutePath ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" ) );
+        final File input = getAbsolutePath ( "data/test.bundle1-1.0.0-SNAPSHOT.jar" );
 
         {
             final WebElement ele = driver.findElementById ( "file" );
@@ -117,16 +117,6 @@ public class UploadTest extends AbstractServerTest
         }
 
         return new File ( file, id );
-    }
-
-    private String getAbsolutePath ( final String localPath )
-    {
-        final File file = new File ( localPath );
-        if ( !file.exists () )
-        {
-            throw new IllegalStateException ( String.format ( "Unable to find file: %s", localPath ) );
-        }
-        return file.getAbsolutePath ();
     }
 
     protected List<String> getChannels ()

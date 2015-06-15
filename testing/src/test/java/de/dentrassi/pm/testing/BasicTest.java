@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.testing;
 
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -46,14 +45,6 @@ public class BasicTest extends AbstractServerTest
     public void testMaven () throws Exception
     {
         testUrl ( "/maven" );
-    }
-
-    protected void testUrl ( final String suffix ) throws Exception
-    {
-        final URL url = new URL ( resolve ( suffix ) );
-        try ( InputStream is = url.openStream () )
-        {
-        }
     }
 
     @Test

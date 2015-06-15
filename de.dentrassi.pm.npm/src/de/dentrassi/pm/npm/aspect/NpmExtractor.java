@@ -25,25 +25,10 @@ import com.google.common.io.ByteStreams;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
 
 public class NpmExtractor implements Extractor
 {
-
-    private final ChannelAspect channelAspect;
-
-    public NpmExtractor ( final ChannelAspect channelAspect )
-    {
-        this.channelAspect = channelAspect;
-    }
-
-    @Override
-    public ChannelAspect getAspect ()
-    {
-        return this.channelAspect;
-    }
-
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {

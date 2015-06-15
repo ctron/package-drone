@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,13 +13,17 @@ package de.dentrassi.pm.common;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -36,6 +40,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * A helper class when working with XML documents
+ * <p>
+ * This class is not thread-safe and methods may throw Exceptions when accessing
+ * XML parsers from multiple thread concurrently.
+ * </p>
  */
 public class XmlHelper
 {
@@ -127,23 +135,20 @@ public class XmlHelper
         }
     }
 
-    private final DocumentBuilder db;
-
     private final TransformerFactory transformerFactory;
 
     private final XPathFactory xpathFactory;
 
+    private final DocumentBuilderFactory dbf;
+
+    private final DocumentBuilderFactory dbfNs;
+
     public XmlHelper ()
     {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance ();
-        try
-        {
-            this.db = dbf.newDocumentBuilder ();
-        }
-        catch ( final ParserConfigurationException e )
-        {
-            throw new RuntimeException ( e );
-        }
+        this.dbf = DocumentBuilderFactory.newInstance ();
+
+        this.dbfNs = DocumentBuilderFactory.newInstance ();
+        this.dbfNs.setNamespaceAware ( true );
 
         this.transformerFactory = TransformerFactory.newInstance ();
 
@@ -152,19 +157,72 @@ public class XmlHelper
 
     public Document create ()
     {
-        return this.db.newDocument ();
+        try
+        {
+            return this.dbf.newDocumentBuilder ().newDocument ();
+        }
+        catch ( final ParserConfigurationException e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
+    public Document createNs ()
+    {
+        try
+        {
+            return this.dbfNs.newDocumentBuilder ().newDocument ();
+        }
+        catch ( final ParserConfigurationException e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
+    public DocumentBuilder getBuilder () throws Exception
+    {
+        return this.dbf.newDocumentBuilder ();
     }
 
     public Document parse ( final InputStream stream ) throws Exception
     {
-        return this.db.parse ( stream );
+        return this.dbf.newDocumentBuilder ().parse ( stream );
+    }
+
+    public Document parseNs ( final InputStream stream ) throws Exception
+    {
+        return this.dbfNs.newDocumentBuilder ().parse ( stream );
+    }
+
+    public String toString ( final Document doc )
+    {
+        try
+        {
+            final StringWriter sw = new StringWriter ();
+            write ( doc, sw );
+            sw.close ();
+            return sw.toString ();
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     public void write ( final Document doc, final OutputStream stream ) throws Exception
     {
+        write ( doc, new StreamResult ( stream ) );
+    }
+
+    public void write ( final Document doc, final Writer writer ) throws Exception
+    {
+        write ( doc, new StreamResult ( writer ) );
+    }
+
+    public void write ( final Document doc, final Result result ) throws TransformerException
+    {
         final Transformer transformer = this.transformerFactory.newTransformer ();
         final DOMSource source = new DOMSource ( doc );
-        final StreamResult result = new StreamResult ( stream );
         transformer.setOutputProperty ( OutputKeys.INDENT, "yes" );
         transformer.setOutputProperty ( OutputKeys.ENCODING, "UTF-8" );
         transformer.setOutputProperty ( "{http://xml.apache.org/xslt}indent-amount", "2" );
@@ -181,14 +239,24 @@ public class XmlHelper
 
     public String getElementValue ( final Node element, final String path ) throws Exception
     {
-        for ( final Node n : iter ( path ( element, path ) ) )
+        return getElementValue ( path ( element, path ) );
+    }
+
+    public static String getElementValue ( final Node element, final XPathExpression expression ) throws Exception
+    {
+        return getElementValue ( executePath ( element, expression ) );
+    }
+
+    public static String getElementValue ( final NodeList list )
+    {
+        for ( final Node n : iter ( list ) )
         {
             return text ( n );
         }
         return null;
     }
 
-    private String text ( final Node node )
+    private static String text ( final Node node )
     {
         return node.getTextContent ();
     }
@@ -221,9 +289,23 @@ public class XmlHelper
     {
         final XPath xpath = this.xpathFactory.newXPath ();
         final XPathExpression expression = xpath.compile ( path );
+        return executePath ( node, expression );
+    }
+
+    public static NodeList executePath ( final Node node, final XPathExpression expression ) throws XPathExpressionException
+    {
         return (NodeList)expression.evaluate ( node, XPathConstants.NODESET );
     }
 
+    /**
+     * Create a new element and add it as the last child
+     *
+     * @param parent
+     *            the parent of the new element
+     * @param name
+     *            the name of the element
+     * @return the new element
+     */
     public static Element addElement ( final Element parent, final String name )
     {
         final Element ele = parent.getOwnerDocument ().createElement ( name );
@@ -241,6 +323,27 @@ public class XmlHelper
         return ele;
     }
 
+    public static Element addOptionalElement ( final Element parent, final String name, final Object value )
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        final Element ele = addElement ( parent, name );
+        ele.setTextContent ( value.toString () );
+        return ele;
+    }
+
+    /**
+     * Create a new element and add it as the first child
+     *
+     * @param parent
+     *            the parent to which to add the element
+     * @param name
+     *            the name of the element
+     * @return the new element
+     */
     public static Element addElementFirst ( final Element parent, final String name )
     {
         final Element ele = parent.getOwnerDocument ().createElement ( name );

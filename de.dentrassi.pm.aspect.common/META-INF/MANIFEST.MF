@@ -38,8 +38,9 @@ Service-Component: OSGI-INF/hash.xml,
  OSGI-INF/groupOsgi.xml
 Bundle-ActivationPolicy: lazy
 Export-Package: de.dentrassi.pm.aspect.common.osgi;version="1.0.0";
-  uses:="org.w3c.dom,
-   de.dentrassi.pm.aspect,
-   de.dentrassi.pm.osgi,
+  uses:="de.dentrassi.pm.aspect,
+   de.dentrassi.pm.osgi.bundle,
    de.dentrassi.pm.aspect.extract,
-   de.dentrassi.pm.aspect.virtual"
+   de.dentrassi.pm.osgi.feature",
+ de.dentrassi.pm.aspect.common.p2;version="1.0.0",
+ de.dentrassi.pm.aspect.common.spool;version="1.0.0";uses:="de.dentrassi.pm.common.utils,de.dentrassi.pm.aspect.aggregate"

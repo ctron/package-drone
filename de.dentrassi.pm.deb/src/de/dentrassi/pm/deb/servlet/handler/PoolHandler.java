@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb.servlet.handler;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -51,7 +52,10 @@ public class PoolHandler implements Handler
     @Override
     public void process ( final OutputStream stream ) throws IOException
     {
-        this.service.streamArtifact ( this.artifactId, ( ai, in ) -> ByteStreams.copy ( in, stream ) );
+        if ( !this.service.streamArtifact ( this.artifactId, ( ai, in ) -> ByteStreams.copy ( in, stream ) ) )
+        {
+            throw new FileNotFoundException ( this.artifactId );
+        }
     }
 
 }

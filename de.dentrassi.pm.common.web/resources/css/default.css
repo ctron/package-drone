@@ -140,6 +140,17 @@ ul.link-list > li:not(:last-child):after {
 	font-style: italic;
 }
 
+/* tables */
+
+table.table-properties {
+	table-layout: fixed;
+}
+
+table.table-properties th,
+table.table-properties td {
+	width: 50%;
+} 
+
 /* dependency lists */
 
 ul.dependency-list {

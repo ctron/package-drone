@@ -10,7 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface BindingResult
 {
@@ -20,9 +22,15 @@ public interface BindingResult
 
     public BindingResult getChild ( String name );
 
+    public BindingResult getChildOrAdd ( String name );
+
+    public Map<String, BindingResult> getChildren ();
+
     public void addChild ( String name, BindingResult bindingResult );
 
     public void addError ( BindingError error );
+
+    public void addErrors ( Collection<BindingError> error );
 
     /**
      * Get a list of all errors, including child errors. <br>

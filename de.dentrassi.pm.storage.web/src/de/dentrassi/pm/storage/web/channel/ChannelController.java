@@ -16,7 +16,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +62,7 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
+import de.dentrassi.osgi.web.controller.ProfilerControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.BindingResult;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
@@ -71,6 +71,7 @@ import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.group.GroupInformation;
+import de.dentrassi.pm.aspect.recipe.RecipeInformation;
 import de.dentrassi.pm.aspect.recipe.RecipeNotFoundException;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
@@ -102,6 +103,7 @@ import de.dentrassi.pm.system.SystemService;
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
 @HttpConstraint ( rolesAllowed = "MANAGER" )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
+@ControllerInterceptor ( ProfilerControllerInterceptor.class )
 public class ChannelController implements InterfaceExtender
 {
 
@@ -211,7 +213,7 @@ public class ChannelController implements InterfaceExtender
         final Map<String, Object> model = new HashMap<> ( 2 );
 
         model.put ( "command", new CreateChannel () );
-        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+        model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
     }
@@ -258,8 +260,8 @@ public class ChannelController implements InterfaceExtender
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( holder.value.getId (), "UTF-8" ) ) );
         }
 
-        final Map<String, Object> model = new HashMap<> ( 1 );
-        model.put ( "recipes", Activator.getRecipes ().getRecipes () );
+        final Map<String, Object> model = new HashMap<> ( 2 );
+        model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
     }
@@ -331,7 +333,7 @@ public class ChannelController implements InterfaceExtender
 
         result.put ( "channel", channel );
         result.put ( "treeArtifacts", tree );
-        result.put ( "treeSeverityTester", new TreeTester ( tree ) );
+        result.put ( "treeSeverityTester", new TreeTesterImpl ( tree ) );
 
         return result;
     }
@@ -479,7 +481,7 @@ public class ChannelController implements InterfaceExtender
 
     private String getSitePrefix ()
     {
-        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        final String prefix = this.coreService.getCoreProperty ( new MetaKey ( "core", "site-prefix" ), this.systemService.getDefaultSitePrefix () );
         if ( prefix != null )
         {
             return prefix;
@@ -789,21 +791,17 @@ public class ChannelController implements InterfaceExtender
 
         model.put ( "channel", channel );
 
-        try
-        {
-            channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
-                response.setContentLengthLong ( cacheEntry.getSize () );
-                response.setContentType ( cacheEntry.getMimeType () );
-                response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
-                // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
-                ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
-            } );
-            return null;
-        }
-        catch ( final FileNotFoundException e )
+        if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
+            response.setContentLengthLong ( cacheEntry.getSize () );
+            response.setContentType ( cacheEntry.getMimeType () );
+            response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
+            // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
+            ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
+        } ) )
         {
             return CommonController.createNotFound ( "channel cache entry", String.format ( "%s:%s", namespace, key ) );
         }
+        return null;
     }
 
     @Override

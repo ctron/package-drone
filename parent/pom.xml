@@ -5,7 +5,7 @@
 
 	<groupId>de.dentrassi.package.drone</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.10.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<url>http://packagedrone.org</url>
@@ -73,6 +73,8 @@
 		<module>../de.dentrassi.osgi.job.service.jpa</module>
 		<module>../de.dentrassi.osgi.job.web</module>
 
+        <module>../de.dentrassi.osgi.profiler</module>
+
 		<module>../de.dentrassi.osgi.scheduler</module>
 		<module>../de.dentrassi.osgi.scheduler.simple</module>
 
@@ -93,11 +95,13 @@
 		<module>../de.dentrassi.pm.aspect.cleanup</module>
 		<module>../de.dentrassi.pm.aspect.cleanup.web</module>
 		<module>../de.dentrassi.pm.aspect.common</module>
+		<module>../de.dentrassi.pm.aspect.common.tests</module>
 		<module>../de.dentrassi.pm.aspect.mvnosgi</module>
 		<module>../de.dentrassi.pm.aspect.mvnosgi.web</module>
 		<module>../de.dentrassi.pm.aspect.upgrade</module>
 
 		<module>../de.dentrassi.pm.common</module>
+		<module>../de.dentrassi.pm.common.tests</module>
 		<module>../de.dentrassi.pm.common.web</module>
 		<module>../de.dentrassi.pm.common.web.ckeditor</module>
 
@@ -141,6 +145,10 @@
 		<module>../de.dentrassi.pm.p2.web</module>
 
 		<module>../de.dentrassi.pm.r5</module>
+		<module>../de.dentrassi.pm.r5.web</module>
+		
+		<module>../de.dentrassi.pm.rpm</module>
+		<module>../de.dentrassi.pm.rpm.web</module>
 
 		<module>../de.dentrassi.pm.sec</module>
 		<module>../de.dentrassi.pm.sec.jpa</module>
@@ -179,6 +187,13 @@
 
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>
+		
+		<module>../de.dentrassi.pm.web.analytics</module>
+		
+		<module>../de.dentrassi.rpm</module>
+		<module>../de.dentrassi.rpm.tests</module>
+
+        <module>../org.tukani.xz</module>
 
 		<module>../product</module>
 	</modules>

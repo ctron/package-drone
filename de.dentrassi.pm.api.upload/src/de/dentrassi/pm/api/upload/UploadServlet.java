@@ -55,20 +55,20 @@ public class UploadServlet extends AbstractStorageServiceServlet
 
         if ( toks.length == 0 )
         {
-            // handle error: missing channel
-            sendError ( resp, HttpServletResponse.SC_BAD_REQUEST, "No target" );
+            // handle error: missing target specifier
+            sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "No target" );
             return;
         }
         if ( toks.length == 1 )
         {
-            // handle error: missing channel
-            sendError ( resp, HttpServletResponse.SC_BAD_REQUEST, "Missing target" );
+            // handle error: missing target
+            sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "Missing target" );
             return;
         }
         else if ( toks.length == 2 )
         {
             // handle error: missing name
-            sendError ( resp, HttpServletResponse.SC_BAD_REQUEST, "Missing artifact name" );
+            sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "Missing artifact name" );
             return;
         }
 
@@ -79,8 +79,11 @@ public class UploadServlet extends AbstractStorageServiceServlet
             case "channel":
                 processChannel ( req, resp, toks[1], toks[2] );
                 break;
+            case "artifact":
+                processArtifact ( req, resp, toks[1], toks[2] );
+                break;
             default:
-                sendError ( resp, HttpServletResponse.SC_BAD_REQUEST, "Unkown target type: " + targetType );
+                sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "Unkown target type: " + targetType );
                 break;
         }
     }
@@ -94,7 +97,7 @@ public class UploadServlet extends AbstractStorageServiceServlet
         final Channel channel = getService ( req ).getChannelWithAlias ( channelIdOrName );
         if ( channel == null )
         {
-            resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find channel: %s", channelIdOrName ) );
             return;
         }
 
@@ -110,14 +113,58 @@ public class UploadServlet extends AbstractStorageServiceServlet
         store ( channel, artifactName, req, resp );
     }
 
-    private void sendError ( final HttpServletResponse response, final int status, final String message ) throws IOException
+    private void processArtifact ( final HttpServletRequest req, final HttpServletResponse resp, final String parentArtifactId, final String artifactName ) throws IOException
+    {
+        // process
+
+        resp.setContentType ( "text/plain" );
+
+        final Artifact artifact = getService ( req ).getArtifact ( parentArtifactId );
+        if ( artifact == null )
+        {
+            sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find parent artifact: %s", parentArtifactId ) );
+            return;
+        }
+
+        // authenticate
+
+        if ( !authenticate ( artifact.getChannel (), req, resp ) )
+        {
+            return;
+        }
+
+        // do store
+
+        store ( artifact, artifactName, req, resp );
+    }
+
+    private static void sendResponse ( final HttpServletResponse response, final int status, final String message ) throws IOException
     {
         response.setStatus ( status );
         response.setContentType ( "text/plain" );
         response.getWriter ().println ( message );
     }
 
-    private void store ( final Channel channel, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    private static void store ( final Artifact parentArtifact, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        try
+        {
+            final Artifact art = parentArtifact.attachArtifact ( name, request.getInputStream (), makeMetaData ( request ) );
+
+            response.setStatus ( HttpServletResponse.SC_OK );
+            if ( art != null )
+            {
+                // no veto
+                response.getWriter ().println ( art.getId () );
+            }
+        }
+        catch ( final IllegalArgumentException e )
+        {
+            sendResponse ( response, HttpServletResponse.SC_BAD_REQUEST, ExceptionHelper.getMessage ( e ) );
+        }
+    }
+
+    private static void store ( final Channel channel, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         try
         {
@@ -132,11 +179,11 @@ public class UploadServlet extends AbstractStorageServiceServlet
         }
         catch ( final IllegalArgumentException e )
         {
-            sendError ( response, HttpServletResponse.SC_BAD_REQUEST, ExceptionHelper.getMessage ( e ) );
+            sendResponse ( response, HttpServletResponse.SC_BAD_REQUEST, ExceptionHelper.getMessage ( e ) );
         }
     }
 
-    private Map<MetaKey, String> makeMetaData ( final HttpServletRequest request )
+    private static Map<MetaKey, String> makeMetaData ( final HttpServletRequest request )
     {
         final Map<MetaKey, String> result = new HashMap<> ();
 

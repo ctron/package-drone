@@ -99,9 +99,9 @@ public class ArtifactEntity
         this.aggregatedNumberOfWarnings = aggregatedNumberOfWarnings;
     }
 
-    public void setChildArtifacts ( final Collection<ChildArtifactEntity> derivdedArtifacts )
+    public void setChildArtifacts ( final Collection<ChildArtifactEntity> childArtifacts )
     {
-        this.childArtifacts = derivdedArtifacts;
+        this.childArtifacts = childArtifacts;
     }
 
     public Collection<ChildArtifactEntity> getChildArtifacts ()

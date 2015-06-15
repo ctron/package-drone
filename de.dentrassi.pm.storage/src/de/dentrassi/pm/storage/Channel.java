@@ -192,6 +192,20 @@ public interface Channel extends Validated
 
     public Artifact createArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
+    /**
+     * Get an artifact from a channel by ID
+     * <p>
+     * If an artifact with the ID exists, but does not belong to this channel,
+     * then this method must return <code>null</code>.
+     * </p>
+     *
+     * @param artifactId
+     *            the artifact to get
+     * @return the artifact or <code>null</code> if the artifact could not be
+     *         found
+     */
+    public Artifact getArtifact ( String artifactId );
+
     public List<Artifact> findByName ( String artifactName );
 
     public Set<SimpleArtifactInformation> getSimpleArtifacts ();
@@ -276,10 +290,10 @@ public interface Channel extends Validated
      *            the key of the cache entry
      * @param consumer
      *            the consumer of the cache entry
-     * @throws FileNotFoundException
-     *             if the cache entry does not exists
+     * @return <code>true</code> if the cache entry was found,
+     *         <code>false</code> otherwise
      */
-    public void streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException;
+    public boolean streamCacheEntry ( MetaKey key, ThrowingConsumer<CacheEntry> consumer );
 
     /**
      * Stream the data of a cache entry to the consumer

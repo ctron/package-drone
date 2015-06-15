@@ -18,6 +18,11 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
@@ -27,6 +32,8 @@ import de.dentrassi.pm.storage.jpa.ValidationSeverity;
 
 public class ValidationMessageSink
 {
+    private final static Logger logger = LoggerFactory.getLogger ( ValidationMessageSink.class );
+
     private static class Entry
     {
         private final String aspectId;
@@ -77,19 +84,27 @@ public class ValidationMessageSink
 
     public void flush ( final EntityManager em, final ArtifactEntity artifact )
     {
-        for ( final Entry entry : this.entries )
+        try ( Handle handle = Profile.start ( this, "flush" ) )
         {
-            final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
-            vme.setChannel ( this.channel );
-            vme.setSeverity ( entry.getSeverity () );
-            vme.setMessage ( entry.getMessage () );
-            vme.setArtifacts ( Collections.singleton ( artifact ) );
-            vme.setNamespace ( entry.getAspectId () );
+            if ( logger.isDebugEnabled () )
+            {
+                logger.debug ( "Flushing validation messages - artifact: {}", artifact.getId () );
+            }
 
-            em.persist ( vme );
+            for ( final Entry entry : this.entries )
+            {
+                final ValidationMessageEntity vme = new ExtractorValidationMessageEntity ();
+                vme.setChannel ( this.channel );
+                vme.setSeverity ( entry.getSeverity () );
+                vme.setMessage ( entry.getMessage () );
+                vme.setArtifacts ( Collections.singleton ( artifact ) );
+                vme.setNamespace ( entry.getAspectId () );
+
+                em.persist ( vme );
+            }
+            this.entries.clear ();
+
+            this.handler.aggregateArtifact ( artifact );
         }
-        this.entries.clear ();
-
-        this.handler.aggregateArtifact ( artifact );
     }
 }

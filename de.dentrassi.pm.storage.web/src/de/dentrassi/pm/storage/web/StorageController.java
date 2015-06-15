@@ -41,6 +41,7 @@ import de.dentrassi.osgi.web.controller.binding.MessageBindingError;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.osgi.web.controller.validator.ControllerValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
@@ -59,6 +60,8 @@ import de.dentrassi.pm.storage.service.StorageServiceAdmin;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class StorageController implements InterfaceExtender
 {
+    private static final MetaKey KEY_BLOB_STORE_LOCATION = new MetaKey ( "core", "blobStoreLocation" );
+
     private StorageService service;
 
     private CoreService coreService;
@@ -88,7 +91,7 @@ public class StorageController implements InterfaceExtender
     {
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "blobStoreLocation", this.coreService.getCoreProperty ( "blobStoreLocation" ) );
+        model.put ( "blobStoreLocation", this.coreService.getCoreProperty ( KEY_BLOB_STORE_LOCATION ) );
 
         return new ModelAndView ( "index", model );
     }
@@ -106,7 +109,7 @@ public class StorageController implements InterfaceExtender
     {
         final ConfigureFileSystem data = new ConfigureFileSystem ();
 
-        final String location = this.coreService.getCoreProperty ( "blobStoreLocation" );
+        final String location = this.coreService.getCoreProperty ( KEY_BLOB_STORE_LOCATION );
         data.setLocation ( location );
 
         return new ModelAndView ( "convertFsForm", "command", data );
@@ -114,7 +117,7 @@ public class StorageController implements InterfaceExtender
 
     @RequestMapping ( value = "/system/storage/fileStore", method = RequestMethod.POST )
     @HttpConstraint ( rolesAllowed = "ADMIN" )
-    public ModelAndView convertToFsPost ( @Valid @FormData ( "command" ) final ConfigureFileSystem data, final BindingResult result )
+    public ModelAndView convertToFsPost ( @Valid @FormData ( "command" ) final ConfigureFileSystem data, final BindingResult result)
     {
         if ( result.hasErrors () )
         {
@@ -206,7 +209,7 @@ public class StorageController implements InterfaceExtender
             return;
         }
 
-        final Map<String, String> map = this.coreService.getCoreProperties ( "blobStoreId", "blobStoreLocation" );
+        final Map<String, String> map = this.coreService.getCoreNamespacePlainProperties ( "core", "blobStoreId", "blobStoreLocation" );
         final String id = map.get ( "blobStoreId" );
         if ( id != null )
         {
@@ -246,7 +249,7 @@ public class StorageController implements InterfaceExtender
 
     @HttpConstraint ( rolesAllowed = "ADMIN" )
     @RequestMapping ( value = "/system/storage/exportAllFs", method = RequestMethod.POST )
-    public ModelAndView exportAllFsPost ( @Valid @FormData ( "command" ) final ExportAllFileSystemCommand command, final BindingResult result )
+    public ModelAndView exportAllFsPost ( @Valid @FormData ( "command" ) final ExportAllFileSystemCommand command, final BindingResult result)
     {
         if ( result.hasErrors () )
         {

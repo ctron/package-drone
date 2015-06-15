@@ -26,7 +26,6 @@ import org.osgi.framework.Constants;
 
 import com.google.common.io.ByteStreams;
 
-import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.bundle.BundleInformationParser;
@@ -50,19 +49,6 @@ public class OsgiExtractor implements Extractor
     public static final String KEY_FEATURE_INFORMATION = "feature-information";
 
     public static final String NAMESPACE = OsgiAspectFactory.ID;
-
-    private final ChannelAspect aspect;
-
-    public OsgiExtractor ( final ChannelAspect aspect )
-    {
-        this.aspect = aspect;
-    }
-
-    @Override
-    public ChannelAspect getAspect ()
-    {
-        return this.aspect;
-    }
 
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception

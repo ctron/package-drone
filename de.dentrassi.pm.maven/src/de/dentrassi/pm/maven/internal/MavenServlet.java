@@ -46,6 +46,8 @@ import org.w3c.dom.Node;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
@@ -65,7 +67,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private static final MetaKey CHANNEL_KEY = new MetaKey ( "maven.repo", "channel" );
 
-    private XmlHelper xml;
+    private static final String NL = System.lineSeparator ();
 
     private Path tempRoot;
 
@@ -82,8 +84,6 @@ public class MavenServlet extends AbstractStorageServiceServlet
         {
             throw new ServletException ( "Failed to create temp root", e );
         }
-
-        this.xml = new XmlHelper ();
     }
 
     @Override
@@ -107,11 +107,24 @@ public class MavenServlet extends AbstractStorageServiceServlet
         Files.deleteIfExists ( this.tempRoot );
     }
 
+    private static String makeOperation ( final HttpServletRequest request )
+    {
+        return String.format ( "MavenServlet|%s|%s", request.getRequestURI (), request.getMethod () );
+    }
+
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
         logger.trace ( "get request - {}", request );
 
+        try ( Handle handle = Profile.start ( makeOperation ( request ) ) )
+        {
+            handleGetRequest ( request, response );
+        }
+    }
+
+    private void handleGetRequest ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
         if ( "/".equals ( request.getPathInfo () ) )
         {
             response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
@@ -158,7 +171,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
         catch ( final Exception e )
         {
-            logger.debug ( "Failed to load maven channel data", e );
+            logger.warn ( "Failed to load maven channel data", e );
 
             response.getWriter ().write ( "Corrupt channel data" );
             response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
@@ -204,7 +217,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
     @Override
     protected void doPut ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
-        try
+        try ( Handle handle = Profile.start ( makeOperation ( request ) ) )
         {
             logger.debug ( "Request - pathInfo: {} ", request.getPathInfo () );
 
@@ -280,7 +293,20 @@ public class MavenServlet extends AbstractStorageServiceServlet
                 return;
             }
 
-            final Artifact parent = getParent ( channel, info.makePlainName () );
+            logger.debug ( "Request to store release artifact: {}", info );
+
+            final Artifact parent;
+
+            if ( info.isPrimary () )
+            {
+                // if it should be parent artifact, don't find a parent
+                parent = null;
+            }
+            else
+            {
+                // should be a child artifact
+                parent = getParent ( channel, info.makePlainName () );
+            }
             storeArtifact ( channel, info, parent, request.getInputStream () );
         }
     }
@@ -361,6 +387,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
     private Artifact getParent ( final Channel channel, final String parentName )
     {
         logger.debug ( "Looking for parent as: '{}'", parentName );
+
         final Collection<Artifact> result = channel.findByName ( parentName );
         if ( result != null && result.size () == 1 )
         {
@@ -372,16 +399,17 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception
     {
+        logger.debug ( "Processing meta data" );
+
         final String groupId = join ( toks, 2, -3 );
         final String artifactId = toks[toks.length - 3];
         final String version = toks[toks.length - 2];
 
-        final Document doc = this.xml.parse ( request.getInputStream () );
+        final XmlHelper xml = new XmlHelper ();
 
-        System.out.println ( "----------------------" );
-        this.xml.write ( doc, System.out );
-        System.out.println ();
-        System.out.println ( "----------------------" );
+        final Document doc = xml.parse ( request.getInputStream () );
+
+        logger.debug ( "----------------------" + NL + xml.toString ( doc ) + NL + "----------------------" );
 
         final Element de = doc.getDocumentElement ();
         if ( !de.getNodeName ().equals ( "metadata" ) )
@@ -389,7 +417,8 @@ public class MavenServlet extends AbstractStorageServiceServlet
             return;
         }
 
-        final String releaseVersion = this.xml.getElementValue ( de, "versioning/release" );
+        final String releaseVersion = xml.getElementValue ( de, "versioning/release" );
+        logger.debug ( "Release version: {}", releaseVersion );
 
         if ( releaseVersion != null )
         {
@@ -398,8 +427,10 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
         else
         {
-            final String snapshotTimestamp = this.xml.getElementValue ( de, "versioning/snapshot/timestamp" );
-            final String snapshotBuildNumber = this.xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
+            final String snapshotTimestamp = xml.getElementValue ( de, "versioning/snapshot/timestamp" );
+            final String snapshotBuildNumber = xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
+
+            logger.debug ( "Snapshot version: {} / {}", snapshotTimestamp, snapshotBuildNumber );
 
             Long buildNumber = null;
             if ( snapshotBuildNumber != null )
@@ -410,20 +441,19 @@ public class MavenServlet extends AbstractStorageServiceServlet
             if ( snapshotTimestamp != null && snapshotBuildNumber != null )
             {
                 // snapshot version
-                System.out.format ( "\t%s %s%n", snapshotTimestamp, snapshotBuildNumber );
 
                 final List<MavenInformation> plain = new LinkedList<> ();
                 final List<MavenInformation> classified = new LinkedList<> ();
 
-                for ( final Node node : XmlHelper.iter ( this.xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
+                for ( final Node node : XmlHelper.iter ( xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
                 {
                     final MavenInformation info = new MavenInformation ();
                     info.setGroupId ( groupId );
                     info.setArtifactId ( artifactId );
                     info.setVersion ( version );
-                    info.setExtension ( this.xml.getElementValue ( node, "extension" ) );
-                    info.setClassifier ( this.xml.getElementValue ( node, "classifier" ) );
-                    info.setSnapshotVersion ( this.xml.getElementValue ( node, "value" ) );
+                    info.setExtension ( xml.getElementValue ( node, "extension" ) );
+                    info.setClassifier ( xml.getElementValue ( node, "classifier" ) );
+                    info.setSnapshotVersion ( xml.getElementValue ( node, "value" ) );
                     info.setBuildNumber ( buildNumber );
 
                     if ( info.getClassifier () != null )
@@ -486,12 +516,15 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private Artifact store ( final Channel channel, final MavenInformation info, final Artifact parent ) throws Exception
     {
+        logger.debug ( "Request store - parent: {}, info: {}", info, parent );
         return pullFromTemp ( channel, info, ( is ) -> storeArtifact ( channel, info, parent, is ) );
     }
 
     protected Artifact storeArtifact ( final Channel channel, final MavenInformation info, final Artifact parent, final InputStream is )
     {
-        Map<MetaKey, String> md;
+        logger.debug ( "Storing artifact - parent: {}, info: {}", parent, info );
+
+        final Map<MetaKey, String> md;
         try
         {
             md = MetaKeys.unbind ( info );
@@ -500,6 +533,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         {
             throw new RuntimeException ( e );
         }
+
         if ( parent != null )
         {
             return parent.attachArtifact ( info.makeName (), is, md );
@@ -559,10 +593,9 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private void dumpSkip ( final HttpServletRequest request ) throws IOException
     {
-        System.out.println ( "----------------------" );
-        ByteStreams.copy ( request.getInputStream (), System.out );
-        System.out.println ();
-        System.out.println ( "----------------------" );
+        final String str = CharStreams.toString ( new InputStreamReader ( request.getInputStream (), StandardCharsets.UTF_8 ) );
+
+        logger.debug ( "----------------------" + NL + str + NL + "----------------------" );
     }
 
     private static String join ( final String[] toks, final int start, final int remove )

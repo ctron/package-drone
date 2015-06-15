@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -88,6 +89,11 @@ public interface StreamServiceHelper
         return new ChannelImpl ( ce.getId (), ce.getName (), ce.getDescription (), ce.isLocked (), ce.getAggregatedNumberOfWarnings (), ce.getAggregatedNumberOfErrors (), service );
     }
 
+    public static ArtifactInformation convert ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
+    {
+        return convert ( ae, properties, null );
+    }
+
     /**
      * Convert an artifact entity to a full artifact information object
      * <p>
@@ -101,9 +107,11 @@ public interface StreamServiceHelper
      *            the entity to convert
      * @param props
      *            the optional properties
+     * @param childMap
+     *            an optional child map for quicker child resolving
      * @return the result information object
      */
-    public static ArtifactInformation convert ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
+    public static ArtifactInformation convert ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties, final Map<String, Collection<String>> childMap )
     {
         if ( ae == null )
         {
@@ -111,20 +119,23 @@ public interface StreamServiceHelper
         }
 
         final SortedSet<String> childIds = new TreeSet<> ();
-        for ( final ChildArtifactEntity child : ae.getChildArtifacts () )
+        if ( childMap != null )
         {
-            childIds.add ( child.getId () );
-        }
-
-        final SortedMap<MetaKey, String> metaData;
-        if ( properties != null )
-        {
-            metaData = extract ( ae.getId (), properties );
+            final Collection<String> childs = childMap.get ( ae.getId () );
+            if ( childs != null )
+            {
+                childIds.addAll ( childs );
+            }
         }
         else
         {
-            metaData = convertMetaData ( ae );
+            for ( final ChildArtifactEntity child : ae.getChildArtifacts () )
+            {
+                childIds.add ( child.getId () );
+            }
         }
+
+        final SortedMap<MetaKey, String> metaData = makeMetaData ( ae, properties );
 
         return new ArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData, childIds );
     }
@@ -151,17 +162,21 @@ public interface StreamServiceHelper
             return null;
         }
 
-        final SortedMap<MetaKey, String> metaData;
+        final SortedMap<MetaKey, String> metaData = makeMetaData ( ae, properties );
+
+        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData );
+    }
+
+    public static SortedMap<MetaKey, String> makeMetaData ( final ArtifactEntity ae, final Multimap<String, MetaDataEntry> properties )
+    {
         if ( properties != null )
         {
-            metaData = extract ( ae.getId (), properties );
+            return extract ( ae.getId (), properties );
         }
         else
         {
-            metaData = convertMetaData ( ae );
+            return convertMetaData ( ae );
         }
-
-        return new DetailedArtifactInformation ( ae.getId (), getParentId ( ae ), ae.getSize (), ae.getName (), ae.getChannel ().getId (), ae.getCreationTimestamp (), ae.getAggregatedNumberOfWarnings (), ae.getAggregatedNumberOfErrors (), getArtifactFacets ( ae ), metaData );
     }
 
     public static SortedMap<MetaKey, String> extract ( final String id, final Multimap<String, MetaDataEntry> properties )

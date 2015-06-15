@@ -82,6 +82,12 @@ public class DefaultTest extends AbstractServerTest
         simpleTest ( "/system/info" );
     }
 
+    @Test
+    public void testSystemAnalytics ()
+    {
+        simpleTest ( "/system/extend/analytics" );
+    }
+
     protected void simpleTest ( final String url )
     {
         final String full = resolve ( url );

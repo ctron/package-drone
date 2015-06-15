@@ -29,3 +29,4 @@ Export-Package: de.dentrassi.pm.common.web;version="1.0.0";uses:="de.dentrassi.o
  de.dentrassi.pm.common.web.tags;version="1.0.0";uses:="de.dentrassi.pm.storage"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/menuInterceptor.xml
+Bundle-Activator: de.dentrassi.pm.common.web.Activator

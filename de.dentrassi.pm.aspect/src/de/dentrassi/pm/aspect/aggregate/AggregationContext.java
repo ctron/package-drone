@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.aspect.aggregate;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -21,6 +20,7 @@ import com.google.common.io.ByteStreams;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 
 public interface AggregationContext extends AggregationValidationContext
@@ -80,6 +80,8 @@ public interface AggregationContext extends AggregationValidationContext
      */
     public void createCacheEntry ( final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator );
 
-    public void streamArtifact ( String artifactId, ArtifactReceiver receiver ) throws FileNotFoundException;
+    public boolean streamArtifact ( String artifactId, ArtifactReceiver receiver );
+
+    public boolean streamArtifact ( String artifactId, ThrowingConsumer<InputStream> consmer );
 
 }

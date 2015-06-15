@@ -25,6 +25,8 @@ import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
 import de.dentrassi.osgi.web.ViewResolver;
@@ -115,6 +117,14 @@ public class ModelAndViewRequestHandler implements RequestHandler
 
         setModelAsRequestAttributes ( request, this.modelAndView.getModel () );
 
+        try ( Handle handle = Profile.start ( "render:" + this.modelAndView.getViewName () ) )
+        {
+            render ( request, response, path );
+        }
+    }
+
+    private void render ( final HttpServletRequest request, final HttpServletResponse response, final String path ) throws ServletException, IOException
+    {
         final RequestDispatcher rd = request.getRequestDispatcher ( path );
         if ( response.isCommitted () )
         {

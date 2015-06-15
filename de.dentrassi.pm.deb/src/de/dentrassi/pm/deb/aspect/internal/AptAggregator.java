@@ -30,7 +30,6 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.deb.ChannelConfiguration;
-import de.dentrassi.pm.deb.aspect.AptChannelAspectFactory;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.deb.aspect.internal.RepoBuilder.PackageInformation;
 import de.dentrassi.pm.signing.SigningService;
@@ -42,12 +41,6 @@ public class AptAggregator implements ChannelAggregator
     public AptAggregator ()
     {
         this.context = FrameworkUtil.getBundle ( AptAggregator.class ).getBundleContext ();
-    }
-
-    @Override
-    public String getId ()
-    {
-        return AptChannelAspectFactory.ID;
     }
 
     @Override

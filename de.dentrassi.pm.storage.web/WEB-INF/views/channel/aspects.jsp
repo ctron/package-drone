@@ -59,11 +59,11 @@ function doAction ( action, factoryId )
 
 	<div>
 	
-	   <h2>Assigned aspects</h2>
+        <h2>Assigned aspects</h2>
 	
 		<div role="tabpanel">
 	
-	        <ul class="nav nav-pills" role="tablist">
+	        <ul class="nav nav-pills" role="tablist" id="assigned-tab-list">
 	            <c:forEach items="${web:sort ( groupedAssignedAspects.keySet() ) }" var="group" varStatus="s">
 	                <li role="presentation" class="${ s.first ? 'active' : '' }">
 	                    <a role="tab" href="#cgroup-${group.id}" data-toggle="pill" aria-controls="cgroup-${group.id }">${fn:escapeXml(group.name) }</a>
@@ -79,7 +79,7 @@ function doAction ( action, factoryId )
                     <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="cgroup-${group.id }">
                 
 						<c:forEach items="${groupedAssignedAspects[group] }" var="aspect">
-							<div class="panel panel-default" id="${aspect.factoryId }">
+							<div class="panel panel-default aspect-assigned" id="${aspect.factoryId }">
 							    <div class="panel-heading">
 							        <h3 class="panel-title">${fn:escapeXml(aspect.name) }
                                         <c:if test="${not aspect.resolved }"><span class="label label-danger">unresolved</span></c:if>
@@ -124,7 +124,7 @@ function doAction ( action, factoryId )
 
     <div role="tabpanel">
 
-        <ul class="nav nav-pills" role="tablist">
+        <ul class="nav nav-pills" role="tablist" id="additional-tab-list">
             <c:forEach items="${web:sort ( addAspects.keySet() ) }" var="group" varStatus="s">
                 <li role="presentation" class="${ s.first ? 'active' : '' }">
                     <a role="tab" href="#group-${group.id}" data-toggle="pill" aria-controls="group-${group.id }">${fn:escapeXml(group.name) }</a>
@@ -140,7 +140,7 @@ function doAction ( action, factoryId )
 		      <div role="tabpanel" class="tab-pane ${ s.first ? 'active' : '' }" id="group-${group.id }">
 		      
 		    	<c:forEach items="${addAspects[group] }" var="aspect">
-					<div class="panel panel-default" id="${aspect.factoryId }">
+					<div class="panel panel-default aspect-available" id="${aspect.factoryId }">
 					    <div class="panel-heading">
 					       <h3 class="panel-title">${fn:escapeXml(aspect.name) } <small>${fn:escapeXml(aspect.version) } – ${fn:escapeXml(aspect.factoryId) }</small></h3>
 					    </div>

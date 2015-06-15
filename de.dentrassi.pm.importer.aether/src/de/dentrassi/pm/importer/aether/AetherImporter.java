@@ -78,7 +78,7 @@ public class AetherImporter implements Importer
     {
         final Path tmpDir = Files.createTempDirectory ( "aether" );
 
-        context.addCleanupTask ( ( ) -> {
+        context.addCleanupTask ( () -> {
             Files.walkFileTree ( tmpDir, new RecursiveDeleteVisitor () );
             Files.deleteIfExists ( tmpDir );
         } );
@@ -128,21 +128,21 @@ public class AetherImporter implements Importer
         final RepositorySystem system = Helper.newRepositorySystem ();
         final RepositorySystemSession session = Helper.newRepositorySystemSession ( tmpDir, system );
 
-        List<RemoteRepository> repositories;
+        final List<RemoteRepository> repositories;
         if ( cfg.getUrl () == null || cfg.getUrl ().isEmpty () )
         {
             repositories = Arrays.asList ( Helper.newCentralRepository () );
         }
         else
         {
-            repositories = Arrays.asList ( Helper.newRemoteRepository ( cfg.getUrl () ) );
+            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getUrl () ) );
         }
 
         final Collection<ArtifactRequest> requests = new LinkedList<> ();
 
-        final DefaultArtifact artifact = new DefaultArtifact ( cfg.getCoordinates () );
+        // main artifact
 
-        // main
+        final DefaultArtifact artifact = new DefaultArtifact ( cfg.getCoordinates () );
         {
             final ArtifactRequest artifactRequest = new ArtifactRequest ();
             artifactRequest.setArtifact ( artifact );
@@ -152,12 +152,16 @@ public class AetherImporter implements Importer
 
         if ( cfg.isIncludeSources () )
         {
+            // add source artifact
+
             final DefaultArtifact sourcesArtifacts = new DefaultArtifact ( artifact.getGroupId (), artifact.getArtifactId (), "sources", artifact.getExtension (), artifact.getVersion () );
             final ArtifactRequest artifactRequest = new ArtifactRequest ();
             artifactRequest.setArtifact ( sourcesArtifacts );
             artifactRequest.setRepositories ( repositories );
             requests.add ( artifactRequest );
         }
+
+        // process
 
         return system.resolveArtifacts ( session, requests );
     }

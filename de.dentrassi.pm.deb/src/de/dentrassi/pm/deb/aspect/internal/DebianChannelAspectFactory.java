@@ -32,7 +32,7 @@ public class DebianChannelAspectFactory implements ChannelAspectFactory
             @Override
             public Extractor getExtractor ()
             {
-                return new DebianExtractor ( this );
+                return new DebianExtractor ();
             }
         };
     }

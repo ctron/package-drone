@@ -22,7 +22,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestHandler;
+import de.dentrassi.osgi.web.controller.binding.Binder;
 import de.dentrassi.osgi.web.controller.binding.BindingManager;
+import de.dentrassi.osgi.web.controller.binding.ErrorBinder;
 import de.dentrassi.osgi.web.controller.binding.PathVariableBinder;
 import de.dentrassi.osgi.web.controller.binding.RequestParameterBinder;
 import de.dentrassi.osgi.web.controller.form.FormDataBinder;
@@ -100,7 +102,7 @@ public class ControllerCall
 
         try
         {
-            final RequestHandler result = runForward ( 0, request, response, ( ) -> processCall ( match, request, response ) );
+            final RequestHandler result = runForward ( 0, request, response, () -> processCall ( match, request, response ) );
 
             return runBackward ( this.interceptors.length, request, response, new Callable<RequestHandler> () {
 
@@ -126,11 +128,17 @@ public class ControllerCall
         data.put ( "session", request.getSession () );
         data.put ( "principal", request.getUserPrincipal () );
 
+        // create new binding manager
+
         final BindingManager manager = BindingManager.create ( data );
+
+        // add controller binders
 
         manager.addBinder ( new RequestParameterBinder ( request ) );
         manager.addBinder ( new PathVariableBinder ( match ) );
         manager.addBinder ( new FormDataBinder ( request, this.controller ) );
+
+        addMethodBinders ( manager, this.m );
 
         final de.dentrassi.osgi.web.controller.binding.BindingManager.Call call = manager.bind ( this.m, this.controller );
         final Object result = call.invoke ();
@@ -152,5 +160,44 @@ public class ControllerCall
             throw new IllegalStateException ( String.format ( "Response type %s is unsupported", result.getClass () ) );
         }
 
+    }
+
+    /**
+     * Add custom binders assigned to the method
+     * <p>
+     * Custom binders assigned to the method will be added to the binding
+     * manager instance.
+     * </p>
+     *
+     * @param manager
+     *            the manager to add binders to
+     * @param method
+     *            the method to evaluate for additional binders
+     */
+    protected static void addMethodBinders ( final BindingManager manager, final Method method )
+    {
+        final ControllerBinder[] binders = method.getAnnotationsByType ( ControllerBinder.class );
+
+        if ( binders == null )
+        {
+            return;
+        }
+
+        for ( final ControllerBinder binder : binders )
+        {
+            try
+            {
+                final Binder binderImpl = binder.value ().newInstance ();
+                if ( binderImpl instanceof ControllerBinderParametersAware )
+                {
+                    ( (ControllerBinderParametersAware)binderImpl ).setParameters ( binder.parameters () );
+                }
+                manager.addBinder ( binderImpl );
+            }
+            catch ( InstantiationException | IllegalAccessException e )
+            {
+                manager.addBinder ( new ErrorBinder ( e ) );
+            }
+        }
     }
 }

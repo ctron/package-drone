@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
@@ -124,61 +126,64 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
 
     private List<Task> updateState ()
     {
-        final Map<String, ChannelAspectInformation> infos = ChannelAspectProcessor.scanAspectInformations ( this.context );
-
-        final List<Task> result = new LinkedList<> ();
-
-        final Multimap<String, Channel> missing = HashMultimap.create ();
-
-        final Multimap<Channel, String> channels = HashMultimap.create ();
-
-        for ( final Channel channel : this.service.listChannels () )
+        try ( Handle handle = Profile.start ( this, "updateState" ) )
         {
-            logger.debug ( "Checking channel: {}", channel.getId () );
+            final Map<String, ChannelAspectInformation> infos = ChannelAspectProcessor.scanAspectInformations ( this.context );
 
-            final Map<String, String> states = channel.getAspectStates ();
-            for ( final Map.Entry<String, String> entry : states.entrySet () )
+            final List<Task> result = new LinkedList<> ();
+
+            final Multimap<String, Channel> missing = HashMultimap.create ();
+
+            final Multimap<Channel, String> channels = HashMultimap.create ();
+
+            for ( final Channel channel : this.service.listChannels () )
             {
-                logger.debug ( "\t{}", entry.getKey () );
+                logger.debug ( "Checking channel: {}", channel.getId () );
 
-                final ChannelAspectInformation info = infos.get ( entry.getKey () );
-                if ( info == null )
+                final Map<String, String> states = channel.getAspectStates ();
+                for ( final Map.Entry<String, String> entry : states.entrySet () )
                 {
-                    missing.put ( entry.getKey (), channel );
-                }
-                else
-                {
-                    logger.debug ( "\t{} - {} -> {}", info.getFactoryId (), entry.getValue (), info.getVersion () );
+                    logger.debug ( "\t{}", entry.getKey () );
 
-                    if ( !info.getVersion ().equals ( Version.valueOf ( entry.getValue () ) ) )
+                    final ChannelAspectInformation info = infos.get ( entry.getKey () );
+                    if ( info == null )
                     {
-                        result.add ( makeUpgradeTask ( channel, info, entry.getValue () ) );
-                        channels.put ( channel, entry.getKey () );
+                        missing.put ( entry.getKey (), channel );
+                    }
+                    else
+                    {
+                        logger.debug ( "\t{} - {} -> {}", info.getFactoryId (), entry.getValue (), info.getVersion () );
+
+                        if ( !info.getVersion ().equals ( Version.valueOf ( entry.getValue () ) ) )
+                        {
+                            result.add ( makeUpgradeTask ( channel, info, entry.getValue () ) );
+                            channels.put ( channel, entry.getKey () );
+                        }
                     }
                 }
             }
-        }
 
-        for ( final Map.Entry<Channel, Collection<String>> entry : channels.asMap ().entrySet () )
-        {
-            final Channel channel = entry.getKey ();
-            final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", channel.getId () ) );
-            final String description = "Channel aspects active in this channel have been updated. You can refresh the whole channel.";
-            result.add ( new BasicTask ( "Refresh channel: " + makeChannelTitle ( channel ), 100, description, target, RequestMethod.GET, PERFORM_ALL_BUTTON ) );
-        }
+            for ( final Map.Entry<Channel, Collection<String>> entry : channels.asMap ().entrySet () )
+            {
+                final Channel channel = entry.getKey ();
+                final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", channel.getId () ) );
+                final String description = "Channel aspects active in this channel have been updated. You can refresh the whole channel.";
+                result.add ( new BasicTask ( "Refresh channel: " + makeChannelTitle ( channel ), 100, description, target, RequestMethod.GET, PERFORM_ALL_BUTTON ) );
+            }
 
-        for ( final Map.Entry<String, Collection<Channel>> entry : missing.asMap ().entrySet () )
-        {
-            final String missingChannels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
-            result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), missingChannels ), null ) );
-        }
+            for ( final Map.Entry<String, Collection<Channel>> entry : missing.asMap ().entrySet () )
+            {
+                final String missingChannels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
+                result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), missingChannels ), null ) );
+            }
 
-        if ( !channels.isEmpty () )
-        {
-            result.add ( new BasicTask ( "Refresh all channels", 1, "Refresh all channels in one big task", new LinkTarget ( String.format ( "/job/%s/create", UpgradeAllChannelsJob.ID ) ), RequestMethod.POST, PERFORM_ALL_SUPER_BUTTON ) );
-        }
+            if ( !channels.isEmpty () )
+            {
+                result.add ( new BasicTask ( "Refresh all channels", 1, "Refresh all channels in one big task", new LinkTarget ( String.format ( "/job/%s/create", UpgradeAllChannelsJob.ID ) ), RequestMethod.POST, PERFORM_ALL_SUPER_BUTTON ) );
+            }
 
-        return result;
+            return result;
+        }
     }
 
     private String makeChannelTitle ( final Channel channel )

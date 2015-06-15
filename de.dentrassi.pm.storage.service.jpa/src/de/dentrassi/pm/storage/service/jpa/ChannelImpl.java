@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.CacheEntry;
 import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
@@ -95,9 +93,9 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public void streamCacheEntry ( final MetaKey key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    public boolean streamCacheEntry ( final MetaKey key, final ThrowingConsumer<CacheEntry> consumer )
     {
-        this.service.streamCacheEntry ( this.id, key.getNamespace (), key.getKey (), consumer );
+        return this.service.streamCacheEntry ( this.id, key.getNamespace (), key.getKey (), consumer );
     }
 
     @Override
@@ -128,6 +126,23 @@ public class ChannelImpl implements Channel
     public List<Artifact> findByName ( final String artifactName )
     {
         return this.service.findByName ( this.id, artifactName );
+    }
+
+    @Override
+    public Artifact getArtifact ( final String artifactId )
+    {
+        final Artifact art = this.service.getArtifact ( artifactId );
+        if ( art == null )
+        {
+            return null;
+        }
+
+        if ( !art.getChannel ().getId ().equals ( this.id ) )
+        {
+            return null;
+        }
+
+        return art;
     }
 
     @Override
@@ -188,11 +203,6 @@ public class ChannelImpl implements Channel
     public Set<DetailedArtifactInformation> getDetailedArtifacts ()
     {
         return this.service.listDetailedArtifacts ( this.id );
-    }
-
-    public void streamData ( final String artifactId, final ArtifactReceiver consumer ) throws FileNotFoundException
-    {
-        this.service.streamArtifact ( artifactId, consumer );
     }
 
     StorageServiceImpl getService ()

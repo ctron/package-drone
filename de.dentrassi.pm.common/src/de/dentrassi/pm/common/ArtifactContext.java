@@ -16,13 +16,24 @@ import java.util.Map;
 
 public interface ArtifactContext
 {
+    /**
+     * Get the information of the artifact which is currently being processed
+     * 
+     * @return the artifact information of the current artifact, never returns
+     *         <code>null</code>
+     */
     public ArtifactInformation getArtifactInformation ();
 
+    /**
+     * Get the path to the temporary file holding the BLOB
+     *
+     * @return a path to the temporary BLOB data
+     */
     public Path getFile ();
 
     /**
      * Create a new virtual artifact in the current context
-     * 
+     *
      * @param name
      *            the name of the artifact
      * @param stream
@@ -32,5 +43,24 @@ public interface ArtifactContext
      */
     public void createVirtualArtifact ( String name, InputStream stream, Map<MetaKey, String> providedMetaData );
 
+    /**
+     * Get information on any other artifact
+     *
+     * @param artifactId
+     *            the ID of the artifact to fetch information for
+     * @return the artifact information
+     */
     public ArtifactInformation getOtherArtifactInformation ( String artifactId );
+
+    /**
+     * Get the provided channel meta data
+     * <p>
+     * This call only returns the provided channel meta data, since the
+     * extracted (aggregated) channel meta data will only be available after the
+     * virtualizer or generator have run an cannot be used therefore.
+     * </p>
+     *
+     * @return a map with the meta data, never returns <code>null</code>
+     */
+    public Map<MetaKey, String> getProvidedChannelMetaData ();
 }

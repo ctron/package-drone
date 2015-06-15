@@ -22,6 +22,8 @@ public class Input extends FormValueTagSupport
 
     private boolean readonly;
 
+    private boolean required;
+
     private String placeholder;
 
     @Override
@@ -37,6 +39,7 @@ public class Input extends FormValueTagSupport
         writer.writeOptionalAttribute ( "placeholder", this.placeholder );
         writer.writeFlagAttribute ( "disabled", this.disabled );
         writer.writeFlagAttribute ( "readonly", this.readonly );
+        writer.writeFlagAttribute ( "required", this.required );
         writeDefaultAttributes ( writer );
         writer.write ( " />" );
 
@@ -56,6 +59,11 @@ public class Input extends FormValueTagSupport
     public void setReadonly ( final boolean readonly )
     {
         this.readonly = readonly;
+    }
+
+    public void setRequired ( final boolean required )
+    {
+        this.required = required;
     }
 
     public void setPlaceholder ( final String placeholder )

@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
@@ -67,16 +68,23 @@ public class MockArtifact implements Artifact
     }
 
     @Override
-    public void streamData ( final ArtifactReceiver receiver )
+    public boolean streamData ( final ArtifactReceiver receiver )
     {
         try
         {
             receiver.receive ( getInformation (), new ByteArrayInputStream ( new byte[0] ) );
+            return true;
         }
         catch ( final Exception e )
         {
             throw new RuntimeException ( e );
         }
+    }
+
+    @Override
+    public boolean streamData ( final ThrowingConsumer<InputStream> receiver )
+    {
+        return streamData ( ( info, stream ) -> receiver.accept ( stream ) );
     }
 
     @Override

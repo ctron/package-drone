@@ -35,9 +35,9 @@ public abstract class AbstractUpgradeTask implements UpgradeTask
             return;
         }
 
-        if ( executeUpgrade ( connection, "UPDATE PROPERTIES SET \"VALUE\"=? WHERE \"KEY\"=?", "" + version, DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION ) < 1 )
+        if ( executeUpgrade ( connection, "UPDATE PROPERTIES SET \"VALUE\"=? WHERE NS=? AND \"KEY\"=?", "" + version, DatabaseSetup.NAMESPACE, DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION ) < 1 )
         {
-            executeUpgrade ( connection, "INSERT INTO PROPERTIES (\"KEY\", \"VALUE\") values (?,?)", DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION, "" + version );
+            executeUpgrade ( connection, "INSERT INTO PROPERTIES (NS, \"KEY\", \"VALUE\") values (?,?)", DatabaseSetup.NAMESPACE, DatabaseSetup.KEY_DATABASE_SCHEMA_VERSION, "" + version );
         }
         connection.commit ();
     }

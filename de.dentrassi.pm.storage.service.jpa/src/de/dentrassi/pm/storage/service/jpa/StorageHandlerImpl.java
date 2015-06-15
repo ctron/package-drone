@@ -11,7 +11,6 @@
 package de.dentrassi.pm.storage.service.jpa;
 
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convert;
-import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertDetailed;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.convertMetaData;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.createTempFile;
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.isDeleteable;
@@ -22,13 +21,13 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -40,6 +39,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -58,6 +58,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
@@ -72,6 +74,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
+import de.dentrassi.pm.common.lm.LockContext;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.generator.GenerationContext;
@@ -87,6 +90,7 @@ import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
 import de.dentrassi.pm.storage.jpa.ChannelEntity;
+import de.dentrassi.pm.storage.jpa.ChildArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ExtractedArtifactPropertyEntity;
 import de.dentrassi.pm.storage.jpa.ExtractorValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.GeneratedArtifactEntity;
@@ -97,7 +101,7 @@ import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
 import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
 
-public class StorageHandlerImpl extends AbstractHandler implements StorageAccessor, StreamServiceHelper
+public class StorageHandlerImpl extends AbstractHandler implements StorageHandler, StorageAccessor, StreamServiceHelper
 {
 
     private final static Logger logger = LoggerFactory.getLogger ( StorageHandlerImpl.class );
@@ -166,13 +170,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
 
         @Override
-        public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws FileNotFoundException
+        public boolean streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
         {
             final ArtifactEntity art = StorageHandlerImpl.this.em.find ( ArtifactEntity.class, artifactId );
             if ( art == null )
             {
-                throw new FileNotFoundException ( artifactId );
+                return false;
             }
+
             try
             {
                 StorageHandlerImpl.this.blobStore.streamArtifact ( StorageHandlerImpl.this.em, art, receiver );
@@ -181,6 +186,29 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             {
                 throw new RuntimeException ( e );
             }
+
+            return true;
+        }
+
+        @Override
+        public boolean streamArtifact ( final String artifactId, final ThrowingConsumer<InputStream> consmer )
+        {
+            final ArtifactEntity art = StorageHandlerImpl.this.em.find ( ArtifactEntity.class, artifactId );
+            if ( art == null )
+            {
+                return false;
+            }
+
+            try
+            {
+                StorageHandlerImpl.this.blobStore.streamArtifact ( StorageHandlerImpl.this.em, art, consmer );
+            }
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( e );
+            }
+
+            return true;
         }
 
     }
@@ -203,6 +231,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         private final RegenerateTracker tracker;
 
+        private SortedMap<MetaKey, String> channelMetaData;
+
         private ArtifactContextImpl ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator, final Path file, final Supplier<ArtifactInformation> infoSupplier, final EntityManager em, final Supplier<ArtifactEntity> entitySupplier )
         {
             this.channel = channel;
@@ -212,6 +242,16 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             this.entitySupplier = entitySupplier;
             this.runAggregator = runAggregator;
             this.tracker = tracker;
+        }
+
+        @Override
+        public Map<MetaKey, String> getProvidedChannelMetaData ()
+        {
+            if ( this.channelMetaData == null )
+            {
+                this.channelMetaData = convertMetaData ( null, this.channel.getProvidedProperties () );
+            }
+            return this.channelMetaData;
         }
 
         @Override
@@ -269,14 +309,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     private final ValidationHandler validationHandler;
 
-    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final LockManager<String> lockManager, final BlobStore blobStore )
+    public StorageHandlerImpl ( final EntityManager em, final GeneratorProcessor generatorProcessor, final BlobStore blobStore )
     {
-        super ( em, lockManager );
+        super ( em );
         this.blobStore = blobStore;
         this.generatorProcessor = generatorProcessor;
-        this.validationHandler = new ValidationHandler ( em, lockManager );
+        this.validationHandler = new ValidationHandler ( em );
     }
 
+    @Override
     public ChannelEntity createChannel ( final String name, final String description, final Map<MetaKey, String> providedMetaData )
     {
         final ChannelEntity channel = new ChannelEntity ();
@@ -290,7 +331,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return channel;
     }
 
-    public void setProvidedMetaData ( final ChannelEntity channel, final Map<MetaKey, String> providedMetaData )
+    protected void setProvidedMetaData ( final ChannelEntity channel, final Map<MetaKey, String> providedMetaData )
     {
         if ( providedMetaData == null )
         {
@@ -315,43 +356,33 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     @Override
     public void updateChannel ( final String channelId, final String name, final String description )
     {
-        final ChannelEntity channel = getCheckedChannel ( channelId );
-
-        if ( "".equals ( name ) )
+        try ( Handle handle = Profile.start ( this, "updateChannel" ) )
         {
-            channel.setName ( null );
-        }
-        else
-        {
-            channel.setName ( name );
-        }
+            LockContext.modify ( channelId );
 
-        channel.setDescription ( description );
+            final ChannelEntity channel = getCheckedChannel ( channelId );
 
-        this.em.persist ( channel );
-    }
-
-    @Override
-    public void regenerateAll ( final String channelId )
-    {
-        scanArtifacts ( channelId, ( ae ) -> {
-            if ( ae instanceof GeneratorArtifactEntity )
+            if ( "".equals ( name ) )
             {
-                try
-                {
-                    regenerateArtifact ( (GeneratorArtifactEntity)ae, true );
-                }
-                catch ( final Exception e )
-                {
-                    throw new RuntimeException ( e );
-                }
+                channel.setName ( null );
             }
-        } );
+            else
+            {
+                channel.setName ( name );
+            }
+
+            channel.setDescription ( description );
+
+            this.em.persist ( channel );
+        }
     }
 
     public void regenerateArtifact ( final GeneratorArtifactEntity ae, final boolean runAggregator ) throws Exception
     {
-        this.lockManager.modifyRun ( ae.getChannel ().getId (), () -> {
+        try ( Handle handle = Profile.start ( this, "regenerateArtifact" ) )
+        {
+            LockContext.modify ( ae.getChannel ().getId () );
+
             this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
                 // first clear old generated artifacts
 
@@ -361,15 +392,18 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 generateArtifact ( ae.getChannel (), ae, file, runAggregator );
                 this.em.flush ();
             } );
-        } );
+        }
     }
 
     protected void deleteAllWithParent ( final Class<?> type, final ArtifactEntity parent )
     {
-        final Query q = this.em.createQuery ( String.format ( "SELECT ent from %s ent where ent.parent=:parent", type.getName () ) );
-        q.setParameter ( "parent", parent );
+        try ( Handle handle = Profile.start ( this, "deleteAllWithParent" ) )
+        {
+            final Query q = this.em.createQuery ( String.format ( "SELECT ent from %s ent where ent.parent=:parent", type.getName () ) );
+            q.setParameter ( "parent", parent );
 
-        deleteResult ( q );
+            deleteResult ( q );
+        }
     }
 
     protected void deleteGeneratedChildren ( final GeneratorArtifactEntity artifact )
@@ -429,17 +463,23 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.debug ( "Storing artifact: {} in channel: {}", name, channel.getId () );
 
+        // create a temp file
+
         final Path file = createTempFile ( name );
 
         try
         {
             // copy data to temp file
+
             try ( BufferedOutputStream os = new BufferedOutputStream ( new FileOutputStream ( file.toFile () ) ) )
             {
                 ByteStreams.copy ( stream, os );
             }
 
+            // run pre add listeners
+
             {
+                logger.trace ( "Running pre-add listeners" );
                 final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId (), external );
                 runChannelTriggers ( tracker, channel, listener -> listener.artifactPreAdd ( context ), null );
                 if ( context.isVeto () )
@@ -449,48 +489,87 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
                 }
             }
 
+            final Instant creationTimestamp = Instant.now ();
+
             final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
-            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, file );
+            final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, creationTimestamp, file );
 
-            return this.lockManager.modifyCall ( channel.getId (), () -> {
+            LockContext.modify ( channel.getId () );
 
-                final ArtifactEntity ae = entityCreator.get ();
-                ae.setName ( name );
-                ae.setChannel ( channel );
-                ae.setCreationTimestamp ( new Date () );
+            final ArtifactEntity ae = entityCreator.get ();
 
-                Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
-                Helper.convertProvidedProperties ( providedMetaData, ae, ae.getProvidedProperties () );
+            // test if this is a child artifact and if the parent is still present
 
-                try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+            if ( ae instanceof ChildArtifactEntity )
+            {
+                final ArtifactEntity parent = ( (ChildArtifactEntity)ae ).getParent ();
+                if ( parent != null && this.em.find ( ArtifactEntity.class, parent.getId () ) == null )
                 {
-                    this.blobStore.storeBlob ( this.em, in, size -> {
-                        ae.setSize ( size );
-                        this.em.persist ( ae );
-                        vms.flush ( this.em, ae );
-                        this.em.flush ();
-                        return ae.getId ();
-                    } );
+                    logger.debug ( "Parent artifact got deleted: {}", parent.getId () );
+                    return null;
                 }
+            }
 
-                if ( ae instanceof GeneratorArtifactEntity )
+            // set the basic data
+
+            ae.setName ( name );
+            ae.setChannel ( channel );
+            ae.setCreationTimestamp ( Date.from ( creationTimestamp ) );
+
+            if ( logger.isDebugEnabled () )
+            {
+                if ( ae instanceof ChildArtifactEntity )
                 {
-                    generateArtifact ( channel, (GeneratorArtifactEntity)ae, file, runAggregator );
+                    logger.debug ( "Storing as child of: {}", ( (ChildArtifactEntity)ae ).getParentId () );
                 }
+            }
 
-                final AddedEvent event = new AddedEvent ( ae.getId (), metadata );
-                runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), event );
+            // convert meta data
 
-                createVirtualArtifacts ( channel, ae, file, tracker, runAggregator );
+            Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+            Helper.convertProvidedProperties ( providedMetaData, ae, ae.getProvidedProperties () );
 
-                // now run the channel aggregator if requested
-                if ( runAggregator )
-                {
-                    runChannelAggregators ( channel );
-                }
+            // store blob
 
-                return ae;
-            } );
+            try ( BufferedInputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+            {
+                this.blobStore.storeBlob ( this.em, in, size -> {
+                    ae.setSize ( size );
+                    this.em.persist ( ae );
+                    this.em.flush ();
+
+                    logger.debug ( "Storing artifact: {} in channel: {} -> {}", name, channel.getId (), ae.getId () );
+
+                    vms.flush ( this.em, ae );
+                    return ae.getId ();
+                } );
+            }
+
+            // generate artifact if this is a generator
+
+            if ( ae instanceof GeneratorArtifactEntity )
+            {
+                generateArtifact ( channel, (GeneratorArtifactEntity)ae, file, runAggregator );
+            }
+
+            // first create the virtual artifacts, since the following call to runChannelTriggers might actually delete ourself
+
+            createVirtualArtifacts ( channel, ae, file, tracker, runAggregator );
+
+            // run the channel triggers and listeners
+
+            runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), new AddedEvent ( ae.getId (), metadata ) );
+
+            // now run the channel aggregator if requested
+
+            if ( runAggregator )
+            {
+                runChannelAggregators ( channel );
+            }
+
+            // finally return
+
+            return ae;
         }
         finally
         {
@@ -501,8 +580,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             }
             catch ( final Exception e )
             {
+                // ignore if the temp file could not be deleted
                 logger.info ( "Failed to delete temp file", e );
-                // ignore this
             }
         }
     }
@@ -514,6 +593,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void runChannelTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
     {
+        logger.debug ( "Running channel triggers - {}", event );
+
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getChannelListener, ( t ) -> {
             try
             {
@@ -531,19 +612,19 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
-    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Path file )
+    protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Instant creationTimestamp, final Path file )
     {
         final SortedMap<MetaKey, String> metadata = new TreeMap<> ();
 
-        Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, extractor -> {
+        Activator.getChannelAspects ().processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getExtractor, ( aspect, extractor ) -> {
             try
             {
-                final Context context = createExtractorContext ( extractor.getAspect ().getId (), name, file, vms );
+                final Context context = createExtractorContext ( aspect.getId (), name, creationTimestamp, file, vms );
 
                 final Map<String, String> md = new HashMap<> ();
                 extractor.extractMetaData ( context, md );
 
-                convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
+                convertMetaDataFromAspect ( metadata, aspect.getId (), md );
             }
             catch ( final Exception e )
             {
@@ -554,7 +635,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return metadata;
     }
 
-    protected static Context createExtractorContext ( final String aspectId, final String name, final Path file, final ValidationMessageSink vms )
+    protected static Context createExtractorContext ( final String aspectId, final String name, final Instant creationTimestamp, final Path file, final ValidationMessageSink vms )
     {
         return new Context () {
 
@@ -571,6 +652,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
             }
 
             @Override
+            public Instant getCreationTimestamp ()
+            {
+                return creationTimestamp;
+            }
+
+            @Override
             public void validationMessage ( final Severity severity, final String message )
             {
                 vms.addMessage ( aspectId, severity, message );
@@ -578,7 +665,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         };
     }
 
-    private static void convertMetaDataFromExtractor ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
+    private static void convertMetaDataFromAspect ( final Map<MetaKey, String> metadata, final String namespace, final Map<String, String> md )
     {
         if ( md == null )
         {
@@ -595,7 +682,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.debug ( "Creating virtual artifacts for - channel: {}, artifact: {}, runAggregator: {}", channel.getId (), artifact.getId (), runAggregator );
 
-        Activator.getChannelAspects ().processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), tracker, runAggregator ) ) );
+        Profile.run ( this, "createVirtualArtifacts", () -> {
+            Activator.getChannelAspects ().processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> virtualizer.virtualize ( createArtifactContext ( this.em, channel, artifact, file, aspect.getId (), tracker, runAggregator ) ) );
+        } );
     }
 
     private ArtifactContextImpl createArtifactContext ( final EntityManager em, final ChannelEntity channel, final ArtifactEntity artifact, final Path file, final String namespace, final RegenerateTracker tracker, final boolean runAggregator )
@@ -613,9 +702,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         } );
     }
 
+    @Override
     public void generateArtifact ( final String id )
     {
-        try
+        try ( Handle handle = Profile.start ( this, "generateArtifact" ) )
         {
             final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, id );
             if ( ae == null )
@@ -629,6 +719,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             testLocked ( ae.getChannel () );
 
+            LockContext.modify ( ae.getChannel ().getId () );
+
             regenerateArtifact ( (GeneratorArtifactEntity)ae, false );
             runChannelAggregators ( ae.getChannel () );
         }
@@ -638,63 +730,69 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public ArtifactInformation deleteArtifact ( final String artifactId )
     {
-        logger.debug ( "Request to delete artifact: {}", artifactId );
-
-        final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
-        if ( ae == null )
+        try ( Handle handle = Profile.start ( this, "deleteArtifact" ) )
         {
-            return null; // silently ignore
+            logger.debug ( "Request to delete artifact: {}", artifactId );
+
+            final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
+            if ( ae == null )
+            {
+                return null; // silently ignore
+            }
+
+            testLocked ( ae.getChannel () );
+
+            LockContext.modify ( ae.getChannel ().getId () );
+
+            if ( !isDeleteable ( ae ) )
+            {
+                throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
+            }
+
+            final SortedMap<MetaKey, String> md = convertMetaData ( ae );
+
+            this.em.remove ( ae );
+            this.em.flush ();
+
+            logger.info ( "Artifact deleted: {}", artifactId );
+
+            final ChannelEntity channel = ae.getChannel ();
+
+            final RegenerateTracker tracker = new RegenerateTracker ();
+            runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
+            tracker.process ( this );
+
+            // now run the channel aggregator
+            runChannelAggregators ( channel );
+
+            return convert ( ae, null );
         }
-
-        testLocked ( ae.getChannel () );
-
-        if ( !isDeleteable ( ae ) )
-        {
-            throw new IllegalStateException ( String.format ( "Unable to delete artifact %s (%s). Artifact might be virtual or generated.", ae.getName (), ae.getId () ) );
-        }
-
-        final SortedMap<MetaKey, String> md = convertMetaData ( ae );
-
-        this.em.remove ( ae );
-        this.em.flush ();
-
-        logger.info ( "Artifact deleted: {}", artifactId );
-
-        final ChannelEntity channel = ae.getChannel ();
-
-        final RegenerateTracker tracker = new RegenerateTracker ();
-        runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
-        tracker.process ( this );
-
-        // now run the channel aggregator
-        runChannelAggregators ( channel );
-
-        return convert ( ae, null );
     }
 
     private void runGeneratorTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final Object event )
     {
-        scanArtifacts ( channel, ae -> {
+        Profile.run ( this, "runGeneratorTriggers", () -> {
+            scanArtifacts ( channel, GeneratorArtifactEntity.class, ae -> {
 
-            // TODO: scanArtifacts should allow us to search for a specific artifact type
-
-            if ( ! ( ae instanceof GeneratorArtifactEntity ) )
-            {
-                return;
-            }
-
-            final String gid = ( (GeneratorArtifactEntity)ae ).getGeneratorId ();
-
-            logger.debug ( "Checking generator artifact {} / {} if regeneration is required", ae.getId (), gid );
-
-            this.generatorProcessor.process ( gid, ( generator ) -> {
-                if ( generator.shouldRegenerate ( event ) )
+                if ( ! ( ae instanceof GeneratorArtifactEntity ) )
                 {
-                    logger.debug ( "Need to re-generate artifact {} with generator {}", ae.getId (), gid );
-                    tracker.add ( (GeneratorArtifactEntity)ae );
-                };
+                    return;
+                }
+
+                final String gid = ( (GeneratorArtifactEntity)ae ).getGeneratorId ();
+
+                logger.debug ( "Checking generator artifact {} / {} if regeneration is required", ae.getId (), gid );
+
+                this.generatorProcessor.process ( gid, ( generator ) -> {
+                    if ( generator.shouldRegenerate ( event ) )
+                    {
+                        logger.debug ( "Need to re-generate artifact {} with generator {}", ae.getId (), gid );
+                        tracker.add ( (GeneratorArtifactEntity)ae );
+                    };
+                } );
             } );
         } );
     }
@@ -710,7 +808,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
     {
         logger.info ( "Running channel aggregators - channelId: {}", channel.getId () );
 
-        this.lockManager.modifyRun ( channel.getId (), () -> {
+        try ( Handle handle = Profile.start ( this, "runChannelAggregators" ) )
+        {
+            LockContext.modify ( channel.getId () );
 
             // delete old cache entries
 
@@ -736,21 +836,21 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             final Map<MetaKey, String> metadata = new HashMap<> ();
 
-            this.channelAspectProcessor.process ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, aggregator -> {
+            this.channelAspectProcessor.processWithAspect ( channel.getAspects ().keySet (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
                 try
                 {
                     // create new context for this channel aspect
-                    final AggregationContextImpl context = new AggregationContextImpl ( artifacts, metaData, channel, aggregator.getId () );
+                    final AggregationContextImpl context = new AggregationContextImpl ( artifacts, metaData, channel, aspect.getId () );
 
                     // process
                     final Map<String, String> md = aggregator.aggregateMetaData ( context );
-                    convertMetaDataFromExtractor ( metadata, aggregator.getId (), md );
+                    convertMetaDataFromAspect ( metadata, aspect.getId (), md );
 
                     context.flush ( aggrValidationHandler );
                 }
                 catch ( final Exception e )
                 {
-                    throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aggregator.getId () ), e );
+                    throw new RuntimeException ( String.format ( "Failed to run channel aggregator: %s", aspect.getId () ), e );
                 }
             } );
 
@@ -769,9 +869,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
             // aggregate validation states for the affected channels and artifacts
 
-            aggrValidationHandler.flush ();
             this.validationHandler.aggregateFullChannel ( channel );
-        } );
+
+        }
     }
 
     public void runChannelAggregators ( final String channelId )
@@ -779,176 +879,185 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         runChannelAggregators ( getCheckedChannel ( channelId ) );
     }
 
-    protected void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
+    @Override
+    public void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
     {
-        logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
-
-        if ( aspectFactoryIds.isEmpty () )
+        try ( Handle handle = Profile.start ( this, "reprocessAspects" ) )
         {
-            // nothing to do
-            return;
-        }
+            logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
 
-        final RegenerateTracker tracker = new RegenerateTracker ();
-
-        // first delete all virtual artifacts
-
-        deleteAllVirtualArtifacts ( channel );
-
-        // delete selected extractor validation messages
-
-        {
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace IN :ASPECT and vme.channel=:CHANNEL", ExtractorValidationMessageEntity.class.getName () ) );
-            q.setParameter ( "ASPECT", aspectFactoryIds );
-            q.setParameter ( "CHANNEL", channel );
-            q.executeUpdate ();
-        }
-
-        // delete all metadata relevant first
-
-        {
-            final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
-            q.setParameter ( "ASPECT", aspectFactoryIds );
-            q.setParameter ( "CHANNEL", channel );
-            q.executeUpdate ();
-        }
-
-        // process new meta data
-
-        for ( final ArtifactEntity ae : channel.getArtifacts () )
-        {
-            if ( ae instanceof GeneratorArtifactEntity )
+            if ( aspectFactoryIds.isEmpty () )
             {
-                continue;
+                // nothing to do
+                return;
             }
 
-            logger.debug ( "Reprocessing artifact - {}", ae.getId () );
+            final RegenerateTracker tracker = new RegenerateTracker ();
 
-            this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
-                // generate metadata for new factory
+            // first delete all virtual artifacts
 
-                final Map<MetaKey, String> metadata = new HashMap<> ();
-                this.channelAspectProcessor.process ( aspectFactoryIds, ChannelAspect::getExtractor, extractor -> {
-                    try
-                    {
-                        final Map<String, String> md = new HashMap<> ();
-                        final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
-                        extractor.extractMetaData ( createExtractorContext ( extractor.getAspect ().getId (), ae.getName (), file, vms ), md );
-                        vms.flush ( this.em, ae );
-                        convertMetaDataFromExtractor ( metadata, extractor.getAspect ().getId (), md );
-                    }
-                    catch ( final Exception e )
-                    {
-                        throw new RuntimeException ( e );
-                    }
+            deleteAllVirtualArtifacts ( channel );
+
+            // delete selected extractor validation messages
+
+            {
+                final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace IN :ASPECT and vme.channel=:CHANNEL", ExtractorValidationMessageEntity.class.getName () ) );
+                q.setParameter ( "ASPECT", aspectFactoryIds );
+                q.setParameter ( "CHANNEL", channel );
+                q.executeUpdate ();
+            }
+
+            // delete all metadata relevant first
+
+            {
+                final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
+                q.setParameter ( "ASPECT", aspectFactoryIds );
+                q.setParameter ( "CHANNEL", channel );
+                q.executeUpdate ();
+            }
+
+            // process new meta data
+
+            for ( final ArtifactEntity ae : channel.getArtifacts () )
+            {
+                if ( ae instanceof GeneratorArtifactEntity )
+                {
+                    continue;
+                }
+
+                logger.debug ( "Reprocessing artifact - {}", ae.getId () );
+
+                this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
+                    // generate metadata for new factory
+
+                    final Map<MetaKey, String> metadata = new HashMap<> ();
+                    final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+
+                    this.channelAspectProcessor.processWithAspect ( aspectFactoryIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
+                        try
+                        {
+                            final Map<String, String> md = new HashMap<> ();
+
+                            extractor.extractMetaData ( createExtractorContext ( aspect.getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
+
+                            convertMetaDataFromAspect ( metadata, aspect.getId (), md );
+                        }
+                        catch ( final Exception e )
+                        {
+                            throw new RuntimeException ( e );
+                        }
+                    } );
+
+                    // flush validation messages for this artifact
+
+                    vms.flush ( this.em, ae );
+
+                    // don't clear extracted meta data, since we only process one aspect and we actually add it
+
+                    Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+
+                    // store
+
+                    this.em.persist ( ae );
+                    this.em.flush ();
                 } );
 
-                // don't clear extracted meta data, since we only process one aspect and we actually add it
+            }
 
-                Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+            // re-create virtual artifacts
 
-                // store
+            createAllVirtualArtifacts ( channel, tracker, false );
 
-                this.em.persist ( ae );
-                this.em.flush ();
-            } );
+            // process regeneration
 
+            tracker.process ( this );
+
+            // finally run the channel aggregators
+
+            runChannelAggregators ( channel );
+
+            // write out aspect state information for the channel
+
+            for ( final ChannelAspectInformation aspect : this.channelAspectProcessor.resolve ( aspectFactoryIds ) )
+            {
+                channel.getAspects ().put ( aspect.getFactoryId (), aspect.getVersion ().toString () );
+            }
+
+            // persist
+
+            this.em.persist ( channel );
+            this.em.flush ();
         }
-
-        // re-create virtual artifacts
-
-        createAllVirtualArtifacts ( channel, tracker, false );
-
-        // process regeneration
-
-        tracker.process ( this );
-
-        // finally run the channel aggregators
-
-        runChannelAggregators ( channel );
-
-        // write out aspect state information for the channel
-
-        for ( final ChannelAspectInformation aspect : this.channelAspectProcessor.resolve ( aspectFactoryIds ) )
-        {
-            channel.getAspects ().put ( aspect.getFactoryId (), aspect.getVersion ().toString () );
-        }
-
-        // persist
-
-        this.em.persist ( channel );
-        this.em.flush ();
     }
 
     public void scanArtifacts ( final String channelId, final ThrowingConsumer<ArtifactEntity> consumer )
     {
-        final ChannelEntity ce = this.em.find ( ChannelEntity.class, channelId );
-
-        if ( ce == null )
+        try ( Handle handle = Profile.start ( this, "scanArtifacts(channelId,consumer)" ) )
         {
-            throw new IllegalArgumentException ( String.format ( "Channel %s not found", channelId ) );
-        }
+            final ChannelEntity ce = this.em.find ( ChannelEntity.class, channelId );
 
-        scanArtifacts ( ce, consumer );
+            if ( ce == null )
+            {
+                throw new IllegalArgumentException ( String.format ( "Channel %s not found", channelId ) );
+            }
+
+            scanArtifacts ( ce, consumer );
+        }
     }
 
     protected void scanArtifacts ( final ChannelEntity ce, final ThrowingConsumer<ArtifactEntity> consumer )
     {
-        final CriteriaBuilder cb = this.em.getCriteriaBuilder ();
-        final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
-
-        // query
-
-        final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
-        final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
-
-        // fetch
-
-        // root.fetch ( ArtifactEntity_.channel );
-        // root.fetch ( ArtifactEntity_.providedProperties );
-        // root.fetch ( ArtifactEntity_.extractedProperties );
-
-        // select
-
-        cq.select ( root ).where ( where );
-
-        // convert
-
-        final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
-
-        /*
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-        
-            query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
-            query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
-        */
-
-        // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
-        // query.setParameter ( "channel", ce );
-
-        logger.trace ( "Pre get" );
-
-        final List<ArtifactEntity> list = query.getResultList ();
-
-        logger.trace ( "Got result" );
-
-        for ( final ArtifactEntity ae : list )
-        {
-            try
-            {
-                consumer.accept ( ae );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( e );
-            }
-        }
-
-        logger.trace ( "Scan complete" );
+        scanArtifacts ( ce, ArtifactEntity.class, consumer );
     }
 
+    protected void scanArtifacts ( final ChannelEntity ce, final Class<? extends ArtifactEntity> clazz, final ThrowingConsumer<ArtifactEntity> consumer )
+    {
+        logger.debug ( "Scanning artifacts: {}", ce.getId () );
+
+        try ( Handle handle = Profile.start ( this, "scanArtifacts(channel,consumer)" ) )
+        {
+
+            final CriteriaBuilder cb = this.em.getCriteriaBuilder ();
+            final CriteriaQuery<ArtifactEntity> cq = cb.createQuery ( ArtifactEntity.class );
+
+            // query
+
+            final Root<? extends ArtifactEntity> root = cq.from ( clazz );
+            final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
+
+            // select
+
+            cq.select ( root ).where ( where );
+
+            // process
+
+            final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
+
+            logger.trace ( "Before getResultList ()" );
+            handle.task ( "query.getResultList()" );
+
+            final List<ArtifactEntity> list = query.getResultList ();
+
+            logger.trace ( "After getResultList () -> {}", list.size () );
+            handle.task ( "process list: " + list.size () );
+
+            for ( final ArtifactEntity ae : list )
+            {
+                try
+                {
+                    consumer.accept ( ae );
+                }
+                catch ( final Exception e )
+                {
+                    throw new RuntimeException ( e );
+                }
+            }
+
+            logger.trace ( "Scan complete" );
+        }
+    }
+
+    @Override
     public <T extends Comparable<? super T>> Set<T> listArtifacts ( final ChannelEntity ce, final Function<ArtifactEntity, T> mapper )
     {
         final Set<T> result = new TreeSet<> ();
@@ -980,18 +1089,22 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      *            the channel
      * @return all meta data
      */
+    @Override
     public Multimap<String, MetaDataEntry> getChannelArtifactProperties ( final ChannelEntity channel )
     {
-        final Multimap<String, MetaDataEntry> result = HashMultimap.create ();
+        try ( Handle handle = Profile.start ( this, "getChannelArtifactProperties" ) )
+        {
+            final Multimap<String, MetaDataEntry> result = HashMultimap.create ();
 
-        /*
-         * Load in two steps, EclipseLink seems to have problems selecting over an abstract type
-         */
+            /*
+             * Load in two steps, EclipseLink seems to have problems selecting over an abstract type
+             */
 
-        loadChannelArtifactMetaData ( channel, ExtractedArtifactPropertyEntity.class, result );
-        loadChannelArtifactMetaData ( channel, ProvidedArtifactPropertyEntity.class, result );
+            loadChannelArtifactMetaData ( channel, ExtractedArtifactPropertyEntity.class, result );
+            loadChannelArtifactMetaData ( channel, ProvidedArtifactPropertyEntity.class, result );
 
-        return result;
+            return result;
+        }
     }
 
     private <T extends ArtifactPropertyEntity> void loadChannelArtifactMetaData ( final ChannelEntity channel, final Class<T> clazz, final Multimap<String, MetaDataEntry> result )
@@ -1012,8 +1125,27 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected Set<ArtifactInformation> getArtifacts ( final ChannelEntity channel )
     {
-        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
-        return listArtifacts ( channel, ( ae ) -> convert ( ae, properties ) );
+        final Multimap<String, String> childs = loadChildMap ( channel );
+        return Profile.call ( this, "getArtifacts", () -> getArtifactsHelper ( channel, ( ae, props ) -> StreamServiceHelper.convert ( ae, props, childs.asMap () ) ) );
+    }
+
+    private Multimap<String, String> loadChildMap ( final ChannelEntity channel )
+    {
+        try ( Handle handle = Profile.start ( this, "loadChildMap" ) )
+        {
+            final Query q = this.em.createQuery ( String.format ( "SELECT ae.id, cae.id FROM %s ae JOIN ae.childArtifacts cae WHERE ae.channel=:CHANNEL", ArtifactEntity.class.getName () ) );
+            q.setParameter ( "CHANNEL", channel );
+
+            final List<?> result = q.getResultList ();
+
+            final Multimap<String, String> childs = HashMultimap.create ();
+            for ( final Object o : result )
+            {
+                final Object[] row = (Object[])o;
+                childs.put ( (String)row[0], (String)row[1] );
+            }
+            return childs;
+        }
     }
 
     /**
@@ -1023,51 +1155,66 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      *            the channel to check
      * @return the set of detailed meta data object
      */
+    @Override
     public Set<DetailedArtifactInformation> getDetailedArtifacts ( final ChannelEntity channel )
     {
-        final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
-        return listArtifacts ( channel, ( ae ) -> convertDetailed ( ae, properties ) );
+        return Profile.call ( this, "getDetailedArtifacts", () -> getArtifactsHelper ( channel, StreamServiceHelper::convertDetailed ) );
+    }
+
+    protected <T extends Comparable<? super T>> Set<T> getArtifactsHelper ( final ChannelEntity channel, final BiFunction<ArtifactEntity, Multimap<String, MetaDataEntry>, T> cvt )
+    {
+        try ( Handle handle = Profile.start ( this, "getArtifactsHelper" ) )
+        {
+            final Multimap<String, MetaDataEntry> properties = getChannelArtifactProperties ( channel );
+            return listArtifacts ( channel, ( ae ) -> cvt.apply ( ae, properties ) );
+        }
     }
 
     public void recreateVirtualArtifacts ( final ArtifactEntity artifact )
     {
-        // delete virtual artifacts
-
-        deleteVirtualChildren ( artifact );
-
-        // recreate
-
-        final ChannelEntity channel = artifact.getChannel ();
-
-        final RegenerateTracker tracker = new RegenerateTracker ();
-
-        try
+        try ( Handle handle = Profile.start ( this, "recreateVirtualArtifacts" ) )
         {
-            this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, false ) );
+            // delete virtual artifacts
+
+            deleteVirtualChildren ( artifact );
+
+            // recreate
+
+            final ChannelEntity channel = artifact.getChannel ();
+
+            final RegenerateTracker tracker = new RegenerateTracker ();
+
+            try
+            {
+                this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, false ) );
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
+
+            this.em.flush ();
+
+            tracker.process ( this );
+
+            // run aggregator after all artifacts have been created
+            runChannelAggregators ( channel );
         }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException ( e );
-        }
-
-        this.em.flush ();
-
-        tracker.process ( this );
-
-        // run aggregator after all artifacts have been created
-        runChannelAggregators ( channel );
     }
 
     public void recreateAllVirtualArtifacts ( final ChannelEntity channel )
     {
-        final RegenerateTracker tracker = new RegenerateTracker ();
+        try ( Handle handle = Profile.start ( this, "recreateAllVirtualArtifacts" ) )
+        {
+            final RegenerateTracker tracker = new RegenerateTracker ();
 
-        deleteAllVirtualArtifacts ( channel );
-        createAllVirtualArtifacts ( channel, tracker, false );
+            deleteAllVirtualArtifacts ( channel );
+            createAllVirtualArtifacts ( channel, tracker, false );
 
-        tracker.process ( this );
+            tracker.process ( this );
 
-        runChannelAggregators ( channel );
+            runChannelAggregators ( channel );
+        }
     }
 
     /**
@@ -1081,7 +1228,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      */
     private void createAllVirtualArtifacts ( final ChannelEntity channel, final RegenerateTracker tracker, final boolean runAggregator )
     {
-        scanArtifacts ( channel, ( artifact ) -> this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
+        Profile.run ( this, "createAllVirtualArtifacts", () -> {
+            scanArtifacts ( channel, ( artifact ) -> this.blobStore.doStreamed ( this.em, artifact, ( file ) -> createVirtualArtifacts ( channel, artifact, file, tracker, runAggregator ) ) );
+        } );
     }
 
     /**
@@ -1090,6 +1239,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      * <em>Note:</em> This call will ignore the lock status of the channels
      * </p>
      */
+    @Override
     public void wipeAllChannels ()
     {
         // we have to do this one by one in order to honor channel locks
@@ -1097,6 +1247,12 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         {
             deleteChannel ( channelId, true );
         }
+    }
+
+    @Override
+    public ChannelEntity getCheckedChannel ( final String channelId )
+    {
+        return super.getCheckedChannel ( channelId );
     }
 
     private List<String> getAllChannelIds ()
@@ -1107,48 +1263,62 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     protected void deleteAllCacheEntries ( final ChannelEntity channel )
     {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ) );
-        q.setParameter ( "channel", channel );
-        final int result = q.executeUpdate ();
+        try ( Handle handle = Profile.start ( this, "deleteAllCacheEntries" ) )
+        {
+            // flush since the following update will work only on the database, so we need to flush
+            this.em.flush ();
 
-        logger.info ( "Deleted {} cache entries in channel {}", result, channel.getId () );
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel", ChannelCacheEntity.class.getName () ) );
+            q.setParameter ( "channel", channel );
+            final int result = q.executeUpdate ();
 
-        this.em.flush ();
+            logger.info ( "Deleted {} cache entries in channel {}", result, channel.getId () );
+        }
     }
 
     protected void deleteCacheEntries ( final String namespace, final ChannelEntity channel )
     {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel and cce.namepsace=:ns", ChannelCacheEntity.class.getName () ) );
-        q.setParameter ( "channel", channel );
-        q.setParameter ( "ns", namespace );
-        final int result = q.executeUpdate ();
+        try ( Handle handle = Profile.start ( this, "deleteCacheEntries" ) )
+        {
+            // flush since the following update will work only on the database, so we need to flush
+            this.em.flush ();
 
-        logger.info ( "Deleted {} cache entries in channel {} for namespace {}", result, channel.getId (), namespace );
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s cce where cce.channel=:channel and cce.namepsace=:ns", ChannelCacheEntity.class.getName () ) );
+            q.setParameter ( "channel", channel );
+            q.setParameter ( "ns", namespace );
+            final int result = q.executeUpdate ();
 
-        this.em.flush ();
+            logger.info ( "Deleted {} cache entries in channel {} for namespace {}", result, channel.getId (), namespace );
+        }
     }
 
-    public void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
+    protected void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
     {
-        final ChannelCacheEntity cce = new ChannelCacheEntity ();
+        try ( Handle handle = Profile.start ( this, "internalCreateCacheEntry" ) )
+        {
+            logger.debug ( "Creating cache entry - channel: {}, ns: {}, key: {}, name: {}, mime: {}", channel.getId (), namespace, id, name, mimeType );
 
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
-        creator.accept ( bos );
-        bos.close ();
-        final byte[] data = bos.toByteArray ();
+            final ChannelCacheEntity cce = new ChannelCacheEntity ();
 
-        cce.setCreationTimestamp ( new Date () );
-        cce.setChannel ( channel );
-        cce.setNamespace ( namespace );
-        cce.setKey ( id );
-        cce.setData ( data );
-        cce.setSize ( data.length );
-        cce.setName ( name );
-        cce.setMimeType ( mimeType );
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+            creator.accept ( bos );
+            bos.close ();
+            final byte[] data = bos.toByteArray ();
 
-        this.em.persist ( cce );
+            cce.setCreationTimestamp ( new Date () );
+            cce.setChannel ( channel );
+            cce.setNamespace ( namespace );
+            cce.setKey ( id );
+            cce.setData ( data );
+            cce.setSize ( data.length );
+            cce.setName ( name );
+            cce.setMimeType ( mimeType );
+
+            this.em.persist ( cce );
+        }
     }
 
+    @Override
     public List<CacheEntryInformation> getAllCacheEntries ( final String channelId )
     {
         final ChannelEntity channel = getCheckedChannel ( channelId );
@@ -1168,13 +1338,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return result;
     }
 
-    public void streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer ) throws FileNotFoundException
+    @Override
+    public boolean streamCacheEntry ( final String channelId, final String namespace, final String key, final ThrowingConsumer<CacheEntry> consumer )
     {
-        if ( consumer == null )
-        {
-            return;
-        }
-
         final ChannelCacheKey ccKey = new ChannelCacheKey ();
         ccKey.setChannel ( channelId );
         ccKey.setNamespace ( namespace );
@@ -1184,21 +1350,26 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
         if ( cce == null )
         {
-            throw new FileNotFoundException ( ccKey.toString () );
+            return false;
         }
 
         try
         {
-            final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );;
-            consumer.accept ( new CacheEntryImpl ( stream, cce ) );
+            final ByteArrayInputStream stream = new ByteArrayInputStream ( cce.getData () );
+            if ( consumer != null )
+            {
+                consumer.accept ( new CacheEntryImpl ( stream, cce ) );
+            }
         }
         catch ( final Exception e )
         {
             logger.warn ( "Failed to stream cache entry:  " + ccKey, e );
             throw new RuntimeException ( e );
         }
+        return true;
     }
 
+    @Override
     public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
         return internalCreateArtifact ( getCheckedChannel ( channelId ), name, entityCreator, stream, providedMetaData, external );
@@ -1206,13 +1377,20 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     public ArtifactEntity internalCreateArtifact ( final ChannelEntity channel, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
-        try
+        try ( Handle handle = Profile.start ( this, "internalCreateArtifact" ) )
         {
             final RegenerateTracker tracker = new RegenerateTracker ();
             final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, entityCreator, providedMetaData, tracker, false, external );
             tracker.process ( this );
             runChannelAggregators ( channel );
-            return ae;
+
+            if ( ae == null )
+            {
+                return null;
+            }
+
+            // we do reload in order to check for cases where the artifact got deleted right away
+            return this.em.find ( ArtifactEntity.class, ae.getId () );
         }
         catch ( final Exception e )
         {
@@ -1232,32 +1410,37 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         }
     }
 
+    @Override
     public ArtifactEntity createAttachedArtifact ( final String parentArtifactId, final String name, final InputStream stream, final Map<MetaKey, String> providedMetaData )
     {
-        final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
-
-        testLocked ( parentArtifact.getChannel () );
-
-        if ( parentArtifact instanceof GeneratorArtifactEntity )
+        try ( Handle handle = Profile.start ( this, "createAttachedArtifact" ) )
         {
-            throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is a generator artifact", parentArtifact ) );
+            final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
+
+            testLocked ( parentArtifact.getChannel () );
+
+            if ( parentArtifact instanceof GeneratorArtifactEntity )
+            {
+                throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is a generator artifact", parentArtifact ) );
+            }
+
+            if ( ! ( parentArtifact instanceof StoredArtifactEntity ) && ! ( parentArtifact instanceof AttachedArtifactEntity ) )
+            {
+                throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is not a normal stored artifact", parentArtifact ) );
+            }
+
+            final ArtifactEntity newArtifact = internalCreateArtifact ( parentArtifact.getChannel ().getId (), name, () -> {
+                final AttachedArtifactEntity a = new AttachedArtifactEntity ();
+                a.setParent ( parentArtifact );
+                parentArtifact.getChildArtifacts ().add ( a );
+                return a;
+            } , stream, providedMetaData, true );
+
+            return newArtifact;
         }
-
-        if ( ! ( parentArtifact instanceof StoredArtifactEntity ) && ! ( parentArtifact instanceof AttachedArtifactEntity ) )
-        {
-            throw new IllegalArgumentException ( String.format ( "Parent Artifact '%s' is not a normal stored artifact", parentArtifact ) );
-        }
-
-        final ArtifactEntity newArtifact = internalCreateArtifact ( parentArtifact.getChannel ().getId (), name, () -> {
-            final AttachedArtifactEntity a = new AttachedArtifactEntity ();
-            a.setParent ( parentArtifact );
-            parentArtifact.getChildArtifacts ().add ( a );
-            return a;
-        } , stream, providedMetaData, true );
-
-        return newArtifact;
     }
 
+    @Override
     public SortedMap<MetaKey, String> getChannelMetaData ( final String channelId )
     {
         final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
@@ -1269,6 +1452,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return convertMetaData ( channel );
     }
 
+    @Override
     public SortedMap<MetaKey, String> getChannelProvidedMetaData ( final String channelId )
     {
         final ChannelEntity channel = this.em.find ( ChannelEntity.class, channelId );
@@ -1280,8 +1464,11 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
         return convertMetaData ( null, channel.getProvidedProperties () );
     }
 
+    @Override
     public void clearChannel ( final String channelId )
     {
+        LockContext.modify ( channelId );
+
         final ChannelEntity channel = getCheckedChannel ( channelId );
 
         testLocked ( channel );
@@ -1296,27 +1483,30 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
 
     private static Set<String> expandDependencies ( final Set<String> aspects )
     {
-        final Map<String, ChannelAspectInformation> all = Activator.getChannelAspects ().getAspectInformations ();
-
-        final Set<String> result = new HashSet<> ();
-        final TreeSet<String> requested = new TreeSet<> ();
-        requested.addAll ( aspects );
-
-        while ( !requested.isEmpty () )
+        try ( Handle handle = Profile.start ( StorageHandlerImpl.class.getName () + ".expandDependencies" ) )
         {
-            final String id = requested.pollFirst ();
+            final Map<String, ChannelAspectInformation> all = Activator.getChannelAspects ().getAspectInformations ();
 
-            if ( result.add ( id ) )
+            final Set<String> result = new HashSet<> ();
+            final TreeSet<String> requested = new TreeSet<> ();
+            requested.addAll ( aspects );
+
+            while ( !requested.isEmpty () )
             {
-                final ChannelAspectInformation asp = all.get ( id );
+                final String id = requested.pollFirst ();
 
-                final Set<String> reqs = new HashSet<> ( asp.getRequires () );
-                reqs.removeAll ( requested ); // remove all which are already present
-                requested.addAll ( reqs ); // add to request list
+                if ( result.add ( id ) )
+                {
+                    final ChannelAspectInformation asp = all.get ( id );
+
+                    final Set<String> reqs = new HashSet<> ( asp.getRequires () );
+                    reqs.removeAll ( requested ); // remove all which are already present
+                    requested.addAll ( reqs ); // add to request list
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
     }
 
     protected void internalAddAspects ( final EntityManager em, final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
@@ -1357,6 +1547,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      */
     public void addChannelAspects ( final ChannelEntity channel, final Set<String> aspects, final boolean withDependencies ) throws Exception
     {
+        LockContext.modify ( channel.getId () );
+
         testLocked ( channel );
 
         if ( !withDependencies )
@@ -1382,28 +1574,30 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageAccess
      * @param withDependencies
      *            whether to add dependencies or not
      */
+    @Override
     public void addChannelAspects ( final String channelId, final Set<String> aspects, final boolean withDependencies )
     {
-        // we must lock this before the get call
-        this.lockManager.modifyRun ( channelId, () -> {
+        try
+        {
             addChannelAspects ( getCheckedChannel ( channelId ), aspects, withDependencies );
-        } );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
+    @Override
     public void deleteChannel ( final String channelId, final boolean ignoreLock )
     {
-        this.lockManager.modifyRun ( channelId, () -> {
+        LockContext.modify ( channelId );
 
-            final ChannelEntity entity = getCheckedChannel ( channelId );
-            if ( !ignoreLock )
-            {
-                testLocked ( entity );
-            }
-            this.em.remove ( entity );
-            this.em.flush ();
-        } );
-
-        // finally remove the channel lock from the cache
-        this.lockManager.removeLock ( channelId );
+        final ChannelEntity entity = getCheckedChannel ( channelId );
+        if ( !ignoreLock )
+        {
+            testLocked ( entity );
+        }
+        this.em.remove ( entity );
+        this.em.flush ();
     }
 }

@@ -7,6 +7,14 @@
 
 <h:main title="Register">
 
+<jsp:attribute name="head">
+    <c:if test="${not empty siteInformation.recaptchaSiteKey }">
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    </c:if>
+</jsp:attribute>
+
+<jsp:attribute name="body">
+
 <div class="container-fluid">
 
 	<div class="row">
@@ -33,13 +41,26 @@
 			    <h:formEntry label="Real Name"  command="command" path="name" optional="true">
 			        <form:input path="name" cssClass="form-control" placeholder="Optional real name"/>
 			    </h:formEntry>
+			    
+			    <c:if test="${not empty siteInformation.recaptchaSiteKey }">
+			        <h:formGroup additionalCssClass="${form:validationState(pageContext,'captcha',null,'','has-error') }">
+                        <jsp:attribute name="body">
+                            <div class="g-recaptcha" data-sitekey="${fn:escapeXml(siteInformation.recaptchaSiteKey) }"></div>
+                        </jsp:attribute>
+                        <jsp:attribute name="errors">
+                            <ul class="help-block">
+                            <c:forEach var="error" items="${form:errors(pageContext, 'captcha', null, false) }">
+                                <li>${fn:escapeXml(error) }</li>
+                            </c:forEach>
+                            </ul>
+                        </jsp:attribute>
+			        </h:formGroup>
+			    </c:if>
 		
-				<div class="form-group">
-					<div class="col-sm-offset-2 col-sm-10">
-						<button type="submit" class="btn btn-primary">Register</button>
-					</div>
-				</div>
-				
+		        <h:formButtons>
+                    <button type="submit" class="btn btn-primary">Register</button>
+		        </h:formButtons>
+		
 			</form:form>
 		</div>
 		
@@ -59,6 +80,6 @@
 	</div>
 </div>
 
-
+</jsp:attribute>
 
 </h:main>

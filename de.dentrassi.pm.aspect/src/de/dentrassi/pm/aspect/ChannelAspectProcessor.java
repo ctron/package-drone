@@ -36,6 +36,8 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.aspect.group.Group;
 import de.dentrassi.pm.aspect.group.GroupInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
@@ -152,10 +154,13 @@ public class ChannelAspectProcessor
         final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )
         {
-            final T t = getter.apply ( aspect );
-            if ( t != null )
+            try ( Handle handle = Profile.start ( "processAspect|" + aspect.getId () ) )
             {
-                consumer.accept ( t );
+                final T t = getter.apply ( aspect );
+                if ( t != null )
+                {
+                    consumer.accept ( t );
+                }
             }
         }
     }
@@ -165,20 +170,14 @@ public class ChannelAspectProcessor
         final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )
         {
-            final T t = getter.apply ( aspect );
-            if ( t != null )
+            try ( Handle handle = Profile.start ( "processAspect|" + aspect.getId () ) )
             {
-                consumer.accept ( aspect, t );
+                final T t = getter.apply ( aspect );
+                if ( t != null )
+                {
+                    consumer.accept ( aspect, t );
+                }
             }
-        }
-    }
-
-    public void processWithAspects ( final Collection<String> factoryIds, final Consumer<ChannelAspect> aspectConsumer )
-    {
-        final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
-        for ( final ChannelAspect aspect : aspects )
-        {
-            aspectConsumer.accept ( aspect );
         }
     }
 
@@ -320,6 +319,10 @@ public class ChannelAspectProcessor
         if ( val instanceof String )
         {
             final String s = (String)val;
+            if ( s.isEmpty () )
+            {
+                return null;
+            }
             return new TreeSet<> ( Arrays.asList ( s.split ( "[\\p{Space},]+" ) ) );
         }
         return null;

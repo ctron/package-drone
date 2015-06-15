@@ -11,12 +11,17 @@
 package de.dentrassi.pm.testing;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.junit.BeforeClass;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 public class AbstractServerTest
@@ -28,6 +33,39 @@ public class AbstractServerTest
     {
         driver = TestSuite.getDriver ();
     }
+
+    private final WebContext context = new WebContext () {
+
+        @Override
+        public String resolve ( final String url )
+        {
+            return AbstractServerTest.this.resolve ( url );
+        }
+
+        @Override
+        public WebDriver getDriver ()
+        {
+            return driver;
+        }
+
+        @Override
+        public WebElement findElement ( final By by )
+        {
+            return driver.findElement ( by );
+        }
+
+        @Override
+        public List<WebElement> findElements ( final By by )
+        {
+            return driver.findElements ( by );
+        }
+
+        @Override
+        public File getTestFile ( final String localFileName )
+        {
+            return getAbsolutePath ( localFileName );
+        }
+    };
 
     protected String getTestUser ()
     {
@@ -63,7 +101,12 @@ public class AbstractServerTest
 
     protected String getBase ()
     {
-        return System.getProperty ( "test.server", "http://localhost:8080" );
+        return System.getProperty ( "test.server", "http://localhost:" + TestSuite.JETTY_PORT );
+    }
+
+    protected WebContext getWebContext ()
+    {
+        return this.context;
     }
 
     protected String resolve ( final String suffix )
@@ -86,5 +129,23 @@ public class AbstractServerTest
             return new File ( "target/storage" );
         }
         return new File ( location );
+    }
+
+    protected File getAbsolutePath ( final String localPath )
+    {
+        final File file = new File ( localPath );
+        if ( !file.exists () )
+        {
+            throw new IllegalStateException ( String.format ( "Unable to find file: %s", localPath ) );
+        }
+        return file.getAbsoluteFile ();
+    }
+
+    protected void testUrl ( final String suffix ) throws Exception
+    {
+        final URL url = new URL ( resolve ( suffix ) );
+        try ( InputStream is = url.openStream () )
+        {
+        }
     }
 }

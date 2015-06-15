@@ -97,6 +97,11 @@
 		  <name>placeholder</name>
 		  <rtexprvalue>true</rtexprvalue>
 		</attribute>
+		
+		<attribute>
+		  <name>required</name>
+		  <rtexprvalue>true</rtexprvalue>
+		</attribute>
 	</tag>
 	
 	<tag>
@@ -287,6 +292,12 @@
         <name>validationState</name>
         <function-class>de.dentrassi.osgi.web.form.tags.Functions</function-class>
         <function-signature>java.lang.String validationState(javax.servlet.jsp.PageContext,java.lang.String,java.lang.String,java.lang.String,java.lang.String)</function-signature>
+    </function>
+    
+    <function>
+        <name>errors</name>
+        <function-class>de.dentrassi.osgi.web.form.tags.Functions</function-class>
+        <function-signature>java.lang.String errors(javax.servlet.jsp.PageContext,java.lang.String,java.lang.String,boolean)</function-signature>
     </function>
     	
 </taglib>

@@ -10,9 +10,35 @@
  *******************************************************************************/
 package de.dentrassi.osgi.web.controller.binding;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import de.dentrassi.osgi.converter.ConverterManager;
 
 public interface Binder
 {
+    /**
+     * Marks a method of the binder as initializer
+     * <p>
+     * Before calling
+     * {@link Binder#performBind(BindTarget, ConverterManager, BindingManager)}
+     * the binding manager will call methods marked with {@link Initializer}
+     * with the current binding manager state.
+     * </p>
+     * <p>
+     * <em>Note:</em> The initializer methods will get called when adding the
+     * binder to the manager. It is not guaranteed that the method
+     * {@link Binder#performBind(BindTarget, ConverterManager, BindingManager)}
+     * will be called afterwards.
+     * </p>
+     */
+    @Retention ( RetentionPolicy.RUNTIME )
+    @Target ( ElementType.METHOD )
+    public @interface Initializer
+    {
+    }
+
     public Binding performBind ( BindTarget target, ConverterManager converter, BindingManager bindingManager );
 }

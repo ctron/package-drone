@@ -37,11 +37,11 @@ if ( principal instanceof UserInformationPrincipal )
 		        <fieldset>
                     <legend>Authentication</legend>
 		        
-			        <h:formEntry label="User" path="username" command="command">
+			        <h:formEntry label="User" path="username" command="command" optional="true">
 	                    <form:input path="username" cssClass="form-control" placeholder="Username for the mail server"/>
 	                </h:formEntry>
 	                
-	                <h:formEntry label="Password" path="password" command="command">
+	                <h:formEntry label="Password" path="password" command="command" optional="true">
 	                    <form:input path="password" cssClass="form-control" type="password" placeholder="Password for the mail server"/>
 	                </h:formEntry>
 		        
@@ -55,7 +55,7 @@ if ( principal instanceof UserInformationPrincipal )
 			            <form:input path="host" cssClass="form-control"  placeholder="Hostname or IP of the SMTP server"/>
 			        </h:formEntry>
 			        
-			        <h:formEntry label="Port" path="port" command="command">
+			        <h:formEntry label="Port" path="port" command="command" optional="true">
 			            <form:input path="port" cssClass="form-control" type="number"  placeholder="Optional port number of the SMTP server"/>
 			        </h:formEntry>
 			        
@@ -71,22 +71,21 @@ if ( principal instanceof UserInformationPrincipal )
 		        <fieldset>
                     <legend>Mail Settings</legend>
                     
-                    <h:formEntry label="From" path="from" command="command">
-	                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail"/>
+                    <h:formEntry label="From" path="from" command="command" optional="true">
+	                    <form:input path="from" cssClass="form-control"  placeholder="Optional sender e-mail" type="email"/>
 	                </h:formEntry>
 	                
-	                <h:formEntry label="Prefix" path="prefix" command="command">
+	                <h:formEntry label="Prefix" path="prefix" command="command" optional="true">
 	                    <form:input path="prefix" cssClass="form-control"  placeholder="Optional subject prefix"/>
 	                </h:formEntry>
                 
 		        </fieldset>
 		        
-		        <div class="form-group">
-		            <div class="col-sm-offset-2 col-sm-10">
-		                <button type="submit" class="btn btn-primary">Update</button>
-		                <button type="reset" class="btn btn-default">Reset</button>
-		            </div>
-		        </div>
+		        <h:formButtons>
+	                <button type="submit" class="btn btn-primary">Update</button>
+	                <button type="reset" class="btn btn-default">Reset</button>
+		        </h:formButtons>
+		        
 		    </form:form>
 		
 	</div><%-- form col --%>
@@ -112,7 +111,7 @@ if ( principal instanceof UserInformationPrincipal )
                  </div>
                  <div class="form-group">
                      <label class="sr-only" for="testEmailReceiver">Receiver Email address</label>
-                     <input type="email" class="form-control"  id="testEmailReceiver" name="testEmailReceiver" placeholder="Receiver of test e-mail" value="${fn:escapeXml(email) }"/>
+                     <input type="email" class="form-control"  id="testEmailReceiver" name="testEmailReceiver" required="required" placeholder="Receiver of test e-mail" value="${fn:escapeXml(email) }"/>
                  </div>
                  <button type="submit" class="btn btn-default">Send</button>
              </form>

@@ -99,6 +99,12 @@ public class BundleInformation implements TranslatedInformation
             return true;
         }
 
+        @Override
+        public String toString ()
+        {
+            return String.format ( "[Import: %s - %s - %s", this.name, this.versionRange, this.optional ? "optional" : "required" );
+        }
+
     }
 
     public static class PackageExport
@@ -160,6 +166,12 @@ public class BundleInformation implements TranslatedInformation
                 return false;
             }
             return true;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return String.format ( "[Export: %s - %s]", this.name, this.version );
         }
 
     }

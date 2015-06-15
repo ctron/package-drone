@@ -7,7 +7,7 @@
     	Set up jetty target platform
     </description>
     
-    <property name="eclipse.orbit.release" value="R20150124073747"/>
+    <property name="eclipse.orbit.release" value="R20150519210750"/>
 	<property name="jetty.version" value="9.2.9.v20150224"/>
 
     <!-- ================================= 
@@ -30,6 +30,14 @@
         <delete dir="unpack" />
         <delete dir="lib" />
     </target>
+	
+	<!-- ================================= 
+          target: download.provided              
+         ================================= -->
+    <target name="download.provided">
+        <get src="http://download.nextag.com/apache/felix/org.apache.felix.configadmin-1.8.4.jar" dest="provided" usetimestamp="true" />
+    </target>
+
 
     <!-- ================================= 
           target: download
@@ -61,10 +69,7 @@
         	<!-- HttpService : JDT core -->
         	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5M7-201504301445/ecj-4.5M7.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
 
-        	<!--
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsM7-201504301445/equinox-SDK-MarsM7.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
-        	-->
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/I20150519-2000/equinox-SDK-I20150519-2000.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsRC3-201505280700/equinox-SDK-MarsRC3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.2/milestones/gemini-jpa-1.2.0.M1.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
@@ -73,14 +78,13 @@
         	<!--
         	<get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.5.2/eclipselink-plugins-2.5.2.v20140319-9ad6abd.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
         	-->
-        	
+
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.classic_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.core_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v201505121915.jar" dest="download/bundles" usetimestamp="true" />
 
             <!-- annotation stuff -->
 
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.transaction_1.1.1.v201105210645.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.0.1/org.apache.aries.spifly.dynamic.bundle-1.0.1.jar" dest="download/bundles" usetimestamp="true" />
@@ -112,18 +116,13 @@
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/plugins/javax.xml.rpc_1.1.0.v201209140446.jar" dest="download/bundles" usetimestamp="true" />
             -->
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops//${eclipse.orbit.release}/repository/plugins/javax.xml_1.3.4.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="https://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
+            <get src="http://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils.source_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
-
-        	<!-- email -->
-        	
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.mail.glassfish.source_1.4.1.v201108011116.jar" dest="download/bundles" usetimestamp="true" />
         	
         	<!-- compress -->
         	
@@ -229,7 +228,9 @@
                 <include name="org.apache.felix.gogo.runtime_*.jar" />
                 <include name="org.apache.felix.gogo.shell_*.jar" />
 
+            	<!--
                 <include name="org.eclipse.equinox.cm_*.jar" />
+                -->
                 <include name="org.eclipse.equinox.common_*.jar" />
                 <include name="org.eclipse.equinox.console_*.jar" />
                 <include name="org.eclipse.equinox.ds_*.jar" />
@@ -247,9 +248,6 @@
             	<include name="org.eclipse.osgi.util.source_*.jar" />
             	
                 <include name="org.slf4j.api_*.jar" />
-            	
-            	<include name="org.tukaani.xz_*.jar" />
-            	
             	
             	<!-- http & jetty -->
             	

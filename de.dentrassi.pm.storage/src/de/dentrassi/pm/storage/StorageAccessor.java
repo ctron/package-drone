@@ -18,7 +18,5 @@ public interface StorageAccessor
 {
     public void updateChannel ( String channelId, String name, String description );
 
-    public void regenerateAll ( String channelId );
-
     public Set<ArtifactInformation> getArtifacts ( String channelId );
 }

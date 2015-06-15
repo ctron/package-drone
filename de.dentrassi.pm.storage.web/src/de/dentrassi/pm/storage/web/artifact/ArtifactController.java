@@ -146,6 +146,13 @@ public class ArtifactController implements InterfaceExtender
     public ModelAndView attachPost ( @PathVariable ( "artifactId" ) final String artifactId, @RequestParameter (
             required = false, value = "name" ) String name, final @RequestParameter ( "file" ) Part file)
     {
+        final Artifact parentArtifact = this.service.getArtifact ( artifactId );
+
+        if ( parentArtifact == null )
+        {
+            return CommonController.createNotFound ( "artifact", artifactId );
+        }
+
         Artifact artifact;
         try
         {
@@ -154,7 +161,7 @@ public class ArtifactController implements InterfaceExtender
                 name = file.getSubmittedFileName ();
             }
 
-            artifact = this.service.createAttachedArtifact ( artifactId, name, file.getInputStream (), null );
+            artifact = parentArtifact.attachArtifact ( name, file.getInputStream (), null );
         }
         catch ( final IOException e )
         {
@@ -210,7 +217,8 @@ public class ArtifactController implements InterfaceExtender
                 }
             }
 
-            result.add ( new MenuEntry ( "Download", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "dump" ).expand ( model ), Modifier.LINK, null ) );
+            result.add ( new MenuEntry ( "Download", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "get" ).expand ( model ), Modifier.LINK, "download" ) );
+            result.add ( new MenuEntry ( "View", Integer.MAX_VALUE, LinkTarget.createFromController ( ArtifactController.class, "dump" ).expand ( model ), Modifier.LINK, null ) );
 
             return result;
         }

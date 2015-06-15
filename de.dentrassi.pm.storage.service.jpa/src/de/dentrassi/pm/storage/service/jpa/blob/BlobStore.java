@@ -101,7 +101,7 @@ public class BlobStore
 
     private void performOpen ()
     {
-        final Map<String, String> map = this.coreService.getCoreProperties ( "blobStoreLocation", "blobStoreId" );
+        final Map<String, String> map = this.coreService.getCoreNamespacePlainProperties ( "core", "blobStoreLocation", "blobStoreId" );
 
         final String location = map.get ( "blobStoreLocation" );
         final String id = map.get ( "blobStoreId" );
@@ -131,12 +131,12 @@ public class BlobStore
 
         processor = FilesystemBlobStoreProcessor.createOrLoad ( location, this.coreService );
 
-        final Map<String, String> properties = new HashMap<> ();
+        final Map<String, String> properties = new HashMap<> ( 2 );
 
         properties.put ( "blobStoreLocation", location.getAbsolutePath () );
         properties.put ( "blobStoreId", processor.getStoreId () );
 
-        this.coreService.setProperties ( properties );
+        this.coreService.setCoreProperties ( "core", properties );
 
         final FilesystemBlobStoreProcessor old = this.filesystem.getAndSet ( processor );
 
@@ -248,7 +248,7 @@ public class BlobStore
      */
     public void vacuumArtifact ( final String id ) throws IOException
     {
-        logger.debug ( "Vacuuming artifact: {}" );
+        logger.debug ( "Vacuuming artifact: {}", id );
 
         checkOpen ();
 

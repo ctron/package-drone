@@ -32,7 +32,7 @@ public class NpmChannelAspectFactory implements ChannelAspectFactory
             @Override
             public Extractor getExtractor ()
             {
-                return new NpmExtractor ( this );
+                return new NpmExtractor ();
             }
         };
     }

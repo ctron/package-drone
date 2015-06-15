@@ -13,11 +13,13 @@ package de.dentrassi.pm.storage.service.jpa;
 import static de.dentrassi.pm.storage.service.jpa.Helper.convert;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,8 @@ import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.storage.ValidationMessage;
 import de.dentrassi.pm.storage.jpa.AggregatorValidationMessageEntity;
@@ -46,69 +50,117 @@ public class ValidationHandler extends AbstractHandler
 
     private final static Logger logger = LoggerFactory.getLogger ( ValidationHandler.class );
 
-    public ValidationHandler ( final EntityManager em, final LockManager<String> lockManager )
+    public ValidationHandler ( final EntityManager em )
     {
-        super ( em, lockManager );
+        super ( em );
     }
 
     public void aggregateChannel ( final ChannelEntity channel )
     {
-        logger.debug ( "Aggregating channel information: {}", channel.getId () );
-
-        final Query q = this.em.createQuery ( String.format ( "SELECT vm.severity, count(vm) from %s vm where vm.channel=:CHANNEL group by vm.severity", ValidationMessageEntity.class.getName () ) );
-        q.setParameter ( "CHANNEL", channel );
-
-        channel.setAggregatedNumberOfErrors ( 0 );
-        channel.setAggregatedNumberOfWarnings ( 0 );
-
-        for ( final Object row : q.getResultList () )
+        try ( Handle handle = Profile.start ( this, "aggregateChannel" ) )
         {
-            final Object[] fields = (Object[])row;
+            logger.debug ( "Aggregating channel information: {}", channel.getId () );
 
-            if ( fields[0] == ValidationSeverity.ERROR )
+            final Query q = this.em.createQuery ( String.format ( "SELECT vm.severity, count(vm) from %s vm where vm.channel=:CHANNEL group by vm.severity", ValidationMessageEntity.class.getName () ) );
+            q.setParameter ( "CHANNEL", channel );
+
+            channel.setAggregatedNumberOfErrors ( 0 );
+            channel.setAggregatedNumberOfWarnings ( 0 );
+
+            for ( final Object row : q.getResultList () )
             {
-                channel.setAggregatedNumberOfErrors ( ( (Number)fields[1] ).longValue () );
+                final Object[] fields = (Object[])row;
+
+                if ( fields[0] == ValidationSeverity.ERROR )
+                {
+                    channel.setAggregatedNumberOfErrors ( ( (Number)fields[1] ).longValue () );
+                }
+                else if ( fields[0] == ValidationSeverity.WARNING )
+                {
+                    channel.setAggregatedNumberOfWarnings ( ( (Number)fields[1] ).longValue () );
+                }
             }
-            else if ( fields[0] == ValidationSeverity.WARNING )
-            {
-                channel.setAggregatedNumberOfWarnings ( ( (Number)fields[1] ).longValue () );
-            }
+
+            this.em.persist ( channel );
+            this.em.flush ();
         }
-
-        this.em.persist ( channel );
     }
 
+    @Deprecated
     public void aggregateArtifact ( final String artifactId )
     {
         logger.debug ( "Aggregating artifact information by id: {}", artifactId );
         aggregateArtifact ( this.em.getReference ( ArtifactEntity.class, artifactId ) );
     }
 
+    @Deprecated
     public void aggregateArtifact ( final ArtifactEntity artifact )
     {
-        logger.debug ( "Aggregating artifact information: {}", artifact.getId () );
-
-        final Query q = this.em.createQuery ( String.format ( "SELECT vm.severity, count(vm) from %s vm where :ARTIFACT MEMBER OF vm.artifacts group by vm.severity", ValidationMessageEntity.class.getName () ) );
-        q.setParameter ( "ARTIFACT", artifact );
-
-        artifact.setAggregatedNumberOfErrors ( 0 );
-        artifact.setAggregatedNumberOfWarnings ( 0 );
-
-        for ( final Object row : q.getResultList () )
+        try ( Handle handle = Profile.start ( this, "aggregateArtifact" ) )
         {
-            final Object[] fields = (Object[])row;
+            logger.debug ( "Aggregating artifact information: {}", artifact.getId () );
 
-            if ( fields[0] == ValidationSeverity.ERROR )
+            final Query q = this.em.createQuery ( String.format ( "SELECT vm.severity, count(vm) from %s vm where :ARTIFACT MEMBER OF vm.artifacts group by vm.severity", ValidationMessageEntity.class.getName () ) );
+            q.setParameter ( "ARTIFACT", artifact );
+
+            artifact.setAggregatedNumberOfErrors ( 0 );
+            artifact.setAggregatedNumberOfWarnings ( 0 );
+
+            for ( final Object row : q.getResultList () )
             {
-                artifact.setAggregatedNumberOfErrors ( ( (Number)fields[1] ).longValue () );
+                final Object[] fields = (Object[])row;
+
+                if ( fields[0] == ValidationSeverity.ERROR )
+                {
+                    artifact.setAggregatedNumberOfErrors ( ( (Number)fields[1] ).longValue () );
+                }
+                else if ( fields[0] == ValidationSeverity.WARNING )
+                {
+                    artifact.setAggregatedNumberOfWarnings ( ( (Number)fields[1] ).longValue () );
+                }
             }
-            else if ( fields[0] == ValidationSeverity.WARNING )
-            {
-                artifact.setAggregatedNumberOfWarnings ( ( (Number)fields[1] ).longValue () );
-            }
+
+            this.em.persist ( artifact );
+            this.em.flush ();
+        }
+    }
+
+    public void aggregateArtifacts ( final ChannelEntity channel, final Collection<String> artifactIds )
+    {
+        // first set all to zero
+
+        {
+            final Query q = this.em.createQuery ( String.format ( "UPDATE %s ae SET ae.aggregatedNumberOfWarnings=0, ae.aggregatedNumberOfErrors=0 WHERE ae.id in :IDS", ArtifactEntity.class.getName () ) );
+            q.setParameter ( "IDS", artifactIds );
+            q.executeUpdate ();
         }
 
-        this.em.persist ( artifact );
+        aggregateSeverity ( channel, Severity.ERROR, ArtifactEntity::setAggregatedNumberOfErrors );
+        aggregateSeverity ( channel, Severity.WARNING, ArtifactEntity::setAggregatedNumberOfWarnings );
+
+        this.em.flush ();
+    }
+
+    private void aggregateSeverity ( final ChannelEntity channel, final Severity severity, final BiConsumer<ArtifactEntity, Long> consumer )
+    {
+        final Map<ArtifactEntity, Long> aggrMap = getChannelMap ( channel, severity );
+
+        for ( final Map.Entry<ArtifactEntity, Long> entry : aggrMap.entrySet () )
+        {
+            final Long count = entry.getValue ();
+            if ( count > 0 )
+            {
+                consumer.accept ( entry.getKey (), count );
+                this.em.persist ( entry.getKey () );
+            }
+        }
+    }
+
+    private Map<ArtifactEntity, Long> getChannelMap ( final ChannelEntity channel, final Severity severity )
+    {
+        final Query q = this.em.createQuery ( "SELECT ae, COUNT(vm.severity) FROM %s ae LEFT OUTER JOIN ae.messages. " );
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
@@ -119,71 +171,68 @@ public class ValidationHandler extends AbstractHandler
      */
     public void aggregateFullChannel ( final ChannelEntity channel )
     {
-        // reset all artifacts initially ... we only process selected artifacts later on
-
-        /*
-        for ( final ArtifactEntity ae : channel.getArtifacts () )
+        try ( Handle handle = Profile.start ( this, "aggregateFullChannel" ) )
         {
-            ae.setAggregatedNumberOfWarnings ( 0 );
-            ae.setAggregatedNumberOfErrors ( 0 );
-        }
-        */
+            // reset all artifacts initially ... we only process selected artifacts later on
 
-        {
-            final Query q = this.em.createQuery ( String.format ( "UPDATE %s ae SET ae.aggregatedNumberOfWarnings=0, ae.aggregatedNumberOfErrors=0 WHERE ae.channel=:CHANNEL", ArtifactEntity.class.getName () ) );
+            {
+                final Query q = this.em.createQuery ( String.format ( "UPDATE %s ae SET ae.aggregatedNumberOfWarnings=0, ae.aggregatedNumberOfErrors=0 WHERE ae.channel=:CHANNEL", ArtifactEntity.class.getName () ) );
+                q.setParameter ( "CHANNEL", channel );
+                q.executeUpdate ();
+            }
+
+            // start
+
+            long channelWarnings = 0;
+            long channelErrors = 0;
+
+            // query
+
+            final TypedQuery<ValidationMessageEntity> q = this.em.createQuery ( String.format ( "SELECT vm from %s vm where vm.channel=:CHANNEL", ValidationMessageEntity.class.getName () ), ValidationMessageEntity.class );
             q.setParameter ( "CHANNEL", channel );
-            q.executeUpdate ();
-        }
 
-        // start
+            // process
 
-        long channelWarnings = 0;
-        long channelErrors = 0;
+            final Map<ArtifactEntity, Long> warningArts = new HashMap<> ();
+            final Map<ArtifactEntity, Long> errorArts = new HashMap<> ();
 
-        // query
-
-        final TypedQuery<ValidationMessageEntity> q = this.em.createQuery ( String.format ( "SELECT vm from %s vm where vm.channel=:CHANNEL", ValidationMessageEntity.class.getName () ), ValidationMessageEntity.class );
-        q.setParameter ( "CHANNEL", channel );
-
-        // process
-
-        final Map<ArtifactEntity, Long> warningArts = new HashMap<> ();
-        final Map<ArtifactEntity, Long> errorArts = new HashMap<> ();
-
-        for ( final ValidationMessageEntity vme : q.getResultList () )
-        {
-            final Map<ArtifactEntity, Long> map;
-            switch ( vme.getSeverity () )
+            for ( final ValidationMessageEntity vme : q.getResultList () )
             {
-                case WARNING:
-                    map = warningArts;
-                    channelWarnings++;
-                    break;
-                case ERROR:
-                    map = errorArts;
-                    channelErrors++;
-                    break;
-                case INFO: //$FALL-THROUGH$
-                default:
-                    map = null;
-                    break;
+                final Map<ArtifactEntity, Long> map;
+                switch ( vme.getSeverity () )
+                {
+                    case WARNING:
+                        map = warningArts;
+                        channelWarnings++;
+                        break;
+                    case ERROR:
+                        map = errorArts;
+                        channelErrors++;
+                        break;
+                    case INFO: //$FALL-THROUGH$
+                    default:
+                        map = null;
+                        break;
+                }
+
+                if ( map == null )
+                {
+                    continue;
+                }
+
+                increment ( map, vme.getArtifacts () );
             }
 
-            if ( map == null )
-            {
-                continue;
-            }
+            // write out information
 
-            increment ( map, vme.getArtifacts () );
+            channel.setAggregatedNumberOfWarnings ( channelWarnings );
+            channel.setAggregatedNumberOfErrors ( channelErrors );
+
+            writeSeverity ( warningArts, ArtifactEntity::setAggregatedNumberOfWarnings );
+            writeSeverity ( errorArts, ArtifactEntity::setAggregatedNumberOfErrors );
+
+            this.em.flush ();
         }
-
-        // write out information
-
-        channel.setAggregatedNumberOfWarnings ( channelWarnings );
-        channel.setAggregatedNumberOfErrors ( channelErrors );
-
-        writeSeverity ( warningArts, ArtifactEntity::setAggregatedNumberOfWarnings );
-        writeSeverity ( errorArts, ArtifactEntity::setAggregatedNumberOfErrors );
     }
 
     /**
@@ -264,23 +313,30 @@ public class ValidationHandler extends AbstractHandler
 
     public void createMessage ( final ChannelEntity channel, final String namespace, final Severity severity, final String message, final Set<String> artifactIds, final Supplier<ValidationMessageEntity> supplier )
     {
-        final ValidationMessageEntity vme = supplier.get ();
+        try ( Handle handle = Profile.start ( this, "createMessage" ) )
+        {
+            final ValidationMessageEntity vme = supplier.get ();
 
-        vme.setChannel ( channel );
-        vme.setNamespace ( namespace );
+            vme.setChannel ( channel );
+            vme.setNamespace ( namespace );
 
-        vme.setSeverity ( Helper.convert ( severity ) );
-        vme.setMessage ( message );
+            vme.setSeverity ( Helper.convert ( severity ) );
+            vme.setMessage ( message );
 
-        vme.setArtifacts ( artifactIds.stream ().map ( id -> this.em.getReference ( ArtifactEntity.class, id ) ).collect ( Collectors.toSet () ) );
+            vme.setArtifacts ( artifactIds.stream ().map ( id -> this.em.getReference ( ArtifactEntity.class, id ) ).collect ( Collectors.toSet () ) );
 
-        this.em.persist ( vme );
+            this.em.persist ( vme );
+        }
     }
 
     public void deleteAllAggregatorMessages ( final ChannelEntity channel )
     {
-        final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.channel=:CHANNEL", AggregatorValidationMessageEntity.class.getName () ) );
-        q.setParameter ( "CHANNEL", channel );
-        q.executeUpdate ();
+        try ( Handle handle = Profile.start ( this, "deleteAllAggregatorMessages" ) )
+        {
+            final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.channel=:CHANNEL", AggregatorValidationMessageEntity.class.getName () ) );
+            q.setParameter ( "CHANNEL", channel );
+            q.executeUpdate ();
+        }
     }
+
 }

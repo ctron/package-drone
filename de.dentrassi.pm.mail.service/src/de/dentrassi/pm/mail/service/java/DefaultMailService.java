@@ -17,13 +17,16 @@ import java.util.Properties;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
@@ -130,15 +133,39 @@ public class DefaultMailService implements MailService
     }
 
     @Override
-    public void sendMessage ( final String to, final String subject, final String text ) throws Exception
+    public void sendMessage ( final String to, final String subject, final String text, final String html ) throws Exception
     {
         // create message
 
         final Message message = createMessage ( to, subject );
 
-        // set text
+        if ( html != null && !html.isEmpty () )
+        {
+            // create multipart
 
-        message.setText ( text );
+            final Multipart parts = new MimeMultipart ( "alternative" );
+
+            // set text
+
+            final MimeBodyPart textPart = new MimeBodyPart ();
+            textPart.setText ( text, "UTF-8" );
+            parts.addBodyPart ( textPart );
+
+            // set HTML, optionally
+
+            final MimeBodyPart htmlPart = new MimeBodyPart ();
+            htmlPart.setContent ( html, "text/html; charset=utf-8" );
+            parts.addBodyPart ( htmlPart );
+
+            // set parts
+
+            message.setContent ( parts );
+        }
+        else
+        {
+            // plain text
+            message.setText ( text );
+        }
 
         // send message
 
@@ -147,32 +174,43 @@ public class DefaultMailService implements MailService
 
     private void sendMessage ( final Message message ) throws MessagingException, NoSuchProviderException
     {
-        // commit
-
-        message.saveChanges ();
-
-        // connect
-
-        final Transport transport = this.session.getTransport ();
-        transport.connect ();
-
-        // send
+        final ClassLoader oldClassLoader = Thread.currentThread ().getContextClassLoader ();
+        Thread.currentThread ().setContextClassLoader ( getClass ().getClassLoader () );
 
         try
         {
-            transport.sendMessage ( message, message.getAllRecipients () );
+
+            // commit
+
+            message.saveChanges ();
+
+            // connect
+
+            final Transport transport = this.session.getTransport ();
+            transport.connect ();
+
+            // send
+
+            try
+            {
+                transport.sendMessage ( message, message.getAllRecipients () );
+            }
+            finally
+            {
+                // close
+
+                transport.close ();
+            }
         }
         finally
         {
-            // close
-
-            transport.close ();
+            Thread.currentThread ().setContextClassLoader ( oldClassLoader );
         }
     }
 
     private Message createMessage ( final String to, final String subject ) throws MessagingException, AddressException
     {
-        final Message message = new MimeMessage ( this.session );
+        final MimeMessage message = new MimeMessage ( this.session );
 
         final String from = getString ( "from" );
         if ( from != null )
@@ -203,6 +241,7 @@ public class DefaultMailService implements MailService
         }
 
         message.setHeader ( "Return-Path", "<>" );
+
         return message;
     }
 }

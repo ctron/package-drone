@@ -31,12 +31,6 @@ public class MimeTypeAspectFactory implements ChannelAspectFactory
             return new Extractor () {
 
                 @Override
-                public ChannelAspect getAspect ()
-                {
-                    return ChannelAspectImpl.this;
-                }
-
-                @Override
                 public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
                 {
                     final String type = getMimeType ( context.getPath () );

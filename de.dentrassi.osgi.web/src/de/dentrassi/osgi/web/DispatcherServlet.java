@@ -22,6 +22,8 @@ import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.web.controller.ControllerTracker;
 import de.dentrassi.osgi.web.interceptor.Interceptor;
 import de.dentrassi.osgi.web.interceptor.InterceptorLocator;
@@ -79,7 +81,7 @@ public class DispatcherServlet extends HttpServlet
     {
         logger.trace ( "service - {} - {} ({})", request.getMethod (), request.getServletPath (), request );
 
-        try
+        try ( Handle handle = Profile.start ( makeOperationName ( request ) ) )
         {
             final Interceptor[] interceptors = this.interceptorLocator.getInterceptors ();
 
@@ -120,6 +122,11 @@ public class DispatcherServlet extends HttpServlet
         {
             throw new ServletException ( e );
         }
+    }
+
+    private static String makeOperationName ( final HttpServletRequest request )
+    {
+        return String.format ( "%s|%s", request.getRequestURI (), request.getMethod () );
     }
 
     protected void runAfterCompletion ( final Interceptor[] interceptors, final HttpServletRequest request, final HttpServletResponse response, final Exception ex ) throws Exception

@@ -29,7 +29,5 @@ import java.util.Map;
  */
 public interface ChannelAggregator
 {
-    public String getId ();
-
     public Map<String, String> aggregateMetaData ( AggregationContext context ) throws Exception;
 }
