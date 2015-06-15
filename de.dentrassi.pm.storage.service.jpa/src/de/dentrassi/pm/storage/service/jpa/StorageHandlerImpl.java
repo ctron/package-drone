@@ -775,9 +775,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     private void runGeneratorTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final Object event )
     {
         Profile.run ( this, "runGeneratorTriggers", () -> {
-            scanArtifacts ( channel, ae -> {
-
-                // TODO: scanArtifacts should allow us to search for a specific artifact type
+            scanArtifacts ( channel, GeneratorArtifactEntity.class, ae -> {
 
                 if ( ! ( ae instanceof GeneratorArtifactEntity ) )
                 {
@@ -1009,6 +1007,11 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected void scanArtifacts ( final ChannelEntity ce, final ThrowingConsumer<ArtifactEntity> consumer )
     {
+        scanArtifacts ( ce, ArtifactEntity.class, consumer );
+    }
+
+    protected void scanArtifacts ( final ChannelEntity ce, final Class<? extends ArtifactEntity> clazz, final ThrowingConsumer<ArtifactEntity> consumer )
+    {
         logger.debug ( "Scanning artifacts: {}", ce.getId () );
 
         try ( Handle handle = Profile.start ( this, "scanArtifacts(channel,consumer)" ) )
@@ -1019,25 +1022,23 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // query
 
-            final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
+            final Root<? extends ArtifactEntity> root = cq.from ( clazz );
             final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
 
             // select
 
             cq.select ( root ).where ( where );
 
-            // convert
+            // process
 
             final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
 
             logger.trace ( "Before getResultList ()" );
-
             handle.task ( "query.getResultList()" );
 
             final List<ArtifactEntity> list = query.getResultList ();
 
             logger.trace ( "After getResultList () -> {}", list.size () );
-
             handle.task ( "process list: " + list.size () );
 
             for ( final ArtifactEntity ae : list )
