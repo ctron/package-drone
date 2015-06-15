@@ -155,8 +155,7 @@ public class P2Virtualizer implements Virtualizer
 
     private void createXmlVirtualArtifact ( final Context context, final SimpleArtifactInformation art, final Document doc, final String suffix ) throws Exception
     {
-        final XmlHelper xml = new XmlHelper ();
-        final byte[] data = xml.toData ( doc );
+        final byte[] data = this.xml.toData ( doc );
 
         String name = art.getName ();
         name = name.replaceFirst ( "\\.jar$", suffix );

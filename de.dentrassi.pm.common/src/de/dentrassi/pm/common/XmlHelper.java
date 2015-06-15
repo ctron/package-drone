@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -39,6 +40,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * A helper class when working with XML documents
+ * <p>
+ * This class is not thread-safe and methods may throw Exceptions when accessing
+ * XML parsers from multiple thread concurrently.
+ * </p>
  */
 public class XmlHelper
 {
@@ -174,6 +179,11 @@ public class XmlHelper
         }
     }
 
+    public DocumentBuilder getBuilder () throws Exception
+    {
+        return this.dbf.newDocumentBuilder ();
+    }
+
     public Document parse ( final InputStream stream ) throws Exception
     {
         return this.dbf.newDocumentBuilder ().parse ( stream );
@@ -229,14 +239,24 @@ public class XmlHelper
 
     public String getElementValue ( final Node element, final String path ) throws Exception
     {
-        for ( final Node n : iter ( path ( element, path ) ) )
+        return getElementValue ( path ( element, path ) );
+    }
+
+    public static String getElementValue ( final Node element, final XPathExpression expression ) throws Exception
+    {
+        return getElementValue ( executePath ( element, expression ) );
+    }
+
+    public static String getElementValue ( final NodeList list )
+    {
+        for ( final Node n : iter ( list ) )
         {
             return text ( n );
         }
         return null;
     }
 
-    private String text ( final Node node )
+    private static String text ( final Node node )
     {
         return node.getTextContent ();
     }
@@ -269,6 +289,11 @@ public class XmlHelper
     {
         final XPath xpath = this.xpathFactory.newXPath ();
         final XPathExpression expression = xpath.compile ( path );
+        return executePath ( node, expression );
+    }
+
+    public static NodeList executePath ( final Node node, final XPathExpression expression ) throws XPathExpressionException
+    {
         return (NodeList)expression.evaluate ( node, XPathConstants.NODESET );
     }
 

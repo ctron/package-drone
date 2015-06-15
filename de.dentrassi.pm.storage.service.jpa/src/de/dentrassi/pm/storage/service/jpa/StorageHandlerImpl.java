@@ -21,7 +21,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,13 +170,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
         }
 
         @Override
-        public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws FileNotFoundException
+        public boolean streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
         {
             final ArtifactEntity art = StorageHandlerImpl.this.em.find ( ArtifactEntity.class, artifactId );
             if ( art == null )
             {
-                throw new FileNotFoundException ( artifactId );
+                return false;
             }
+
             try
             {
                 StorageHandlerImpl.this.blobStore.streamArtifact ( StorageHandlerImpl.this.em, art, receiver );
@@ -186,6 +186,29 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             {
                 throw new RuntimeException ( e );
             }
+
+            return true;
+        }
+
+        @Override
+        public boolean streamArtifact ( final String artifactId, final ThrowingConsumer<InputStream> consmer )
+        {
+            final ArtifactEntity art = StorageHandlerImpl.this.em.find ( ArtifactEntity.class, artifactId );
+            if ( art == null )
+            {
+                return false;
+            }
+
+            try
+            {
+                StorageHandlerImpl.this.blobStore.streamArtifact ( StorageHandlerImpl.this.em, art, consmer );
+            }
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( e );
+            }
+
+            return true;
         }
 
     }
@@ -848,7 +871,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // aggregate validation states for the affected channels and artifacts
 
-            aggrValidationHandler.flush ();
             this.validationHandler.aggregateFullChannel ( channel );
 
         }

@@ -54,8 +54,6 @@ public class ConfigurationBackupServiceImpl implements ConfigurationBackupServic
 
     private final Bundle bundle = FrameworkUtil.getBundle ( ConfigurationBackupServiceImpl.class );
 
-    private final XmlHelper xml = new XmlHelper ();
-
     private final ConverterManager cvt = new ConverterManager ();
 
     private final Set<String> ignoredFactories = new HashSet<> ( Arrays.asList ( "gemini.jpa.punit" ) );
@@ -117,7 +115,9 @@ public class ConfigurationBackupServiceImpl implements ConfigurationBackupServic
     {
         zos.putNextEntry ( new ZipEntry ( CFG_FILE_NAME ) );
 
-        final Document doc = this.xml.create ();
+        final XmlHelper xml = new XmlHelper ();
+
+        final Document doc = xml.create ();
         final Element root = doc.createElement ( "configuration" );
         doc.appendChild ( root );
         root.setAttribute ( "version", BACKUP_VERSION );
@@ -148,7 +148,7 @@ public class ConfigurationBackupServiceImpl implements ConfigurationBackupServic
             }
         }
 
-        this.xml.write ( doc, zos );
+        xml.write ( doc, zos );
         zos.closeEntry ();
     }
 
@@ -184,7 +184,8 @@ public class ConfigurationBackupServiceImpl implements ConfigurationBackupServic
 
     private Configurations parse ( final InputStream stream ) throws Exception
     {
-        final Document doc = this.xml.parse ( stream );
+        final XmlHelper xml = new XmlHelper ();
+        final Document doc = xml.parse ( stream );
 
         final Element root = doc.getDocumentElement ();
 

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.CacheEntry;
 import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
@@ -205,11 +203,6 @@ public class ChannelImpl implements Channel
     public Set<DetailedArtifactInformation> getDetailedArtifacts ()
     {
         return this.service.listDetailedArtifacts ( this.id );
-    }
-
-    public void streamData ( final String artifactId, final ArtifactReceiver consumer ) throws FileNotFoundException
-    {
-        this.service.streamArtifact ( artifactId, consumer );
     }
 
     StorageServiceImpl getService ()

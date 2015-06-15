@@ -10,12 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
-import java.io.InputStream;
-
-import de.dentrassi.pm.common.utils.ThrowingConsumer;
-
-@FunctionalInterface
-public interface ArtifactStreamer
+public abstract class AbstractDocumentProcessor implements Processor
 {
-    public void stream ( String artifactId, ThrowingConsumer<InputStream> receiver );
+    protected final DocumentCache cache;
+
+    public AbstractDocumentProcessor ( final DocumentCache cache )
+    {
+        this.cache = cache;
+    }
 }

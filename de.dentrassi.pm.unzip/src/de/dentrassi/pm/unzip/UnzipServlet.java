@@ -535,7 +535,7 @@ public class UnzipServlet extends AbstractStorageServiceServlet
 
         // TODO: implement cache
 
-        getService ( request ).streamArtifact ( artifactId, ( ai, stream ) -> {
+        if ( !getService ( request ).streamArtifact ( artifactId, ( ai, stream ) -> {
             try ( final ZipInputStream zis = new ZipInputStream ( stream ) )
             {
                 ZipEntry entry;
@@ -556,7 +556,10 @@ public class UnzipServlet extends AbstractStorageServiceServlet
                     handleNotFoundError ( response, String.format ( "File entry '%s' could not be found in artifact '%s'", localPath, artifactId ) );
                 }
             }
-        } );
+        } ) )
+        {
+            handleNotFoundError ( response, String.format ( "Artifact %s could not be found", artifactId ) );
+        }
     }
 
     protected void handleNotFound ( final String path, final HttpServletResponse response ) throws IOException

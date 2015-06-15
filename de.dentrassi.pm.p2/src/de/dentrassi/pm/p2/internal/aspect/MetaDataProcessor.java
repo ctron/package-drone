@@ -11,11 +11,18 @@
 package de.dentrassi.pm.p2.internal.aspect;
 
 import static de.dentrassi.pm.common.XmlHelper.addElement;
+import static de.dentrassi.pm.common.XmlHelper.executePath;
 import static de.dentrassi.pm.common.XmlHelper.fixSize;
+import static de.dentrassi.pm.common.XmlHelper.iter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,22 +30,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
 import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.common.XmlHelper;
 
 public class MetaDataProcessor extends AbstractRepositoryProcessor
 {
-    private static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
-
     private final Element units;
 
     private final Document doc;
 
-    public MetaDataProcessor ( final String title, final boolean compressed )
-    {
-        super ( title, "content", compressed );
+    private final XPathExpression unitExpression;
 
-        this.doc = this.xml.create ();
+    public MetaDataProcessor ( final String title, final boolean compressed, final DocumentCache cache, final DocumentBuilder documentBuilder, final XPathFactory pathFactory )
+    {
+        super ( title, "content", compressed, cache );
+
+        this.doc = documentBuilder.newDocument ();
 
         final ProcessingInstruction pi = this.doc.createProcessingInstruction ( "metadataRepository", "version=\"1.1.0\"" );
         this.doc.appendChild ( pi );
@@ -52,26 +57,34 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
         addProperties ( root );
 
         this.units = addElement ( root, "units" );
+
+        try
+        {
+            this.unitExpression = pathFactory.newXPath ().compile ( "//unit" );
+        }
+        catch ( final XPathExpressionException e )
+        {
+            throw new RuntimeException ( e );
+        }
     }
 
     @Override
     public boolean process ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
-        final String ft = artifact.getMetaData ().get ( MK_FRAGMENT_TYPE );
+        final String ft = artifact.getMetaData ().get ( ChannelStreamer.MK_FRAGMENT_TYPE );
 
         if ( "metadata".equals ( ft ) )
         {
-            attachP2Artifact ( artifact, this.units, streamer );
+            attachP2Artifact ( artifact, streamer );
         }
 
         return true;
     }
 
-    private void attachP2Artifact ( final ArtifactInformation artifact, final Element units2, final ArtifactStreamer streamer ) throws Exception
+    private void attachP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
     {
-        streamer.stream ( artifact.getId (), ( info, stream ) -> {
-            final Document mdoc = this.xml.parse ( stream );
-            for ( final Node node : XmlHelper.iter ( this.xml.path ( mdoc, "//unit" ) ) )
+        this.cache.stream ( artifact, streamer, ( info, doc ) -> {
+            for ( final Node node : iter ( executePath ( doc, this.unitExpression ) ) )
             {
                 final Node nn = this.units.getOwnerDocument ().adoptNode ( node.cloneNode ( true ) );
                 this.units.appendChild ( nn );

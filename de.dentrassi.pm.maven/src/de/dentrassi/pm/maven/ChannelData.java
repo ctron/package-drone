@@ -49,9 +49,6 @@ import de.dentrassi.pm.common.XmlHelper;
 
 public class ChannelData
 {
-
-    private static final XmlHelper xml = new XmlHelper ();
-
     protected static final DateFormat DATE_FORMAT = new SimpleDateFormat ( "yyyyMMddHHmmss" );
 
     private static final Pattern SNAPSHOT_PATTERN = Pattern.compile ( "(?<ts>[0-9]{8}-[0-9]{6})-1(?<bn>[0-9]+)" );
@@ -197,6 +194,8 @@ public class ChannelData
         @Override
         public byte[] getData ()
         {
+            final XmlHelper xml = new XmlHelper ();
+
             final Document doc = createMetaData ( this.groupId, this.artifactId, this.version, this.infos, this.timestamps );
             try
             {
@@ -238,6 +237,8 @@ public class ChannelData
         @Override
         public byte[] getData ()
         {
+            final XmlHelper xml = new XmlHelper ();
+
             final Document doc = createMetaData ( this.groupId, this.artifactId, this.infos );
             try
             {
@@ -316,6 +317,7 @@ public class ChannelData
 
     protected static Document makeMetaData ( final String groupId, final String artifactId, final BiConsumer<Document, Element> cons )
     {
+        final XmlHelper xml = new XmlHelper ();
         final Document doc = xml.create ();
         final Element root = doc.createElement ( "metadata" );
         doc.appendChild ( root );

@@ -69,8 +69,6 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private static final String NL = System.lineSeparator ();
 
-    private XmlHelper xml;
-
     private Path tempRoot;
 
     @Override
@@ -86,8 +84,6 @@ public class MavenServlet extends AbstractStorageServiceServlet
         {
             throw new ServletException ( "Failed to create temp root", e );
         }
-
-        this.xml = new XmlHelper ();
     }
 
     @Override
@@ -409,9 +405,11 @@ public class MavenServlet extends AbstractStorageServiceServlet
         final String artifactId = toks[toks.length - 3];
         final String version = toks[toks.length - 2];
 
-        final Document doc = this.xml.parse ( request.getInputStream () );
+        final XmlHelper xml = new XmlHelper ();
 
-        logger.debug ( "----------------------" + NL + this.xml.toString ( doc ) + NL + "----------------------" );
+        final Document doc = xml.parse ( request.getInputStream () );
+
+        logger.debug ( "----------------------" + NL + xml.toString ( doc ) + NL + "----------------------" );
 
         final Element de = doc.getDocumentElement ();
         if ( !de.getNodeName ().equals ( "metadata" ) )
@@ -419,7 +417,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
             return;
         }
 
-        final String releaseVersion = this.xml.getElementValue ( de, "versioning/release" );
+        final String releaseVersion = xml.getElementValue ( de, "versioning/release" );
         logger.debug ( "Release version: {}", releaseVersion );
 
         if ( releaseVersion != null )
@@ -429,8 +427,8 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
         else
         {
-            final String snapshotTimestamp = this.xml.getElementValue ( de, "versioning/snapshot/timestamp" );
-            final String snapshotBuildNumber = this.xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
+            final String snapshotTimestamp = xml.getElementValue ( de, "versioning/snapshot/timestamp" );
+            final String snapshotBuildNumber = xml.getElementValue ( de, "versioning/snapshot/buildNumber" );
 
             logger.debug ( "Snapshot version: {} / {}", snapshotTimestamp, snapshotBuildNumber );
 
@@ -447,15 +445,15 @@ public class MavenServlet extends AbstractStorageServiceServlet
                 final List<MavenInformation> plain = new LinkedList<> ();
                 final List<MavenInformation> classified = new LinkedList<> ();
 
-                for ( final Node node : XmlHelper.iter ( this.xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
+                for ( final Node node : XmlHelper.iter ( xml.path ( de, "versioning/snapshotVersions/snapshotVersion" ) ) )
                 {
                     final MavenInformation info = new MavenInformation ();
                     info.setGroupId ( groupId );
                     info.setArtifactId ( artifactId );
                     info.setVersion ( version );
-                    info.setExtension ( this.xml.getElementValue ( node, "extension" ) );
-                    info.setClassifier ( this.xml.getElementValue ( node, "classifier" ) );
-                    info.setSnapshotVersion ( this.xml.getElementValue ( node, "value" ) );
+                    info.setExtension ( xml.getElementValue ( node, "extension" ) );
+                    info.setClassifier ( xml.getElementValue ( node, "classifier" ) );
+                    info.setSnapshotVersion ( xml.getElementValue ( node, "value" ) );
                     info.setBuildNumber ( buildNumber );
 
                     if ( info.getClassifier () != null )

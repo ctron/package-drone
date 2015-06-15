@@ -26,9 +26,9 @@ import org.w3c.dom.ProcessingInstruction;
 
 import de.dentrassi.pm.common.XmlHelper;
 
-public abstract class AbstractRepositoryProcessor implements Processor
+public abstract class AbstractRepositoryProcessor extends AbstractDocumentProcessor
 {
-    protected XmlHelper xml = new XmlHelper ();
+    private final XmlHelper xml = new XmlHelper ();
 
     protected final Map<String, String> properties = new HashMap<> ();
 
@@ -38,8 +38,10 @@ public abstract class AbstractRepositoryProcessor implements Processor
 
     private final String basename;
 
-    public AbstractRepositoryProcessor ( final String title, final String basename, final boolean compressed )
+    public AbstractRepositoryProcessor ( final String title, final String basename, final boolean compressed, final DocumentCache cache )
     {
+        super ( cache );
+
         this.title = title;
         this.compressed = compressed;
         this.basename = basename;

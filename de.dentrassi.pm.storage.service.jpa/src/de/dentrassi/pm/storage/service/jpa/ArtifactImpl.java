@@ -10,13 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service.jpa;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.utils.ThrowingConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.ArtifactReceiver;
 import de.dentrassi.pm.storage.Channel;
@@ -81,16 +81,15 @@ public class ArtifactImpl implements Artifact
     }
 
     @Override
-    public void streamData ( final ArtifactReceiver consumer )
+    public boolean streamData ( final ArtifactReceiver consumer )
     {
-        try
-        {
-            this.channel.streamData ( this.id, consumer );
-        }
-        catch ( final FileNotFoundException e )
-        {
-            throw new IllegalStateException ( e );
-        }
+        return this.channel.getService ().streamArtifact ( this.id, consumer );
+    }
+
+    @Override
+    public boolean streamData ( final ThrowingConsumer<InputStream> consumer )
+    {
+        return this.channel.getService ().streamArtifact ( this.id, consumer );
     }
 
     @Override

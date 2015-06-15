@@ -32,7 +32,7 @@ public class P2RepoChannelAggregator implements ChannelAggregator
     {
         try ( Handle handle = Profile.start ( this, "aggregateMetaData" ) )
         {
-            handle.task ( "Process" );
+            handle.task ( "Process : " + context.getArtifacts ().size () );
 
             final Map<String, String> result = new HashMap<> ();
             final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelNameOrId (), context.getChannelMetaData (), true, true );
@@ -42,11 +42,7 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             {
                 final Date cts = ai.getCreationTimestamp ();
 
-                if ( lastTimestamp == null )
-                {
-                    lastTimestamp = cts;
-                }
-                else if ( lastTimestamp.before ( cts ) )
+                if ( lastTimestamp == null || lastTimestamp.before ( cts ) )
                 {
                     lastTimestamp = cts;
                 }
@@ -63,6 +59,7 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             // spool out to cache
 
             handle.task ( "Spool out" );
+
             streamer.spoolOut ( context::createCacheEntry );
 
             // perform validation

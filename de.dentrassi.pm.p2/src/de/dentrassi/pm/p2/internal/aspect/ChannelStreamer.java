@@ -17,16 +17,24 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.xpath.XPathFactory;
+
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.XmlHelper;
 
 public class ChannelStreamer
 {
+    public static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
+
     private final LinkedList<Processor> processors;
 
     private ChecksumValidatorProcessor validator;
 
     private final Map<String, Object> context = new HashMap<> ();
+
+    private final XmlHelper xml = new XmlHelper ();
 
     public ChannelStreamer ( final String channelNameOrId, final Map<MetaKey, String> channelMetaData, final boolean writeCompressed, final boolean writePlain )
     {
@@ -34,18 +42,33 @@ public class ChannelStreamer
 
         this.processors = new LinkedList<> ();
 
-        this.processors.add ( this.validator = new ChecksumValidatorProcessor () );
+        try
+        {
+            final DocumentBuilder documentBuilder = this.xml.getBuilder ();
+            final XPathFactory pathFactory = XPathFactory.newInstance ();
 
-        if ( writeCompressed )
-        {
-            this.processors.add ( new MetaDataProcessor ( title, true ) );
-            this.processors.add ( new ArtifactsProcessor ( title, true ) );
+            final DocumentCache cache = new DocumentCache ( documentBuilder );
+
+            this.processors.add ( this.validator = new ChecksumValidatorProcessor ( cache, pathFactory ) );
+
+            if ( writeCompressed )
+            {
+                this.processors.add ( new MetaDataProcessor ( title, true, cache, documentBuilder, pathFactory ) );
+                this.processors.add ( new ArtifactsProcessor ( title, true, cache, pathFactory ) );
+            }
+
+            if ( writePlain )
+            {
+                this.processors.add ( new MetaDataProcessor ( title, false, cache, documentBuilder, pathFactory ) );
+                this.processors.add ( new ArtifactsProcessor ( title, false, cache, pathFactory ) );
+            }
+
         }
-        if ( writePlain )
+        catch ( final Exception e )
         {
-            this.processors.add ( new MetaDataProcessor ( title, false ) );
-            this.processors.add ( new ArtifactsProcessor ( title, false ) );
+            throw new RuntimeException ( e );
         }
+
     }
 
     public static String makeTitle ( final String id, final String name, final Map<MetaKey, String> channelMetaData )

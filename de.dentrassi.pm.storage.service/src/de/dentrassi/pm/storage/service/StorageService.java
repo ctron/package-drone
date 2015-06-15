@@ -10,7 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.service;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -97,7 +96,7 @@ public interface StorageService
      */
     public void deleteChannel ( String channelId );
 
-    public void streamArtifact ( String artifactId, ArtifactReceiver consumer ) throws FileNotFoundException;
+    public boolean streamArtifact ( String artifactId, ArtifactReceiver consumer );
 
     public SimpleArtifactInformation deleteArtifact ( String artifactId );
 

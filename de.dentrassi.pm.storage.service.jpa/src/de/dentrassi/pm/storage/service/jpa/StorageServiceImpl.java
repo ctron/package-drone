@@ -15,7 +15,6 @@ import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.getParentI
 import static de.dentrassi.pm.storage.service.jpa.StreamServiceHelper.testLocked;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -337,11 +336,28 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
         }
     }
 
-    @Override
-    public void streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws FileNotFoundException
+    public boolean streamArtifact ( final String artifactId, final ThrowingConsumer<InputStream> consumer )
     {
-        final Boolean found = doWithTransaction ( em -> {
+        return doWithTransaction ( em -> {
             final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
+            if ( ae == null )
+            {
+                return false;
+            }
+
+            this.blobStore.streamArtifact ( em, ae, consumer );
+
+            return true;
+        } );
+    }
+
+    @Override
+    public boolean streamArtifact ( final String artifactId, final ArtifactReceiver receiver )
+    {
+        return doWithTransaction ( em -> {
+
+            final ArtifactEntity ae = em.find ( ArtifactEntity.class, artifactId );
+
             if ( ae == null )
             {
                 return false;
@@ -351,11 +367,6 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
             return true;
         } );
-
-        if ( !found )
-        {
-            throw new FileNotFoundException ( String.format ( "Artifact '%s' could not be found", artifactId ) );
-        }
     }
 
     @Override

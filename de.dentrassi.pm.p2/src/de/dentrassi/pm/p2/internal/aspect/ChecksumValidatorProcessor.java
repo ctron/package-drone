@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
+import static de.dentrassi.pm.common.XmlHelper.getElementValue;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -18,9 +20,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -30,13 +36,11 @@ import com.google.common.collect.Multimap;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.XmlHelper;
 
-public class ChecksumValidatorProcessor implements Processor
+public class ChecksumValidatorProcessor extends AbstractDocumentProcessor
 {
     public static String CTX_KEY_SKIP_SET = ChecksumValidatorProcessor.class.getName () + ".skipSet";
 
     private final static Logger logger = LoggerFactory.getLogger ( ChecksumValidatorProcessor.class );
-
-    private final XmlHelper xml = new XmlHelper ();
 
     private final Set<String> installableUnits = new HashSet<> ();
 
@@ -44,10 +48,23 @@ public class ChecksumValidatorProcessor implements Processor
 
     private final Multimap<String, String> checksumArtifacts = HashMultimap.create ();
 
+    private final XPathExpression artifactExpression;
+
+    private final XPathExpression md5Expression;
+
+    public ChecksumValidatorProcessor ( final DocumentCache cache, final XPathFactory pathFactory ) throws XPathExpressionException
+    {
+        super ( cache );
+
+        final XPath path = pathFactory.newXPath ();
+        this.artifactExpression = path.compile ( "//artifact" );
+        this.md5Expression = path.compile ( "./properties/property[@name='download.md5']/@value" );
+    }
+
     @Override
     public boolean process ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
-        final String ft = artifact.getMetaData ().get ( ArtifactsProcessor.MK_FRAGMENT_TYPE );
+        final String ft = artifact.getMetaData ().get ( ChannelStreamer.MK_FRAGMENT_TYPE );
 
         if ( "artifacts".equals ( ft ) )
         {
@@ -59,9 +76,8 @@ public class ChecksumValidatorProcessor implements Processor
 
     private void processP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
-        streamer.stream ( artifact.getId (), ( info, stream ) -> {
-            final Document mdoc = this.xml.parse ( stream );
-            for ( final Node node : XmlHelper.iter ( this.xml.path ( mdoc, "//artifact" ) ) )
+        this.cache.stream ( artifact, streamer, ( info, doc ) -> {
+            for ( final Node node : XmlHelper.iter ( XmlHelper.executePath ( doc, this.artifactExpression ) ) )
             {
                 if ( ! ( node instanceof Element ) )
                 {
@@ -83,20 +99,13 @@ public class ChecksumValidatorProcessor implements Processor
      *            the artifact node
      * @return <code>true</code> if the artifact does not cause any problems,
      *         <code>false</code> otherwise
+     * @throws Exception
      */
-    private void recordArtifact ( final ArtifactInformation artifact, final Element ele, final Map<String, Object> context )
+    private void recordArtifact ( final ArtifactInformation artifact, final Element ele, final Map<String, Object> context ) throws Exception
     {
         final String key = makeKey ( ele );
 
-        final String value;
-        try
-        {
-            value = this.xml.getElementValue ( ele, "./properties/property[@name='download.md5']/@value" );
-        }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException ( e );
-        }
+        final String value = getElementValue ( ele, this.md5Expression );
 
         if ( value == null || value.isEmpty () )
         {
