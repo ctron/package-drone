@@ -142,17 +142,6 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
-        	
-        	<!-- jnr -->
-        	
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.constants_0.8.6.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.ffi_2.0.1.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.posix_3.0.9.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/jnr.x86asm_1.0.2.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/com.kenai.jffi_1.2.7.v201505052040.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.objectweb.asm.util_5.0.1.v201404251740.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.objectweb.asm.analysis_5.0.1.v201505121915.jar" dest="download/bundles" usetimestamp="true" />
-        		
         </parallel>
 
     </target>
