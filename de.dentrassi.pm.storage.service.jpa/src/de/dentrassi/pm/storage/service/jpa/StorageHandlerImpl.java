@@ -1022,12 +1022,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             final Root<ArtifactEntity> root = cq.from ( ArtifactEntity.class );
             final Predicate where = cb.equal ( root.get ( ArtifactEntity_.channel ), ce );
 
-            // fetch
-
-            // root.fetch ( ArtifactEntity_.channel );
-            // root.fetch ( ArtifactEntity_.providedProperties );
-            // root.fetch ( ArtifactEntity_.extractedProperties );
-
             // select
 
             cq.select ( root ).where ( where );
@@ -1035,18 +1029,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             // convert
 
             final TypedQuery<ArtifactEntity> query = this.em.createQuery ( cq );
-
-            /*
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.providedProperties" );
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.extractedProperties" );
-            query.setHint ( "eclipselink.join-fetch", "ArtifactEntity.childIds" );
-            
-            query.setHint ( "eclipselink.batch", "ArtifactEntity.extractedProperties" );
-            query.setHint ( "eclipselink.batch", "ArtifactEntity.providedProperties" );
-            */
-
-            // final TypedQuery<ArtifactEntity> query = this.em.createQuery ( String.format ( "select a from %s a LEFT JOIN FETCH a.channel WHERE a.channel=:channel ", ArtifactEntity.class.getName () ), ArtifactEntity.class );
-            // query.setParameter ( "channel", ce );
 
             logger.trace ( "Before getResultList ()" );
 
