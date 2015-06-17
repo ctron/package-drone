@@ -7,11 +7,11 @@ Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Service-Component: OSGI-INF/controller.xml,
  OSGI-INF/jobTester.xml
-Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
- de.dentrassi.osgi.web;bundle-version="1.0.0",
+Require-Bundle: de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
  de.dentrassi.pm.sec.web;bundle-version="1.0.0",
- de.dentrassi.osgi.job.web;bundle-version="1.0.0"
+ de.dentrassi.osgi.job.web;bundle-version="1.0.0",
+ org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2"
 Import-Package: com.google.gson;version="2.3.1",
  de.dentrassi.osgi.job;version="1.0.0",
  de.dentrassi.pm;version="1.0.0",
@@ -22,6 +22,7 @@ Import-Package: com.google.gson;version="2.3.1",
  javax.servlet;version="3.1.0",
  javax.servlet.annotation;version="3.1.0",
  javax.servlet.http;version="3.1.0",
+ javax.servlet.jsp;version="2.2.0",
  javax.validation;version="1.1.0.Final",
  javax.validation.constraints;version="1.1.0",
  org.hibernate.validator.constraints;version="5.1.3"

@@ -20,5 +20,5 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Web-ContextPath: /unzip
 Require-Bundle: org.eclipse.aether.api
+Service-Component: OSGI-INF/servlet.xml

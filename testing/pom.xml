@@ -62,8 +62,8 @@
 						<sauce.username>${sauce.username}</sauce.username>
 						<sauce.accessKey>${sauce.accessKey}</sauce.accessKey>
 						<use.postgres>${use.postgres}</use.postgres>
-						<jetty.host>localhost</jetty.host>
-						<jetty.port>8081</jetty.port>
+						<org.osgi.service.http.host>localhost</org.osgi.service.http.host>
+						<org.osgi.service.http.port>8081</org.osgi.service.http.port>
 					</systemPropertyVariables>
 					<includes>
                         <include>**/TestSuite.java</include>

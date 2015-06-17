@@ -49,7 +49,7 @@ public class TestSuite
 
     private static final String SAUCE_ACCESS_KEY = System.getProperty ( "sauce.accessKey" );
 
-    public static final int JETTY_PORT = Integer.getInteger ( "jetty.port", 8080 );
+    public static final int JETTY_PORT = Integer.getInteger ( "org.osgi.service.http.port", 8080 );
 
     private static RemoteWebDriver driver;
 
@@ -161,7 +161,7 @@ public class TestSuite
             final String key = entry.getKey ().toString ();
             final String value = entry.getValue ().toString ();
 
-            if ( key.startsWith ( "jetty." ) )
+            if ( key.startsWith ( "org.osgi." ) )
             {
                 if ( sb.length () > 0 )
                 {

@@ -75,6 +75,11 @@ public class AptServlet extends HttpServlet
 
         String path = request.getPathInfo ();
 
+        if ( path == null )
+        {
+            path = "/";
+        }
+
         // strip of leading slash
         path = path.replaceAll ( "^/+", "" );
         path = path.replaceAll ( "/+$", "" );
@@ -121,7 +126,7 @@ public class AptServlet extends HttpServlet
         {
             if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
-                response.sendRedirect ( request.getContextPath () + request.getPathInfo () + "/" );
+                response.sendRedirect ( request.getRequestURI () + "/" );
                 return;
             }
 
@@ -155,7 +160,7 @@ public class AptServlet extends HttpServlet
         {
             if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
-                response.sendRedirect ( request.getContextPath () + request.getPathInfo () + "/" );
+                response.sendRedirect ( request.getRequestURI () + "/" );
                 return;
             }
 

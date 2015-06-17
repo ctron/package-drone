@@ -1,3 +1,2 @@
-osgi.http.whiteboard.context.select=(osgi.http.whiteboard.context.name=dispatcher)
-osgi.http.whiteboard.filter.name=security
-osgi.http.whiteboard.filter.pattern=/*
+filter-name=security
+urlPatterns=*

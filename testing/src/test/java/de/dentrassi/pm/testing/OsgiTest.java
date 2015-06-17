@@ -39,7 +39,7 @@ public class OsgiTest extends AbstractServerTest
     }
 
     @Test
-    public void testP2Osgi1 ()
+    public void testP2Osgi1 () throws Exception
     {
         final ChannelTester ct = ChannelTester.create ( getWebContext (), "osgi2" );
         ct.addAspect ( "osgi" );
@@ -59,6 +59,8 @@ public class OsgiTest extends AbstractServerTest
             Assert.assertEquals ( 3, result.size () ); // expect 1 bundle + 2 p2 fragments
         }
         Assert.assertEquals ( 6, ct.getAllArtifactIds ().size () );
+
+        testUrl ( "/p2/" + ct.getId () );
     }
 
     @Test

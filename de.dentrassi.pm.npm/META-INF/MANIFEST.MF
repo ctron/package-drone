@@ -23,6 +23,6 @@ Import-Package: com.google.common.io;version="18.0.0",
  org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Web-ContextPath: /npm
-Service-Component: OSGI-INF/aspect.xml
+Service-Component: OSGI-INF/aspect.xml,
+ OSGI-INF/servlet.xml
 Bundle-ActivationPolicy: lazy

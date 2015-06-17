@@ -119,8 +119,11 @@
       <plugin id="org.eclipse.jetty.webapp" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.jetty.xml" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.persistence.jpa.osgi" autoStart="true" startLevel="0" />
-      <plugin id="org.mortbay.jasper.apache-el" autoStart="true" startLevel="0" />
-      <plugin id="org.mortbay.jasper.apache-jsp" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-api" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-extender-whiteboard" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-jetty" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-spi" autoStart="true" startLevel="0" />
       <plugin id="org.postgresql.jdbc41" autoStart="true" startLevel="2" />
       <property name="eclipse.ignoreApp" value="true" />
       <property name="jetty.home.bundle" value="org.eclipse.jetty.osgi.boot" />

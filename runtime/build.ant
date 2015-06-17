@@ -37,6 +37,19 @@
     <target name="download.provided">
         <get src="http://download.nextag.com/apache/felix/org.apache.felix.configadmin-1.8.4.jar" dest="provided" usetimestamp="true" />
     </target>
+	
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: mavenGet          
+         = = = = = = = = = = = = = = = = = -->
+    <macrodef name="mavenGet">
+        <attribute name="group" />
+    	<attribute name="artifact" />
+    	<attribute name="version" />
+        <sequential>
+        	<get src="http://repo1.maven.org/maven2/@{group}/@{artifact}/@{version}/@{artifact}-@{version}.jar" dest="download/bundles" usetimestamp="true"/>
+        </sequential>
+    </macrodef>
+
 
 
     <!-- ================================= 
@@ -67,7 +80,7 @@
         	-->
         	
         	<!-- HttpService : JDT core -->
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5M7-201504301445/ecj-4.5M7.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5RC4-201506032000/ecj-4.5RC4.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
 
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsRC3-201505280700/equinox-SDK-MarsRC3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
@@ -126,7 +139,7 @@
         	
         	<!-- compress -->
         	
-        	<get src="http://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.9/commons-compress-1.9.jar" dest="download/bundles" usetimestamp="true"/>
+        	<mavenGet group="org/apache/commons" artifact="commons-compress" version="1.9"/>
         	
         	<!-- for jdeb -->
         	
@@ -140,6 +153,41 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
+        	
+        	<!-- pax web -->
+        	
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-api" version="4.1.2"/>
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-spi" version="4.1.2"/>
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-runtime" version="4.1.2"/>
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jetty" version="4.1.2"/>
+        	        	
+        	<!--
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jetty-bundle" version="4.1.2"/>
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jsp" version="4.1.2"/>
+        	-->
+        	        	
+        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-extender-whiteboard" version="4.1.2"/>
+        	
+        	<mavenGet group="org/apache/xbean" artifact="xbean-finder" version="4.3"/>
+        	<mavenGet group="org/apache/xbean" artifact="xbean-bundleutils" version="4.3"/>
+        	<mavenGet group="org/apache/xbean" artifact="xbean-reflect" version="4.3"/>
+        	
+        	<!-- provided by org.glassfish/javax.el
+        	<mavenGet group="javax/el" artifact="javax.el-api" version="3.0.0"/>
+        	-->
+        	<mavenGet group="org/glassfish" artifact="javax.el" version="3.0.1-b08"/>
+        	
+        	<mavenGet group="javax/servlet" artifact="javax.servlet-api" version="3.1.0"/>
+        	<mavenGet group="javax/servlet/jsp" artifact="javax.servlet.jsp-api" version="2.3.1"/>
+        	
+        	<!--
+        	<mavenGet group="javax/servlet/jsp/jstl" artifact="javax.servlet.jsp.jstl-api" version="1.2.1"/>
+        	-->
+        	
+        	<mavenGet group="org/jboss/spec/javax/servlet/jstl" artifact="jboss-jstl-api_1.2_spec" version="1.1.2.Final"/>
+        	
+        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.juli.extras_7.0.56.v201412180755.jar"  dest="download/bundles" usetimestamp="true"/>
+        	
         </parallel>
 
     </target>
@@ -174,6 +222,35 @@
         	
             <fileset dir="unpack/jetty/lib">
 
+                <include name="jetty-server-*.jar" />
+                <include name="jetty-servlet-*.jar" />
+                <include name="jetty-util-*.jar" />
+                <include name="jetty-security-*.jar" />
+                <include name="jetty-webapp-*.jar" />
+                <include name="jetty-http-*.jar" />
+                <include name="jetty-io-*.jar" />
+            	<include name="jetty-xml-*.jar" />
+            	<include name="jetty-jmx-*.jar" />
+            	<include name="jetty-servlets-*.jar" />
+            	<include name="jetty-jaas-*.jar" />
+            	<include name="jetty-continuation-*.jar" />
+            	
+            	<include name="jetty-webapp-*.jar" />
+            	<include name="jetty-jndi-*.jar" />
+            	<include name="jetty-jaspi-*.jar" />
+            	<include name="jetty-plus-*.jar" />
+            	<include name="jetty-rewrite-*.jar" />
+            	<include name="jetty-client-*.jar" />
+            	<include name="jetty-util-ajax-*.jar" />
+            	
+            	<include name="websocket/*.jar" />
+            	
+            	<!--
+                
+                -->
+            	
+            	<include name="jetty-schemas-3.1.jar" />
+            	                
             	<!-- !HttpService -->
             	<!--
                 <include name="jetty-util-*.jar" />
@@ -216,9 +293,10 @@
             	
             	-->
             	
-            	<include name="jetty-schemas-3.1.jar" />
+            	<!--
             	<include name="apache-jsp/*-el-*.jar" />
             	<include name="apache-jstl/*.jar" />
+            	-->
             	
             </fileset>
 
@@ -250,6 +328,7 @@
                 <include name="org.slf4j.api_*.jar" />
             	
             	<!-- http & jetty -->
+            	<!--
             	
             	<include name="org.apache.jasper.glassfish*.jar" />
             	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
@@ -260,6 +339,14 @@
             	<include name="org.eclipse.equinox.http.servletbridge*.jar" />
             	<include name="org.eclipse.equinox.http.servlet*.jar" />
             	<include name="javax.servlet*.jar" />
+            	-->
+            	
+            	<!--
+            	<include name="javax.servlet.jsp*.jar" />
+            	-->
+            	
+            	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
+                <include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
             	
             	<!-- for testing -->
             	

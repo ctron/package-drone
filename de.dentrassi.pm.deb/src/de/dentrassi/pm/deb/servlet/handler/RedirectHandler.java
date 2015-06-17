@@ -34,7 +34,7 @@ public class RedirectHandler implements Handler
     @Override
     public void process ( final HttpServletResponse response ) throws IOException
     {
-        response.sendRedirect ( this.request.getContextPath () + this.request.getPathInfo () + "/" );
+        response.sendRedirect ( this.request.getRequestURI () + "/" );
     }
 
 }

@@ -125,15 +125,19 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private void handleGetRequest ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        if ( "/".equals ( request.getPathInfo () ) )
+        String pathString = request.getPathInfo ();
+        if ( pathString == null )
+        {
+            pathString = "/";
+        }
+
+        if ( "/".equals ( pathString ) )
         {
             response.getWriter ().write ( "Package Drone Maven 2 Repository Adapter" );
             response.setContentType ( "text/plain" );
             response.setStatus ( HttpServletResponse.SC_OK );
             return;
         }
-
-        String pathString = request.getPathInfo ();
 
         final StorageService service = getService ( request ); // ensured not be null
 

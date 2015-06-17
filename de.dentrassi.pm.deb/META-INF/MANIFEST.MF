@@ -29,8 +29,7 @@ Import-Package: com.google.common.hash;version="18.0.0",
  org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Service-Component: OSGI-INF/aspect.xml, OSGI-INF/aspectApt.xml,
- OSGI-INF/groupDebian.xml
-Web-ContextPath: /apt
+Service-Component: OSGI-INF/aspect.xml, OSGI-INF/aspectApt.xml,OSGI-INF/groupDebian.xml,
+ OSGI-INF/servlet.xml
 Export-Package: de.dentrassi.pm.deb;version="1.0.0";uses:="de.dentrassi.pm.storage.service,javax.servlet.http,de.dentrassi.pm.common",
  de.dentrassi.pm.deb.aspect;version="1.0.0";uses:="de.dentrassi.pm.aspect"

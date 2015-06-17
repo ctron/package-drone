@@ -70,12 +70,47 @@ public class SystemServiceImpl implements SystemService
             return prefix;
         }
 
+        prefix = makePrefixFromOsgiProperties ();
+        if ( prefix != null )
+        {
+            return prefix;
+        }
+
         return makePrefixFromJetty ();
     }
 
+    /**
+     * Make the prefix by guessing the port from the OSGi settings
+     */
+    protected String makePrefixFromOsgiProperties ()
+    {
+        final String port = System.getProperty ( "org.osgi.service.http.port" );
+        if ( port == null )
+        {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder ();
+        sb.append ( "http://" ).append ( discoverHostname () );
+        if ( !"80".equals ( port ) )
+        {
+            sb.append ( ':' ).append ( port );
+        }
+        return sb.toString ();
+    }
+
+    /**
+     * @deprecated this won't work with pax web
+     */
+    @Deprecated
     @SuppressWarnings ( "resource" )
     protected String makePrefixFromJetty ()
     {
+        if ( this.server == null )
+        {
+            return null;
+        }
+
         for ( final Connector c : this.server.getConnectors () )
         {
             if ( ! ( c instanceof NetworkConnector ) )
@@ -129,7 +164,7 @@ public class SystemServiceImpl implements SystemService
         return null;
     }
 
-    private String discoverHostname ()
+    private static String discoverHostname ()
     {
         String hostname = System.getenv ( "HOSTNAME" );
 

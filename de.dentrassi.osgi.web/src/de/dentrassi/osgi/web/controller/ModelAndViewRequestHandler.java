@@ -111,7 +111,15 @@ public class ModelAndViewRequestHandler implements RequestHandler
         final Bundle bundle = FrameworkUtil.getBundle ( resourceClazz );
 
         final String resolvedView = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
-        final String path = String.format ( "/bundle/%s/%s", bundle.getBundleId (), resolvedView );
+
+        final StringBuilder pathBuilder = new StringBuilder ( "/bundle/" );
+        pathBuilder.append ( bundle.getBundleId () );
+        if ( !resolvedView.startsWith ( "/" ) )
+        {
+            pathBuilder.append ( '/' );
+        }
+        pathBuilder.append ( resolvedView );
+        final String path = pathBuilder.toString ();
 
         logger.debug ( "Render: {}", path );
 

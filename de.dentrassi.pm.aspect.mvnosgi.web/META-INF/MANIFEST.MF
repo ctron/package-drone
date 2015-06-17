@@ -5,9 +5,9 @@ Bundle-SymbolicName: de.dentrassi.pm.aspect.mvnosgi.web
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Markus Rathgeb
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
- de.dentrassi.osgi.web.form;bundle-version="1.0.0",
- de.dentrassi.pm.storage.web;bundle-version="0.1.0"
+Require-Bundle: de.dentrassi.osgi.web.form;bundle-version="1.0.0",
+ de.dentrassi.pm.storage.web;bundle-version="0.1.0",
+ org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2"
 Eclipse-BundleShape: dir
 Service-Component: OSGI-INF/controller.xml
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",

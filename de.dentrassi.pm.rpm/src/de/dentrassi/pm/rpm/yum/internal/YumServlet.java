@@ -66,7 +66,7 @@ public class YumServlet extends AbstractStorageServiceServlet
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
-        String path = request.getServletPath ();
+        String path = request.getPathInfo ();
 
         if ( path != null && path.startsWith ( "/" ) )
         {
@@ -108,7 +108,7 @@ public class YumServlet extends AbstractStorageServiceServlet
     {
         if ( remPath == null || remPath.isEmpty () )
         {
-            if ( !request.getServletPath ().endsWith ( "/" ) )
+            if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
                 response.setStatus ( HttpServletResponse.SC_MOVED_PERMANENTLY );
                 response.sendRedirect ( request.getRequestURI () + "/" );
@@ -140,7 +140,7 @@ public class YumServlet extends AbstractStorageServiceServlet
 
         if ( "repodata".equals ( remPath ) || "repodata/".equals ( remPath ) )
         {
-            if ( !request.getServletPath ().endsWith ( "/" ) )
+            if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
                 response.setStatus ( HttpServletResponse.SC_MOVED_PERMANENTLY );
                 response.sendRedirect ( request.getRequestURI () + "/" );

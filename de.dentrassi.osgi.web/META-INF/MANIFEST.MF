@@ -56,7 +56,6 @@ Export-Package: de.dentrassi.osgi.web;version="1.0.0";
  de.dentrassi.osgi.web.tags;version="1.0.0";uses:="javax.servlet.http,javax.servlet.jsp.tagext",
  de.dentrassi.osgi.web.util;version="1.0.0";uses:="javax.servlet.http"
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.mortbay.jasper.apache-el;bundle-version="8.0.9";visibility:=reexport
 Web-Export-Taglib: META-INF/web.tld
 Eclipse-BundleShape: dir
 

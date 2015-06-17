@@ -194,7 +194,11 @@
 		<module>../de.dentrassi.rpm.tests</module>
 
         <module>../org.tukani.xz</module>
-
+        
+        <module>../de.dentrassi.pm.patched.feature</module>
+        <module>../org.apache.jasper.glassfish</module>
+        <module>../org.eclipse.equinox.jsp.jasper</module>
+        
 		<module>../product</module>
 	</modules>
 

@@ -38,6 +38,8 @@ public class RpmTest extends AbstractServerTest
         }
         Assert.assertEquals ( 2, ct.getAllArtifactIds ().size () );
 
+        testUrl ( String.format ( "/yum/%s/", ct.getId () ) );
+        testUrl ( String.format ( "/yum/%s/repodata/", ct.getId () ) );
         testUrl ( String.format ( "/yum/%s/repodata/repomd.xml", ct.getId () ) );
     }
 

@@ -36,9 +36,21 @@ public class BasicTest extends AbstractServerTest
     }
 
     @Test
+    public void testNpm () throws Exception
+    {
+        testUrl ( "/npm" );
+    }
+
+    @Test
     public void testApt () throws Exception
     {
         testUrl ( "/apt" );
+    }
+
+    @Test
+    public void testYum () throws Exception
+    {
+        testUrl ( "/yum" );
     }
 
     @Test

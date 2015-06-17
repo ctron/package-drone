@@ -5,10 +5,11 @@ Bundle-SymbolicName: de.dentrassi.pm.system.web
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: IBH SYSTEMS GmbH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
- de.dentrassi.osgi.web;bundle-version="1.0.0",
+Require-Bundle: de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.osgi.web.form;bundle-version="1.0.0",
- de.dentrassi.pm.sec.web;bundle-version="1.0.0"
+ de.dentrassi.pm.sec.web;bundle-version="1.0.0",
+ org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2",
+ de.dentrassi.pm.common.web;bundle-version="1.0.0"
 Eclipse-BundleShape: dir
 Import-Package: com.google.common.io;version="18.0.0",
  de.dentrassi.pm.common.web;version="1.0.0",

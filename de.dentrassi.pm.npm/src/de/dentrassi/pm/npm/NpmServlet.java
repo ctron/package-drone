@@ -34,6 +34,11 @@ public class NpmServlet extends HttpServlet
     {
         String path = request.getPathInfo ();
 
+        if ( path == null )
+        {
+            path = "/";
+        }
+
         if ( "/".equals ( path ) )
         {
             response.getWriter ().write ( "NPM adapter" );

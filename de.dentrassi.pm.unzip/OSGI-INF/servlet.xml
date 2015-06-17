@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.unzip.servlet">
+   <implementation class="de.dentrassi.pm.unzip.UnzipServlet"/>
+   <property name="alias" type="String" value="/unzip"/>
+   <service>
+      <provide interface="javax.servlet.Servlet"/>
+   </service>
+</scr:component>

@@ -5,11 +5,12 @@ Bundle-SymbolicName: de.dentrassi.pm.sec.web.ui
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.apache.taglibs.standard-impl;bundle-version="1.2.1",
- de.dentrassi.osgi.web.form;bundle-version="1.0.0",
+Require-Bundle: de.dentrassi.osgi.web.form;bundle-version="1.0.0",
  de.dentrassi.pm.sec.web;bundle-version="1.0.0",
  de.dentrassi.pm.common.web;bundle-version="1.0.0",
- de.dentrassi.pm.storage.web;bundle-version="0.0.8"
+ de.dentrassi.pm.storage.web;bundle-version="0.0.8",
+ org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2",
+ de.dentrassi.osgi.web;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.osgi.converter;version="1.0.0",
