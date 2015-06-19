@@ -37,6 +37,8 @@ Changed to `Bundle-RequiredExecutionEnvironment: JavaSE-1.6`
 
 # org.apache.jasper.glassfish
 
+Source code: https://repo1.maven.org/maven2/javax/servlet/jsp/javax.servlet.jsp-api/2.3.2-b01/javax.servlet.jsp-api-2.3.2-b01-sources.jar
+
 ## META-INF/MANIFEST.MF
 
 ### Automatically import TLD classes
@@ -60,6 +62,33 @@ Comment out:
 ```java
 // systemUris.add("http://java.sun.com/jsp/jstl/core");
 ```
+
+## Fix missing parent
+
+A child tag will not get its parent if it was included by a custom tag:
+
+diff --git a/org.apache.jasper.glassfish/src/org/apache/jasper/compiler/Generator.java b/org.apache.jasper.glassfish/src/org/apache/jasper/compiler/Generator.java
+index 87a9b26..d14d174 100644
+--- a/org.apache.jasper.glassfish/src/org/apache/jasper/compiler/Generator.java
++++ b/org.apache.jasper.glassfish/src/org/apache/jasper/compiler/Generator.java
+@@ -2990,8 +2990,15 @@
+                 out.println(".setPageContext(_jspx_page_context);");
+             }
+ 
++            // STARTJR: fix missing parent
+             // Set parent
+-            if (!simpleTag) {
++            if (isTagFile && parent == null) {
++                out.printin(tagHandlerVar);
++                out.print(".setParent(");
++                out.print("new javax.servlet.jsp.tagext.TagAdapter(");
++                out.print("(javax.servlet.jsp.tagext.SimpleTag) this ));");
++            } else if (!simpleTag) {
++            // ENDJR: fix missing parent
+                 out.printin(tagHandlerVar);
+                 out.print(".setParent(");
+                 if (parent != null) {
+
 
 ## src/org/apache/jasper/compiler/JDTJavaCompiler.java
 
