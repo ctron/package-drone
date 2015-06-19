@@ -338,6 +338,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             return;
         }
 
+        LockContext.modify ( channel.getId () );
+
         channel.getProvidedProperties ().clear ();
 
         for ( final Map.Entry<MetaKey, String> entry : providedMetaData.entrySet () )
@@ -426,7 +428,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
         logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
     }
 
-    public int deleteResult ( final Query q )
+    protected int deleteResult ( final Query q )
     {
         final List<?> result = q.getResultList ();
         for ( final Object art : result )
@@ -439,6 +441,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file, final boolean runAggregator ) throws Exception
     {
+        LockContext.modify ( channel.getId () );
+
         final String generatorId = ae.getGeneratorId ();
 
         final RegenerateTracker tracker = new RegenerateTracker ();
@@ -882,6 +886,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     @Override
     public void reprocessAspects ( final ChannelEntity channel, final Set<String> aspectFactoryIds ) throws Exception
     {
+        LockContext.modify ( channel.getId () );
+
         try ( Handle handle = Profile.start ( this, "reprocessAspects" ) )
         {
             logger.info ( "Reprocessing aspect - channelId: {}, aspects: {}", channel.getId (), aspectFactoryIds );
@@ -1263,6 +1269,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected void deleteAllCacheEntries ( final ChannelEntity channel )
     {
+        LockContext.modify ( channel.getId () );
+
         try ( Handle handle = Profile.start ( this, "deleteAllCacheEntries" ) )
         {
             // flush since the following update will work only on the database, so we need to flush
@@ -1278,6 +1286,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected void deleteCacheEntries ( final String namespace, final ChannelEntity channel )
     {
+        LockContext.modify ( channel.getId () );
+
         try ( Handle handle = Profile.start ( this, "deleteCacheEntries" ) )
         {
             // flush since the following update will work only on the database, so we need to flush
@@ -1294,6 +1304,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     protected void internalCreateCacheEntry ( final ChannelEntity channel, final String namespace, final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
     {
+        LockContext.modify ( channel.getId () );
+
         try ( Handle handle = Profile.start ( this, "internalCreateCacheEntry" ) )
         {
             logger.debug ( "Creating cache entry - channel: {}, ns: {}, key: {}, name: {}, mime: {}", channel.getId (), namespace, id, name, mimeType );
@@ -1372,11 +1384,15 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     @Override
     public ArtifactEntity internalCreateArtifact ( final String channelId, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
+        LockContext.modify ( channelId );
+
         return internalCreateArtifact ( getCheckedChannel ( channelId ), name, entityCreator, stream, providedMetaData, external );
     }
 
     public ArtifactEntity internalCreateArtifact ( final ChannelEntity channel, final String name, final Supplier<ArtifactEntity> entityCreator, final InputStream stream, final Map<MetaKey, String> providedMetaData, final boolean external )
     {
+        LockContext.modify ( channel.getId () );
+
         try ( Handle handle = Profile.start ( this, "internalCreateArtifact" ) )
         {
             final RegenerateTracker tracker = new RegenerateTracker ();
@@ -1417,7 +1433,10 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
         {
             final ArtifactEntity parentArtifact = getCheckedArtifact ( parentArtifactId );
 
-            testLocked ( parentArtifact.getChannel () );
+            final ChannelEntity channel = parentArtifact.getChannel ();
+
+            LockContext.modify ( channel.getId () );
+            testLocked ( channel );
 
             if ( parentArtifact instanceof GeneratorArtifactEntity )
             {

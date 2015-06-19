@@ -420,6 +420,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         doWithHandlerVoid ( hi -> {
 
+            LockContext.modify ( channelId );
+
             final ChannelEntity channel = hi.getCheckedChannel ( channelId );
 
             testLocked ( channel );
@@ -436,6 +438,8 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     public void refreshAllChannelAspects ( final String channelId )
     {
         doWithHandlerVoid ( hi -> {
+
+            LockContext.modify ( channelId );
 
             final ChannelEntity channel = hi.getCheckedChannel ( channelId );
 
