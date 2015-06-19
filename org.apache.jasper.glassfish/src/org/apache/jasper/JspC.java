@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,11 +64,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.io.UnsupportedEncodingException;
 // START GlassFish 750
 import java.util.concurrent.ConcurrentHashMap;
 // END GlassFish 750
@@ -147,8 +148,12 @@ public class JspC implements Options {
     private static final String JAVA_1_4 = "1.4";
     private static final String JAVA_1_5 = "1.5";
     private static final String JAVA_1_6 = "1.6";
+    private static final String JAVA_1_7 = "1.7";
+    private static final String JAVA_1_8 = "1.8";
     private static final String JAVA_5 = "5";
     private static final String JAVA_6 = "6";
+    private static final String JAVA_7 = "7";
+    private static final String JAVA_8 = "8";
     // END SJSAS 6402545
 
     // Logger
@@ -613,7 +618,7 @@ public class JspC implements Options {
         return defaultBufferNone;
     }
 
-    public void setDefaultBufferNone() {
+    public void setDefaultBufferNone(boolean defaultBufferNone) {
         this.defaultBufferNone = defaultBufferNone;
     }
 
@@ -671,20 +676,25 @@ public class JspC implements Options {
 
     public void setCompilerTargetVM(String vm) {
         // START SJSAS 6402545
-        if (!JAVA_1_1.equals(vm) && !JAVA_1_2.equals(vm) 
-                && !JAVA_1_3.equals(vm) && !JAVA_1_4.equals(vm)
-                && !JAVA_1_5.equals(vm) && !JAVA_1_6.equals(vm)
-                && !JAVA_5.equals(vm) && !JAVA_6.equals(vm)) {
-            throw new IllegalArgumentException(
-                Localizer.getMessage("jspc.illegalCompilerTargetVM", vm));
-        }
-        // END SJSAS 6402545
-        // START SJSAS 6403017
+        String tvm = vm;
         if (JAVA_5.equals(vm)) {
             vm = JAVA_1_5;
         } else if (JAVA_6.equals(vm)) {
             vm = JAVA_1_6;
+        } else if (JAVA_7.equals(vm)) {
+            vm = JAVA_1_7;
+        } else if (JAVA_8.equals(vm)) {
+            vm = JAVA_1_8;
         }
+        if (!JAVA_1_1.equals(vm) && !JAVA_1_2.equals(vm) 
+                && !JAVA_1_3.equals(vm) && !JAVA_1_4.equals(vm)
+                && !JAVA_1_5.equals(vm) && !JAVA_1_6.equals(vm)
+                && !JAVA_1_7.equals(vm) && !JAVA_1_8.equals(vm)){
+            throw new IllegalArgumentException(
+                Localizer.getMessage("jspc.illegalCompilerTargetVM", tvm));
+        }
+        // END SJSAS 6402545
+        // START SJSAS 6403017
         Double targetVersion = Double.valueOf(vm);
         if (targetVersion.compareTo(Double.valueOf(myJavaVersion)) > 0) {
             throw new IllegalArgumentException(
@@ -708,12 +718,21 @@ public class JspC implements Options {
         // START SJSAS 6402545
         if (!JAVA_1_3.equals(vm) && !JAVA_1_4.equals(vm) 
                 && !JAVA_1_5.equals(vm) && !JAVA_5.equals(vm)
-                && !JAVA_1_6.equals(vm) && !JAVA_6.equals(vm)) {
+                && !JAVA_1_6.equals(vm) && !JAVA_6.equals(vm)
+                && !JAVA_1_7.equals(vm) && !JAVA_7.equals(vm)
+                && !JAVA_1_8.equals(vm) && !JAVA_8.equals(vm)) {
             throw new IllegalArgumentException(
                 Localizer.getMessage("jspc.illegalCompilerSourceVM", vm));
         }
         // END SJSAS 6402545
         compilerSourceVM = vm;
+    }
+
+    /**
+     * @see Options#getCompilerClassName.
+     */
+    public String getCompilerClassName() {
+        return null;
     }
 
     public TldScanner getTldScanner() {
@@ -1010,10 +1029,12 @@ public class JspC implements Options {
         String insertEndMarker = 
             Localizer.getMessage("jspc.webinc.insertEnd");
 
-        BufferedReader reader = new BufferedReader(new FileReader(webXml));
-        BufferedReader fragmentReader = 
-            new BufferedReader(new FileReader(webxmlFile));
-        PrintWriter writer = new PrintWriter(new FileWriter(webXml2));
+        BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(webXml),"UTF-8"));
+        BufferedReader fragmentReader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(webxmlFile),"UTF-8"));
+        PrintWriter writer = new PrintWriter(
+                    new OutputStreamWriter(new FileOutputStream(webXml2),"UTF-8"));
 
         // Insert the <servlet> and <servlet-mapping> declarations
         int pos = -1;
@@ -1404,7 +1425,7 @@ public class JspC implements Options {
         try {
             if (webxmlLevel >= INC_WEBXML) {
                 File fmapings = new File(webxmlFile);
-                mapout = new FileWriter(fmapings);
+                mapout = new OutputStreamWriter(new FileOutputStream(fmapings),"UTF-8");
                 servletout = new CharArrayWriter();
                 mappingout = new CharArrayWriter();
             } else {
@@ -1446,7 +1467,8 @@ public class JspC implements Options {
     private void initServletContext() {
         try {
             context =new JspCServletContext
-                (new PrintWriter(System.out),
+                (new PrintWriter(new OutputStreamWriter(System.out, "UTF-8")),
+
                  new URL("file:" + uriRoot.replace('\\','/') + '/'));
             tldScanner = new TldScanner(context, isValidationEnabled);
 
@@ -1460,6 +1482,7 @@ public class JspC implements Options {
             // END GlassFish 750
         } catch (MalformedURLException me) {
             System.out.println("**" + me);
+        } catch (UnsupportedEncodingException ex) {
         }
         rctxt = new JspRuntimeContext(context, this);
         jspConfig = new JspConfig(context);

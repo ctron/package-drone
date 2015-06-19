@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -200,6 +200,11 @@ public final class EmbeddedServletOptions implements Options {
      * The compiler source VM.
      */
     private String compilerSourceVM = "1.5";
+
+    /**
+     * The compiler class name.
+     */
+    private String compilerClassName = null;
 
     /**
      * Cache for the TLD locations
@@ -412,6 +417,14 @@ public final class EmbeddedServletOptions implements Options {
         return compilerSourceVM;
     }
 
+    /**
+     * @see Options#getCompilerName
+     */
+    public String getCompilerClassName() {
+        return compilerClassName;
+    }
+
+
     public boolean getErrorOnUseBeanInvalidClassAttribute() {
         return errorOnUseBeanInvalidClassAttribute;
     }
@@ -594,6 +607,11 @@ public final class EmbeddedServletOptions implements Options {
         String javaEncoding = config.getInitParameter("javaEncoding");
         if (javaEncoding != null) {
             this.javaEncoding = javaEncoding;
+        }
+
+        String compilerClassName = config.getInitParameter("compilerClassName");
+        if (compilerClassName != null) {
+            this.compilerClassName = compilerClassName;
         }
 
         String reloadIntervalString =

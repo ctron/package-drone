@@ -82,7 +82,7 @@ import java.util.Arrays;
  * @author Michael Glavassevich, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.
  *
- * @version $Id: XMLChar.java,v 1.1.4.2 2011/08/01 02:55:12 hmalphett Exp $
+ * @version $Id: XMLChar.java,v 1.2 2005/12/08 01:29:01 kchung Exp $
  */
 public class XMLChar {
 

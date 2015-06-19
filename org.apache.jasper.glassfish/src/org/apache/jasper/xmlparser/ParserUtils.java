@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.security.AccessController;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -77,6 +78,8 @@ import javax.xml.XMLConstants;
 
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
+import org.apache.jasper.security.PrivilegedGetTccl;
+import org.apache.jasper.security.PrivilegedSetTccl;
 import org.apache.jasper.compiler.Localizer;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -99,7 +102,7 @@ import org.xml.sax.SAXParseException;
  * use a separate class loader for the parser to be used.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 1.1.4.2 $ $Date: 2011/08/01 02:55:12 $
+ * @version $Revision: 1.11 $ $Date: 2007/05/05 05:32:59 $
  */
 
 public class ParserUtils {
@@ -115,7 +118,7 @@ public class ParserUtils {
     /**
      * An entity resolver for use when parsing XML documents.
      */
-    static EntityResolver entityResolver = new MyEntityResolver();
+    static EntityResolver entityResolver;
 
     static String schemaResourcePrefix;
 
@@ -164,6 +167,17 @@ public class ParserUtils {
             (String[])DEFAULT_SCHEMA_RESOURCE_PATHS; 
     // END PWC 6386258
 
+
+    // --------------------------------------------------------- Constructors
+    public ParserUtils() {
+        this(false);
+    }
+
+    public ParserUtils(boolean blockExternal) {
+        if (entityResolver == null) {
+            entityResolver = new MyEntityResolver(blockExternal);
+        }
+    }
 
     // --------------------------------------------------------- Static Methods
 
@@ -278,12 +292,23 @@ public class ParserUtils {
         // Perform an XML parse of this document, via JAXP
 
         // START 6412405
-        ClassLoader currentLoader =
-            Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(
-            getClass().getClassLoader());
-        // END 6412405
+        ClassLoader currentLoader;
+        if (Constants.IS_SECURITY_ENABLED) {
+            PrivilegedGetTccl pa = new PrivilegedGetTccl();
+            currentLoader = AccessController.doPrivileged(pa);
+        } else { 
+            currentLoader = Thread.currentThread().getContextClassLoader();
+        }
         try {
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa =
+                        new PrivilegedSetTccl(getClass().getClassLoader());
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(
+                    getClass().getClassLoader());
+            }
+            // END 6412405
             DocumentBuilderFactory factory =
                 DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -328,7 +353,12 @@ public class ParserUtils {
                 (Localizer.getMessage("jsp.error.parse.xml", uri), io);
         // START 6412405
         } finally {
-            Thread.currentThread().setContextClassLoader(currentLoader);
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa = new PrivilegedSetTccl(currentLoader);
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(currentLoader);
+            }
         }
         // END 6412405
 
@@ -539,6 +569,12 @@ public class ParserUtils {
 
 class MyEntityResolver implements EntityResolver {
 
+    private boolean blockExternal;
+
+    MyEntityResolver(boolean blockExternal) {
+        this.blockExternal = blockExternal;
+    }
+
     public InputSource resolveEntity(String publicId, String systemId)
         throws SAXException
     {
@@ -583,6 +619,11 @@ class MyEntityResolver implements EntityResolver {
             Localizer.getMessage("jsp.error.parse.xml.invalidPublicId",
             publicId));
 
+        if (blockExternal) {
+            throw new SAXException(
+                Localizer.getMessage("jsp.error.parse.xml.invalidPublicId",
+                publicId));
+        }
         return null;
     }
 }

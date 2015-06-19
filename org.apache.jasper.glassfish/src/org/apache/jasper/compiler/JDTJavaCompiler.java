@@ -263,8 +263,8 @@ public class JDTJavaCompiler implements JavaCompiler {
             }
             
             @Override
-            public boolean ignoreOptionalProblems() {
-            	return true;
+            public boolean ignoreOptionalProblems () {
+                return true;
             }
 
             public char[] getFileName() {

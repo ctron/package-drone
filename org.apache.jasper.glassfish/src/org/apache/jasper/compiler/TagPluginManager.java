@@ -62,6 +62,7 @@ import java.util.*;
 import java.io.*;
 import javax.servlet.ServletContext;
 
+import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.apache.jasper.xmlparser.TreeNode;
@@ -115,7 +116,9 @@ public class TagPluginManager {
 	if (is == null)
 	    return;
 
-	TreeNode root = (new ParserUtils()).parseXMLDocument(TAG_PLUGINS_XML,
+        boolean blockExternal = Boolean.parseBoolean(ctxt.getInitParameter(
+                                    Constants.XML_BLOCK_EXTERNAL_INIT_PARAM));
+	TreeNode root = (new ParserUtils(blockExternal)).parseXMLDocument(TAG_PLUGINS_XML,
 							     is);
 	if (root == null) {
 	    return;

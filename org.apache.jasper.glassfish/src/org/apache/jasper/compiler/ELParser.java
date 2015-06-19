@@ -273,8 +273,8 @@ public class ELParser {
 	    if (Character.isJavaIdentifierStart(ch)) {
 		StringBuilder buf = new StringBuilder();
 		buf.append(ch);
-		while ((ch = peekChar()) != -1 &&
-				Character.isJavaIdentifierPart(ch)) {
+		while (peekChar() != -1 &&
+                        Character.isJavaIdentifierPart(ch=(char)peekChar())) {
 		    buf.append(ch);
 		    nextChar();
 		}
@@ -340,9 +340,9 @@ public class ELParser {
 	return expression.charAt(index++);
     }
 
-    private char peekChar() {
+    private int peekChar() {
 	if (index >= expression.length()) {
-	    return (char)-1;
+	    return -1;
 	}
 	return expression.charAt(index);
     }

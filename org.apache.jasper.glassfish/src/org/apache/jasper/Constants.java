@@ -291,6 +291,14 @@ public class Constants {
      * The name of the JSP engine.  Used for X-Powered-By identification in
      * the response header
      */
-    public static final String JSP_NAME = "JSP/2.2";
+    public static final String JSP_NAME = "JSP/2.3";
+
+    /**
+     * Name of the ServletContext init-param that determines if the XML parsers
+     * will block the resolution of external entities.
+     */
+    public static final String XML_BLOCK_EXTERNAL_INIT_PARAM =
+            "org.apache.jasper.XML_BLOCK_EXTERNAL";
+
 }
 

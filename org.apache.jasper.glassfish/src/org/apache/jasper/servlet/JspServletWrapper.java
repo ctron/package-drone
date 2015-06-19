@@ -188,7 +188,7 @@ public class JspServletWrapper {
     }
 
     public Servlet getServlet()
-        throws ServletException, IOException
+        throws ServletException, IOException, ClassNotFoundException
     {
         if (reload) {
             synchronized (this) {
@@ -281,6 +281,7 @@ public class JspServletWrapper {
             if (reload) {
                 tagHandlerClass = ctxt.load();
             }
+        } catch (ClassNotFoundException ex) {
         } catch (FileNotFoundException ex) {
             log.log(Level.SEVERE, Localizer.getMessage("jsp.error.compiling"));
             throw new JasperException(ex);
@@ -383,7 +384,14 @@ public class JspServletWrapper {
             /*
              * (2) (Re)load servlet class file
              */
-            getServlet();
+            try {
+                getServlet();
+            } catch (ClassNotFoundException ex) {
+                // This can only happen when use-precomiled is set and a
+                // supposedly pre-compiled class does not exist. 
+                jspFileNotFound(request, response);
+                return;
+            }
 
             // If a page is to be precompiled only, return.
             if (precompile) {

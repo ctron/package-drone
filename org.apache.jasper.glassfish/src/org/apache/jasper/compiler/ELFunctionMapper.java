@@ -193,6 +193,10 @@ public class ELFunctionMapper {
                         new ArrayList<ELNode.Function>();
 		Set<String> keys = new HashSet<String>();
 		public void visit(ELNode.Function n) throws JasperException {
+                    if (n.getUri() == null) {
+                        // Can be a lambda expresion call
+                        return;
+                    }
 		    String key = n.getPrefix() + ":" + n.getName();
 		    if (! keys.contains(key)) {
 			keys.add(key);

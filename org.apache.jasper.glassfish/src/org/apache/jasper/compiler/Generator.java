@@ -2429,6 +2429,10 @@ class Generator {
                     out.print(tagHandlerVar);
                     out.println(");");
                 } else {
+                    out.printin("if (_jspx_resourceInjector != null) ");
+                    out.print("_jspx_resourceInjector.preDestroy(");
+                    out.print(tagHandlerVar);
+                    out.println(");");
                     out.printin(tagHandlerVar);
                     out.println(".release();");
                 }
@@ -2472,6 +2476,10 @@ class Generator {
                 out.print(tagHandlerVar);
                 out.println(");");
             } else {
+                out.printin("if (_jspx_resourceInjector != null) ");
+                out.print("_jspx_resourceInjector.preDestroy(");
+                out.print(tagHandlerVar);
+                out.println(");");
                 out.printin(tagHandlerVar);
                 out.println(".release();");
             }
@@ -2511,10 +2519,14 @@ class Generator {
             out.print(" ");
             out.print(tagHandlerVar);
             out.print(" = ");
-            out.print("(_jspx_resourceInjector != null) ? ");
-            out.print("_jspx_resourceInjector.createTagHandlerInstance(");
-            out.print(tagHandlerClassName);
-            out.print(".class) : new ");
+            if (n.getTagFileInfo() == null) {
+                // Tag files do not support resource injection
+                out.print("(_jspx_resourceInjector != null)? ");
+                out.print("_jspx_resourceInjector.createTagHandlerInstance(");
+                out.print(tagHandlerClassName);
+                out.print(".class) : ");
+            }
+            out.print("new ");
             out.print(tagHandlerClassName);
             out.println("();");
 
@@ -2560,6 +2572,14 @@ class Generator {
             // Declare and synchronize AT_END scripting variables
             declareScriptingVars(n, VariableInfo.AT_END);
             syncScriptingVars(n, VariableInfo.AT_END);
+
+            if (n.getTagFileInfo() == null) {
+                // Tag files do not support resource injection
+                out.printin("if (_jspx_resourceInjector != null) ");
+                out.print("_jspx_resourceInjector.preDestroy(");
+                out.print(tagHandlerVar);
+                out.println(");");
+            }
 
             n.setEndJavaLine(out.getJavaLine());
         }

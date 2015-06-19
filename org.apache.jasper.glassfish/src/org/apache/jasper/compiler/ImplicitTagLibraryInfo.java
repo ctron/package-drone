@@ -255,7 +255,9 @@ class ImplicitTagLibraryInfo extends TagLibraryInfo {
             tld = new ParserUtils().parseXMLDocument(IMPLICIT_TLD, is);
             */
             // START SJSAS 6384538
-            tld = new ParserUtils().parseXMLDocument(
+            boolean blockExternal = Boolean.parseBoolean(ctxt.getServletContext()
+                   .getInitParameter(Constants.XML_BLOCK_EXTERNAL_INIT_PARAM));
+            tld = new ParserUtils(blockExternal).parseXMLDocument(
                 IMPLICIT_TLD, is, ctxt.getOptions().isValidationEnabled());
             // END SJSAS 6384538
         } catch (Exception ex) {

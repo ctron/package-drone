@@ -507,7 +507,7 @@ import java.util.Hashtable;
  * @author TAMURA Kent, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id: EncodingMap.java,v 1.1.4.2 2011/08/01 02:55:12 hmalphett Exp $
+ * @version $Id: EncodingMap.java,v 1.2 2005/12/08 01:29:00 kchung Exp $
  */
 public class EncodingMap {
 

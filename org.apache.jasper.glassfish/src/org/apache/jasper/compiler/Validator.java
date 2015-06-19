@@ -1596,8 +1596,12 @@ class Validator {
 
 		    if (uri == null) {
 			if (prefix == null) {
+                            // in EL 3.0, this can be a lambda expression call.
+                            return;
+                            /*
 			    err.jspError(n, "jsp.error.noFunctionPrefix",
 				function);
+                            */
 			}
 			else {
 			    err.jspError(n,
@@ -1720,6 +1724,10 @@ class Validator {
 
 		public void visit(ELNode.Function n) throws JasperException {
 
+                    if (n.getUri() == null) {
+                        // Can be a lambda expression call
+                        return;
+                    }
 		    Class<?> c = null;
 		    Method method = null;
 		    try {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,13 +41,14 @@
  * This file incorporates work covered by the following copyright and
  * permission notice:
  *
- * Copyright 2004 The Apache Software Foundation
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,51 +57,21 @@
  * limitations under the License.
  */
 
-package org.apache.jasper.runtime;
+package org.apache.jasper.security;
 
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.servlet.jsp.PageContext;
-import javax.servlet.jsp.el.VariableResolver;
+import java.security.PrivilegedAction;
 
+public class PrivilegedSetTccl implements PrivilegedAction<Void> {
 
-/**
- * <p>This is the implementation of VariableResolver in JSP 2.0,
- * using ELResolver in JSP2.1.
- * It looks up variable references in the PageContext, and also
- * recognizes references to implicit objects.
- * 
- * @author Kin-man Chung
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: kchung $
- **/
+    private ClassLoader cl;
 
-public class VariableResolverImpl
-    implements VariableResolver
-{
-    private PageContext pageContext;
-
-    //-------------------------------------
-    /**
-     * Constructor
-     **/
-    public VariableResolverImpl (PageContext pageContext) {
-        this.pageContext = pageContext;
+    public PrivilegedSetTccl(ClassLoader cl) {
+        this.cl = cl;
     }
-  
-    //-------------------------------------
-    /**
-     * Resolves the specified variable within the given context.
-     * Returns null if the variable is not found.
-     **/
-    public Object resolveVariable (String pName)
-            throws javax.servlet.jsp.el.ELException {
 
-        ELContext elContext = pageContext.getELContext();
-        ELResolver elResolver = elContext.getELResolver();
-        try {
-            return elResolver.getValue(elContext, null, pName);
-        } catch (javax.el.ELException ex) {
-            throw new javax.servlet.jsp.el.ELException();
-        }
+    @Override
+    public Void run() {
+        Thread.currentThread().setContextClassLoader(cl);
+        return null;
     }
 }

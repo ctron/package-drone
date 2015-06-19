@@ -80,7 +80,7 @@ package org.apache.jasper.xmlparser;
  * @author Eric Ye, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id: XMLString.java,v 1.1.4.2 2011/08/01 02:55:12 hmalphett Exp $
+ * @version $Id: XMLString.java,v 1.2 2005/12/08 01:29:02 kchung Exp $
  */
 public class XMLString {
 

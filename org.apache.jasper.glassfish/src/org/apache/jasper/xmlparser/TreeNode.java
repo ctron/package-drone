@@ -78,7 +78,7 @@ import java.util.Iterator;
  * synchronized.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 1.1.4.2 $ $Date: 2011/08/01 02:55:12 $
+ * @version $Revision: 1.2 $ $Date: 2005/12/08 01:29:00 $
  */
 
 public class TreeNode {

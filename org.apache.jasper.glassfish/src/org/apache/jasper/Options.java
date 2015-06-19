@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -171,6 +171,11 @@ public interface Options {
      * Compiler source VM, e.g. 1.3, 1.4, or 1.5.
      */
     public String getCompilerSourceVM();   
+
+    /**
+     * The name of class that implements JavaCompiler, used for Java compilations.
+     */
+    public String getCompilerClassName();
 
     /**
      * The cache for the location of the TLD's

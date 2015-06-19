@@ -864,6 +864,7 @@ class Parser implements TagConstants {
             throws JasperException {
         start = reader.mark();
         boolean singleQuoted = false, doubleQuoted = false;
+        int curl = 0;
         int currentChar;
         do {
             // XXX could move this logic to JspReader
@@ -877,9 +878,13 @@ class Parser implements TagConstants {
                 err.jspError(start, "jsp.error.unterminated", typeEL);
             if (currentChar == '"')
                 doubleQuoted = !doubleQuoted;
-            if (currentChar == '\'')
+            else if (currentChar == '\'')
                 singleQuoted = !singleQuoted;
-        } while (currentChar != '}' || (singleQuoted || doubleQuoted));
+            else if (currentChar == '{')
+                curl++;
+            else if (currentChar == '}')
+                curl--;
+        } while (currentChar != '}' || curl >= 0 || singleQuoted || doubleQuoted);
 
         String text = typeEL + reader.getText(start, reader.mark());
         new Node.ELExpression(text, start, parent);

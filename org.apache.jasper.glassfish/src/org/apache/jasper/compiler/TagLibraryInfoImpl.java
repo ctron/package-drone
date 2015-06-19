@@ -336,8 +336,11 @@ public class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             new HashMap<String, FunctionInfo>();
 
         // Create an iterator over the child elements of our <taglib> element
-        ParserUtils pu = new ParserUtils();
-        TreeNode tld = pu.parseXMLDocument(uri, in);
+        boolean blockExternal = Boolean.parseBoolean(ctxt.getServletContext()
+                   .getInitParameter(Constants.XML_BLOCK_EXTERNAL_INIT_PARAM));
+        ParserUtils pu = new ParserUtils(blockExternal);
+        TreeNode tld = pu.parseXMLDocument(uri, in,
+                            ctxt.getOptions().isValidationEnabled());
 
 	// Check to see if the <taglib> root element contains a 'version'
 	// attribute, which was added in JSP 2.0 to replace the <jsp-version>
@@ -492,6 +495,9 @@ public class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             } else if ("bodycontent".equals(tname) ||
                      "body-content".equals(tname)) {
                 bodycontent = element.getBody();
+                if (bodycontent == null) {
+                    bodycontent = "null"; // An error will be raised later
+                }
             } else if ("display-name".equals(tname)) {
                 displayName = element.getBody();
             } else if ("small-icon".equals(tname)) {
@@ -623,7 +629,9 @@ public class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
 
 	if (path.startsWith("/META-INF/tags")) {
 	    // Tag file packaged in JAR
-	    ctxt.getTagFileJarUrls().put(path, jarFileUrl);
+            if (jarFileUrl != null) {
+	        ctxt.getTagFileJarUrls().put(path, jarFileUrl);
+            }
 	} else if (!path.startsWith("/WEB-INF/tags")) {
 	    err.jspError("jsp.error.tagfile.illegalPath", path);
 	}

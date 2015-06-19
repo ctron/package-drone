@@ -71,7 +71,7 @@ import javax.el.ValueExpression;
  * The variable mapper will be updated by tag handlers, if necessary.
  * 
  * @author Kin-man Chung
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: hmalphett $
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: kchung $
  **/
 
 public class VariableMapperImpl extends VariableMapper

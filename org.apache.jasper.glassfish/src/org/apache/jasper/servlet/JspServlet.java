@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -311,13 +311,12 @@ public class JspServlet extends HttpServlet {
             if (method == null) {
                 return;
             }
-            boolean isSupportedMethod = httpMethodsSet.contains(method);
-            if (!isSupportedMethod) {
-                if (method.equals("OPTIONS")) {
-                    response.addHeader("Allow", httpMethodsString);
-                } else {
-                    super.service(request, response);
-                }
+            if (!httpMethodsSet.contains(method)) {
+                super.service(request, response);
+                return;
+            }
+            if (method.equals("OPTIONS")) {
+                response.addHeader("Allow", httpMethodsString);
                 return;
             }
         }
@@ -441,15 +440,8 @@ public class JspServlet extends HttpServlet {
                 if (wrapper == null) {
                     // Check if the requested JSP page exists, to avoid
                     // creating unnecessary directories and files.
-                    /* START PWC 6181923
-                    if (null == context.getResource(jspUri)) {
-                    */
-                    // START PWC 6181923
                     if (null == context.getResource(jspUri)
                             && !options.getUsePrecompiled()) {
-                    // END PWC 6181923
-
-                        // START PWC 6300204
                         String includeRequestUri = (String) 
                             request.getAttribute("javax.servlet.include.request_uri");
                         if (includeRequestUri != null) {
@@ -463,22 +455,11 @@ public class JspServlet extends HttpServlet {
                             throw new FileNotFoundException(
                                 JspUtil.escapeXml(jspUri));
                         }
-                        // END PWC 6300204
 
-                        /* RIMOD PWC 6282167, 4878272
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                                           jspUri);
-                        */
-                        // START PWC 6282167, 4878272
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                        String realPath = URLEncoder.encode(context.getRealPath(jspUri));
-                        if (realPath.length() > CHAR_LIMIT) {
-                            realPath = realPath.substring(0, CHAR_LIMIT);
-                        }
                         log.severe(Localizer.getMessage(
                             "jsp.error.file.not.found",
-                            realPath));
-                        // END PWC 6282167, 4878272
+                            context.getRealPath(jspUri)));
                         return;
                     }
                     boolean isErrorPage = exception != null;

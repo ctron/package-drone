@@ -644,7 +644,7 @@ public class JspCompilationContext {
     // ==================== Manipulating the class ====================
 
     public Class load() 
-        throws JasperException
+        throws JasperException, ClassNotFoundException
     {
         try {
 
@@ -656,6 +656,11 @@ public class JspCompilationContext {
                 servletClass = getJspLoader().loadClass(name);
             }
         } catch (ClassNotFoundException cex) {
+            // Do not wrapper this in JasperException if use-precompiled is set,
+            // because this is really a 404.
+            if (options.getUsePrecompiled()) {
+                throw cex;
+            }
             throw new JasperException(
                     Localizer.getMessage("jsp.error.unable.load"), cex);
         } catch (Exception ex) {

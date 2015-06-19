@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,13 +90,20 @@ import org.glassfish.jsp.api.ByteWriter;
  *
  * @author Anil K. Vijendran
  * @author Kin-man Chung
+ * @author Dongbin Nie
  */
 public class JspWriterImpl extends JspWriter {
+    
+    private static final int MAX_BUFFER_SIZE = Integer.getInteger(
+        "org.apache.jasper.runtime.JspWriterImpl.MAX_THREAD_LOCAL_BUFFER_SIZE",
+        32 * 1024);
+    
+    private static final ThreadLocal<CharBufferThreadLocalPool> 
+        charBufferPools = new ThreadLocal<CharBufferThreadLocalPool>();
 
     private Writer out;
     private ServletResponse response;    
-    private char cb[];
-    private int nextChar;
+    private CharBuffer buf;
     private boolean flushed = false;
     private boolean closed = false;
     protected boolean implementsByteWriter = true;
@@ -131,8 +138,7 @@ public class JspWriterImpl extends JspWriter {
         if (sz < 0)
             throw new IllegalArgumentException("Buffer size <= 0");
 	this.response = response;
-        cb = sz == 0 ? null : new char[sz];
-	nextChar = 0;
+        allocateCharBuffer();
         // START OF IASRI 4641975/6172992
         try {
             response.setBufferSize(sz);
@@ -144,11 +150,9 @@ public class JspWriterImpl extends JspWriter {
 
     void init( ServletResponse response, int sz, boolean autoFlush ) {
 	this.response= response;
-	if( sz > 0 && ( cb == null || sz > cb.length ) )
-	    cb=new char[sz];
-	nextChar = 0;
 	this.autoFlush=autoFlush;
 	this.bufferSize=sz;
+        allocateCharBuffer();
         // START OF IASRI 4641975/6172992
         try {
             response.setBufferSize(sz);
@@ -165,7 +169,7 @@ public class JspWriterImpl extends JspWriter {
         closed = false;
         out = null;
         byteOut = null;
-	nextChar = 0;
+        releaseCharBuffer();
         response = null;
     }
 
@@ -179,11 +183,11 @@ public class JspWriterImpl extends JspWriter {
             return;
         flushed = true;
         ensureOpen();
-        if (nextChar == 0)
+        if (buf.pos == buf.offset)
             return;
         initOut();
-        out.write(cb, 0, nextChar);
-        nextChar = 0;
+        out.write(buf.buf, buf.offset, buf.pos - buf.offset);
+        buf.pos = buf.offset;
     }
 
     private void initOut() throws IOException {
@@ -217,7 +221,8 @@ public class JspWriterImpl extends JspWriter {
             throw new IOException(
                     getLocalizeMessage("jsp.error.attempt_to_clear_flushed_buffer"));
         ensureOpen();
-        nextChar = 0;
+        if (buf != null)
+            buf.pos = buf.offset;
     }
 
     public void clearBuffer() throws IOException {
@@ -225,7 +230,7 @@ public class JspWriterImpl extends JspWriter {
             throw new IllegalStateException(
                     getLocalizeMessage("jsp.error.ise_on_clear"));
         ensureOpen();
-        nextChar = 0;
+        buf.pos = buf.offset;
     }
 
     private final void bufferOverflow() throws IOException {
@@ -273,7 +278,7 @@ public class JspWriterImpl extends JspWriter {
      * @return the number of bytes unused in the buffer
      */
     public int getRemaining() {
-        return bufferSize - nextChar;
+        return buf == null ? 0 : buf.lim - buf.pos;
     }
 
     /** check to make sure that the stream has not been closed */
@@ -347,12 +352,12 @@ public class JspWriterImpl extends JspWriter {
             out.write(c);
         }
         else {
-            if (nextChar >= bufferSize)
+            if (getRemaining() == 0)
                 if (autoFlush)
                     flushBuffer();
                 else
                     bufferOverflow();
-            cb[nextChar++] = (char) c;
+            buf.buf[buf.pos++] = (char) c;
         }
     }
 
@@ -412,11 +417,11 @@ public class JspWriterImpl extends JspWriter {
 
         int b = off, t = off + len;
         while (b < t) {
-            int d = min(bufferSize - nextChar, t - b);
-            System.arraycopy(cbuf, b, cb, nextChar, d);
+            int d = min(getRemaining(), t - b);
+            System.arraycopy(cbuf, b, buf.buf, buf.pos, d);
             b += d;
-            nextChar += d;
-            if (nextChar >= bufferSize) 
+            buf.pos += d;
+            if (getRemaining() == 0) 
                 if (autoFlush)
                     flushBuffer();
                 else
@@ -449,11 +454,11 @@ public class JspWriterImpl extends JspWriter {
         }
         int b = off, t = off + len;
         while (b < t) {
-            int d = min(bufferSize - nextChar, t - b);
-            s.getChars(b, b + d, cb, nextChar);
+            int d = min(getRemaining(), t - b);
+            s.getChars(b, b + d, buf.buf, buf.pos);
             b += d;
-            nextChar += d;
-            if (nextChar >= bufferSize) 
+            buf.pos += d;
+            if (getRemaining() == 0) 
                 if (autoFlush)
                     flushBuffer();
                 else
@@ -718,11 +723,80 @@ public class JspWriterImpl extends JspWriter {
 
     // START PWC 6512276
     public boolean hasData() {
-        if (bufferSize != 0 && nextChar != 0) {
+        if (bufferSize != 0 && buf.pos != buf.offset) {
             return true;
         }
 
         return false;
     }
     // END PWC 6512276
+    
+    private void allocateCharBuffer() {
+        if (bufferSize == 0) return;
+        
+        if (bufferSize > MAX_BUFFER_SIZE) {
+            buf =  new CharBuffer(new char[bufferSize], 0, bufferSize);
+        } else {
+            buf = getCharBufferThreadLocalPool().allocate(bufferSize);
+        }
+    }
+    
+    private void releaseCharBuffer() {
+        if (buf == null) return;
+        
+        if ((buf.lim - buf.offset) <= MAX_BUFFER_SIZE) {
+            getCharBufferThreadLocalPool().release(buf);
+        }
+        buf = null;
+    }
+    
+    private CharBufferThreadLocalPool getCharBufferThreadLocalPool() {
+        CharBufferThreadLocalPool pool = charBufferPools.get();
+        if (pool == null) {
+            pool = new CharBufferThreadLocalPool();
+            charBufferPools.set(pool);
+        }
+        return pool;
+    }
+    
+    private static class CharBuffer {
+        char[] buf;
+        int offset;
+        int pos;
+        int lim;
+        
+        CharBuffer(char[] buffer, int offset, int length) {
+            this.buf = buffer;
+            this.offset = offset;
+            this.pos = offset;
+            this.lim = offset + length;
+        }
+    }
+    
+    private static class CharBufferThreadLocalPool {
+        private char[] pool;
+        private int pos;
+        
+        public CharBuffer allocate(int size) {
+            if (remaining() < size) {
+                pool = new char[MAX_BUFFER_SIZE];
+                pos = 0;
+            }
+            
+            CharBuffer allocated = new CharBuffer(pool, pos, size);
+            pos += size;
+            
+            return allocated;
+        }
+        
+        public void release(CharBuffer buffer) {
+            if (buffer.buf == pool && buffer.lim == pos) {
+               pos = buffer.offset; 
+            }
+        }
+        
+        public int remaining() {
+            return pool == null ? 0 : pool.length - pos;
+        }
+    }
 }

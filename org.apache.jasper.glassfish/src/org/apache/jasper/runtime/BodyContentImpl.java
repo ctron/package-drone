@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.OutputStreamWriter;
 import javax.servlet.ServletResponse;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.BodyContent;
@@ -594,7 +595,8 @@ public class BodyContentImpl extends BodyContent {
 	    = new BodyContentImpl(new JspWriterImpl(null, 100, false));
 	bodyContent.println (buff);
 	System.out.println (bodyContent.getString ());
-	bodyContent.writeOut (new PrintWriter (System.out));
+	bodyContent.writeOut (new PrintWriter(
+                                  new OutputStreamWriter(System.out,"UTF-8")));
     }
 
     /**

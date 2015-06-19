@@ -69,6 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
+import java.security.AccessController;
 
 import javax.servlet.jsp.tagext.TagFileInfo;
 import javax.servlet.jsp.tagext.TagInfo;
@@ -77,6 +78,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.jasper.JasperException;
+import org.apache.jasper.Constants;
+import org.apache.jasper.security.PrivilegedGetTccl;
+import org.apache.jasper.security.PrivilegedSetTccl;
 import org.apache.jasper.JspCompilationContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -1456,24 +1460,49 @@ class JspDocumentParser
         JspDocumentParser jspDocParser)
         throws Exception {
 
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
+        ClassLoader original;
+        if (Constants.IS_SECURITY_ENABLED) {
+            PrivilegedGetTccl pa = new PrivilegedGetTccl();
+            original = AccessController.doPrivileged(pa);
+        } else {
+            original = Thread.currentThread().getContextClassLoader();
+        }
+        try {
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa =
+                        new PrivilegedSetTccl(JspDocumentParser.class.getClassLoader());
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(
+                        JspDocumentParser.class.getClassLoader());
+            }
 
-        // Preserve xmlns attributes
-        factory.setFeature(
-            "http://xml.org/sax/features/namespace-prefixes",
-            true);
-        factory.setFeature(
-            "http://xml.org/sax/features/validation",
-            validating);
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
 
-        // Configure the parser
-        SAXParser saxParser = factory.newSAXParser();
-        XMLReader xmlReader = saxParser.getXMLReader();
-        xmlReader.setProperty(LEXICAL_HANDLER_PROPERTY, jspDocParser);
-        xmlReader.setErrorHandler(jspDocParser);
+            // Preserve xmlns attributes
+            factory.setFeature(
+                "http://xml.org/sax/features/namespace-prefixes",
+                true);
+            factory.setFeature(
+                "http://xml.org/sax/features/validation",
+                validating);
 
-        return saxParser;
+            // Configure the parser
+            SAXParser saxParser = factory.newSAXParser();
+            XMLReader xmlReader = saxParser.getXMLReader();
+            xmlReader.setProperty(LEXICAL_HANDLER_PROPERTY, jspDocParser);
+            xmlReader.setErrorHandler(jspDocParser);
+
+            return saxParser;
+        } finally {
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa = new PrivilegedSetTccl(original);
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(original);
+            }
+        }
     }
 
     /*

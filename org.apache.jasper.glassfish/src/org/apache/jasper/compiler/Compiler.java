@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -732,26 +732,37 @@ public class Compiler {
 
     /**
      * Get an instance of JavaCompiler.
-     * If Running with JDK 6, use a Jsr199JavaCompiler that supports JSR199,
+     * If a compiler is specified in Options, use that,
+     * else if Running with JDK 6, use a Jsr199JavaCompiler that supports JSR199,
      * else if eclipse's JDT compiler is available, use that.
      * The default is to use javac from ant.
      */
     private void initJavaCompiler() throws JasperException {
-        boolean disablejsr199 = Boolean.TRUE.toString().equals(
-        System.getProperty("org.apache.jasper.compiler.disablejsr199"));
-        Double version = 
-            Double.valueOf(System.getProperty("java.specification.version"));
-        if (!disablejsr199 && (version >= 1.6 || getClassFor("javax.tools.Tool") != null)) {
-            // JDK 6 or bundled with jsr199 compiler
-            javaCompiler = new Jsr199JavaCompiler();
-        } else {
-            Class c = getClassFor("org.eclipse.jdt.internal.compiler.Compiler");
-            if (c != null) {
-                c = getClassFor("org.apache.jasper.compiler.JDTJavaCompiler");
+        if (options.getCompilerClassName() != null) {
+            Class c = getClassFor(options.getCompilerClassName());
+            try {
+                javaCompiler = (JavaCompiler) c.newInstance();
+            } catch (Exception ex) {
+            }
+        }
+        if (javaCompiler == null) {
+            boolean disablejsr199 = Boolean.TRUE.toString().equals(
+                System.getProperty("org.apache.jasper.compiler.disablejsr199"));
+            Double version = 
+                Double.valueOf(System.getProperty("java.specification.version"));
+            if (!disablejsr199 &&
+                   (version >= 1.6 || getClassFor("javax.tools.Tool") != null)) {
+                // JDK 6 or bundled with jsr199 compiler
+                javaCompiler = new Jsr199JavaCompiler();
+            } else {
+                Class c = getClassFor("org.eclipse.jdt.internal.compiler.Compiler");
                 if (c != null) {
-                    try {
-                        javaCompiler = (JavaCompiler) c.newInstance();
-                    } catch (Exception ex) {
+                    c = getClassFor("org.apache.jasper.compiler.JDTJavaCompiler");
+                    if (c != null) {
+                        try {
+                            javaCompiler = (JavaCompiler) c.newInstance();
+                        } catch (Exception ex) {
+                        }
                     }
                 }
             }

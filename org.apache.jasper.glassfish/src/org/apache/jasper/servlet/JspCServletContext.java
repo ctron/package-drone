@@ -146,11 +146,6 @@ public class JspCServletContext implements ServletContext {
 
     // --------------------------------------------------------- Public Methods
 
-    
-    @Override
-    public String getVirtualServerName() {
-    	return null;
-    }
 
     /**
      * Return the specified context attribute, if any.
@@ -641,6 +636,11 @@ public class JspCServletContext implements ServletContext {
     }
 
     public void declareRoles(String... roleNames) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String getVirtualServerName () {
         throw new UnsupportedOperationException();
     }
 

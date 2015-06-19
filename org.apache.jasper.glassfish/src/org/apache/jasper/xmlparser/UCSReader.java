@@ -71,7 +71,7 @@ import java.util.logging.Level;
  *
  * @author Neil Graham, IBM
  *
- * @version $Id: UCSReader.java,v 1.1.4.2 2011/08/01 02:55:12 hmalphett Exp $
+ * @version $Id: UCSReader.java,v 1.3 2006/03/12 01:27:12 jluehe Exp $
  */
 public class UCSReader extends Reader {
 
