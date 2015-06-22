@@ -27,6 +27,7 @@
 		<properties>
 			<property name="eclipselink.weaving" value="true"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
+			<property name="eclipselink.session-event-listener" value="de.dentrassi.pm.storage.jpa.listener.WorkaroundEventListener"/>
 		</properties>
 	</persistence-unit>
 </persistence>
