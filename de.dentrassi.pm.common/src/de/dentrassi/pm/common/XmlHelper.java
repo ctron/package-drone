@@ -145,14 +145,24 @@ public class XmlHelper
 
     public XmlHelper ()
     {
-        this.dbf = DocumentBuilderFactory.newInstance ();
+        final ClassLoader tccl = Thread.currentThread ().getContextClassLoader ();
+        try
+        {
+            Thread.currentThread ().setContextClassLoader ( XmlHelper.class.getClassLoader () );
 
-        this.dbfNs = DocumentBuilderFactory.newInstance ();
-        this.dbfNs.setNamespaceAware ( true );
+            this.dbf = DocumentBuilderFactory.newInstance ();
 
-        this.transformerFactory = TransformerFactory.newInstance ();
+            this.dbfNs = DocumentBuilderFactory.newInstance ();
+            this.dbfNs.setNamespaceAware ( true );
 
-        this.xpathFactory = XPathFactory.newInstance ();
+            this.transformerFactory = TransformerFactory.newInstance ();
+
+            this.xpathFactory = XPathFactory.newInstance ();
+        }
+        finally
+        {
+            Thread.currentThread ().setContextClassLoader ( tccl );
+        }
     }
 
     public Document create ()

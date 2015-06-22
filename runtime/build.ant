@@ -160,29 +160,17 @@
         	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-spi" version="4.1.2"/>
         	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-runtime" version="4.1.2"/>
         	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jetty" version="4.1.2"/>
-        	        	
-        	<!--
-        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jetty-bundle" version="4.1.2"/>
-        	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-jsp" version="4.1.2"/>
-        	-->
-        	        	
         	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-extender-whiteboard" version="4.1.2"/>
         	
         	<mavenGet group="org/apache/xbean" artifact="xbean-finder" version="4.3"/>
         	<mavenGet group="org/apache/xbean" artifact="xbean-bundleutils" version="4.3"/>
         	<mavenGet group="org/apache/xbean" artifact="xbean-reflect" version="4.3"/>
-        	
-        	<!-- provided by org.glassfish/javax.el
-        	<mavenGet group="javax/el" artifact="javax.el-api" version="3.0.0"/>
-        	-->
+
+        	<!-- provides api and impl -->
         	<mavenGet group="org/glassfish" artifact="javax.el" version="3.0.1-b08"/>
         	
         	<mavenGet group="javax/servlet" artifact="javax.servlet-api" version="3.1.0"/>
         	<mavenGet group="javax/servlet/jsp" artifact="javax.servlet.jsp-api" version="2.3.2-b01"/>
-        	
-        	<!--
-        	<mavenGet group="javax/servlet/jsp/jstl" artifact="javax.servlet.jsp.jstl-api" version="1.2.1"/>
-        	-->
         	
         	<mavenGet group="org/jboss/spec/javax/servlet/jstl" artifact="jboss-jstl-api_1.2_spec" version="1.1.2.Final"/>
         	
@@ -242,8 +230,6 @@
             	<include name="jetty-rewrite-*.jar" />
             	<include name="jetty-client-*.jar" />
             	<include name="jetty-util-ajax-*.jar" />
-            	
-            	<include name="websocket/*.jar" />
             	
             	<!--
                 
@@ -306,15 +292,16 @@
                 <include name="org.apache.felix.gogo.runtime_*.jar" />
                 <include name="org.apache.felix.gogo.shell_*.jar" />
 
-            	<!--
-                <include name="org.eclipse.equinox.cm_*.jar" />
-                -->
                 <include name="org.eclipse.equinox.common_*.jar" />
                 <include name="org.eclipse.equinox.console_*.jar" />
                 <include name="org.eclipse.equinox.ds_*.jar" />
+            	<include name="org.eclipse.equinox.ds.source_*.jar" />
                 <include name="org.eclipse.equinox.event_*.jar" />
+            	<include name="org.eclipse.equinox.event.source_*.jar" />
                 <include name="org.eclipse.equinox.supplement_*.jar" />
+            	<include name="org.eclipse.equinox.supplement.source_*.jar" />
                 <include name="org.eclipse.equinox.util_*.jar" />
+            	<include name="org.eclipse.equinox.util.source*.jar" />
             	
             	<include name="org.eclipse.equinox.launcher_*.jar" />
 
@@ -326,24 +313,6 @@
             	<include name="org.eclipse.osgi.util.source_*.jar" />
             	
                 <include name="org.slf4j.api_*.jar" />
-            	
-            	<!-- http & jetty -->
-            	<!--
-            	
-            	<include name="org.apache.jasper.glassfish*.jar" />
-            	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
-            	<include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
-            	<include name="org.eclipse.jetty*.jar" />
-            	
-            	<include name="org.eclipse.equinox.http.jetty*.jar" />
-            	<include name="org.eclipse.equinox.http.servletbridge*.jar" />
-            	<include name="org.eclipse.equinox.http.servlet*.jar" />
-            	<include name="javax.servlet*.jar" />
-            	-->
-            	
-            	<!--
-            	<include name="javax.servlet.jsp*.jar" />
-            	-->
             	
             	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
                 <include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
