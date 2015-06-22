@@ -45,7 +45,7 @@ public class ChannelStreamer
         try
         {
             final DocumentBuilder documentBuilder = this.xml.getBuilder ();
-            final XPathFactory pathFactory = XPathFactory.newInstance ();
+            final XPathFactory pathFactory = XmlHelper.createXPathFactory ();
 
             final DocumentCache cache = new DocumentCache ( documentBuilder );
 

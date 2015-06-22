@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -145,19 +146,46 @@ public class XmlHelper
 
     public XmlHelper ()
     {
+        this.dbf = createDocumentBuilderFactory ( false );
+        this.dbfNs = createDocumentBuilderFactory ( true );
+
+        this.transformerFactory = createTransformerFactory ();
+        this.xpathFactory = createXPathFactory ();
+    }
+
+    public static DocumentBuilderFactory createDocumentBuilderFactory ( final boolean namespaceAware )
+    {
+        return withClassLoader ( () -> {
+            final DocumentBuilderFactory result = DocumentBuilderFactory.newInstance ();
+            result.setNamespaceAware ( namespaceAware );
+            return result;
+        } );
+    }
+
+    public static TransformerFactory createTransformerFactory ()
+    {
+        return withClassLoader ( TransformerFactory::newInstance );
+    }
+
+    public static XPathFactory createXPathFactory ()
+    {
+        return withClassLoader ( XPathFactory::newInstance );
+    }
+
+    private static <T> T withClassLoader ( final Callable<T> call )
+    {
         final ClassLoader tccl = Thread.currentThread ().getContextClassLoader ();
         try
         {
             Thread.currentThread ().setContextClassLoader ( XmlHelper.class.getClassLoader () );
-
-            this.dbf = DocumentBuilderFactory.newInstance ();
-
-            this.dbfNs = DocumentBuilderFactory.newInstance ();
-            this.dbfNs.setNamespaceAware ( true );
-
-            this.transformerFactory = TransformerFactory.newInstance ();
-
-            this.xpathFactory = XPathFactory.newInstance ();
+            try
+            {
+                return call.call ();
+            }
+            catch ( final Exception e )
+            {
+                throw new RuntimeException ( e );
+            }
         }
         finally
         {
