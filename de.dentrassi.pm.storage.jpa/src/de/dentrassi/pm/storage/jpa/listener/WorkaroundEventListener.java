@@ -27,7 +27,7 @@ public class WorkaroundEventListener extends SessionEventAdapter
     {
         for ( final ClassDescriptor desc : event.getSession ().getDescriptors ().values () )
         {
-            desc.getQueryManager ().setExpressionQueryCacheMaxSize ( 0 );;
+            desc.getQueryManager ().setExpressionQueryCacheMaxSize ( 0 );
         }
     }
 }
