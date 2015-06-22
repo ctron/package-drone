@@ -78,7 +78,7 @@ public class MavenHandler
         {
             if ( !request.getPathInfo ().endsWith ( "/" ) )
             {
-                response.sendRedirect ( request.getContextPath () + request.getPathInfo () + "/" );
+                response.sendRedirect ( request.getRequestURI () + "/" );
                 return;
             }
             renderDir ( response, (DirectoryNode)node, path );
