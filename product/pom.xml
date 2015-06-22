@@ -10,7 +10,7 @@
 		<relativePath>../parent</relativePath>
 	</parent>
 
-	<version>0.10.0.m4</version>
+	<version>0.10.0.m5</version>
 	<artifactId>package-drone-server</artifactId>
 	<packaging>eclipse-repository</packaging>
 	
