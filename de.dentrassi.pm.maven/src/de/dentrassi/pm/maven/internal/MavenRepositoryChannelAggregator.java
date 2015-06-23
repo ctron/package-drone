@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,6 +36,7 @@ import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.maven.ChannelData;
@@ -42,6 +45,8 @@ import de.dentrassi.pm.system.SitePrefixService;
 
 public class MavenRepositoryChannelAggregator implements ChannelAggregator
 {
+    private final static Logger logger = LoggerFactory.getLogger ( MavenRepositoryChannelAggregator.class );
+
     private final XmlHelper xml = new XmlHelper ();
 
     private static final String NL = "\n";
@@ -56,7 +61,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
     @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception
     {
-        final Map<String, ArtifactInformation> map = makeMap ( context );
+        final Map<String, ArtifactInformation> map = makeMap ( context.getArtifacts () );
 
         final Map<String, String> result = new HashMap<> ();
 
@@ -67,6 +72,15 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         for ( final ArtifactInformation art : context.getArtifacts () )
         {
             final Collection<MavenInformation> infos = getInfos ( art, map );
+
+            if ( logger.isDebugEnabled () )
+            {
+                logger.debug ( "Found {} coordinates for {}", infos.size (), art );
+                for ( final MavenInformation info : infos )
+                {
+                    logger.debug ( "   {}", info );
+                }
+            }
 
             for ( final MavenInformation info : infos )
             {
@@ -80,6 +94,9 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
                 {
                     // Cannot add the same information made name (info.makeName()) multiple times.
                     // First-come, first-served.
+
+                    // but log it for debugging
+                    logger.debug ( "Failed to add " + info, ex );
                 }
             }
         }
@@ -154,11 +171,11 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         return String.format ( "%s/maven/%s", this.sitePrefixService.getSitePrefix (), channelId );
     }
 
-    private Map<String, ArtifactInformation> makeMap ( final AggregationContext context )
+    static Map<String, ArtifactInformation> makeMap ( final Collection<ArtifactInformation> artifacts )
     {
-        final Map<String, ArtifactInformation> result = new HashMap<> ( context.getArtifacts ().size () );
+        final Map<String, ArtifactInformation> result = new HashMap<> ( artifacts.size () );
 
-        for ( final ArtifactInformation art : context.getArtifacts () )
+        for ( final ArtifactInformation art : artifacts )
         {
             result.put ( art.getId (), art );
         }
@@ -166,34 +183,78 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         return result;
     }
 
-    private Collection<MavenInformation> getInfos ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    static Collection<MavenInformation> getInfos ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
     {
         final Collection<MavenInformation> infos = new LinkedList<> ();
+
+        {
+            // first check if the artifact already has direct maven coordinates
+            final MavenInformation coords = parseMavenCoordinates ( art.getMetaData (), null );
+            if ( coords != null )
+            {
+                infos.add ( coords );
+            }
+        }
 
         final Collection<ArtifactInformation> pomArts = findPomArtifacts ( art, map );
         for ( final ArtifactInformation pomArt : pomArts )
         {
-            try
+            final MavenInformation coords = parseMavenCoordinates ( pomArt.getMetaData (), art );
+            if ( coords != null )
             {
-                final MavenInformation info = new MavenInformation ();
-                MetaKeys.bind ( info, pomArt.getMetaData () );
-                if ( info.getGroupId () != null && info.getArtifactId () != null && info.getVersion () != null )
-                {
-                    // found pom meta data
-                    final String ext = FilenameUtils.getExtension ( art.getName () );
-                    if ( ext != null )
-                    {
-                        info.setExtension ( ext );
-                        infos.add ( info );
-                    }
-                }
-            }
-            catch ( final Exception e )
-            {
+                infos.add ( coords );
             }
         }
 
         return infos;
+    }
+
+    /**
+     * Parse the maven coordinates from the provided meta data
+     * <p>
+     * If the parameter <code>refArtifact</code> is not <code>null</code> then
+     * the extension loaded from the meta data will be overridden with the file
+     * extension of the name of the provided <code>refArtifact</code>.
+     * </p>
+     *
+     * @param metaData
+     *            the metadata to use
+     * @param refArtifact
+     *            an optionally referenced artifact
+     * @return the maven coordinates or <code>null</code>
+     */
+    private static MavenInformation parseMavenCoordinates ( final Map<MetaKey, String> metaData, final ArtifactInformation refArtifact )
+    {
+        try
+        {
+            final MavenInformation info = new MavenInformation ();
+            MetaKeys.bind ( info, metaData );
+
+            if ( info.getGroupId () == null || info.getArtifactId () == null || info.getVersion () == null )
+            {
+                return null;
+            }
+
+            if ( refArtifact != null )
+            {
+                /*
+                 * so we point to another artifact and have to override the extension with that name
+                 *
+                 * this is used on the case where the meta data is provided by the POM artifact and the
+                 * JAR artifact is a slave to this meta data. In this case the "pom" extension has to
+                 * be replaces with the extension "jar".
+                 */
+                final String ext = FilenameUtils.getExtension ( refArtifact.getName () );
+                info.setExtension ( ext );
+            }
+
+            return info;
+        }
+        catch ( final Exception e )
+        {
+            logger.debug ( "Failed to parse maven coordinates", e );
+            return null;
+        }
     }
 
     /**
@@ -207,36 +268,13 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
      * @return a collection with all POM candidates, an empty collection if no
      *         candidates are found.
      */
-    private Collection<ArtifactInformation> findPomArtifacts ( final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
+    private static Collection<ArtifactInformation> findPomArtifacts ( final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
     {
         final Collection<ArtifactInformation> poms = new LinkedList<> ();
 
-        fillPomsFromArtifact ( poms, art );
         fillPomsFromChildren ( poms, art, artifacts );
 
         return poms;
-    }
-
-    /**
-     * Fill a collection with all POMs for an artifact themselves.
-     *
-     * @param poms
-     *            the collection that should be filled
-     * @param art
-     *            the artifact that should be evaluated
-     * @return the number of POMs that has been added
-     */
-    private int fillPomsFromArtifact ( final Collection<ArtifactInformation> poms, final ArtifactInformation art )
-    {
-        int cnt = 0;
-
-        if ( isPomFileName ( art.getName () ) )
-        {
-            poms.add ( art );
-            ++cnt;
-        }
-
-        return cnt;
     }
 
     /**
@@ -251,7 +289,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
      *            of the artifact id, the value of the artifact themselves.
      * @return the number of POMs that has been added
      */
-    private int fillPomsFromChildren ( final Collection<ArtifactInformation> poms, final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
+    private static int fillPomsFromChildren ( final Collection<ArtifactInformation> poms, final ArtifactInformation art, final Map<String, ArtifactInformation> artifacts )
     {
         int cnt = 0;
 

@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.maven.test;
+package de.dentrassi.pm.maven;
 
 import java.util.Collections;
 import java.util.Date;

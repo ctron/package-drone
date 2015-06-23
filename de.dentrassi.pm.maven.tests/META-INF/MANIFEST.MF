@@ -8,3 +8,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit
 Import-Package: de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.maven
+Fragment-Host: de.dentrassi.pm.maven
