@@ -71,6 +71,10 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
     private Path tempRoot;
 
+    private static final ChannelCacheHandler HANDLER_REPO_META = new ChannelCacheHandler ( new MetaKey ( "maven.repo", "repo-metadata" ) );
+
+    private static final ChannelCacheHandler HANDLER_PREFIXES = new ChannelCacheHandler ( new MetaKey ( "maven.repo", "prefixes" ) );
+
     @Override
     public void init () throws ServletException
     {
@@ -198,13 +202,13 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
         if ( toks.length == 2 && toks[1].equals ( ".meta/repository-metadata.xml" ) )
         {
-            new ChannelCacheHandler ( new MetaKey ( "maven.repo", "repo-metadata" ) ).process ( channel, request, response );
+            HANDLER_REPO_META.process ( channel, request, response );
             return;
         }
 
         if ( toks.length == 2 && toks[1].equals ( ".meta/prefixes.txt" ) )
         {
-            new ChannelCacheHandler ( new MetaKey ( "maven.repo", "prefixes" ) ).process ( channel, request, response );
+            HANDLER_PREFIXES.process ( channel, request, response );
             return;
         }
 
