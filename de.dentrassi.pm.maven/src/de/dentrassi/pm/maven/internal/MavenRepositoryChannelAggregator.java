@@ -156,7 +156,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
 
     private Map<String, ArtifactInformation> makeMap ( final AggregationContext context )
     {
-        final Map<String, ArtifactInformation> result = new HashMap<> ();
+        final Map<String, ArtifactInformation> result = new HashMap<> ( context.getArtifacts ().size () );
 
         for ( final ArtifactInformation art : context.getArtifacts () )
         {
