@@ -156,6 +156,7 @@ public class MavenHandler
 
     private void renderDir ( final HttpServletResponse response, final DirectoryNode dir, final String path ) throws IOException
     {
+        @SuppressWarnings ( "resource" )
         final PrintWriter w = response.getWriter ();
 
         final Map<String, Object> model = new HashMap<> ();
