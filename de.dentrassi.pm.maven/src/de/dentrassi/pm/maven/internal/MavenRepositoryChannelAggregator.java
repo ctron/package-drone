@@ -36,35 +36,21 @@ import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
-import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
-import de.dentrassi.pm.system.SystemService;
+import de.dentrassi.pm.system.SitePrefixService;
 
 public class MavenRepositoryChannelAggregator implements ChannelAggregator
 {
     private final XmlHelper xml = new XmlHelper ();
 
-    private final CoreService coreService;
-
-    private final SystemService systemService;
-
     private static final String NL = "\n";
 
-    public MavenRepositoryChannelAggregator ( final CoreService coreService, final SystemService systemService )
-    {
-        this.coreService = coreService;
-        this.systemService = systemService;
-    }
+    private final SitePrefixService sitePrefixService;
 
-    protected String getSitePrefix ()
+    public MavenRepositoryChannelAggregator ( final SitePrefixService sitePrefixService )
     {
-        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
-        if ( prefix != null )
-        {
-            return prefix;
-        }
-        return "http://localhost:8080";
+        this.sitePrefixService = sitePrefixService;
     }
 
     @Override
@@ -165,7 +151,7 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
 
     private String makeUrl ( final String channelId )
     {
-        return String.format ( "%s/maven/%s", getSitePrefix (), channelId );
+        return String.format ( "%s/maven/%s", this.sitePrefixService.getSitePrefix (), channelId );
     }
 
     private Map<String, ArtifactInformation> makeMap ( final AggregationContext context )

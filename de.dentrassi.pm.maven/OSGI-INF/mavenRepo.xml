@@ -5,6 +5,5 @@
       <provide interface="de.dentrassi.pm.aspect.ChannelAspectFactory"/>
    </service>
    <properties entry="OSGI-INF/mavenRepo.properties"/>
-   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
-   <reference bind="setSystemService" cardinality="1..1" interface="de.dentrassi.pm.system.SystemService" name="SystemService" policy="static"/>
+   <reference bind="setSitePrefixService" cardinality="1..1" interface="de.dentrassi.pm.system.SitePrefixService" name="SitePrefixService" policy="static"/>
 </scr:component>

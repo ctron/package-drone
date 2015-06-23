@@ -12,31 +12,23 @@ package de.dentrassi.pm.maven.internal;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
-import de.dentrassi.pm.core.CoreService;
-import de.dentrassi.pm.system.SystemService;
+import de.dentrassi.pm.system.SitePrefixService;
 
 public class MavenRepositoryAspectFactory implements ChannelAspectFactory
 {
     public static final String ID = "maven.repo";
 
-    private CoreService coreService;
+    private SitePrefixService sitePrefixService;
 
-    private SystemService systemService;
-
-    public void setCoreService ( final CoreService coreService )
+    public void setSitePrefixService ( final SitePrefixService sitePrefixService )
     {
-        this.coreService = coreService;
-    }
-
-    public void setSystemService ( final SystemService systemService )
-    {
-        this.systemService = systemService;
+        this.sitePrefixService = sitePrefixService;
     }
 
     @Override
     public ChannelAspect createAspect ()
     {
-        return new MavenRepositoryAspect ( this.coreService, this.systemService );
+        return new MavenRepositoryAspect ( this.sitePrefixService );
     }
 
 }

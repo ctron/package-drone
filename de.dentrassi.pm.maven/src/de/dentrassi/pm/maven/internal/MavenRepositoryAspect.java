@@ -12,19 +12,15 @@ package de.dentrassi.pm.maven.internal;
 
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
-import de.dentrassi.pm.core.CoreService;
-import de.dentrassi.pm.system.SystemService;
+import de.dentrassi.pm.system.SitePrefixService;
 
 public class MavenRepositoryAspect implements ChannelAspect
 {
-    private final CoreService coreService;
+    private final SitePrefixService sitePrefixService;
 
-    private final SystemService systemService;
-
-    public MavenRepositoryAspect ( final CoreService coreService, final SystemService systemService )
+    public MavenRepositoryAspect ( final SitePrefixService sitePrefixService )
     {
-        this.coreService = coreService;
-        this.systemService = systemService;
+        this.sitePrefixService = sitePrefixService;
     }
 
     @Override
@@ -36,6 +32,6 @@ public class MavenRepositoryAspect implements ChannelAspect
     @Override
     public ChannelAggregator getChannelAggregator ()
     {
-        return new MavenRepositoryChannelAggregator ( this.coreService, this.systemService );
+        return new MavenRepositoryChannelAggregator ( this.sitePrefixService );
     }
 }
