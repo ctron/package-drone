@@ -139,6 +139,8 @@ public interface Channel extends Validated
      */
     public void unlock ();
 
+    public long getNumberOfArtifacts ();
+
     public Set<Artifact> getArtifacts ();
 
     public List<ChannelAspectInformation> getAspects ();

@@ -87,6 +87,12 @@ public class ChannelImpl implements Channel
     }
 
     @Override
+    public long getNumberOfArtifacts ()
+    {
+        return this.service.getNumberOfArtifacts ( this.id );
+    }
+
+    @Override
     public List<ValidationMessage> getValidationMessages ()
     {
         return this.service.getValidationMessages ( this.id );

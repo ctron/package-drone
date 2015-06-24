@@ -1000,4 +1000,26 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     {
         return doWithValidationHandler ( handler -> handler.getValidationMessagesForArtifact ( artifactId ) );
     }
+
+    public long getNumberOfArtifacts ( final String channelId )
+    {
+        return doWithTransaction ( ( em ) -> {
+            final TypedQuery<Number> q = em.createQuery ( String.format ( "SELECT COUNT(c.artifacts) FROM %s c WHERE c.id=:ID", ChannelEntity.class.getName () ), Number.class );
+
+            q.setParameter ( "ID", channelId );
+
+            final List<Number> result = q.getResultList ();
+            if ( result == null || result.isEmpty () )
+            {
+                return -1L;
+            }
+
+            final Number count = result.get ( 0 );
+            if ( count == null )
+            {
+                return -1L;
+            }
+            return count.longValue ();
+        } );
+    }
 }

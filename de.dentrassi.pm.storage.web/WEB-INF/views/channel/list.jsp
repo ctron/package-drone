@@ -23,6 +23,7 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 	<tr>
     	<th>Name</th>
     	<th>Description</th>
+    	<th>#</th>
     	<th>ID</th>
 	</tr>
 </thead>
@@ -33,6 +34,7 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 		<tr class="${storage:severityWithDefault(channel.getOverallValidationState(), '') }">
 		    <td class="channel-name"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.name }</a></td>
 		    <td class="channel-description">${fn:escapeXml(channel.description) }</td>
+		    <td class="channel-count">${channel.numberOfArtifacts }</td>
 			<td class="channel-id"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.id }</a></td>
 		</tr>
 	</c:forEach>
