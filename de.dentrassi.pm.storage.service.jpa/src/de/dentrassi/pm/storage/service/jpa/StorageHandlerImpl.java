@@ -441,8 +441,8 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             handle.task ( "Delete" );
 
-            final Query uq = this.em.createQuery ( String.format ( "DELETE from %s a where a.id IN ( :IDS )", ArtifactEntity.class.getName () ), String.class );
-            uq.setParameter ( "IDS", result );
+            final Query uq = this.em.createQuery ( String.format ( "DELETE from %s va where va.channel=:channel", VirtualArtifactEntity.class.getName () ) );
+            uq.setParameter ( "channel", channel );
             final int deleteCount = uq.executeUpdate ();
 
             logger.info ( "Deleted {} ({}) artifacts in channel {}", count, deleteCount, channel.getId () );
