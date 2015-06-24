@@ -183,9 +183,9 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
         return result;
     }
 
-    static Collection<MavenInformation> getInfos ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
+    static Set<MavenInformation> getInfos ( final ArtifactInformation art, final Map<String, ArtifactInformation> map )
     {
-        final Collection<MavenInformation> infos = new LinkedList<> ();
+        final Set<MavenInformation> infos = new HashSet<> ();
 
         {
             // first check if the artifact already has direct maven coordinates

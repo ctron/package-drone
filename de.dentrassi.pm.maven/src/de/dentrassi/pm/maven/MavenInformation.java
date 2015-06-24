@@ -187,4 +187,116 @@ public class MavenInformation
         appendFile ( sb, false );
         return sb.toString ();
     }
+
+    @Override
+    public int hashCode ()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( this.artifactId == null ? 0 : this.artifactId.hashCode () );
+        result = prime * result + ( this.buildNumber == null ? 0 : this.buildNumber.hashCode () );
+        result = prime * result + ( this.classifier == null ? 0 : this.classifier.hashCode () );
+        result = prime * result + ( this.extension == null ? 0 : this.extension.hashCode () );
+        result = prime * result + ( this.groupId == null ? 0 : this.groupId.hashCode () );
+        result = prime * result + ( this.snapshotVersion == null ? 0 : this.snapshotVersion.hashCode () );
+        result = prime * result + ( this.version == null ? 0 : this.version.hashCode () );
+        return result;
+    }
+
+    @Override
+    public boolean equals ( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( ! ( obj instanceof MavenInformation ) )
+        {
+            return false;
+        }
+        final MavenInformation other = (MavenInformation)obj;
+        if ( this.artifactId == null )
+        {
+            if ( other.artifactId != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.artifactId.equals ( other.artifactId ) )
+        {
+            return false;
+        }
+        if ( this.buildNumber == null )
+        {
+            if ( other.buildNumber != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.buildNumber.equals ( other.buildNumber ) )
+        {
+            return false;
+        }
+        if ( this.classifier == null )
+        {
+            if ( other.classifier != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.classifier.equals ( other.classifier ) )
+        {
+            return false;
+        }
+        if ( this.extension == null )
+        {
+            if ( other.extension != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.extension.equals ( other.extension ) )
+        {
+            return false;
+        }
+        if ( this.groupId == null )
+        {
+            if ( other.groupId != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.groupId.equals ( other.groupId ) )
+        {
+            return false;
+        }
+        if ( this.snapshotVersion == null )
+        {
+            if ( other.snapshotVersion != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.snapshotVersion.equals ( other.snapshotVersion ) )
+        {
+            return false;
+        }
+        if ( this.version == null )
+        {
+            if ( other.version != null )
+            {
+                return false;
+            }
+        }
+        else if ( !this.version.equals ( other.version ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
 }
