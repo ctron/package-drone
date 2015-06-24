@@ -296,7 +296,7 @@ public class TransferHandler extends AbstractHandler
 
         // now import them hierarchically
 
-        final RegenerateTracker tracker = new RegenerateTracker ();
+        final RegenerateTracker tracker = new RegenerateTracker ( channel );
         try
         {
             root.store ( zip, channel, null, storage, tracker );

@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +48,6 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
@@ -100,8 +98,8 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( "/edit" )
-    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( value = "configuration",
-            required = false ) final String configString )
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter (
+            value = "configuration", required = false ) final String configString)
     {
         final Channel channel = this.service.getChannel ( channelId );
 
@@ -166,7 +164,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/edit", method = RequestMethod.POST )
-    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result )
+    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result)
     {
         final Channel channel = this.service.getChannel ( channelId );
 
@@ -197,7 +195,7 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/test", method = RequestMethod.POST )
-    public ModelAndView testPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result )
+    public ModelAndView testPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result)
     {
         final Channel channel = this.service.getChannel ( channelId );
 
@@ -214,7 +212,7 @@ public class ConfigController implements InterfaceExtender
             model.put ( "channel", channel );
             fillModel ( model, channelId );
 
-            model.put ( "result", this.tester.testCleanup ( channel.getArtifacts ().stream ().map ( Artifact::getInformation ).collect ( Collectors.toList () ), cfg ) );
+            model.put ( "result", this.tester.testCleanup ( channel.getDetailedArtifacts (), cfg ) );
             return new ModelAndView ( "testResult", model );
         }
         else

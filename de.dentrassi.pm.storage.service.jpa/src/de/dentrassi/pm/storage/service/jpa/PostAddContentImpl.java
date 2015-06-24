@@ -21,7 +21,6 @@ import de.dentrassi.pm.common.MetaKey;
 
 public class PostAddContentImpl implements PostAddContext
 {
-
     private final StorageHandlerImpl storageHandler;
 
     private final String channelId;
@@ -30,10 +29,13 @@ public class PostAddContentImpl implements PostAddContext
 
     private Set<ArtifactInformation> artifacts;
 
-    public PostAddContentImpl ( final StorageHandlerImpl storageHandler, final String channelId )
+    private final RegenerateTracker tracker;
+
+    public PostAddContentImpl ( final StorageHandlerImpl storageHandler, final String channelId, final RegenerateTracker tracker )
     {
         this.storageHandler = storageHandler;
         this.channelId = channelId;
+        this.tracker = tracker;
     }
 
     @Override
@@ -59,7 +61,7 @@ public class PostAddContentImpl implements PostAddContext
     @Override
     public void deleteArtifact ( final String artifactId )
     {
-        this.storageHandler.deleteArtifact ( artifactId );
+        this.storageHandler.internalDeleteArtifact ( artifactId, this.tracker );
     }
 
 }

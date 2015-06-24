@@ -86,45 +86,6 @@ public class ValidationHandler extends AbstractHandler
         }
     }
 
-    @Deprecated
-    public void aggregateArtifact ( final String artifactId )
-    {
-        logger.debug ( "Aggregating artifact information by id: {}", artifactId );
-        aggregateArtifact ( this.em.getReference ( ArtifactEntity.class, artifactId ) );
-    }
-
-    @Deprecated
-    public void aggregateArtifact ( final ArtifactEntity artifact )
-    {
-        try ( Handle handle = Profile.start ( this, "aggregateArtifact" ) )
-        {
-            logger.debug ( "Aggregating artifact information: {}", artifact.getId () );
-
-            final Query q = this.em.createQuery ( String.format ( "SELECT vm.severity, count(vm) from %s vm where :ARTIFACT MEMBER OF vm.artifacts group by vm.severity", ValidationMessageEntity.class.getName () ) );
-            q.setParameter ( "ARTIFACT", artifact );
-
-            artifact.setAggregatedNumberOfErrors ( 0 );
-            artifact.setAggregatedNumberOfWarnings ( 0 );
-
-            for ( final Object row : q.getResultList () )
-            {
-                final Object[] fields = (Object[])row;
-
-                if ( fields[0] == ValidationSeverity.ERROR )
-                {
-                    artifact.setAggregatedNumberOfErrors ( ( (Number)fields[1] ).longValue () );
-                }
-                else if ( fields[0] == ValidationSeverity.WARNING )
-                {
-                    artifact.setAggregatedNumberOfWarnings ( ( (Number)fields[1] ).longValue () );
-                }
-            }
-
-            this.em.persist ( artifact );
-            this.em.flush ();
-        }
-    }
-
     public void aggregateArtifacts ( final ChannelEntity channel, final Collection<String> artifactIds )
     {
         // first set all to zero

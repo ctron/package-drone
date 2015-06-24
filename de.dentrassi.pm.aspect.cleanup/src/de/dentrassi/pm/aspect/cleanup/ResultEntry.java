@@ -11,15 +11,15 @@
 package de.dentrassi.pm.aspect.cleanup;
 
 import de.dentrassi.pm.aspect.cleanup.CleanupTester.Action;
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.common.DetailedArtifactInformation;
 
 public class ResultEntry
 {
-    private final ArtifactInformation artifact;
+    private final DetailedArtifactInformation artifact;
 
     private final Action action;
 
-    public ResultEntry ( final ArtifactInformation artifact, final Action action )
+    public ResultEntry ( final DetailedArtifactInformation artifact, final Action action )
     {
         this.artifact = artifact;
         this.action = action;
@@ -30,7 +30,7 @@ public class ResultEntry
         return this.action;
     }
 
-    public ArtifactInformation getArtifact ()
+    public DetailedArtifactInformation getArtifact ()
     {
         return this.artifact;
     }

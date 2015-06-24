@@ -80,7 +80,7 @@ public class CommonController
         }
         else
         {
-            mav.put ( "showStackTrace", Boolean.getBoolean ( "package.drone.showStackTrace" ) );
+            mav.put ( "showStackTrace", Boolean.getBoolean ( "drone.showStackTrace" ) );
         }
 
         mav.put ( ERROR_VIEW_TITLE, title );

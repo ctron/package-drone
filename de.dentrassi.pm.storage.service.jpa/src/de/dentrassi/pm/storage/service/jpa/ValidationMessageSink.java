@@ -82,6 +82,16 @@ public class ValidationMessageSink
         this.entries.add ( new Entry ( aspectId, convert ( severity ), message ) );
     }
 
+    /**
+     * This will flush all validation messages of the artifact but not calculate
+     * the counts
+     *
+     * @param em
+     *            the entity manager to use
+     * @param artifact
+     *            the artifact these messages belong to
+     */
+
     public void flush ( final EntityManager em, final ArtifactEntity artifact )
     {
         try ( Handle handle = Profile.start ( this, "flush" ) )
@@ -103,8 +113,6 @@ public class ValidationMessageSink
                 em.persist ( vme );
             }
             this.entries.clear ();
-
-            this.handler.aggregateArtifact ( artifact );
         }
     }
 }

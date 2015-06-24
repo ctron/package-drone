@@ -28,6 +28,8 @@
 			<property name="eclipselink.weaving" value="true"/>
 			<property name="eclipselink.cache.type.default" value="NONE"/>
 			<property name="eclipselink.session-event-listener" value="de.dentrassi.pm.storage.jpa.listener.WorkaroundEventListener"/>
+			<property name="eclipselink.logging.level.query" value="FINEST"/>
+			<property name="eclipselink.logging.file" value="/tmp/eclipselink.log"/>
 		</properties>
 	</persistence-unit>
 </persistence>

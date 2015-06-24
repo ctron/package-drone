@@ -86,6 +86,7 @@ import de.dentrassi.pm.storage.StorageAccessor;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ArtifactEntity_;
 import de.dentrassi.pm.storage.jpa.ArtifactPropertyEntity;
+import de.dentrassi.pm.storage.jpa.ArtifactTracker;
 import de.dentrassi.pm.storage.jpa.AttachedArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheEntity;
 import de.dentrassi.pm.storage.jpa.ChannelCacheKey;
@@ -420,23 +421,51 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
     private void deleteAllVirtualArtifacts ( final ChannelEntity channel )
     {
-        final Query q = this.em.createQuery ( String.format ( "SELECT va from %s va where va.channel=:channel", VirtualArtifactEntity.class.getName () ) );
-        q.setParameter ( "channel", channel );
+        try ( Handle handle = Profile.start ( this, "deleteAllVirtualArtifacts" ) )
+        {
 
-        final int result = deleteResult ( q );
+            handle.task ( "Flush" );
 
-        logger.info ( "Deleted {} artifacts in channel {}", result, channel.getId () );
+            // first flush since the delete operation does not work on the non-flushed objects
+            this.em.flush ();
+
+            handle.task ( "Select" );
+
+            final TypedQuery<String> q = this.em.createQuery ( String.format ( "SELECT va.id from %s va where va.channel=:channel", VirtualArtifactEntity.class.getName () ), String.class );
+            q.setParameter ( "channel", channel );
+
+            final List<String> result = q.getResultList ();
+            final int count = result.size ();
+
+            ArtifactTracker.getCurrentTracker ().getDeletions ().addAll ( result );
+
+            handle.task ( "Delete" );
+
+            final Query uq = this.em.createQuery ( String.format ( "DELETE from %s a where a.id IN :IDS", ArtifactEntity.class.getName () ), String.class );
+            uq.setParameter ( "IDS", result );
+            final int deleteCount = uq.executeUpdate ();
+
+            logger.info ( "Deleted {} ({}) artifacts in channel {}", count, deleteCount, channel.getId () );
+
+            if ( count != deleteCount )
+            {
+                throw new IllegalStateException ( String.format ( "Delete did not delete the same amount of artifacts that the select found (select: %s, delete: %s)", count, deleteCount ) );
+            }
+        }
     }
 
     protected int deleteResult ( final Query q )
     {
-        final List<?> result = q.getResultList ();
-        for ( final Object art : result )
+        try ( Handle handle = Profile.start ( this, "deleteResult" ) )
         {
-            this.em.remove ( art );
+            final List<?> result = q.getResultList ();
+            for ( final Object art : result )
+            {
+                this.em.remove ( art );
+            }
+            this.em.flush ();
+            return result.size ();
         }
-        this.em.flush ();
-        return result.size ();
     }
 
     public void generateArtifact ( final ChannelEntity channel, final GeneratorArtifactEntity ae, final Path file, final boolean runAggregator ) throws Exception
@@ -445,7 +474,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
         final String generatorId = ae.getGeneratorId ();
 
-        final RegenerateTracker tracker = new RegenerateTracker ();
+        final RegenerateTracker tracker = new RegenerateTracker ( channel );
 
         final ArtifactContextImpl ctx = createGeneratedContext ( tracker, this.em, channel, ae, file, runAggregator );
         this.generatorProcessor.process ( generatorId, ctx );
@@ -485,7 +514,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
             {
                 logger.trace ( "Running pre-add listeners" );
                 final PreAddContentImpl context = new PreAddContentImpl ( name, file, channel.getId (), external );
-                runChannelTriggers ( tracker, channel, listener -> listener.artifactPreAdd ( context ), null );
+                runChannelListeners ( channel, listener -> listener.artifactPreAdd ( context ) );
                 if ( context.isVeto () )
                 {
                     logger.info ( "Veto add artifact {} to channel {}", name, channel.getId () );
@@ -562,7 +591,9 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // run the channel triggers and listeners
 
-            runChannelTriggers ( tracker, channel, listener -> listener.artifactAdded ( createPostAddContext ( channel.getId () ) ), new AddedEvent ( ae.getId (), metadata ) );
+            tracker.markAdded ();
+
+            runGeneratorTriggers ( tracker, channel, new AddedEvent ( ae.getId (), metadata ) );
 
             // now run the channel aggregator if requested
 
@@ -590,14 +621,14 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
         }
     }
 
-    private PostAddContext createPostAddContext ( final String channelId )
+    private PostAddContext createPostAddContext ( final String channelId, final RegenerateTracker tracker )
     {
-        return new PostAddContentImpl ( this, channelId );
+        return new PostAddContentImpl ( this, channelId, tracker );
     }
 
-    protected void runChannelTriggers ( final RegenerateTracker tracker, final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener, final Object event )
+    protected void runChannelListeners ( final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener )
     {
-        logger.debug ( "Running channel triggers - {}", event );
+        logger.debug ( "Running channel triggers" );
 
         Activator.getChannelAspects ().process ( channel.getAspects ().keySet (), ChannelAspect::getChannelListener, ( t ) -> {
             try
@@ -609,11 +640,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
                 throw new RuntimeException ( e );
             }
         } );
-
-        if ( event != null )
-        {
-            runGeneratorTriggers ( tracker, channel, event );
-        }
     }
 
     protected static SortedMap<MetaKey, String> extractMetaData ( final EntityManager em, final ValidationMessageSink vms, final ChannelEntity channel, final String name, final Instant creationTimestamp, final Path file )
@@ -734,6 +760,27 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
         }
     }
 
+    public void internalDeleteArtifact ( final String artifactId, final RegenerateTracker tracker )
+    {
+        final ArtifactEntity ae = this.em.find ( ArtifactEntity.class, artifactId );
+        if ( ae == null )
+        {
+            return; // silently ignore
+        }
+
+        LockContext.modify ( ae.getChannel ().getId () );
+
+        final SortedMap<MetaKey, String> md = convertMetaData ( ae );
+
+        // run listeners and generators
+        runGeneratorTriggers ( tracker, ae.getChannel (), new RemovedEvent ( ae.getId (), md ) );
+
+        logger.info ( "Artifact deleted: {}", artifactId );
+
+        this.em.remove ( ae );
+        this.em.flush ();
+    }
+
     @Override
     public ArtifactInformation deleteArtifact ( final String artifactId )
     {
@@ -765,7 +812,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             final ChannelEntity channel = ae.getChannel ();
 
-            final RegenerateTracker tracker = new RegenerateTracker ();
+            final RegenerateTracker tracker = new RegenerateTracker ( channel );
             runGeneratorTriggers ( tracker, channel, new RemovedEvent ( ae.getId (), md ) );
             tracker.process ( this );
 
@@ -898,7 +945,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
                 return;
             }
 
-            final RegenerateTracker tracker = new RegenerateTracker ();
+            final RegenerateTracker tracker = new RegenerateTracker ( channel );
 
             // first delete all virtual artifacts
 
@@ -906,6 +953,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // delete selected extractor validation messages
 
+            try ( Handle h2 = Profile.start ( "delete validation messages" ) )
             {
                 final Query q = this.em.createQuery ( String.format ( "DELETE from %s vme where vme.namespace IN :ASPECT and vme.channel=:CHANNEL", ExtractorValidationMessageEntity.class.getName () ) );
                 q.setParameter ( "ASPECT", aspectFactoryIds );
@@ -915,6 +963,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // delete all metadata relevant first
 
+            try ( Handle h2 = Profile.start ( "delete meta data" ) )
             {
                 final Query q = this.em.createQuery ( String.format ( "DELETE from %s eap where eap.namespace in :ASPECT and eap.artifact.channel=:CHANNEL", ExtractedArtifactPropertyEntity.class.getName () ) );
                 q.setParameter ( "ASPECT", aspectFactoryIds );
@@ -924,51 +973,55 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             // process new meta data
 
-            for ( final ArtifactEntity ae : channel.getArtifacts () )
+            try ( Handle h2 = Profile.start ( "extract meta data" ) )
             {
-                if ( ae instanceof GeneratorArtifactEntity )
+                for ( final ArtifactEntity ae : channel.getArtifacts () )
                 {
-                    continue;
-                }
+                    if ( ae instanceof GeneratorArtifactEntity )
+                    {
+                        continue;
+                    }
 
-                logger.debug ( "Reprocessing artifact - {}", ae.getId () );
+                    logger.debug ( "Reprocessing artifact - {}", ae.getId () );
 
-                this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
-                    // generate metadata for new factory
+                    this.blobStore.doStreamed ( this.em, ae, ( file ) -> {
+                        // generate metadata for new factory
 
-                    final Map<MetaKey, String> metadata = new HashMap<> ();
-                    final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+                        final Map<MetaKey, String> metadata = new HashMap<> ();
+                        final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
 
-                    this.channelAspectProcessor.processWithAspect ( aspectFactoryIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
-                        try
-                        {
-                            final Map<String, String> md = new HashMap<> ();
+                        this.channelAspectProcessor.processWithAspect ( aspectFactoryIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
+                            try
+                            {
+                                final Map<String, String> md = new HashMap<> ();
 
-                            extractor.extractMetaData ( createExtractorContext ( aspect.getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
+                                extractor.extractMetaData ( createExtractorContext ( aspect.getId (), ae.getName (), ae.getCreationTimestamp ().toInstant (), file, vms ), md );
 
-                            convertMetaDataFromAspect ( metadata, aspect.getId (), md );
-                        }
-                        catch ( final Exception e )
-                        {
-                            throw new RuntimeException ( e );
-                        }
+                                convertMetaDataFromAspect ( metadata, aspect.getId (), md );
+                            }
+                            catch ( final Exception e )
+                            {
+                                throw new RuntimeException ( e );
+                            }
+                        } );
+
+                        // flush validation messages for this artifact
+
+                        vms.flush ( this.em, ae );
+
+                        // don't clear extracted meta data, since we only process one aspect and we actually add it
+
+                        Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
+
+                        // store
+
+                        this.em.persist ( ae );
                     } );
 
-                    // flush validation messages for this artifact
-
-                    vms.flush ( this.em, ae );
-
-                    // don't clear extracted meta data, since we only process one aspect and we actually add it
-
-                    Helper.convertExtractedProperties ( metadata, ae, ae.getExtractedProperties () );
-
-                    // store
-
-                    this.em.persist ( ae );
-                    this.em.flush ();
-                } );
-
+                }
             }
+
+            this.em.flush ();
 
             // re-create virtual artifacts
 
@@ -978,7 +1031,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             tracker.process ( this );
 
-            // finally run the channel aggregators
+            // finally run the channel aggregators ( will aggregate the validation counters )
 
             runChannelAggregators ( channel );
 
@@ -1188,7 +1241,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             final ChannelEntity channel = artifact.getChannel ();
 
-            final RegenerateTracker tracker = new RegenerateTracker ();
+            final RegenerateTracker tracker = new RegenerateTracker ( channel );
 
             try
             {
@@ -1212,7 +1265,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
     {
         try ( Handle handle = Profile.start ( this, "recreateAllVirtualArtifacts" ) )
         {
-            final RegenerateTracker tracker = new RegenerateTracker ();
+            final RegenerateTracker tracker = new RegenerateTracker ( channel );
 
             deleteAllVirtualArtifacts ( channel );
             createAllVirtualArtifacts ( channel, tracker, false );
@@ -1395,7 +1448,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
         try ( Handle handle = Profile.start ( this, "internalCreateArtifact" ) )
         {
-            final RegenerateTracker tracker = new RegenerateTracker ();
+            final RegenerateTracker tracker = new RegenerateTracker ( channel );
             final ArtifactEntity ae = performStoreArtifact ( channel, name, stream, entityCreator, providedMetaData, tracker, false, external );
             tracker.process ( this );
             runChannelAggregators ( channel );

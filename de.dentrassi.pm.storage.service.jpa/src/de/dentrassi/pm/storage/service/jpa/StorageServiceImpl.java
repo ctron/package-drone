@@ -682,7 +682,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
                 return result;
 
-            } ) );
+            } , createArtifactGuard () ) );
         }
         catch ( final Exception e )
         {
@@ -916,7 +916,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected <R> R doWithTransferHandler ( final ManagerFunction<R, TransferHandler> consumer )
     {
-        return doWithTransaction ( em -> consumer.process ( createTransferHandler ( em ) ) );
+        return doWithTransaction ( em -> consumer.process ( createTransferHandler ( em ) ), createArtifactGuard () );
     }
 
     protected void doWithTransferHandlerVoid ( final ThrowingConsumer<TransferHandler> consumer )
@@ -931,7 +931,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
 
     protected <R> R doWithValidationHandler ( final ManagerFunction<R, ValidationHandler> consumer )
     {
-        return doWithTransaction ( em -> consumer.process ( createValidationHandler ( em ) ) );
+        return doWithTransaction ( em -> consumer.process ( createValidationHandler ( em ) ), createArtifactGuard () );
     }
 
     protected void doWithValidationHandlerVoid ( final ThrowingConsumer<ValidationHandler> consumer )
@@ -954,7 +954,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 final StorageHandlerImpl storage = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
                 final TransferHandler transfer = new TransferHandler ( em, this.blobStore );
                 return convert ( transfer.importChannel ( storage, inputStream, useChannelName ) );
-            } ) );
+            } , createArtifactGuard () ) );
         }
         catch ( final Exception e )
         {

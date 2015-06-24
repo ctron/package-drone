@@ -34,6 +34,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.eclipse.persistence.annotations.CascadeOnDelete;
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
@@ -65,12 +66,15 @@ public class ArtifactEntity
     private Date creationTimestamp;
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
+    @CascadeOnDelete
     private Collection<ExtractedArtifactPropertyEntity> extractedProperties = new LinkedList<> ();
 
     @OneToMany ( orphanRemoval = true, cascade = ALL, mappedBy = "artifact" )
+    @CascadeOnDelete
     private Collection<ProvidedArtifactPropertyEntity> providedProperties = new LinkedList<> ();
 
     @OneToMany ( orphanRemoval = true, cascade = REMOVE, mappedBy = "parent", fetch = LAZY )
+    @CascadeOnDelete
     private Collection<ChildArtifactEntity> childArtifacts = new LinkedList<> ();
 
     @Column ( name = "AGR_NUM_WARN", nullable = false )
