@@ -63,7 +63,9 @@ Comment out:
 // systemUris.add("http://java.sun.com/jsp/jstl/core");
 ```
 
-## Fix missing parent
+## src/org/apache/jasper/compiler/Generator.java
+
+### Fix missing parent
 
 A child tag will not get its parent if it was included by a custom tag:
 
@@ -89,6 +91,42 @@ index 87a9b26..d14d174 100644
                  out.print(".setParent(");
                  if (parent != null) {
 
+## src/org/apache/jasper/runtime/JspRuntimeLibrary.java
+
+### Fix `jsp:include` processing
+
+Using `jsp:include` does not bring up the current URI when using relative includes.
+It looks like the whole mechanism expects that the servlet is the full servlet JSP page
+name without any further path information.
+
+However the JspServlet from Eclipse Equinox does handle multiple JSP pages. And maybe
+does something wrong passing this on to the Jasper servlet. In the end the `jsp:include` misses
+out the "path info" path of the request and constructs a wrong URL for inclusion.
+
+```
+diff --git a/org.apache.jasper.glassfish/src/org/apache/jasper/runtime/JspRuntimeLibrary.java b/org.apache.jasper.glassfish/src/org/apache/jasper/runtime/JspRuntimeLibrary.java
+index bd9c000..6cdb627 100644
+--- a/org.apache.jasper.glassfish/src/org/apache/jasper/runtime/JspRuntimeLibrary.java
++++ b/org.apache.jasper.glassfish/src/org/apache/jasper/runtime/JspRuntimeLibrary.java
+@@ -931,10 +931,16 @@
+             }
+         }
+         else {
++            // STARTJR: fix improper handling of jsp:include
+             uri = hrequest.getServletPath();
++            String pathInfo = hrequest.getPathInfo ();
++            if ( pathInfo != null) {
++                uri = uri + pathInfo;
++            }
+             if (uri.lastIndexOf('/') >= 0) {
+                 uri = uri.substring(0, uri.lastIndexOf('/'));
+             }
++            // ENDJR
+         }
+         return uri + '/' + relativePath;
+ 
+
+``` 
 
 ## src/org/apache/jasper/compiler/JDTJavaCompiler.java
 
