@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.usage.pingJob">
+   <implementation class="de.dentrassi.pm.usage.PingJob"/>
+   <property name="scheduler.period.ms" type="Long" value="86400000"/>
+   <service>
+      <provide interface="de.dentrassi.osgi.scheduler.ScheduledTask"/>
+      <provide interface="de.dentrassi.pm.usage.PingJob"/>
+   </service>
+   <reference bind="setStorageService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
+   <reference bind="setCoreService" cardinality="1..1" interface="de.dentrassi.pm.core.CoreService" name="CoreService" policy="static"/>
+</scr:component>

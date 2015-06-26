@@ -203,4 +203,11 @@ public interface StorageService
      * Delete all channels
      */
     public void wipeClean ();
+
+    /**
+     * Get the service statistics
+     * 
+     * @return the current statistics
+     */
+    public ServiceStatistics getStatistics ();
 }

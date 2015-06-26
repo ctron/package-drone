@@ -81,6 +81,7 @@ import de.dentrassi.pm.storage.jpa.PropertyEntity;
 import de.dentrassi.pm.storage.jpa.StoredArtifactEntity;
 import de.dentrassi.pm.storage.jpa.ValidationMessageEntity;
 import de.dentrassi.pm.storage.jpa.VirtualArtifactEntity;
+import de.dentrassi.pm.storage.service.ServiceStatistics;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.StorageServiceAdmin;
 import de.dentrassi.pm.storage.service.jpa.blob.BlobStore;
@@ -1020,6 +1021,23 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 return -1L;
             }
             return count.longValue ();
+        } );
+    }
+
+    @Override
+    public ServiceStatistics getStatistics ()
+    {
+        return doWithTransaction ( ( em ) -> {
+            final ServiceStatistics result = new ServiceStatistics ();
+
+            final Query q = em.createQuery ( String.format ( "SELECT COUNT(a), SUM(a.size) FROM %s a", ArtifactEntity.class.getName () ) );
+
+            final Object[] row = (Object[])q.getSingleResult ();
+
+            result.setTotalNumberOfArtifacts ( ( (Number)row[0] ).longValue () );
+            result.setTotalNumberOfBytes ( ( (Number)row[1] ).longValue () );
+
+            return result;
         } );
     }
 }
