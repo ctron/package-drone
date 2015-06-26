@@ -12,9 +12,6 @@ package de.dentrassi.pm.storage.service.jpa;
 
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -24,8 +21,6 @@ import de.dentrassi.pm.storage.jpa.ChannelEntity;
 
 public class AggregationValidationHandler
 {
-    private final static Logger logger = LoggerFactory.getLogger ( AggregationValidationHandler.class );
-
     private final ValidationHandler handler;
 
     private final Multimap<ChannelEntity, String> affectedMap = HashMultimap.create ();

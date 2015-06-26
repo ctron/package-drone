@@ -65,7 +65,6 @@ import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.extract.Extractor.Context;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
-import de.dentrassi.pm.aspect.listener.PostAddContext;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
 import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.ChannelAspectInformation;
@@ -524,7 +523,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
 
             final Instant creationTimestamp = Instant.now ();
 
-            final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+            final ValidationMessageSink vms = new ValidationMessageSink ( channel );
             final SortedMap<MetaKey, String> metadata = extractMetaData ( this.em, vms, channel, name, creationTimestamp, file );
 
             LockContext.modify ( channel.getId () );
@@ -619,11 +618,6 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
                 logger.info ( "Failed to delete temp file", e );
             }
         }
-    }
-
-    private PostAddContext createPostAddContext ( final String channelId, final RegenerateTracker tracker )
-    {
-        return new PostAddContentImpl ( this, channelId, tracker );
     }
 
     protected void runChannelListeners ( final ChannelEntity channel, final ThrowingConsumer<ChannelListener> listener )
@@ -988,7 +982,7 @@ public class StorageHandlerImpl extends AbstractHandler implements StorageHandle
                         // generate metadata for new factory
 
                         final Map<MetaKey, String> metadata = new HashMap<> ();
-                        final ValidationMessageSink vms = new ValidationMessageSink ( channel, this.validationHandler );
+                        final ValidationMessageSink vms = new ValidationMessageSink ( channel );
 
                         this.channelAspectProcessor.processWithAspect ( aspectFactoryIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
                             try

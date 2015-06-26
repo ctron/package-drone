@@ -13,13 +13,11 @@ package de.dentrassi.pm.storage.service.jpa;
 import static de.dentrassi.pm.storage.service.jpa.Helper.convert;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -84,44 +82,6 @@ public class ValidationHandler extends AbstractHandler
             this.em.persist ( channel );
             this.em.flush ();
         }
-    }
-
-    public void aggregateArtifacts ( final ChannelEntity channel, final Collection<String> artifactIds )
-    {
-        // first set all to zero
-
-        {
-            final Query q = this.em.createQuery ( String.format ( "UPDATE %s ae SET ae.aggregatedNumberOfWarnings=0, ae.aggregatedNumberOfErrors=0 WHERE ae.id in :IDS", ArtifactEntity.class.getName () ) );
-            q.setParameter ( "IDS", artifactIds );
-            q.executeUpdate ();
-        }
-
-        aggregateSeverity ( channel, Severity.ERROR, ArtifactEntity::setAggregatedNumberOfErrors );
-        aggregateSeverity ( channel, Severity.WARNING, ArtifactEntity::setAggregatedNumberOfWarnings );
-
-        this.em.flush ();
-    }
-
-    private void aggregateSeverity ( final ChannelEntity channel, final Severity severity, final BiConsumer<ArtifactEntity, Long> consumer )
-    {
-        final Map<ArtifactEntity, Long> aggrMap = getChannelMap ( channel, severity );
-
-        for ( final Map.Entry<ArtifactEntity, Long> entry : aggrMap.entrySet () )
-        {
-            final Long count = entry.getValue ();
-            if ( count > 0 )
-            {
-                consumer.accept ( entry.getKey (), count );
-                this.em.persist ( entry.getKey () );
-            }
-        }
-    }
-
-    private Map<ArtifactEntity, Long> getChannelMap ( final ChannelEntity channel, final Severity severity )
-    {
-        final Query q = this.em.createQuery ( "SELECT ae, COUNT(vm.severity) FROM %s ae LEFT OUTER JOIN ae.messages. " );
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /**

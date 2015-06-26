@@ -20,7 +20,7 @@ Intended use cases
  * Let Maven deploy its artifacts (Tycho or Bndtools) to the repository
  * Extract OSGi relevant metadata
  * Provide access as P2 and OSGi R5 repository system
-* Act as local DEB/APT repository
+* Act as local DEB/APT and RPM/YUM repository
 * Provide support for local development workflow
  * Different integration and release channels
  * Cleanup, verify and freeze

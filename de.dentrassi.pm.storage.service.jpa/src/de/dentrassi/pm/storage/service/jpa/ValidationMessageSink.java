@@ -69,12 +69,9 @@ public class ValidationMessageSink
 
     private final List<Entry> entries = new LinkedList<> ();
 
-    private final ValidationHandler handler;
-
-    public ValidationMessageSink ( final ChannelEntity channel, final ValidationHandler handler )
+    public ValidationMessageSink ( final ChannelEntity channel )
     {
         this.channel = channel;
-        this.handler = handler;
     }
 
     public void addMessage ( final String aspectId, final Severity severity, final String message )
