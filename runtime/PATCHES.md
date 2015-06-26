@@ -39,6 +39,14 @@ Changed to `Bundle-RequiredExecutionEnvironment: JavaSE-1.6`
 
 Source code: https://repo1.maven.org/maven2/javax/servlet/jsp/javax.servlet.jsp-api/2.3.2-b01/javax.servlet.jsp-api-2.3.2-b01-sources.jar
 
+## META-INF/services/javax.servlet.ServletContainerInitializer
+
+Delete the file.
+
+This tries to load the TldScanner, which is handled differently in this scenario.
+But having this file causes strange warnings on the console which confuses people looking at
+the log output. 
+
 ## META-INF/MANIFEST.MF
 
 ### Automatically import TLD classes
