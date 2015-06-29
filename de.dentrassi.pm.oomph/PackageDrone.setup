@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<setup:Project
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:git="http://www.eclipse.org/oomph/setup/git/1.0"
+    xmlns:jdt="http://www.eclipse.org/oomph/setup/jdt/1.0"
+    xmlns:launching="http://www.eclipse.org/oomph/setup/launching/1.0"
+    xmlns:pde="http://www.eclipse.org/oomph/setup/pde/1.0"
+    xmlns:projects="http://www.eclipse.org/oomph/setup/projects/1.0"
+    xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
+    xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
+    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/launching/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Launching.ecore http://www.eclipse.org/oomph/setup/pde/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/PDE.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore"
+    name="package-drone"
+    label="Package Drone">
+  <setupTask
+      xsi:type="jdt:JRETask"
+      version="JavaSE-1.8"
+      location="${jre.location-1.8}">
+    <description>Define the JRE needed to compile and run the Java projects of ${scope.project.label}</description>
+  </setupTask>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-Xmx"
+      value="2048m"
+      vm="true">
+    <description>Set the heap space needed to work with the projects of ${scope.project.label}</description>
+  </setupTask>
+  <setupTask
+      xsi:type="setup.p2:P2Task">
+    <requirement
+        name="org.eclipse.wst.common.fproj.feature.group"/>
+    <requirement
+        name="org.eclipse.jst.common.fproj.enablement.jdt.feature.group"/>
+    <requirement
+        name="org.eclipse.jst.enterprise_ui.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.jst.web_ui.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.releng.tools.feature.group"/>
+    <requirement
+        name="org.eclipse.wst.web_ui.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.wst.xml_ui.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.wst.jsdt.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.m2e.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.m2e.logback.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.mat.feature.feature.group"/>
+    <requirement
+        name="org.eclipse.mat.chart.feature.feature.group"/>
+    <repository
+        url="http://download.eclipse.org/eclipse/updates/4.5"/>
+    <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
+  </setupTask>
+  <setupTask
+      xsi:type="git:GitCloneTask"
+      id="git.clone"
+      remoteURI="ctron/package-drone">
+    <annotation
+        source="http://www.eclipse.org/oomph/setup/InducedChoices">
+      <detail
+          key="inherit">
+        <value>github.remoteURIs</value>
+      </detail>
+      <detail
+          key="label">
+        <value>${scope.project.label} GitHub repository</value>
+      </detail>
+      <detail
+          key="target">
+        <value>remoteURI</value>
+      </detail>
+    </annotation>
+    <description>${scope.project.label}</description>
+  </setupTask>
+  <setupTask
+      xsi:type="projects:ProjectsImportTask">
+    <sourceLocator
+        rootFolder="${git.clone.location}"/>
+    <description>Import all projects from the git repository</description>
+  </setupTask>
+  <setupTask
+      xsi:type="launching:LaunchTask"
+      launcher="runtime/runtime build.ant.launch">
+    <description>Launch the build script which creates the target platform bundle directory</description>
+  </setupTask>
+  <setupTask
+      xsi:type="pde:TargetPlatformTask"
+      name="Package Drone Runtime"/>
+  <stream name="master">
+    <description></description>
+  </stream>
+  <logicalProjectContainer
+      xsi:type="setup:ProjectCatalog"
+      href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
+  <description>Package Drone provides cool stuff</description>
+</setup:Project>
