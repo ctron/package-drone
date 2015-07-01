@@ -387,5 +387,5 @@
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
-  <description>Package Drone provides cool stuff</description>
+  <description>A development setup for Package Drone, the OSGi first software artifact repository.</description>
 </setup:Project>
