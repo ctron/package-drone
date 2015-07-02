@@ -30,8 +30,6 @@ if ( p instanceof UserInformationPrincipal )
 
 <c:set var="bootstrap" value="${pageContext.request.contextPath}/resources/bootstrap/3.3.1"/>
 <c:set var="jquery" value="${pageContext.request.contextPath}/resources/jquery"/>
-<c:set var="html5shiv" value="${pageContext.request.contextPath}/resources/html5shiv/3.7.2"/>
-<c:set var="respond" value="${pageContext.request.contextPath}/resources/respond/1.4.2"/>
 <c:set var="fontAwesome" value="${pageContext.request.contextPath}/resources/font-awesome/4.3.0"/>
 
 <head>
@@ -42,21 +40,19 @@ if ( p instanceof UserInformationPrincipal )
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <link rel="icon" href="${pageContext.request.contextPath}/resources/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/vnd.microsoft.icon"/>
+
+    <%-- jQuery (necessary for Bootstrap's JavaScript plugins) --%>
+    <script src="${jquery}/jquery-1.11.2.min.js"></script>
     
     <%-- bootstrap --%>
-    
-    <link href="${bootstrap}/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!--[if lt IE 9]>
-      <script src="${html5shiv}/3.7.2/html5shiv.min.js"></script>
-      <script src="${respond}/respond.min.js"></script>
-    <![endif]-->
-    
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="${jquery}/jquery-1.11.2.min.js"></script>
+    <link href="${bootstrap}/css/bootstrap.min.css" rel="stylesheet" />
     <script src="${bootstrap}/js/bootstrap.min.js"></script>
     
-    <link rel="stylesheet" href="${fontAwesome}/css/font-awesome.min.css">
+    <%-- it's awesome --%>
+    
+    <link rel="stylesheet" href="${fontAwesome}/css/font-awesome.min.css" />
+    
+    <%-- custom styles --%>
     
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/default.css" />
     
