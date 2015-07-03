@@ -79,14 +79,14 @@
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
         	
             <get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.6.0/eclipselink-plugins-2.6.0.v20150309-bf26070.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
-        	
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.classic_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.core_1.0.7.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/ch.qos.logback.slf4j_1.0.7.v201505121915.jar" dest="download/bundles" usetimestamp="true" />
 
+            <orbitGet bundle="ch.qos.logback.classic" version="1.0.7" qualifier="v20121108-1250"/>
+        	<orbitGet bundle="ch.qos.logback.core" version="1.0.7" qualifier="v20121108-1250"/>
+        	<orbitGet bundle="ch.qos.logback.slf4j" version="1.0.7" qualifier="v201505121915"/>
+        	
             <!-- annotation stuff -->
 
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.transaction_1.1.1.v201105210645.jar" dest="download/bundles" usetimestamp="true" />
+            <orbitGet bundle="javax.transaction" version="1.1.1" qualifier="v201105210645"/>
             <orbitGet bundle="javax.annotation" version="1.2.0" qualifier="v201401042248"/>
         	
             <get src="http://central.maven.org/maven2/org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.0.1/org.apache.aries.spifly.dynamic.bundle-1.0.1.jar" dest="download/bundles" usetimestamp="true" />
@@ -96,33 +96,32 @@
         	<orbitGet bundle="org.objectweb.asm.commons" version="5.0.1" qualifier="v201404251740" />
     		<orbitGet bundle="org.objectweb.asm.tree" version="5.0.1" qualifier="v201404251740" />
         	
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.activation_1.1.0.v201211130549.jar" dest="download/bundles" usetimestamp="true" />
+            <orbitGet bundle="javax.activation" version="1.1.0" qualifier="v201211130549"/>
 
             <!-- jsp stuff -->
 
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xalan_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.xml.serializer_2.7.1.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
+        	<orbitGet bundle="org.apache.xalan" version="2.7.1" qualifier="v201005080400"/>
+        	<orbitGet bundle="org.apache.xml.serializer" version="2.7.1" qualifier="v201005080400"/>
 
             <!-- for logging -->
 
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jcl_1.7.2.v20130115-1340.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.slf4j.jul_1.7.2.v20121108-1250.jar" dest="download/bundles" usetimestamp="true" />
-
+            <orbitGet bundle="org.slf4j.jcl" version="1.7.2" qualifier="v20130115-1340"/>
+        	<orbitGet bundle="org.slf4j.jul" version="1.7.2" qualifier="v20121108-1250"/>
+        	
             <!-- for hibernate validation -->
 
             <get src="http://repo1.maven.org/maven2/com/fasterxml/classmate/1.0.0/classmate-1.0.0.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://repo1.maven.org/maven2/com/fasterxml/classmate/1.0.0/classmate-1.0.0-sources.jar" dest="download/sources" usetimestamp="true" />
             <get src="http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar" dest="download/bundles" usetimestamp="true" />
             
-            
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops//${eclipse.orbit.release}/repository/plugins/javax.xml_1.3.4.v201005080400.jar" dest="download/bundles" usetimestamp="true" />
+        	<orbitGet bundle="javax.xml" version="1.3.4" qualifier="v201005080400"/>
             <get src="http://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
-        	
+            
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils.source_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
+            <orbitGet bundle="org.apache.commons.beanutils" version="1.8.0" qualifier="v201205091237"/>
+            <orbitGet bundle="org.apache.commons.collections" version="3.2.0" qualifier="v2013030210310"/>
         	
         	<!-- common -->
         	
@@ -131,16 +130,19 @@
         	
         	<!-- for jdeb -->
         	
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.ant_1.9.2.v201404171502.jar" dest="download/bundles" usetimestamp="true"/>
+        	<orbitGet bundle="org.apache.ant" version="1.9.2" qualifier="v201404171502"/>
         	<get src="http://www.bouncycastle.org/download/bcprov-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
         	<get src="http://www.bouncycastle.org/download/bcpg-jdk15on-151.jar" dest="download/bundles" usetimestamp="true"/>
         	
         	<!-- aether -->
         	
         	<get src="http://eclipse.org/downloads/download.php?file=/aether/aether-core/1.0.1/dist/aether-1.0.1-bin.zip&amp;r=1" dest="download/aether-bin.zip" usetimestamp="true"/>
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpclient_4.3.6.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.httpcomponents.httpcore_4.3.3.v201411290715.jar" dest="download/bundles" usetimestamp="true" />
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.codec_1.6.0.v201305230611.jar" dest="download/bundles" usetimestamp="true" />
+        	
+        	<orbitGet bundle="org.apache.httpcomponents.httpcore" version="4.3.3" qualifier="v201411290715" />
+        	<orbitGet bundle="org.apache.httpcomponents.httpclient" version="4.3.6" qualifier="v201411290715" />
+        	<orbitGet bundle="org.apache.commons.codec" version="1.6.0" qualifier="v201305230611" />
+        	
+        	<orbitGet bundle="org.apache.ant" version="1.9.2" qualifier="v201404171502"/>
         	
         	<!-- pax web -->
         	
@@ -162,7 +164,7 @@
         	
         	<mavenGet group="org/jboss/spec/javax/servlet/jstl" artifact="jboss-jstl-api_1.2_spec" version="1.1.2.Final"/>
         	
-        	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.juli.extras_7.0.56.v201412180755.jar"  dest="download/bundles" usetimestamp="true"/>
+        	<orbitGet bundle="org.apache.juli.extras" version="7.0.56" qualifier="v201412180755"/>
         	
         	<!-- for testing -->
         	
