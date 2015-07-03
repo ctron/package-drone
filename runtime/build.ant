@@ -50,7 +50,14 @@
         </sequential>
     </macrodef>
 
-
+    <macrodef name="orbitGet">
+        <attribute name="bundle" />
+    	<attribute name="version" />
+    	<attribute name="qualifier" />
+    	<sequential>
+    		<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/@{bundle}_@{version}.@{qualifier}.jar" dest="download/bundles" usetimestamp="true" />
+    	</sequential>
+    </macrodef>
 
     <!-- ================================= 
           target: download
@@ -83,10 +90,11 @@
             <get src="http://central.maven.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.0.1/org.apache.aries.spifly.dynamic.bundle-1.0.1.jar" dest="download/bundles" usetimestamp="true" />
             <get src="http://central.maven.org/maven2/org/apache/aries/org.apache.aries.util/1.1.0/org.apache.aries.util-1.1.0.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm-tree/5.0.1/asm-tree-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm-commons/5.0.1/asm-commons-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
-            <get src="http://repo1.maven.org/maven2/org/ow2/asm/asm/5.0.1/asm-5.0.1.jar" dest="download/bundles" usetimestamp="true" />
-
+        	
+        	<orbitGet bundle="org.objectweb.asm" version="5.0.1" qualifier="v201404251740" />
+        	<orbitGet bundle="org.objectweb.asm.commons" version="5.0.1" qualifier="v201404251740" />
+    		<orbitGet bundle="org.objectweb.asm.tree" version="5.0.1" qualifier="v201404251740" />
+        	
             <get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/javax.activation_1.1.0.v201211130549.jar" dest="download/bundles" usetimestamp="true" />
 
             <!-- jsp stuff -->
