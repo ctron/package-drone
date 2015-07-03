@@ -123,8 +123,9 @@
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.beanutils_1.8.0.v201205091237.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/tools/orbit/downloads/drops/${eclipse.orbit.release}/repository/plugins/org.apache.commons.collections_3.2.0.v2013030210310.jar" dest="download/bundles" usetimestamp="true" />
         	
-        	<!-- compress -->
+        	<!-- common -->
         	
+        	<orbitGet bundle="org.apache.commons.io" version="2.2.0" qualifier="v201405211200"/>
         	<mavenGet group="org/apache/commons" artifact="commons-compress" version="1.9"/>
         	
         	<!-- for jdeb -->
