@@ -71,9 +71,9 @@
         	<get src="http://eclipse.org/downloads/download.php?file=/jetty/${jetty.version}/dist/jetty-distribution-${jetty.version}.tar.gz&amp;r=1" dest="download/jetty-distribution.tar.gz" usetimestamp="true" />
         	
         	<!-- HttpService : JDT core -->
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/S-4.5RC4-201506032000/ecj-4.5RC4.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/R-4.5-201506032000/ecj-4.5.jar&amp;r=1" dest="download/bundles/ecj.jar" usetimestamp="true" />
 
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/S-MarsRC3-201505280700/equinox-SDK-MarsRC3.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
+        	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/R-Mars-201506032000/equinox-SDK-Mars.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
         	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.2/milestones/gemini-jpa-1.2.0.M1.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
             <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
@@ -212,21 +212,11 @@
                 <include name="jetty-http-*.jar" />
                 <include name="jetty-io-*.jar" />
             	<include name="jetty-xml-*.jar" />
-            	<include name="jetty-jmx-*.jar" />
             	<include name="jetty-servlets-*.jar" />
-            	<include name="jetty-jaas-*.jar" />
             	<include name="jetty-continuation-*.jar" />
-            	
             	<include name="jetty-webapp-*.jar" />
-            	<include name="jetty-jndi-*.jar" />
-            	<include name="jetty-jaspi-*.jar" />
-            	<include name="jetty-plus-*.jar" />
-            	<include name="jetty-rewrite-*.jar" />
-            	<include name="jetty-client-*.jar" />
             	<include name="jetty-util-ajax-*.jar" />
-            	
             	<include name="jetty-schemas-3.1.jar" />
-            	
             </fileset>
 
             <fileset dir="unpack/equinox/plugins">
