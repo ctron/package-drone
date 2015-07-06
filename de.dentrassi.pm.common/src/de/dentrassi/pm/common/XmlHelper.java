@@ -177,7 +177,7 @@ public class XmlHelper
         final ClassLoader tccl = Thread.currentThread ().getContextClassLoader ();
         try
         {
-            Thread.currentThread ().setContextClassLoader ( XmlHelper.class.getClassLoader () );
+            // Thread.currentThread ().setContextClassLoader ( XmlHelper.class.getClassLoader () );
             try
             {
                 return call.call ();
