@@ -19,4 +19,3 @@ Export-Package: de.dentrassi.pm.common;version="1.0.0";uses:="org.w3c.dom,javax.
  de.dentrassi.pm.common.service;version="1.0.0";uses:="javax.persistence",
  de.dentrassi.pm.common.servlet;version="1.0.0";uses:="javax.servlet.http",
  de.dentrassi.pm.common.utils;version="1.0.0"
-Require-Bundle: org.apache.xalan;bundle-version="2.7.1"
