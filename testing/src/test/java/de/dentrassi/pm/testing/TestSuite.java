@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -38,11 +39,14 @@ import org.openqa.selenium.remote.RemoteWebDriver;
         UploadTest.class, //
         BasicTest.class, //
         DefaultTest.class, //
+        DeployGroupTest.class, //
+        MavenTest.class, //
         OsgiTest.class, //
         RpmTest.class, //
         DebTest.class, //
         MvnOsgiTest.class //
 } )
+
 public class TestSuite
 {
     private static final String SAUCE_USER_NAME = System.getProperty ( "sauce.username" );
@@ -114,7 +118,8 @@ public class TestSuite
 
         pb.environment ().put ( "JAVA_HOME", javaHome );
 
-        makeProcessSystemProperties ( pb );
+        final Map<String, String> additional = new HashMap<> ();
+        makeProcessSystemProperties ( pb, additional );
 
         pb.inheritIO ();
 
@@ -148,7 +153,7 @@ public class TestSuite
         }
     }
 
-    private static void makeProcessSystemProperties ( final ProcessBuilder pb )
+    private static void makeProcessSystemProperties ( final ProcessBuilder pb, final Map<String, String> additional )
     {
         final StringBuilder sb = new StringBuilder ();
         for ( final Map.Entry<Object, Object> entry : System.getProperties ().entrySet () )
@@ -170,6 +175,19 @@ public class TestSuite
                 sb.append ( "-D" ).append ( key ).append ( '=' ).append ( value );
             }
         }
+
+        for ( final Map.Entry<String, String> entry : additional.entrySet () )
+        {
+            final String key = entry.getKey ();
+            final String value = entry.getValue ();
+
+            if ( sb.length () > 0 )
+            {
+                sb.append ( ' ' );
+            }
+            sb.append ( "-D" ).append ( key ).append ( '=' ).append ( value );
+        }
+
         pb.environment ().put ( "JAVA_OPTS", sb.toString () );
     }
 

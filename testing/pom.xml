@@ -7,20 +7,26 @@
 	<version>0.0.4-SNAPSHOT</version>
 	<name>Automated tests for Package Drone</name>
 
+    <prerequisites>
+        <maven>3.2</maven>
+    </prerequisites>
+
 	<properties>
-        <!-- Put these in ~.m2/settings.xml -->
-        
-        <!-- <mysql.admin.user>user</mysql.admin.user> -->
-        <!-- <mysql.admin.password>password</mysql.admin.password> -->
-        
-        <!-- <mysql.test.database>database</mysql.test.database> -->
-        <!-- <mysql.test.user>user</mysql.test.user> -->
-        <!-- <mysql.test.password>password</mysql.test.password> -->
-        
-        <!-- <use.postgres>define or nor</use.postgres> -->
-        
-        <!-- <postgres.admin.user>user</postgres.admin.user> -->
-        <!-- <postgres.admin.password>user</postgres.admin.password> -->
+		<!-- Put these in ~.m2/settings.xml -->
+
+		<!-- <mysql.admin.user>user</mysql.admin.user> -->
+		<!-- <mysql.admin.password>password</mysql.admin.password> -->
+
+		<!-- <mysql.test.database>database</mysql.test.database> -->
+		<!-- <mysql.test.user>user</mysql.test.user> -->
+		<!-- <mysql.test.password>password</mysql.test.password> -->
+
+		<!-- <use.postgres>define or nor</use.postgres> -->
+
+		<!-- <postgres.admin.user>user</postgres.admin.user> -->
+		<!-- <postgres.admin.password>user</postgres.admin.password> -->
+		
+		<aetherVersion>1.0.2.v20150114</aetherVersion>
 	</properties>
 
 	<build>
@@ -54,7 +60,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.18.1</version>
 				<configuration>
-				    <!-- sadly there is no way to just pass all maven properties -->
+					<!-- sadly there is no way to just pass all maven properties -->
 					<systemPropertyVariables>
 						<mysql.test.user>${mysql.test.user}</mysql.test.user>
 						<mysql.test.password>${mysql.test.password}</mysql.test.password>
@@ -66,11 +72,11 @@
 						<org.osgi.service.http.port>8081</org.osgi.service.http.port>
 					</systemPropertyVariables>
 					<includes>
-                        <include>**/TestSuite.java</include>
-                    </includes>
+						<include>**/TestSuite.java</include>
+					</includes>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -179,13 +185,70 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.34</version>
 			<scope>test</scope>
-		</dependency> 
+		</dependency>
 		<dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.4-1201-jdbc41</version>
-            <scope>test</scope>
-        </dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.4-1201-jdbc41</version>
+			<scope>test</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-api</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-spi</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-util</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-impl</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-connector-basic</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-transport-file</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-transport-http</artifactId>
+			<version>${aetherVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-aether-provider</artifactId>
+			<version>3.2.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.6</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 </project>

@@ -18,6 +18,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 public class ChannelTester
 {
@@ -208,5 +209,30 @@ public class ChannelTester
     protected void get ( final String url )
     {
         this.context.getResolved ( url );
+    }
+
+    public void assignDeployGroup ( final String deployGroupName )
+    {
+        get ( String.format ( "/channel/%s/deployKeys", this.id ) );
+        final WebElement ele = this.context.findElement ( By.id ( "groupId" ) );
+        new Select ( ele ).selectByVisibleText ( deployGroupName );
+        ele.submit ();
+    }
+
+    public Set<String> getDeployKeys ()
+    {
+        get ( String.format ( "/channel/%s/deployKeys", this.id ) );
+
+        final Set<String> result = new HashSet<> ();
+
+        final List<WebElement> eles = this.context.findElements ( By.xpath ( "//code[@title='password']" ) );
+        for ( final WebElement ele : eles )
+        {
+            final String key = ele.getText ();
+            System.out.println ( "Deploy key: " + key );
+            result.add ( key );
+        }
+
+        return result;
     }
 }
