@@ -12,3 +12,7 @@ script: mvn package -B
 
 jdk:
   - oraclejdk8
+
+env:
+   global:
+      - MAVEN_OPTS="-Xmx512m"
