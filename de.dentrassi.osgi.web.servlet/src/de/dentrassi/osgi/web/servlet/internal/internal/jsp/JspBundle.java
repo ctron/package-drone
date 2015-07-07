@@ -31,6 +31,8 @@ public class JspBundle
 
     private final JspServlet servlet;
 
+    private final HttpService service;
+
     public JspBundle ( final Bundle bundle, final HttpService service, final HttpContext context ) throws ServletException, NamespaceException
     {
         this.alias = String.format ( "/bundle/%s/WEB-INF", bundle.getBundleId () );
@@ -42,10 +44,13 @@ public class JspBundle
         initparams.put ( "compilerSourceVM", "1.8" );
         initparams.put ( "compilerTargetVM", "1.8" );
 
+        this.service = service;
+
         service.registerServlet ( this.alias, this.servlet, initparams, context );
     }
 
     public void dispose ()
     {
+        this.service.unregister ( this.alias );
     }
 }
