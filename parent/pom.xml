@@ -48,8 +48,8 @@
 	</licenses>
 
 	<properties>
-		<tycho-version>0.23.0</tycho-version>
-		<tycho-extras-version>0.23.0</tycho-extras-version>
+		<tycho-version>0.22.0</tycho-version>
+		<tycho-extras-version>0.22.0</tycho-extras-version>
 
 		<tycho.scmUrl>scm:git:ssh://github.com/ctron/package-drone</tycho.scmUrl>
 
