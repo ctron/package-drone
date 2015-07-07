@@ -118,16 +118,15 @@ if ( p instanceof UserInformationPrincipal )
     </jsp:attribute>
 </h:navbar>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="page-header">
-               <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
-            </div>
-        </div>
+<header class="page-header">
+    <div class="container-fluid">
+	    <div class="row">
+	        <div class="col-md-12">
+	            <h1>${fn:escapeXml(title) }<c:if test="${not empty subtitle }">&nbsp;<small>${fn:escapeXml(subtitle) }</small></c:if></h1>
+	        </div>
+	    </div>
     </div>
-</div>
-
+</header>
 
 <section>
     <div id="content">
