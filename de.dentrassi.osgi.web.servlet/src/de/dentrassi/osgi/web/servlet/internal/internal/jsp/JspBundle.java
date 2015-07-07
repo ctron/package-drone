@@ -35,22 +35,23 @@ public class JspBundle
 
     public JspBundle ( final Bundle bundle, final HttpService service, final HttpContext context ) throws ServletException, NamespaceException
     {
+        this.service = service;
+
         this.alias = String.format ( "/bundle/%s/WEB-INF", bundle.getBundleId () );
         this.servlet = new JspServlet ( bundle, "/WEB-INF", this.alias );
 
         logger.info ( "Registering JSP servlet - resources: /WEB-INF, alias: {}, bundle: {}", this.alias, bundle.getSymbolicName () );
 
-        final Dictionary<String, Object> initparams = new Hashtable<> ();
+        final Dictionary<String, Object> initparams = new Hashtable<> ( 2 );
         initparams.put ( "compilerSourceVM", "1.8" );
         initparams.put ( "compilerTargetVM", "1.8" );
 
-        this.service = service;
-
-        service.registerServlet ( this.alias, this.servlet, initparams, context );
+        this.service.registerServlet ( this.alias, this.servlet, initparams, context );
     }
 
     public void dispose ()
     {
+        logger.info ( "Unregistering JSP servlet - alias: {}", this.alias );
         this.service.unregister ( this.alias );
     }
 }
