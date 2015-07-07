@@ -10,4 +10,3 @@ Import-Package: javax.xml,
  javax.xml.parsers,
  javax.xml.transform,
  javax.xml.xpath
-Require-Capability: xml.tools.factory

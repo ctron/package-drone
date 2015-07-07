@@ -8,4 +8,3 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.apache.xalan;bundle-version="2.7.1"
 Import-Package: de.dentrassi.osgi.xml
 Service-Component: OSGI-INF/impl.xml
-Provide-Capability: xml.tools.factory; version=1.0.0 
