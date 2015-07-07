@@ -5,6 +5,7 @@ Bundle-SymbolicName: de.dentrassi.pm.aspect.common.tests
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: IBH SYSTEMS GmbH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.junit;bundle-version="4.11.0"
+Require-Bundle: org.junit;bundle-version="4.11.0",
+ de.dentrassi.pm.xml;bundle-version="1.0.0"
 Import-Package: de.dentrassi.pm.osgi.feature
 Fragment-Host: de.dentrassi.pm.aspect.common
