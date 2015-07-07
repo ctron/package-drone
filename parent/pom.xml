@@ -48,8 +48,8 @@
 	</licenses>
 
 	<properties>
-		<tycho-version>0.22.0</tycho-version>
-		<tycho-extras-version>0.22.0</tycho-extras-version>
+		<tycho-version>0.23.0</tycho-version>
+		<tycho-extras-version>0.23.0</tycho-extras-version>
 
 		<tycho.scmUrl>scm:git:ssh://github.com/ctron/package-drone</tycho.scmUrl>
 
@@ -73,7 +73,7 @@
 		<module>../de.dentrassi.osgi.job.service.jpa</module>
 		<module>../de.dentrassi.osgi.job.web</module>
 
-        <module>../de.dentrassi.osgi.profiler</module>
+		<module>../de.dentrassi.osgi.profiler</module>
 
 		<module>../de.dentrassi.osgi.scheduler</module>
 		<module>../de.dentrassi.osgi.scheduler.simple</module>
@@ -86,11 +86,11 @@
 		<module>../de.dentrassi.osgi.web.form</module>
 		<module>../de.dentrassi.osgi.web.servlet</module>
 		<module>../de.dentrassi.osgi.web.tests</module>
-		
+
 		<module>../de.dentrassi.osgi.xml</module>
-		
+
 		<module>../de.dentrassi.pm</module>
-		
+
 		<module>../de.dentrassi.pm.api.upload</module>
 
 		<module>../de.dentrassi.pm.aspect</module>
@@ -148,7 +148,7 @@
 
 		<module>../de.dentrassi.pm.r5</module>
 		<module>../de.dentrassi.pm.r5.web</module>
-		
+
 		<module>../de.dentrassi.pm.rpm</module>
 		<module>../de.dentrassi.pm.rpm.web</module>
 
@@ -183,7 +183,7 @@
 
 		<module>../de.dentrassi.pm.unzip</module>
 		<module>../de.dentrassi.pm.unzip.tests</module>
-		
+
 		<module>../de.dentrassi.pm.usage</module>
 
 		<module>../de.dentrassi.pm.utils.deb</module>
@@ -191,20 +191,20 @@
 
 		<module>../de.dentrassi.pm.feature</module>
 		<module>../de.dentrassi.pm.root.feature</module>
-		
+
 		<module>../de.dentrassi.pm.web.analytics</module>
-		
+
 		<module>../de.dentrassi.rpm</module>
 		<module>../de.dentrassi.rpm.tests</module>
-		
+
 		<module>../de.dentrassi.pm.xml</module>
 
-        <module>../org.tukani.xz</module>
-        
-        <module>../de.dentrassi.pm.patched.feature</module>
-        <module>../org.apache.jasper.glassfish</module>
-        <module>../org.eclipse.equinox.jsp.jasper</module>
-        
+		<module>../org.tukani.xz</module>
+
+		<module>../de.dentrassi.pm.patched.feature</module>
+		<module>../org.apache.jasper.glassfish</module>
+		<module>../org.eclipse.equinox.jsp.jasper</module>
+
 		<module>../product</module>
 	</modules>
 
