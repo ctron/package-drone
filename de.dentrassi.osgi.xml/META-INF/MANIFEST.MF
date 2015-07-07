@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: XML Helper Tools for OSGi
+Bundle-SymbolicName: de.dentrassi.osgi.xml
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: IBH SYSTEMS GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: de.dentrassi.osgi.xml;version="1.0.0";uses:="javax.xml.parsers,javax.xml.transform,javax.xml.xpath"
+Import-Package: javax.xml,
+ javax.xml.parsers,
+ javax.xml.transform,
+ javax.xml.xpath
+Require-Capability: xml.tools.factory

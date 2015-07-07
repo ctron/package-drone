@@ -9,14 +9,21 @@ Import-Package: com.google.common.hash;version="18.0.0",
  com.google.gson;version="2.3.1",
  de.dentrassi.osgi.converter;version="1.0.0",
  de.dentrassi.osgi.utils;version="1.0.0",
+ de.dentrassi.osgi.xml;version="1.0.0",
  javax.persistence;version="2.0.0",
  javax.servlet.http;version="3.1.0",
  org.osgi.framework;version="1.8.0",
+ org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
-Export-Package: de.dentrassi.pm.common;version="1.0.0";uses:="org.w3c.dom,javax.xml.transform",
+Export-Package: de.dentrassi.pm.common;version="1.0.0";
+  uses:="org.w3c.dom,
+   javax.xml.parsers,
+   javax.xml.transform,
+   javax.xml.xpath",
  de.dentrassi.pm.common.event;version="1.0.0",
  de.dentrassi.pm.common.lm;version="1.0.0",
  de.dentrassi.pm.common.service;version="1.0.0";uses:="javax.persistence",
  de.dentrassi.pm.common.servlet;version="1.0.0";uses:="javax.servlet.http",
  de.dentrassi.pm.common.utils;version="1.0.0"
-Require-Bundle: org.apache.xalan;bundle-version="2.7.1"
+Bundle-Activator: de.dentrassi.pm.common.internal.Activator
+Bundle-ActivationPolicy: lazy

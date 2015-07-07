@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
-import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,6 +37,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.dentrassi.osgi.xml.XmlToolsFactory;
+import de.dentrassi.pm.common.internal.Activator;
 
 /**
  * A helper class when working with XML documents
@@ -144,53 +146,27 @@ public class XmlHelper
 
     private final DocumentBuilderFactory dbfNs;
 
+    private final XmlToolsFactory tools;
+
     public XmlHelper ()
     {
-        this.dbf = createDocumentBuilderFactory ( false );
-        this.dbfNs = createDocumentBuilderFactory ( true );
+        this.tools = Activator.getXmlToolsFactory ();
+        this.dbf = this.tools.newDocumentBuilderFactory ();
+        this.dbfNs = this.tools.newDocumentBuilderFactory ();
+        this.dbfNs.setNamespaceAware ( true );
 
-        this.transformerFactory = createTransformerFactory ();
-        this.xpathFactory = createXPathFactory ();
+        this.transformerFactory = this.tools.newTransformerFactory ();
+        this.xpathFactory = this.tools.newXPathFactory ();
     }
 
-    public static DocumentBuilderFactory createDocumentBuilderFactory ( final boolean namespaceAware )
-    {
-        return withClassLoader ( () -> {
-            final DocumentBuilderFactory result = DocumentBuilderFactory.newInstance ();
-            result.setNamespaceAware ( namespaceAware );
-            return result;
-        } );
-    }
-
-    public static TransformerFactory createTransformerFactory ()
-    {
-        return withClassLoader ( TransformerFactory::newInstance );
-    }
-
+    /**
+     * @deprecated Instead the {@link
+     *             de.dentrassi.osgi.xml.XmlToolsFactory} should be used.
+     */
+    @Deprecated
     public static XPathFactory createXPathFactory ()
     {
-        return withClassLoader ( XPathFactory::newInstance );
-    }
-
-    private static <T> T withClassLoader ( final Callable<T> call )
-    {
-        final ClassLoader tccl = Thread.currentThread ().getContextClassLoader ();
-        try
-        {
-            Thread.currentThread ().setContextClassLoader ( XmlHelper.class.getClassLoader () );
-            try
-            {
-                return call.call ();
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( e );
-            }
-        }
-        finally
-        {
-            Thread.currentThread ().setContextClassLoader ( tccl );
-        }
+        return Activator.getXmlToolsFactory ().newXPathFactory ();
     }
 
     public Document create ()

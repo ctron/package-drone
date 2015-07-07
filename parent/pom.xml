@@ -87,6 +87,8 @@
 		<module>../de.dentrassi.osgi.web.servlet</module>
 		<module>../de.dentrassi.osgi.web.tests</module>
 		
+		<module>../de.dentrassi.osgi.xml</module>
+		
 		<module>../de.dentrassi.pm</module>
 		
 		<module>../de.dentrassi.pm.api.upload</module>
@@ -194,6 +196,8 @@
 		
 		<module>../de.dentrassi.rpm</module>
 		<module>../de.dentrassi.rpm.tests</module>
+		
+		<module>../de.dentrassi.pm.xml</module>
 
         <module>../org.tukani.xz</module>
         
