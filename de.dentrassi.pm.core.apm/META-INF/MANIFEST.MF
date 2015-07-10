@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Core Service based on APM
+Bundle-SymbolicName: de.dentrassi.pm.core.apm
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: IBH SYSTEMS GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: de.dentrassi.pm.apm;version="1.0.0",
+ de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.core;version="1.0.0",
+ javax.persistence.criteria;version="2.1.0"
+Service-Component: OSGI-INF/service.xml
