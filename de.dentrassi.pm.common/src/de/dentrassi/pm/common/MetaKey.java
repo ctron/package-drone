@@ -29,6 +29,11 @@ public class MetaKey implements Comparable<MetaKey>
 
     public MetaKey ( final String namespace, final String key )
     {
+        if ( namespace.contains ( ":" ) )
+        {
+            throw new IllegalArgumentException ( String.format ( "Namespace must not contain ':'" ) );
+        }
+
         this.namespace = namespace;
         this.key = key;
     }
@@ -116,7 +121,7 @@ public class MetaKey implements Comparable<MetaKey>
 
     /**
      * Convert a string to a MetaKey if possible
-     * 
+     *
      * @param string
      *            the string to convert
      * @return the new MetaKey instance or <code>null</code> if the format was
