@@ -12,7 +12,6 @@ Require-Bundle: de.dentrassi.osgi.web;bundle-version="1.0.0",
  de.dentrassi.pm.common.web;bundle-version="1.0.0",
  org.apache.jasper.glassfish;bundle-version="2.2.2",
  org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2"
-Eclipse-BundleShape: dir
 Import-Package: de.dentrassi.pm.database;version="1.0.0",
  de.dentrassi.pm.mail.service;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",

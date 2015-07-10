@@ -9,7 +9,6 @@ Require-Bundle: de.dentrassi.osgi.web.form;bundle-version="1.0.0",
  de.dentrassi.pm.storage.web;bundle-version="0.0.7",
  org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2"
 Bundle-ActivationPolicy: lazy
-Eclipse-BundleShape: dir
 Web-TagLib-Directory: /WEB-INF/tags/de.dentrassi.pm.osgi.web
 Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.osgi.web.controller.binding;version="1.0.0",

@@ -34,5 +34,4 @@ Import-Package: de.dentrassi.osgi.web;version="1.0.0",
  org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/todoInterceptor.xml,
  OSGI-INF/controller.xml
-Eclipse-BundleShape: dir
 Export-Package: de.dentrassi.pm.todo.web;version="1.0.0"
