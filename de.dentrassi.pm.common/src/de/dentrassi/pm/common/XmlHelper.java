@@ -160,7 +160,7 @@ public class XmlHelper
     }
 
     /**
-     * @deprecated Instead the {@link
+     * @deprecated Instead the class {@link
      *             de.dentrassi.osgi.xml.XmlToolsFactory} should be used.
      */
     @Deprecated
