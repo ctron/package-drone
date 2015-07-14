@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.common;
 
+import java.io.Serializable;
+
 /**
  * A meta data key
  * <p>
@@ -21,8 +23,10 @@ package de.dentrassi.pm.common;
  * is first by namespace and then by key. Both compared as strings.
  * </p>
  */
-public class MetaKey implements Comparable<MetaKey>
+public class MetaKey implements Comparable<MetaKey>, Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     private final String namespace;
 
     private final String key;
