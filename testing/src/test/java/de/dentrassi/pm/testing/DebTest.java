@@ -11,6 +11,7 @@
 package de.dentrassi.pm.testing;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class DebTest extends AbstractServerTest
         }
         Assert.assertEquals ( 1, ct.getAllArtifactIds ().size () );
 
-        testUrl ( String.format ( "/apt/%s", ct.getId () ) ); // index page
+        testUrl ( String.format ( "/apt/%s", ct.getId () ), Pattern.compile ( ".*APT Repository \\|.*", Pattern.DOTALL ) ); // index page
     }
 
     @Test
@@ -56,7 +57,7 @@ public class DebTest extends AbstractServerTest
         desc.sendKeys ( "Test Description" );
         desc.submit ();
 
-        testUrl ( String.format ( "/apt/%s", ct.getId () ) ); // index page
+        testUrl ( String.format ( "/apt/%s", ct.getId () ), Pattern.compile ( ".*APT Repository \\|.*", Pattern.DOTALL ) ); // index page
 
         testUrl ( String.format ( "/apt/%s/dists/default/Release", ct.getId () ) );
         testUrl ( String.format ( "/apt/%s/dists/default/main/binary-amd64/Release", ct.getId () ) );

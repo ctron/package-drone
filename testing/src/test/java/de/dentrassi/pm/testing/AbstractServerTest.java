@@ -11,18 +11,24 @@
 package de.dentrassi.pm.testing;
 
 import java.io.File;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
+
+import com.google.common.io.CharStreams;
 
 public class AbstractServerTest
 {
@@ -143,9 +149,30 @@ public class AbstractServerTest
 
     protected void testUrl ( final String suffix ) throws Exception
     {
+        testUrl ( suffix, null );
+    }
+
+    protected void testUrl ( final String suffix, final Pattern pattern ) throws Exception
+    {
         final URL url = new URL ( resolve ( suffix ) );
-        try ( InputStream is = url.openStream () )
+        try ( Reader reader = new InputStreamReader ( url.openStream () ) )
         {
+            if ( pattern != null )
+            {
+                final String data = CharStreams.toString ( reader );
+                final Matcher m = pattern.matcher ( data );
+
+                final boolean result = m.matches ();
+                if ( !result )
+                {
+                    System.out.println ( "Failed to match pattern: " + pattern );
+                    System.out.println ( "------------------------------" );
+                    System.out.println ( data );
+                    System.out.println ( "------------------------------" );
+                }
+
+                Assert.assertTrue ( "Content match failed", result );
+            }
         }
     }
 }
