@@ -10,6 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.utils.deb;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,9 +35,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.vafer.jdeb.debian.BinaryPackageControlFile;
 import org.vafer.jdeb.debian.ControlField;
+import org.vafer.jdeb.debian.ControlFile;
 
 import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.pm.utils.deb.internal.BinarySectionPackagesFile;
+import de.dentrassi.pm.utils.deb.internal.StatusFileEntry;
 
 public class Packages
 {
@@ -74,7 +81,51 @@ public class Packages
         return convert ( new BinaryPackageControlFile ( inputStream ) );
     }
 
-    private static SortedMap<String, String> convert ( final BinaryPackageControlFile controlFile )
+    public static List<SortedMap<String, String>> parseStatusFile ( final InputStream inputStream ) throws IOException, ParseException
+    {
+        final BufferedInputStream bin = new BufferedInputStream ( inputStream );
+        final byte[] d = new byte[1];
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+
+        boolean newline = false;
+        final List<SortedMap<String, String>> result = new LinkedList<> ();
+
+        while ( bin.read ( d ) > 0 )
+        {
+            if ( d[0] == '\n' )
+            {
+                if ( newline )
+                {
+                    // double newline
+                    result.add ( convert ( new StatusFileEntry ( new ByteArrayInputStream ( bos.toByteArray () ) ) ) );
+
+                    bos = new ByteArrayOutputStream ();
+                }
+                else
+                {
+                    newline = true;
+                    bos.write ( d );
+                }
+            }
+            else
+            {
+                newline = false;
+                bos.write ( d );
+            }
+
+        }
+
+        // last entry
+        if ( bos.size () > 0 )
+        {
+            result.add ( convert ( new StatusFileEntry ( new ByteArrayInputStream ( bos.toByteArray () ) ) ) );
+        }
+
+        return result;
+    }
+
+    private static SortedMap<String, String> convert ( final ControlFile controlFile )
     {
         return new TreeMap<> ( controlFile.getValues () );
     }
