@@ -462,6 +462,13 @@ public class StorageManager
         return stack.peekLast ();
     }
 
+    public StorageContext getContext ()
+    {
+        testClosed ();
+
+        return this.context;
+    }
+
     public <M> void accessRun ( final MetaKey modelKey, final Class<M> modelClazz, final Consumer<M> consumer )
     {
         accessCall ( modelKey, modelClazz, ( model ) -> {
