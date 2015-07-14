@@ -59,6 +59,8 @@
 				
 				<include name="de.dentrassi.pm.common/src/**" />
 				<include name="de.dentrassi.pm.osgi/src/**" />
+				
+				<include name="de.dentrassi.rpm/src/**" />
 			</fileset>
 
 			<link href="https://docs.oracle.com/javase/8/docs/api/" />
