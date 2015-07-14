@@ -30,6 +30,7 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.deb.ChannelConfiguration;
+import de.dentrassi.pm.deb.aspect.DebianAspectInformation;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.deb.aspect.internal.RepoBuilder.PackageInformation;
 import de.dentrassi.pm.signing.SigningService;
@@ -94,10 +95,10 @@ public class AptAggregator implements ChannelAggregator
 
             for ( final ArtifactInformation art : context.getArtifacts () )
             {
-                final String arch = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "architecture" ) );
-                final String packageName = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "package" ) );
-                final String version = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "version" ) );
-                final String controlJson = art.getMetaData ().get ( new MetaKey ( DebianChannelAspectFactory.ID, "control.json" ) );
+                final String arch = art.getMetaData ().get ( DebianAspectInformation.KEY_ARCH );
+                final String packageName = art.getMetaData ().get ( DebianAspectInformation.KEY_PACKAGE );
+                final String version = art.getMetaData ().get ( DebianAspectInformation.KEY_VERSION );
+                final String controlJson = art.getMetaData ().get ( DebianAspectInformation.KEY_CONTROL_JSON );
 
                 final String md5 = art.getMetaData ().get ( new MetaKey ( "hasher", "md5" ) );
                 final String sha1 = art.getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) );

@@ -13,11 +13,10 @@ package de.dentrassi.pm.deb.aspect.internal;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.deb.aspect.DebianAspectInformation;
 
-public class DebianChannelAspectFactory implements ChannelAspectFactory
+public class DebianChannelAspectFactory implements ChannelAspectFactory, DebianAspectInformation
 {
-    public static final String ID = "deb";
-
     @Override
     public ChannelAspect createAspect ()
     {
