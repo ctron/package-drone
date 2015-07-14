@@ -11,6 +11,7 @@
 package de.dentrassi.pm.testing;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class RpmTest extends AbstractServerTest
         }
         Assert.assertEquals ( 2, ct.getAllArtifactIds ().size () );
 
-        testUrl ( String.format ( "/yum/%s/", ct.getId () ) );
+        testUrl ( String.format ( "/yum/%s/", ct.getId () ), Pattern.compile ( ".*YUM repository.*", Pattern.DOTALL ) );
         testUrl ( String.format ( "/yum/%s/repodata/", ct.getId () ) );
         testUrl ( String.format ( "/yum/%s/repodata/repomd.xml", ct.getId () ) );
     }

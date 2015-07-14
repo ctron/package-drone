@@ -11,6 +11,7 @@
 package de.dentrassi.pm.testing;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class OsgiTest extends AbstractServerTest
         }
         Assert.assertEquals ( 6, ct.getAllArtifactIds ().size () );
 
-        testUrl ( "/p2/" + ct.getId () );
+        testUrl ( "/p2/" + ct.getId (), Pattern.compile ( ".*Package Drone Channel\\:.*", Pattern.DOTALL ) );
     }
 
     @Test
