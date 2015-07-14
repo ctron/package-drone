@@ -11,10 +11,16 @@
 package de.dentrassi.osgi.web.servlet;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.servlet.MultipartConfigElement;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.eclipse.equinox.jsp.jasper.JspServlet;
 import org.ops4j.pax.web.service.WebContainer;
@@ -29,6 +35,51 @@ import org.osgi.service.http.NamespaceException;
  */
 public abstract class JspServletInitializer
 {
+    public static class BundleServletWrapper extends ServletWrapper
+    {
+        private final Bundle bundle;
+
+        public BundleServletWrapper ( final Servlet servlet, final Bundle bundle )
+        {
+            super ( servlet );
+            this.bundle = bundle;
+        }
+
+        @Override
+        public void service ( final ServletRequest request, final ServletResponse response ) throws ServletException, IOException
+        {
+            if ( request instanceof HttpServletRequest )
+            {
+                super.service ( new BundleRequestWrapper ( (HttpServletRequest)request, this.bundle ), response );
+            }
+            else
+            {
+                super.service ( request, response );
+            }
+        }
+    }
+
+    public static class BundleRequestWrapper extends HttpServletRequestWrapper
+    {
+        private final Bundle bundle;
+
+        public BundleRequestWrapper ( final HttpServletRequest request, final Bundle bundle )
+        {
+            super ( request );
+            this.bundle = bundle;
+        }
+
+        @Override
+        public RequestDispatcher getRequestDispatcher ( String path )
+        {
+            if ( path != null && path.startsWith ( "/WEB-INF" ) )
+            {
+                path = String.format ( "/bundle/%d%s", this.bundle.getBundleId (), path );
+            }
+            return super.getRequestDispatcher ( path );
+        }
+    }
+
     private WebContainer httpService;
 
     private DispatcherHttpContext webctx;
@@ -58,10 +109,11 @@ public abstract class JspServletInitializer
     {
         this.webctx = Dispatcher.createContext ( this.bundle.getBundleContext () );
 
-        this.servlet = createServlet ();
+        this.servlet = new BundleServletWrapper ( createServlet (), this.bundle );
+
         this.httpService.registerServlet ( this.alias, this.servlet, null, this.webctx );
 
-        this.jspServlet = new JspServlet ( this.bundle, "/WEB-INF/views", "/WEB-INF/views" );
+        this.jspServlet = new JspServlet ( this.bundle, "/WEB-INF/views", String.format ( "/bundle/%d/WEB-INF/views", this.bundle.getBundleId () ) );
         this.httpService.registerServlet ( this.jspServlet, new String[] { "*.jsp" }, null, this.webctx );
     }
 
