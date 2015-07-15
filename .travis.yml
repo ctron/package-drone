@@ -1,8 +1,6 @@
 language: java
 
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install rpm -qq
+sudo: false
 
 install:
  - cd runtime && mvn package && cd ..
@@ -12,3 +10,9 @@ script: mvn package -B
 
 jdk:
   - oraclejdk8
+
+addons:
+   apt:
+      packages:
+         - rpm
+
