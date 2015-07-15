@@ -10,9 +10,6 @@
  *******************************************************************************/
 package de.dentrassi.pm.utils.deb;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,29 +18,25 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.vafer.jdeb.debian.BinaryPackageControlFile;
-import org.vafer.jdeb.debian.ControlField;
-import org.vafer.jdeb.debian.ControlFile;
 
 import de.dentrassi.osgi.utils.Strings;
 import de.dentrassi.pm.utils.deb.internal.BinarySectionPackagesFile;
-import de.dentrassi.pm.utils.deb.internal.StatusFileEntry;
 
-public class Packages
+public final class Packages
 {
-    public static SortedMap<String, String> parseControlFile ( final File packageFile ) throws IOException, ParseException
+    private Packages ()
+    {
+    }
+
+    public static Map<String, String> parseControlFile ( final File packageFile ) throws IOException, ParserException
     {
         try ( final ArArchiveInputStream in = new ArArchiveInputStream ( new FileInputStream ( packageFile ) ) )
         {
@@ -76,72 +69,20 @@ public class Packages
         return null;
     }
 
-    public static SortedMap<String, String> parseControlFile ( final InputStream inputStream ) throws IOException, ParseException
+    public static Map<String, String> parseControlFile ( final InputStream inputStream ) throws IOException, ParserException
     {
-        return convert ( new BinaryPackageControlFile ( inputStream ) );
+        return ControlFileParser.parse ( inputStream );
     }
 
-    public static List<SortedMap<String, String>> parseStatusFile ( final InputStream inputStream ) throws IOException, ParseException
+    public static List<Map<String, String>> parseStatusFile ( final InputStream inputStream ) throws IOException, ParserException
     {
-        final BufferedInputStream bin = new BufferedInputStream ( inputStream );
-        final byte[] d = new byte[1];
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream ();
-
-        boolean newline = false;
-        final List<SortedMap<String, String>> result = new LinkedList<> ();
-
-        while ( bin.read ( d ) > 0 )
-        {
-            if ( d[0] == '\n' )
-            {
-                if ( newline )
-                {
-                    // double newline
-                    result.add ( convert ( new StatusFileEntry ( new ByteArrayInputStream ( bos.toByteArray () ) ) ) );
-
-                    bos = new ByteArrayOutputStream ();
-                }
-                else
-                {
-                    newline = true;
-                    bos.write ( d );
-                }
-            }
-            else
-            {
-                newline = false;
-                bos.write ( d );
-            }
-
-        }
-
-        // last entry
-        if ( bos.size () > 0 )
-        {
-            result.add ( convert ( new StatusFileEntry ( new ByteArrayInputStream ( bos.toByteArray () ) ) ) );
-        }
-
-        return result;
+        return ControlFileParser.parseMulti ( inputStream );
     }
 
-    private static SortedMap<String, String> convert ( final ControlFile controlFile )
+    public static void writeBinaryPackageValues ( final PrintWriter writer, final Map<String, String> values ) throws IOException
     {
-        return new TreeMap<> ( controlFile.getValues () );
+        new ControlFileWriter ( writer, BinarySectionPackagesFile.FORMATTERS ).writeEntries ( values );
     }
-
-    public static void writeBinaryPackageValues ( final PrintWriter writer, final Map<String, String> values )
-    {
-        final BinarySectionPackagesFile file = new BinarySectionPackagesFile ();
-        for ( final Map.Entry<String, String> entry : values.entrySet () )
-        {
-            file.set ( entry.getKey (), entry.getValue () );
-        }
-
-        writer.print ( file.toString () );
-    }
-
-    private static final ControlField DESC = new ControlField ( "Description", false, ControlField.Type.MULTILINE );
 
     private static MessageDigest MD5;
 
@@ -164,7 +105,17 @@ public class Packages
             return null;
         }
 
-        final String result = DESC.format ( string ).substring ( "Description: ".length () );
+        final StringBuilder sb = new StringBuilder ();
+        try
+        {
+            FieldFormatter.MULTI.appendValue ( string, sb );
+            sb.append ( '\n' );
+        }
+        catch ( final IOException e )
+        {
+            // this will never ever happen
+        }
+        final String result = sb.toString ();
 
         final byte[] data = MD5.digest ( result.getBytes ( StandardCharsets.UTF_8 ) );
         return Strings.hex ( data );

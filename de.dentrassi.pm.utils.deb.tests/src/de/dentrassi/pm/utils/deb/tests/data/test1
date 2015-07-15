@@ -9,3 +9,5 @@ Description: test for generating md5 of description
   * Because we can
   * Because it helps
   * Because its fun
+Foo: bar
+More-foo: more bar

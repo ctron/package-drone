@@ -4,7 +4,7 @@ Bundle-Name: Debian Tools
 Bundle-SymbolicName: de.dentrassi.pm.utils.deb
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jens Reimann
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
  org.apache.commons.compress.archivers;version="1.9.0",
  org.apache.commons.compress.archivers.ar;version="1.9.0",

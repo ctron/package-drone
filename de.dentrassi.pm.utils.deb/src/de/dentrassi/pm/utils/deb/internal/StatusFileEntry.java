@@ -10,73 +10,21 @@
  *******************************************************************************/
 package de.dentrassi.pm.utils.deb.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.vafer.jdeb.debian.ControlField;
-import org.vafer.jdeb.debian.ControlFile;
+import de.dentrassi.pm.utils.deb.FieldFormatter;
 
-public final class StatusFileEntry extends ControlFile
+public final class StatusFileEntry
 {
-    private static final ControlField[] FIELDS = { //
-            new ControlField ( "Package", true ), //
-            new ControlField ( "Status", true ), //
-            new ControlField ( "Priority", true ), //
-            new ControlField ( "Section", false ), //
-            new ControlField ( "Installed-Size", true ), //
-            new ControlField ( "Maintainer", false ), //
-            new ControlField ( "Architecture", true ), //
-            new ControlField ( "Multi-Arch", false ), //
-            new ControlField ( "Source", false ), //
-            new ControlField ( "Version", true ), //
+    public static final Map<String, FieldFormatter> FORMATTERS = new HashMap<> ();
 
-            new ControlField ( "Replaces", false ), //
-            new ControlField ( "Pre-Depends", false ), //
-            new ControlField ( "Depends", false ), //
-            new ControlField ( "Recommends", false ), //
-
-            new ControlField ( "Description", true, ControlField.Type.MULTILINE ), //
-
-            new ControlField ( "Homepage", false ), //
-            new ControlField ( "Original-Maintainer", false ), //
-    };
-
-    public StatusFileEntry ()
+    static
     {
-        set ( "Architecture", "all" );
-        set ( "Priority", "optional" );
+        FORMATTERS.put ( "Description", FieldFormatter.MULTI );
     }
 
-    public StatusFileEntry ( final String input ) throws IOException, ParseException
+    private StatusFileEntry ()
     {
-        parse ( input );
-    }
-
-    public StatusFileEntry ( final InputStream input ) throws IOException, ParseException
-    {
-        parse ( input );
-    }
-
-    @Override
-    protected ControlField[] getFields ()
-    {
-        return FIELDS;
-    }
-
-    public String getShortDescription ()
-    {
-        final String desc = get ( "Description" );
-        if ( desc == null )
-        {
-            return null;
-        }
-        return desc.split ( "\n" )[0];
-    }
-
-    @Override
-    protected char getUserDefinedFieldLetter ()
-    {
-        return 'B';
     }
 }
