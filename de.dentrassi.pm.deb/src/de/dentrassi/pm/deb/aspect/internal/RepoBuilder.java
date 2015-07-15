@@ -214,7 +214,14 @@ public class RepoBuilder
                 }
             }
 
-            Packages.writeBinaryPackageValues ( this.pw, values );
+            try
+            {
+                Packages.writeBinaryPackageValues ( this.pw, values );
+            }
+            catch ( final IOException e )
+            {
+                throw new RuntimeException ( "Failed to write package stream", e );
+            }
 
             this.pw.print ( "\n" );
         }

@@ -12,6 +12,7 @@ package de.dentrassi.pm.deb.aspect.internal;
 
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,7 +36,8 @@ public class DebianExtractor implements Extractor
         final SortedMap<String, String> controlFile;
         try
         {
-            controlFile = Packages.parseControlFile ( context.getPath ().toFile () );
+            final Map<String, String> result = Packages.parseControlFile ( context.getPath ().toFile () );
+            controlFile = result != null ? new TreeMap<> ( result ) : null;
         }
         catch ( final Exception e )
         {
@@ -44,6 +46,7 @@ public class DebianExtractor implements Extractor
 
         if ( controlFile == null )
         {
+            // no control file found
             return;
         }
 
