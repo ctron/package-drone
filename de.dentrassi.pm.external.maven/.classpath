@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/maven-builder-support-3.3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-model-3.3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-model-builder-3.3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-aether-provider-3.3.3.jar"/>
