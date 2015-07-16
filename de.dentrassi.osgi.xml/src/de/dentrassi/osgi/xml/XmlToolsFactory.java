@@ -16,6 +16,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -54,6 +55,8 @@ public interface XmlToolsFactory
     public TransformerFactory newTransformerFactory ();
 
     public XPathFactory newXPathFactory ();
+
+    public XMLOutputFactory newXMLOutputFactory ();
 
     /*
      * Default helper methods
