@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,15 +14,15 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.r5.internal.handler.HelpHandler;
 
-public class R5Servlet extends CommonRepoServlet
+public class ObrServlet extends CommonRepoServlet
 {
-    private static final MetaKey KEY_REPO_INDEX = new MetaKey ( "r5.repo", "index.xml" );
+    private static final MetaKey KEY_REPO_INDEX = new MetaKey ( "r5.repo", "obr.xml" );
 
     private static final long serialVersionUID = 1L;
 
-    private final Handler helpHandler = new HelpHandler ( "OSGi R5 repository adapter" );
+    private final Handler helpHandler = new HelpHandler ( "OBR repository adapter" );
 
-    public R5Servlet ()
+    public ObrServlet ()
     {
         super ( KEY_REPO_INDEX );
     }

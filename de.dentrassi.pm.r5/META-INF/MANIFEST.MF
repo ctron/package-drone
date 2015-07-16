@@ -18,6 +18,7 @@ Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.osgi.bundle;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
  de.dentrassi.pm.storage.service;version="1.0.0",
+ de.dentrassi.pm.storage.service.servlet;version="1.0.0",
  de.dentrassi.pm.storage.service.util;version="1.0.0",
  de.dentrassi.pm.storage.web.utils;version="1.0.0",
  javax.servlet;version="3.1.0",
@@ -29,4 +30,5 @@ Import-Package: de.dentrassi.osgi.utils;version="1.0.0",
 Export-Package: de.dentrassi.pm.r5;version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/r5repo.xml,
- OSGI-INF/servlet.xml
+ OSGI-INF/r5servlet.xml,
+ OSGI-INF/obrservlet.xml

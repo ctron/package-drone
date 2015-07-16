@@ -15,6 +15,9 @@ import static de.dentrassi.osgi.utils.Filters.pair;
 import static de.dentrassi.osgi.utils.Filters.versionRange;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,6 +29,8 @@ import java.util.function.Supplier;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import org.osgi.framework.Version;
 
 import de.dentrassi.osgi.utils.Filters;
 import de.dentrassi.osgi.utils.Filters.Node;
@@ -45,6 +50,8 @@ public class RepositoryCreator
 {
     private static final MetaKey KEY_SHA_256 = new MetaKey ( "hasher", "sha256" );
 
+    private static final DateFormat OBR_DATE_FORMAT = new SimpleDateFormat ( "YYYYMMDDHHmmss.SSS" );
+
     private final OutputSpooler indexStreamBuilder;
 
     private final String name;
@@ -53,6 +60,8 @@ public class RepositoryCreator
 
     private final Supplier<XMLOutputFactory> outputFactory;
 
+    private final OutputSpooler obrStreamBuilder;
+
     public static interface Context
     {
         public void addArtifact ( ArtifactInformation artifact ) throws IOException;
@@ -60,13 +69,16 @@ public class RepositoryCreator
 
     private static class ContextImpl implements Context
     {
-        private final XMLStreamWriter writer;
+        private final XMLStreamWriter indexWriter;
+
+        private final XMLStreamWriter obrWriter;
 
         private final Function<ArtifactInformation, String> urlProvider;
 
-        public ContextImpl ( final XMLStreamWriter writer, final Function<ArtifactInformation, String> urlProvider )
+        public ContextImpl ( final XMLStreamWriter indexWriter, final XMLStreamWriter obrWriter, final Function<ArtifactInformation, String> urlProvider )
         {
-            this.writer = writer;
+            this.indexWriter = indexWriter;
+            this.obrWriter = obrWriter;
             this.urlProvider = urlProvider;
         }
 
@@ -89,24 +101,76 @@ public class RepositoryCreator
 
             try
             {
-                this.writer.writeStartElement ( "resource" );
-                this.writer.writeCharacters ( "\n" );
-
-                addIdentity ( this.writer, bi );
-                addContent ( this.writer, art, this.urlProvider.apply ( art ) );
-                addDependencies ( this.writer, bi );
-
-                this.writer.writeEndElement ();
-                this.writer.writeCharacters ( "\n\n" );
+                addIndexEntry ( art, bi );
+                addObrEntry ( art, bi );
             }
             catch ( final XMLStreamException e )
             {
                 throw new IOException ( e );
             }
         }
+
+        private void addIndexEntry ( final ArtifactInformation art, final BundleInformation bi ) throws XMLStreamException
+        {
+            this.indexWriter.writeStartElement ( "resource" );
+            this.indexWriter.writeCharacters ( "\n" );
+
+            addIndexIdentity ( this.indexWriter, bi );
+            addIndexContent ( this.indexWriter, art, this.urlProvider.apply ( art ) );
+            addIndexDependencies ( this.indexWriter, bi );
+
+            this.indexWriter.writeEndElement ();
+            this.indexWriter.writeCharacters ( "\n\n" );
+        }
+
+        private void addObrEntry ( final ArtifactInformation art, final BundleInformation bi ) throws XMLStreamException
+        {
+            this.obrWriter.writeStartElement ( "resource" );
+
+            this.obrWriter.writeAttribute ( "id", art.getId () );
+            this.obrWriter.writeAttribute ( "symbolicname", bi.getId () );
+            this.obrWriter.writeAttribute ( "version", "" + bi.getVersion () );
+
+            if ( bi.getName () != null )
+            {
+                this.obrWriter.writeAttribute ( "presentationname", bi.getName () );
+            }
+            this.obrWriter.writeAttribute ( "uri", this.urlProvider.apply ( art ) );
+            this.obrWriter.writeCharacters ( "\n" ); // resource
+
+            addObrMainTag ( this.obrWriter, "size", "" + art.getSize () );
+            if ( bi.getDocUrl () != null && !bi.getDocUrl ().isEmpty () )
+            {
+                addObrMainTag ( this.obrWriter, "documentation", "" + bi.getDocUrl () );
+            }
+            if ( bi.getDescription () != null && !bi.getDescription ().isEmpty () )
+            {
+                addObrMainTag ( this.obrWriter, "description", "" + bi.getDescription () );
+            }
+
+            addObrDependencies ( this.obrWriter, bi );
+
+            this.obrWriter.writeEndElement ();
+            this.obrWriter.writeCharacters ( "\n\n" );
+        }
+
+        private static void addObrMainTag ( final XMLStreamWriter obrWriter, final String name, final String value ) throws XMLStreamException
+        {
+            if ( value == null )
+            {
+                return;
+            }
+
+            obrWriter.writeCharacters ( "\t" );
+            obrWriter.writeStartElement ( name );
+            obrWriter.writeCharacters ( value );
+            obrWriter.writeEndElement ();
+            obrWriter.writeCharacters ( "\n" );
+        }
+
     }
 
-    private static void addIdentity ( final XMLStreamWriter writer, final BundleInformation bi ) throws XMLStreamException
+    private static void addIndexIdentity ( final XMLStreamWriter writer, final BundleInformation bi ) throws XMLStreamException
     {
         final Map<String, Object> caps = new HashMap<> ();
 
@@ -114,10 +178,10 @@ public class RepositoryCreator
         caps.put ( "version", bi.getVersion () );
         caps.put ( "type", "osgi.bundle" );
 
-        addCapability ( writer, "osgi.identity", caps );
+        addIndexCapability ( writer, "osgi.identity", caps );
     }
 
-    public static void addDependencies ( final XMLStreamWriter writer, final BundleInformation bi ) throws XMLStreamException
+    public static void addIndexDependencies ( final XMLStreamWriter writer, final BundleInformation bi ) throws XMLStreamException
     {
         {
             final List<Node> nodes = new LinkedList<> ();
@@ -130,7 +194,7 @@ public class RepositoryCreator
             {
                 final Map<String, String> reqs = new HashMap<> ( 1 );
                 reqs.put ( "filter", Filters.or ( nodes ) );
-                addRequirement ( writer, "osgi.ee", reqs );
+                addIndexRequirement ( writer, "osgi.ee", reqs );
             }
         }
 
@@ -140,7 +204,7 @@ public class RepositoryCreator
             caps.put ( "osgi.wiring.bundle", bi.getId () );
             caps.put ( "bundle-version", bi.getVersion () );
 
-            addCapability ( writer, "osgi.wiring.bundle", caps );
+            addIndexCapability ( writer, "osgi.wiring.bundle", caps );
         }
 
         for ( final BundleRequirement br : bi.getBundleRequirements () )
@@ -154,7 +218,7 @@ public class RepositoryCreator
 
             reqs.put ( "filter", filter );
 
-            addRequirement ( writer, "osgi.wiring.bundle", reqs );
+            addIndexRequirement ( writer, "osgi.wiring.bundle", reqs );
         }
 
         for ( final PackageExport pe : bi.getPackageExports () )
@@ -168,7 +232,7 @@ public class RepositoryCreator
                 caps.put ( "version", pe.getVersion () );
             }
 
-            addCapability ( writer, "osgi.wiring.package", caps );
+            addIndexCapability ( writer, "osgi.wiring.package", caps );
         }
 
         for ( final PackageImport pi : bi.getPackageImports () )
@@ -182,11 +246,85 @@ public class RepositoryCreator
 
             reqs.put ( "filter", filter );
 
-            addRequirement ( writer, "osgi.wiring.package", reqs );
+            addIndexRequirement ( writer, "osgi.wiring.package", reqs );
         }
     }
 
-    private static void addRequirement ( final XMLStreamWriter writer, final String id, final Map<String, String> caps ) throws XMLStreamException
+    public static void addObrDependencies ( final XMLStreamWriter writer, final BundleInformation bi ) throws XMLStreamException
+    {
+        {
+            final List<Node> nodes = new LinkedList<> ();
+
+            for ( final String ee : bi.getRequiredExecutionEnvironments () )
+            {
+                nodes.add ( pair ( "ee", ee ) );
+            }
+            if ( !nodes.isEmpty () )
+            {
+                final String filter = Filters.or ( nodes );
+                addObrRequirement ( writer, "ee", filter, false, false, false, String.format ( "Execution Environment %s", filter ) );
+            }
+        }
+
+        {
+            final Map<String, Object> caps = new HashMap<> ();
+
+            caps.put ( "symbolicname", bi.getId () );
+            if ( bi.getName () != null )
+            {
+                caps.put ( "presentationname", bi.getName () );
+            }
+            caps.put ( "version", bi.getVersion () );
+            caps.put ( "manifestversion", "2" ); // FIXME: provide real manifest version
+
+            addObrCapability ( writer, "bundle", caps );
+        }
+
+        for ( final BundleRequirement br : bi.getBundleRequirements () )
+        {
+            final String filter = and ( //
+            pair ( "symbolicname", br.getId () ), //
+            versionRange ( "version", br.getVersionRange () ) //
+            );
+
+            addObrRequirement ( writer, "bundle", filter, false, false, br.isOptional (), br.toString () );
+        }
+
+        for ( final PackageExport pe : bi.getPackageExports () )
+        {
+            final Map<String, Object> caps = new HashMap<> ();
+
+            caps.put ( "package", pe.getName () );
+
+            if ( pe.getVersion () != null )
+            {
+                caps.put ( "version", pe.getVersion () );
+            }
+            else
+            {
+                caps.put ( "version", "0.0.0" );
+            }
+
+            if ( pe.getUses () != null )
+            {
+                caps.put ( ":uses", pe.getUses () );
+            }
+
+            addObrCapability ( writer, "package", caps );
+        }
+
+        for ( final PackageImport pi : bi.getPackageImports () )
+        {
+            final String filter = and ( //
+            pair ( "package", pi.getName () ), //
+            versionRange ( "version", pi.getVersionRange () ) //
+            );
+
+            addObrRequirement ( writer, "package", filter, false, false, pi.isOptional (), pi.toString () );
+        }
+    }
+
+    private static void addIndexRequirement ( final XMLStreamWriter writer, final String id, final Map<String, String> caps ) throws XMLStreamException
     {
         writer.writeCharacters ( "\t" );
         writer.writeStartElement ( "requirement" );
@@ -208,7 +346,24 @@ public class RepositoryCreator
         writer.writeCharacters ( "\n" );
     }
 
-    private static void addContent ( final XMLStreamWriter writer, final ArtifactInformation a, final String url ) throws XMLStreamException
+    private static void addObrRequirement ( final XMLStreamWriter writer, final String id, final String filter, final boolean extend, final boolean multiple, final boolean optional, final String text ) throws XMLStreamException
+    {
+        writer.writeCharacters ( "\t" );
+        writer.writeStartElement ( "require" );
+
+        writer.writeAttribute ( "name", id );
+        writer.writeAttribute ( "filter", filter );
+        writer.writeAttribute ( "extend", "" + extend );
+        writer.writeAttribute ( "multiple", "" + multiple );
+        writer.writeAttribute ( "optional", "" + optional );
+
+        writer.writeCharacters ( text );
+
+        writer.writeEndElement ();
+        writer.writeCharacters ( "\n" );
+    }
+
+    private static void addIndexContent ( final XMLStreamWriter writer, final ArtifactInformation a, final String url ) throws XMLStreamException
     {
         final String sha256 = a.getMetaData ().get ( KEY_SHA_256 );
 
@@ -224,10 +379,10 @@ public class RepositoryCreator
         caps.put ( "mime", "application/vnd.osgi.bundle" );
         caps.put ( "url", url );
 
-        addCapability ( writer, "osgi.content", caps );
+        addIndexCapability ( writer, "osgi.content", caps );
     }
 
-    private static void addCapability ( final XMLStreamWriter writer, final String id, final Map<String, Object> caps ) throws XMLStreamException
+    private static void addIndexCapability ( final XMLStreamWriter writer, final String id, final Map<String, Object> caps ) throws XMLStreamException
     {
         writer.writeCharacters ( "\t" );
         writer.writeStartElement ( "capability" );
@@ -257,6 +412,36 @@ public class RepositoryCreator
         writer.writeCharacters ( "\n" );
     }
 
+    private static void addObrCapability ( final XMLStreamWriter writer, final String id, final Map<String, Object> caps ) throws XMLStreamException
+    {
+        writer.writeCharacters ( "\t" );
+        writer.writeStartElement ( "capability" );
+        writer.writeAttribute ( "name", id );
+        writer.writeCharacters ( "\n" );
+
+        for ( final Map.Entry<String, Object> entry : caps.entrySet () )
+        {
+            writer.writeCharacters ( "\t\t" );
+            writer.writeEmptyElement ( "p" );
+            writer.writeAttribute ( "n", entry.getKey () );
+
+            final Object v = entry.getValue ();
+
+            if ( v instanceof Version )
+            {
+                writer.writeAttribute ( "t", v.getClass ().getSimpleName ().toLowerCase () );
+            }
+
+            writer.writeAttribute ( "v", "" + v );
+
+            writer.writeCharacters ( "\n" );
+        }
+
+        writer.writeCharacters ( "\t" );
+        writer.writeEndElement ();
+        writer.writeCharacters ( "\n" );
+    }
+
     public RepositoryCreator ( final String name, final SpoolOutTarget target, final Function<ArtifactInformation, String> urlProvider, final Supplier<XMLOutputFactory> outputFactory )
     {
         this.name = name;
@@ -265,6 +450,9 @@ public class RepositoryCreator
 
         this.indexStreamBuilder = new OutputSpooler ( target );
         this.indexStreamBuilder.addOutput ( "index.xml", "application/xml" );
+
+        this.obrStreamBuilder = new OutputSpooler ( target );
+        this.obrStreamBuilder.addOutput ( "obr.xml", "application/xml" );
     }
 
     public RepositoryCreator ( final String name, final SpoolOutTarget target, final Function<ArtifactInformation, String> urlProvider )
@@ -276,39 +464,84 @@ public class RepositoryCreator
     {
         final XMLOutputFactory xml = this.outputFactory.get ();
 
-        this.indexStreamBuilder.open ( stream -> {
-            try
-            {
-                final XMLStreamWriter xsw = xml.createXMLStreamWriter ( stream );
+        this.indexStreamBuilder.open ( indexStream -> {
+            this.obrStreamBuilder.open ( obrStream -> {
+
                 try
                 {
-                    xsw.writeStartDocument ();
-                    xsw.writeCharacters ( "\n\n" );
-
-                    xsw.writeComment ( String.format ( "Created by Package Drone %s - %tc", VersionInformation.VERSION, new Date () ) );
-
-                    xsw.writeStartElement ( "repository" );
-                    xsw.writeDefaultNamespace ( "http://www.osgi.org/xmlns/repository/v1.0.0" );
-                    xsw.writeAttribute ( "increment", "" + System.currentTimeMillis () );
-                    xsw.writeAttribute ( "name", this.name );
-
-                    xsw.writeCharacters ( "\n\n" );
-
-                    final ContextImpl ctx = new ContextImpl ( xsw, this.urlProvider );
-                    consumer.accept ( ctx );
-
-                    xsw.writeEndElement (); // repository
-                    xsw.writeEndDocument ();
+                    processStreams ( consumer, xml, indexStream, obrStream );
                 }
-                finally
+                catch ( final Exception e )
                 {
-                    xsw.close ();
+                    throw new IOException ( e );
                 }
-            }
-            catch ( final Exception e )
-            {
-                throw new IOException ( e );
-            }
+
+            } );
         } );
     }
+
+    private void processStreams ( final IOConsumer<Context> consumer, final XMLOutputFactory xml, final OutputStream indexStream, final OutputStream obrStream ) throws XMLStreamException, IOException
+    {
+        final XMLStreamWriter indexWriter = xml.createXMLStreamWriter ( indexStream );
+        final XMLStreamWriter obrWriter = xml.createXMLStreamWriter ( obrStream );
+
+        try
+        {
+            startIndex ( indexWriter );
+            startObr ( obrWriter );
+
+            final ContextImpl ctx = new ContextImpl ( indexWriter, obrWriter, this.urlProvider );
+            consumer.accept ( ctx );
+
+            endObr ( obrWriter );
+            endIndex ( indexWriter );
+        }
+        finally
+        {
+            indexWriter.close ();
+            obrWriter.close ();
+        }
+    }
+
+    private void startIndex ( final XMLStreamWriter xsw ) throws XMLStreamException
+    {
+        xsw.writeStartDocument ();
+        xsw.writeCharacters ( "\n\n" );
+
+        xsw.writeComment ( String.format ( "Created by Package Drone %s - %tc", VersionInformation.VERSION, new Date () ) );
+
+        xsw.writeStartElement ( "repository" );
+        xsw.writeDefaultNamespace ( "http://www.osgi.org/xmlns/repository/v1.0.0" );
+        xsw.writeAttribute ( "increment", "" + System.currentTimeMillis () );
+        xsw.writeAttribute ( "name", this.name );
+
+        xsw.writeCharacters ( "\n\n" );
+    }
+
+    private void endIndex ( final XMLStreamWriter xsw ) throws XMLStreamException
+    {
+        xsw.writeEndElement (); // repository
+        xsw.writeEndDocument ();
+    }
+
+    private void startObr ( final XMLStreamWriter xsw ) throws XMLStreamException
+    {
+        xsw.writeStartDocument ();
+        xsw.writeCharacters ( "\n\n" );
+
+        xsw.writeComment ( String.format ( "Created by Package Drone %s - %tc", VersionInformation.VERSION, new Date () ) );
+
+        xsw.writeStartElement ( "repository" );
+        xsw.writeAttribute ( "lastmodified", OBR_DATE_FORMAT.format ( new Date () ) );
+        xsw.writeAttribute ( "name", this.name );
+
+        xsw.writeCharacters ( "\n\n" );
+    }
+
+    private void endObr ( final XMLStreamWriter xsw ) throws XMLStreamException
+    {
+        xsw.writeEndElement (); // repository
+        xsw.writeEndDocument ();
+    }
+
 }

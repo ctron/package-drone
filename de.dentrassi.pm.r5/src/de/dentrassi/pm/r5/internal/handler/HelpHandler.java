@@ -17,6 +17,12 @@ import de.dentrassi.pm.common.servlet.Handler;
 
 public class HelpHandler implements Handler
 {
+    private final String message;
+
+    public HelpHandler ( final String message )
+    {
+        this.message = message;
+    }
 
     @Override
     public void prepare () throws Exception
@@ -27,7 +33,7 @@ public class HelpHandler implements Handler
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
         resp.setContentType ( "text/plain" );
-        resp.getWriter ().write ( "OSGi R5 repository adapter" );
+        resp.getWriter ().write ( this.message );
     }
 
 }
