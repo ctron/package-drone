@@ -73,6 +73,8 @@ public abstract class AbstractStorageServiceServlet extends HttpServlet
     @Override
     protected void service ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
     {
+        logger.trace ( "Request: {} / {}", request.getMethod (), request.getPathInfo () );
+
         final StorageService service = this.tracker.getService ();
 
         if ( service == null )
