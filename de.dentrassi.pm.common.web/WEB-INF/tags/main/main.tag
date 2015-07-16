@@ -28,7 +28,7 @@ if ( p instanceof UserInformationPrincipal )
 }
 %>
 
-<c:set var="bootstrap" value="${pageContext.request.contextPath}/resources/bootstrap/3.3.1"/>
+<c:set var="bootstrap" value="${pageContext.request.contextPath}/resources/bootstrap/3.3.2"/>
 <c:set var="jquery" value="${pageContext.request.contextPath}/resources/jquery"/>
 <c:set var="fontAwesome" value="${pageContext.request.contextPath}/resources/font-awesome/4.2.0"/>
 
