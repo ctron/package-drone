@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -49,6 +50,8 @@ public class RepositoryCreator
     private final String name;
 
     private final Function<ArtifactInformation, String> urlProvider;
+
+    private final Supplier<XMLOutputFactory> outputFactory;
 
     public static interface Context
     {
@@ -254,18 +257,24 @@ public class RepositoryCreator
         writer.writeCharacters ( "\n" );
     }
 
-    public RepositoryCreator ( final String name, final SpoolOutTarget target, final Function<ArtifactInformation, String> urlProvider )
+    public RepositoryCreator ( final String name, final SpoolOutTarget target, final Function<ArtifactInformation, String> urlProvider, final Supplier<XMLOutputFactory> outputFactory )
     {
         this.name = name;
         this.urlProvider = urlProvider;
+        this.outputFactory = outputFactory;
 
         this.indexStreamBuilder = new OutputSpooler ( target );
         this.indexStreamBuilder.addOutput ( "index.xml", "application/xml" );
     }
 
+    public RepositoryCreator ( final String name, final SpoolOutTarget target, final Function<ArtifactInformation, String> urlProvider )
+    {
+        this ( name, target, urlProvider, XMLOutputFactory::newFactory );
+    }
+
     public void process ( final IOConsumer<Context> consumer ) throws IOException
     {
-        final XMLOutputFactory xml = XMLOutputFactory.newInstance ();
+        final XMLOutputFactory xml = this.outputFactory.get ();
 
         this.indexStreamBuilder.open ( stream -> {
             try

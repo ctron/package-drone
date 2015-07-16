@@ -5,4 +5,5 @@
       <provide interface="de.dentrassi.pm.aspect.ChannelAspectFactory"/>
    </service>
    <properties entry="OSGI-INF/r5repo.properties"/>
+   <reference bind="setXmlFactory" cardinality="1..1" interface="de.dentrassi.osgi.xml.XmlToolsFactory" name="XmlToolsFactory" policy="static"/>
 </scr:component>

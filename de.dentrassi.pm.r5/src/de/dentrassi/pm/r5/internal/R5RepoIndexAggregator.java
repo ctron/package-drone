@@ -12,6 +12,7 @@ package de.dentrassi.pm.r5.internal;
 
 import java.util.Map;
 
+import de.dentrassi.osgi.xml.XmlToolsFactory;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.common.spool.ChannelCacheTarget;
@@ -21,6 +22,12 @@ import de.dentrassi.pm.r5.RepositoryCreator;
 
 public class R5RepoIndexAggregator implements ChannelAggregator
 {
+    private final XmlToolsFactory xmlFactory;
+
+    public R5RepoIndexAggregator ( final XmlToolsFactory xmlFactory )
+    {
+        this.xmlFactory = xmlFactory;
+    }
 
     @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception
@@ -29,7 +36,7 @@ public class R5RepoIndexAggregator implements ChannelAggregator
 
         final SpoolOutTarget target = new ChannelCacheTarget ( context );
 
-        final RepositoryCreator repo = new RepositoryCreator ( name, target, art -> context.getChannelId () + "/artifact/" + art.getId () + "/" + art.getName () );
+        final RepositoryCreator repo = new RepositoryCreator ( name, target, art -> context.getChannelId () + "/artifact/" + art.getId () + "/" + art.getName (), this.xmlFactory::newXMLOutputFactory );
 
         repo.process ( ctx -> {
             for ( final ArtifactInformation art : context.getArtifacts () )

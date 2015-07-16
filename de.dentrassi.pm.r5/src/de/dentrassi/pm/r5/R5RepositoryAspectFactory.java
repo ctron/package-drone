@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.r5;
 
+import de.dentrassi.osgi.xml.XmlToolsFactory;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectFactory;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
@@ -18,6 +19,13 @@ import de.dentrassi.pm.r5.internal.R5RepoIndexAggregator;
 public class R5RepositoryAspectFactory implements ChannelAspectFactory
 {
     public static final String ID = "r5.repo";
+
+    private XmlToolsFactory xmlFactory;
+
+    public void setXmlFactory ( final XmlToolsFactory xmlFactory )
+    {
+        this.xmlFactory = xmlFactory;
+    }
 
     @Override
     public ChannelAspect createAspect ()
@@ -33,7 +41,7 @@ public class R5RepositoryAspectFactory implements ChannelAspectFactory
             @Override
             public ChannelAggregator getChannelAggregator ()
             {
-                return new R5RepoIndexAggregator ();
+                return new R5RepoIndexAggregator ( R5RepositoryAspectFactory.this.xmlFactory );
             }
         };
     }
