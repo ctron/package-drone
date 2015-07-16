@@ -113,10 +113,13 @@ public class BundleInformation implements TranslatedInformation
 
         private final Version version;
 
-        public PackageExport ( final String name, final Version version )
+        private final String uses;
+
+        public PackageExport ( final String name, final Version version, final String uses )
         {
             this.name = name;
             this.version = version;
+            this.uses = uses;
         }
 
         public String getName ()
@@ -127,6 +130,11 @@ public class BundleInformation implements TranslatedInformation
         public Version getVersion ()
         {
             return this.version;
+        }
+
+        public String getUses ()
+        {
+            return this.uses;
         }
 
         @Override

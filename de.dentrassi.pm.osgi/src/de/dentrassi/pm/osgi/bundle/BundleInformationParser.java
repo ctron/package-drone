@@ -117,7 +117,7 @@ public class BundleInformationParser
         for ( final AttributedValue av : emptyNull ( Headers.parseList ( ma.getValue ( Constants.REQUIRE_BUNDLE ) ) ) )
         {
             final String name = av.getValue ();
-            final String vs = av.getAttributes ().get ( "version" );
+            final String vs = av.getAttributes ().get ( "bundle-version" );
             VersionRange vr = null;
             if ( vs != null )
             {
@@ -156,7 +156,8 @@ public class BundleInformationParser
             {
                 v = new Version ( vs );
             }
-            result.getPackageExports ().add ( new PackageExport ( name, v ) );
+            final String uses = av.getAttributes ().get ( "uses" );
+            result.getPackageExports ().add ( new PackageExport ( name, v, uses ) );
         }
     }
 
