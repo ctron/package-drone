@@ -13,7 +13,6 @@ package de.dentrassi.pm.sec.service.jpa;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Arrays;
@@ -26,8 +25,6 @@ import de.dentrassi.pm.sec.jpa.UserEntity;
 
 public final class Users
 {
-    private static final SecureRandom random = new SecureRandom ();
-
     private Users ()
     {
     }

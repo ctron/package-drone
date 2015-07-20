@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.io.CharStreams;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.mail.service.MailService;
 import de.dentrassi.pm.sec.CreateUser;
@@ -349,7 +350,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
     private String getSitePrefix ()
     {
-        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
+        final String prefix = this.coreService.getCoreProperty ( new MetaKey ( "core", "site-prefix" ), this.systemService.getDefaultSitePrefix () );
         if ( prefix != null )
         {
             return prefix;

@@ -27,20 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.scheduler.ScheduledTask;
 import de.dentrassi.pm.common.service.AbstractJpaServiceImpl;
-import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.jpa.UserEntity;
 import de.dentrassi.pm.sec.jpa.UserEntity_;
 
 public class CleanupJob extends AbstractJpaServiceImpl implements ScheduledTask
 {
     private final static Logger logger = LoggerFactory.getLogger ( CleanupJob.class );
-
-    private CoreService coreService;
-
-    public void setCoreService ( final CoreService coreService )
-    {
-        this.coreService = coreService;
-    }
 
     @Override
     public void run ()
