@@ -11,22 +11,13 @@
 package de.dentrassi.pm.sec.service.jpa;
 
 import static de.dentrassi.pm.common.utils.Tokens.createToken;
+import static de.dentrassi.pm.sec.service.common.Users.hashIt;
 import static de.dentrassi.pm.sec.service.jpa.Users.convert;
-import static de.dentrassi.pm.sec.service.jpa.Users.hashIt;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,28 +31,21 @@ import javax.persistence.criteria.Root;
 
 import org.eclipse.scada.utils.ExceptionHelper;
 import org.eclipse.scada.utils.str.StringHelper;
-import org.eclipse.scada.utils.str.StringReplacer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.html.HtmlEscapers;
-import com.google.common.io.CharStreams;
-
-import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.core.CoreService;
-import de.dentrassi.pm.mail.service.MailService;
 import de.dentrassi.pm.sec.CreateUser;
-import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
+import de.dentrassi.pm.sec.UserDetails;
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.UserStorage;
 import de.dentrassi.pm.sec.jpa.UserEntity;
 import de.dentrassi.pm.sec.jpa.UserEntity_;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.UserService;
+import de.dentrassi.pm.sec.service.common.SecurityMailService;
 import de.dentrassi.pm.sec.service.password.BadPasswordException;
 import de.dentrassi.pm.sec.service.password.PasswordChecker;
-import de.dentrassi.pm.system.SystemService;
 
 public class DatabaseUserService extends AbstractDatabaseUserService implements UserService, UserStorage
 {
@@ -71,37 +55,18 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
     private final AtomicReference<Boolean> userBaseCache = new AtomicReference<> ( null );
 
-    private MailService mailService;
-
-    private CoreService coreService;
-
-    private SystemService systemService;
-
     private PasswordChecker passwordChecker;
 
-    public void setPasswordChecker ( final PasswordChecker passwordChecker )
-    {
-        this.passwordChecker = passwordChecker;
-    }
+    private SecurityMailService mailService;
 
-    public void setSystemService ( final SystemService systemService )
-    {
-        this.systemService = systemService;
-    }
-
-    public void setCoreService ( final CoreService coreService )
-    {
-        this.coreService = coreService;
-    }
-
-    public void setMailService ( final MailService mailService )
+    public void setSecurityMailService ( final SecurityMailService mailService )
     {
         this.mailService = mailService;
     }
 
-    public void unsetMailService ( final MailService mailService )
+    public void setPasswordChecker ( final PasswordChecker passwordChecker )
     {
-        this.mailService = null;
+        this.passwordChecker = passwordChecker;
     }
 
     @Override
@@ -276,7 +241,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
             if ( token != null )
             {
-                sendVerifyEmail ( data.getEmail (), user.getId (), token );
+                this.mailService.sendVerifyEmail ( data.getEmail (), user.getId (), token );
             }
 
             return convert ( user );
@@ -318,46 +283,6 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         return token;
     }
 
-    protected void sendVerifyEmail ( final String email, final String userId, final String token )
-    {
-        final String link = String.format ( "%s/signup/verifyEmail?userId=%s&token=%s", getSitePrefix (), userId, token );
-
-        final Map<String, String> model = new HashMap<> ();
-        model.put ( "token", token );
-        model.put ( "link", link );
-        model.put ( "linkEncoded", HtmlEscapers.htmlEscaper ().escape ( link ) );
-        sendEmail ( email, "Verify your account", "verify", model );
-    }
-
-    protected void sendResetEmail ( final String email, final String resetToken )
-    {
-        String link;
-        try
-        {
-            link = String.format ( "%s/signup/newPassword?email=%s&token=%s", getSitePrefix (), URLEncoder.encode ( email, "UTF-8" ), resetToken );
-        }
-        catch ( final UnsupportedEncodingException e )
-        {
-            throw new RuntimeException ( e );
-        }
-
-        final Map<String, String> model = new HashMap<> ();
-        model.put ( "token", resetToken );
-        model.put ( "link", link );
-        model.put ( "linkEncoded", HtmlEscapers.htmlEscaper ().escape ( link ) );
-        sendEmail ( email, "Password reset request", "passwordReset", model );
-    }
-
-    private String getSitePrefix ()
-    {
-        final String prefix = this.coreService.getCoreProperty ( new MetaKey ( "core", "site-prefix" ), this.systemService.getDefaultSitePrefix () );
-        if ( prefix != null )
-        {
-            return prefix;
-        }
-        return "http://localhost:8080";
-    }
-
     @Override
     public String reRequestEmail ( final String userId )
     {
@@ -395,7 +320,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         }
 
         final String token = applyNewEmailToken ( new Date (), user );
-        sendVerifyEmail ( user.getEmail (), user.getId (), token );
+        this.mailService.sendVerifyEmail ( user.getEmail (), user.getId (), token );
         return null;
     }
 
@@ -452,7 +377,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
     }
 
     @Override
-    public DatabaseUserInformation updateUser ( final String userId, final DatabaseDetails data )
+    public DatabaseUserInformation updateUser ( final String userId, final UserDetails data )
     {
         return doWithTransaction ( ( em ) -> {
 
@@ -513,7 +438,7 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
         if ( user.isLocked () )
         {
             // we silently fail, since this would give out information about the user's state
-            sendEmail ( user.getEmail (), "Password reset request", "lockedUser", null );
+            this.mailService.sendEmail ( user.getEmail (), "Password reset request", "lockedUser", null );
             return null;
         }
 
@@ -530,73 +455,17 @@ public class DatabaseUserService extends AbstractDatabaseUserService implements 
 
         // we don't touch the password for now, could be anybody
 
-        sendResetEmail ( email, resetToken );
+        this.mailService.sendResetEmail ( email, resetToken );
 
         return null;
     }
 
-    private void sendEmail ( final String email, final String subject, final String resource, final Map<String, ?> model )
-    {
-        final MailService mailService = this.mailService;
-
-        if ( mailService == null )
-        {
-            throw new IllegalStateException ( "Failed to send e-mail. Mail service not present!" );
-        }
-
-        final URL url = DatabaseUserService.class.getResource ( String.format ( "mails/%s.txt", resource ) );
-        if ( url == null )
-        {
-            logger.info ( "Failed to load mail content" );
-            throw new IllegalStateException ( String.format ( "Unable to find message content: %s", resource ) );
-        }
-
-        final URL urlHtml = DatabaseUserService.class.getResource ( String.format ( "mails/%s.html", resource ) );
-
-        final String data = loadAndFill ( resource, model, url );
-        final String dataHtml = loadAndFill ( resource, model, urlHtml );
-
-        try
-        {
-            mailService.sendMessage ( email, subject, data, dataHtml );
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to send e-mail to: " + email, e );
-        }
-    }
-
-    private String loadAndFill ( final String resource, final Map<String, ?> model, final URL url )
-    {
-        if ( url == null )
-        {
-            return null;
-        }
-
-        String data;
-        try ( InputStream is = url.openStream (); Reader r = new InputStreamReader ( is, StandardCharsets.UTF_8 ) )
-        {
-            data = CharStreams.toString ( r );
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to process mail content", e );
-            throw new RuntimeException ( "Failed to load mail content: " + resource, e );
-        }
-
-        if ( model != null )
-        {
-            data = StringReplacer.replace ( data, StringReplacer.newExtendedSource ( model ), StringReplacer.DEFAULT_PATTERN, true );
-        }
-        return data;
-    }
-
-    private Date nextMailSlot ( final Date date )
+    private static Date nextMailSlot ( final Date date )
     {
         return new Date ( date.getTime () + MIN_EMAIL_DELAY );
     }
 
-    private boolean isTooSoon ( final Date date )
+    private static boolean isTooSoon ( final Date date )
     {
         if ( date == null )
         {

@@ -96,14 +96,14 @@ public class SecurityFilter implements Filter
 
             // try to log on
 
-            tryRememberMe ( request, session );
+            tryRememberMe ( request, response, session );
 
         }
 
         filterChain.doFilter ( new SecurityHttpRequestWrapper ( this.service, request ), response );
     }
 
-    protected void tryRememberMe ( final HttpServletRequest request, final HttpSession session )
+    protected void tryRememberMe ( final HttpServletRequest request, final HttpServletResponse response, final HttpSession session )
     {
         final Object userObj = session.getAttribute ( ATTR_USER_INFORMATION );
         if ( userObj == null )
@@ -121,7 +121,12 @@ public class SecurityFilter implements Filter
                 }
                 catch ( final Exception e )
                 {
-                    // silently ignore the failure
+                    // silently ignore the failure, but delete to cookie
+                    logger.info ( "Failed to login in by 'rember me', deleting cookie", e );
+
+                    final Cookie cookie = new Cookie ( SecurityFilter.COOKIE_REMEMBER_ME, token );
+                    cookie.setMaxAge ( 0 );
+                    response.addCookie ( cookie );
                 }
             }
         }

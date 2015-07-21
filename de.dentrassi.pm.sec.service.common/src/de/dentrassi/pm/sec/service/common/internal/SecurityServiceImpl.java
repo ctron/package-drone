@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.sec.service.jpa;
+package de.dentrassi.pm.sec.service.common.internal;
 
 import java.util.Collection;
 

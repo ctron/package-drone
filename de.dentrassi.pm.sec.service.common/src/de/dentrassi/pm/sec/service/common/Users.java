@@ -19,12 +19,8 @@ import java.util.Base64;
 
 import de.dentrassi.pm.common.utils.Tokens;
 
-public final class Users
+public class Users
 {
-    private Users ()
-    {
-    }
-
     public static MessageDigest createDigest ()
     {
         try

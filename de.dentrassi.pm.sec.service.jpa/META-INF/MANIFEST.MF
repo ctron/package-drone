@@ -18,6 +18,7 @@ Import-Package: com.google.common.escape;version="18.0.0",
  de.dentrassi.pm.mail.service;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",
  de.dentrassi.pm.sec.service;version="1.0.0",
+ de.dentrassi.pm.sec.service.common;version="1.0.0",
  de.dentrassi.pm.sec.service.password;version="1.0.0",
  de.dentrassi.pm.system;version="1.0.0",
  javax.persistence;version="2.1.0",
@@ -28,5 +29,4 @@ Import-Package: com.google.common.escape;version="18.0.0",
  org.osgi.util.tracker;version="1.5.1",
  org.slf4j;version="1.7.2"
 Require-Bundle: de.dentrassi.pm.sec.jpa;bundle-version="1.0.0"
-Service-Component: OSGI-INF/security.xml,
- OSGI-INF/database.xml, OSGI-INF/databaseRem.xml, OSGI-INF/cleanup.xml
+Service-Component: OSGI-INF/database.xml, OSGI-INF/databaseRem.xml, OSGI-INF/cleanup.xml

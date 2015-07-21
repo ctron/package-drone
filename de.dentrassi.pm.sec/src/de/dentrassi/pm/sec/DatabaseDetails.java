@@ -11,121 +11,60 @@
 package de.dentrassi.pm.sec;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
-
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotEmpty;
 
 public class DatabaseDetails
 {
-    private String name;
+    private final DatabaseDetailsBean bean;
 
-    @Email
-    @NotEmpty
-    private String email;
-
-    private boolean emailVerified;
-
-    private boolean locked;
-
-    private boolean deleted;
-
-    private Date registrationDate;
-
-    private Date emailTokenDate;
-
-    private String rememberMeToken;
-
-    private Set<String> roles = new HashSet<> ();
-
-    public void setRoles ( final Set<String> roles )
+    public DatabaseDetails ( final DatabaseDetailsBean bean )
     {
-        this.roles = roles;
+        this.bean = new DatabaseDetailsBean ( bean );
     }
 
     public Set<String> getRoles ()
     {
-        return this.roles;
-    }
-
-    public void setRememberMeToken ( final String rememberMeToken )
-    {
-        this.rememberMeToken = rememberMeToken;
-    }
-
-    public String getRememberMeToken ()
-    {
-        return this.rememberMeToken;
-    }
-
-    public void setEmailTokenDate ( final Date emailTokenDate )
-    {
-        this.emailTokenDate = emailTokenDate;
+        return this.bean.getRoles ();
     }
 
     public Date getEmailTokenDate ()
     {
-        return this.emailTokenDate;
-    }
-
-    public void setRegistrationDate ( final Date registrationDate )
-    {
-        this.registrationDate = registrationDate;
+        return this.bean.getEmailTokenDate ();
     }
 
     public Date getRegistrationDate ()
     {
-        return this.registrationDate;
-    }
-
-    public void setName ( final String name )
-    {
-        this.name = name;
+        return this.bean.getRegistrationDate ();
     }
 
     public String getName ()
     {
-        return this.name;
+        return this.bean.getName ();
     }
 
     public String getEmail ()
     {
-        return this.email;
-    }
-
-    public void setEmail ( final String email )
-    {
-        this.email = email;
+        return this.bean.getEmail ();
     }
 
     public boolean isEmailVerified ()
     {
-        return this.emailVerified;
-    }
-
-    public void setEmailVerified ( final boolean emailVerfied )
-    {
-        this.emailVerified = emailVerfied;
+        return this.bean.isEmailVerified ();
     }
 
     public boolean isLocked ()
     {
-        return this.locked;
-    }
-
-    public void setLocked ( final boolean locked )
-    {
-        this.locked = locked;
+        return this.bean.isLocked ();
     }
 
     public boolean isDeleted ()
     {
-        return this.deleted;
+        return this.bean.isDeleted ();
     }
 
-    public void setDeleted ( final boolean deleted )
+    @Override
+    public String toString ()
     {
-        this.deleted = deleted;
+        return this.bean.toString ();
     }
 }

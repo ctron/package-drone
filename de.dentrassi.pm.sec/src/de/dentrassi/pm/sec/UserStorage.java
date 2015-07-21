@@ -22,7 +22,7 @@ public interface UserStorage
 
     public DatabaseUserInformation getUserDetails ( String userId );
 
-    public DatabaseUserInformation updateUser ( String userId, DatabaseDetails data );
+    public DatabaseUserInformation updateUser ( String userId, UserDetails data );
 
     public String verifyEmail ( String userId, String token );
 

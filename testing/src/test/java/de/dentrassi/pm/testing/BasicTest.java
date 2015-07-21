@@ -101,7 +101,7 @@ public class BasicTest extends AbstractServerTest
 
         final HttpURLConnection con = (HttpURLConnection)url.openConnection ();
         con.connect ();
-        final int rc = con.getResponseCode ();
+        con.getResponseCode ();
         con.disconnect ();
 
         // ignore for now

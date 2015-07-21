@@ -223,6 +223,21 @@ public class StorageManager
         }
     }
 
+    /**
+     * Register a new model with the storage manager
+     *
+     * @param lockPriority
+     *            the priority of the lock, lower numbers must be locked before
+     *            higher numbers
+     * @param key
+     *            the model key
+     * @param storageProvider
+     *            the storage provider
+     * @return a handle for unregistering the model
+     * @throws ModelInitializationException
+     *             if the {@link StorageModelProvider#start(StorageContext)}
+     *             method fails
+     */
     public StorageRegistration registerModel ( final long lockPriority, final MetaKey key, final StorageModelProvider<?, ?> storageProvider ) throws ModelInitializationException
     {
         this.modelLock.writeLock ().lock ();

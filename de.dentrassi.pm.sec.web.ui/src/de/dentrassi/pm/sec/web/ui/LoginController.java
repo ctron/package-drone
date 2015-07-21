@@ -31,6 +31,7 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.sec.DatabaseDetails;
+import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.UserInformationPrincipal;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.SecurityService;
@@ -76,7 +77,7 @@ public class LoginController
     }
 
     @RequestMapping ( method = RequestMethod.POST )
-    public ModelAndView loginPost ( @FormData ( "command" ) final LoginData data, final HttpServletRequest request, final HttpServletResponse response )
+    public ModelAndView loginPost ( @FormData ( "command" ) final LoginData data, final HttpServletRequest request, final HttpServletResponse response)
     {
         try
         {
@@ -90,20 +91,26 @@ public class LoginController
                 if ( p instanceof UserInformationPrincipal )
                 {
                     final UserInformationPrincipal uip = (UserInformationPrincipal)p;
-                    final DatabaseDetails dd = uip.getUserInformation ().getDetails ( DatabaseDetails.class );
 
-                    if ( dd != null )
+                    final UserInformation ui = uip.getUserInformation ();
+
+                    if ( ui != null )
                     {
-                        final String token = dd.getRememberMeToken ();
+                        final DatabaseDetails dd = ui.getDetails ( DatabaseDetails.class );
+
+                        final String token = ui.getRememberMeToken ();
                         if ( token != null )
                         {
                             Cookie cookie = new Cookie ( SecurityFilter.COOKIE_REMEMBER_ME, token );
                             cookie.setMaxAge ( (int)TimeUnit.DAYS.toSeconds ( 90 ) );
                             response.addCookie ( cookie );
 
-                            cookie = new Cookie ( SecurityFilter.COOKIE_EMAIL, dd.getEmail () );
-                            cookie.setMaxAge ( (int)TimeUnit.DAYS.toSeconds ( 360 ) );
-                            response.addCookie ( cookie );
+                            if ( dd != null && dd.getEmail () != null )
+                            {
+                                cookie = new Cookie ( SecurityFilter.COOKIE_EMAIL, dd.getEmail () );
+                                cookie.setMaxAge ( (int)TimeUnit.DAYS.toSeconds ( 360 ) );
+                                response.addCookie ( cookie );
+                            }
                         }
                     }
                 }

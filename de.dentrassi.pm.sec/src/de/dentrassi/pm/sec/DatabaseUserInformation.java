@@ -16,9 +16,9 @@ public class DatabaseUserInformation extends UserInformation
 {
     private final DatabaseDetails details;
 
-    public DatabaseUserInformation ( final String id, final Set<String> roles, final DatabaseDetails details )
+    public DatabaseUserInformation ( final String id, final String rememberMeToken, final Set<String> roles, final DatabaseDetails details )
     {
-        super ( id, roles );
+        super ( id, rememberMeToken, roles );
         this.details = details;
     }
 

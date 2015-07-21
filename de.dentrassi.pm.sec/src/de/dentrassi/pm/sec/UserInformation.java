@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.sec;
 
+import java.util.Collections;
 import java.util.Set;
 
 public class UserInformation implements Comparable<UserInformation>
@@ -18,15 +19,28 @@ public class UserInformation implements Comparable<UserInformation>
 
     private final Set<String> roles;
 
-    public UserInformation ( final String id, final Set<String> roles )
+    private final String rememberMeToken;
+
+    public UserInformation ( final String id, final String rememberMeToken, final Set<String> roles )
     {
         this.id = id;
-        this.roles = roles;
+        this.rememberMeToken = rememberMeToken;
+        this.roles = roles == null ? Collections.<String> emptySet () : Collections.unmodifiableSet ( roles );
+    }
+
+    public UserInformation ( final String id, final Set<String> roles )
+    {
+        this ( id, null, roles );
     }
 
     public String getId ()
     {
         return this.id;
+    }
+
+    public String getRememberMeToken ()
+    {
+        return this.rememberMeToken;
     }
 
     public Set<String> getRoles ()
@@ -39,6 +53,11 @@ public class UserInformation implements Comparable<UserInformation>
         return null;
     }
 
+    /**
+     * This is called by JSP pages to get the default details object
+     *
+     * @return the default details object, or <code>null</code> if none exists
+     */
     public Object getDetails ()
     {
         return getDetails ( Object.class );

@@ -115,11 +115,11 @@ public class AbstractServerTest
         return this.context;
     }
 
-    protected String resolve ( final String suffix )
+    protected String resolve ( final String suffix, final Object... args )
     {
         try
         {
-            return new URI ( getBase () ).resolve ( suffix ).toString ();
+            return new URI ( getBase () ).resolve ( String.format ( suffix, args ) ).toString ();
         }
         catch ( final URISyntaxException e )
         {

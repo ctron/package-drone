@@ -35,7 +35,7 @@ public class CoreServiceImpl implements CoreService
 
     public void start ()
     {
-        this.handle = this.manager.registerModel ( 100L, MODEL_KEY, new CoreStorageModelProvider () );
+        this.handle = this.manager.registerModel ( 100_000L, MODEL_KEY, new CoreStorageModelProvider () );
     }
 
     public void stop ()

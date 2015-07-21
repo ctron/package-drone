@@ -16,6 +16,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import de.dentrassi.osgi.web.controller.form.DataValidator;
 import de.dentrassi.osgi.web.controller.validator.ValidationContext;
 
+/**
+ * A bean used for creating new users
+ */
 public class CreateUser
 {
     private String name;

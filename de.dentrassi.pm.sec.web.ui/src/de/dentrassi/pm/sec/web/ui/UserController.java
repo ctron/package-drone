@@ -12,9 +12,11 @@ package de.dentrassi.pm.sec.web.ui;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -42,6 +44,7 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.CreateUser;
 import de.dentrassi.pm.sec.DatabaseDetails;
 import de.dentrassi.pm.sec.DatabaseUserInformation;
+import de.dentrassi.pm.sec.UserDetails;
 import de.dentrassi.pm.sec.UserStorage;
 import de.dentrassi.pm.sec.web.controller.HttpConstraints;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
@@ -134,7 +137,7 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( method = RequestMethod.GET )
-    public ModelAndView list ( @RequestParameter ( required = false, value = "position" ) Integer position )
+    public ModelAndView list ( @RequestParameter ( required = false, value = "position" ) Integer position)
     {
         final ModelAndView result = new ModelAndView ( "user/list" );
 
@@ -180,7 +183,7 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( value = "/add", method = RequestMethod.POST )
-    public ModelAndView addUserPost ( @Valid @FormData ( "command" ) final CreateUser data, final BindingResult result )
+    public ModelAndView addUserPost ( @Valid @FormData ( "command" ) final CreateUser data, final BindingResult result)
     {
         if ( result.hasErrors () )
         {
@@ -196,7 +199,7 @@ public class UserController extends AbstractUserCreationController implements In
 
     @RequestMapping ( value = "/{userId}/view", method = RequestMethod.GET )
     @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
+    public ModelAndView viewUser ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request)
     {
         final boolean you = isYou ( userId, request );
 
@@ -229,7 +232,7 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( value = "/{userId}/edit", method = RequestMethod.GET )
-    public ModelAndView editUser ( @PathVariable ( "userId" ) final String userId )
+    public ModelAndView editUser ( @PathVariable ( "userId" ) final String userId)
     {
         final DatabaseUserInformation user = this.storage.getUserDetails ( userId );
 
@@ -244,24 +247,29 @@ public class UserController extends AbstractUserCreationController implements In
 
         final DatabaseDetails details = user.getDetails ( DatabaseDetails.class );
 
-        model.put ( "command", details );
-        model.put ( "allRoles", makeRoles ( details ) );
+        final UserDetailsBean bean = new UserDetailsBean ();
+        bean.setEmail ( details.getEmail () );
+        bean.setName ( details.getName () );
+        bean.setRoles ( new HashSet<> ( details.getRoles () ) /* we need a modifiable copy */ );
+
+        model.put ( "command", bean );
+        model.put ( "allRoles", makePossibleRoles ( details.getRoles () ) );
 
         addBreadcrumbs ( "Edit", userId, model );
 
         return new ModelAndView ( "user/edit", model );
     }
 
-    private SortedSet<String> makeRoles ( final DatabaseDetails details )
+    private SortedSet<String> makePossibleRoles ( final Set<String> roles )
     {
-        if ( details == null )
+        if ( roles == null )
         {
             return null;
         }
 
         final SortedSet<String> result = new TreeSet<> ();
 
-        result.addAll ( details.getRoles () );
+        result.addAll ( roles );
         result.add ( "MANAGER" );
         result.add ( "ADMIN" );
 
@@ -269,7 +277,7 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( value = "/{userId}/edit", method = RequestMethod.POST )
-    public ModelAndView editUserPost ( @PathVariable ( "userId" ) final String userId, @Valid @FormData ( "command" ) final DatabaseDetails data, final BindingResult result, final HttpSession session )
+    public ModelAndView editUserPost ( @PathVariable ( "userId" ) final String userId, @Valid @FormData ( "command" ) final UserDetailsBean data, final BindingResult result, final HttpSession session)
     {
         final DatabaseUserInformation user = this.storage.getUserDetails ( userId );
 
@@ -283,14 +291,14 @@ public class UserController extends AbstractUserCreationController implements In
             final Map<String, Object> model = new HashMap<> ( 2 );
             model.put ( "command", data );
             model.put ( "user", user );
-            model.put ( "allRoles", makeRoles ( data ) );
+            model.put ( "allRoles", makePossibleRoles ( data.getRoles () ) );
 
             addBreadcrumbs ( "Edit", userId, model );
 
             return new ModelAndView ( "user/edit", model );
         }
 
-        this.storage.updateUser ( userId, data );
+        this.storage.updateUser ( userId, new UserDetails ( data.getName (), data.getEmail (), data.getRoles () ) );
 
         // TODO: only reload if it was our own profile
         SecurityFilter.markReloadDetails ( session );
@@ -299,29 +307,29 @@ public class UserController extends AbstractUserCreationController implements In
     }
 
     @RequestMapping ( "/{userId}/lock" )
-    public ModelAndView lockUser ( @PathVariable ( "userId" ) final String userId )
+    public ModelAndView lockUser ( @PathVariable ( "userId" ) final String userId)
     {
         this.storage.lockUser ( userId );
         return new ModelAndView ( "redirect:/user/" + userId + "/view" );
     }
 
     @RequestMapping ( "/{userId}/unlock" )
-    public ModelAndView unlockUser ( @PathVariable ( "userId" ) final String userId )
+    public ModelAndView unlockUser ( @PathVariable ( "userId" ) final String userId)
     {
         this.storage.unlockUser ( userId );
         return new ModelAndView ( "redirect:/user/" + userId + "/view" );
     }
 
     @RequestMapping ( "/{userId}/delete" )
-    public ModelAndView deleteUser ( @PathVariable ( "userId" ) final String userId )
+    public ModelAndView deleteUser ( @PathVariable ( "userId" ) final String userId)
     {
         this.storage.deleteUser ( userId );
-        return new ModelAndView ( "redirect:/user/" + userId + "/view" );
+        return new ModelAndView ( "redirect:/user" );
     }
 
     @RequestMapping ( "/{userId}/newPassword" )
     @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView changePassword ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request )
+    public ModelAndView changePassword ( @PathVariable ( "userId" ) final String userId, final HttpServletRequest request)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -355,7 +363,7 @@ public class UserController extends AbstractUserCreationController implements In
 
     @RequestMapping ( value = "/{userId}/newPassword", method = RequestMethod.POST )
     @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView changePasswordPost ( @PathVariable ( "userId" ) final String userId, @Valid @FormData ( "command" ) final NewPassword data, final BindingResult result, final HttpServletRequest request )
+    public ModelAndView changePasswordPost ( @PathVariable ( "userId" ) final String userId, @Valid @FormData ( "command" ) final NewPassword data, final BindingResult result, final HttpServletRequest request)
     {
         final boolean you = isYou ( userId, request );
 
@@ -375,7 +383,7 @@ public class UserController extends AbstractUserCreationController implements In
 
         try
         {
-            if ( !you /* but we are ADMIN */)
+            if ( !you /* but we are ADMIN */ )
             {
                 this.storage.updatePassword ( userId, null, data.getPassword () );
             }
