@@ -156,6 +156,7 @@
 		<module>../de.dentrassi.pm.sec.jpa</module>
 		<module>../de.dentrassi.pm.sec.service</module>
 		<module>../de.dentrassi.pm.sec.service.admin</module>
+		<module>../de.dentrassi.pm.sec.service.common</module>
 		<module>../de.dentrassi.pm.sec.service.core</module>
 		<module>../de.dentrassi.pm.sec.service.jpa</module>
 
