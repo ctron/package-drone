@@ -516,7 +516,7 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
                 final StorageHandlerImpl hi = new StorageHandlerImpl ( em, this.generatorProcessor, this.blobStore );
 
                 hi.recreateAllVirtualArtifacts ( channel );
-            } );
+            } , createArtifactGuard () );
 
         } );
 
