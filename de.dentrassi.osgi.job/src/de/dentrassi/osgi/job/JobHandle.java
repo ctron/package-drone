@@ -10,6 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.osgi.job;
 
+/**
+ * A job information object
+ * <p>
+ * The object represents the state of job when it was returned by
+ * {@link JobManager#getJob(String)}
+ * </p>
+ */
 public interface JobHandle
 {
     public String getId ();
