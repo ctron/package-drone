@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.apm;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
 import org.junit.BeforeClass;
@@ -388,7 +390,7 @@ public class BaseTest
     }
 
     /**
-     * Try to upgrade read lock to write lock. Expect failure!
+     * Try to upgrade read lock to a write lock. Expect failure!
      */
     @Test ( expected = IllegalStateException.class )
     public void test5h ()
@@ -496,6 +498,74 @@ public class BaseTest
         mgr.accessRun ( key2, MockStorageViewModel.class, m2 -> {
             assertEquals ( "foo", m2.getValue () );
         } );
+
+        mgr.close ();
+    }
+
+    /**
+     * Test plain "after" execution.
+     */
+    @Test
+    public void test7a ()
+    {
+        final LinkedList<String> result = new LinkedList<> ();
+
+        final StorageManager mgr = new StorageManager ( basePath );
+
+        final MetaKey key1 = new MetaKey ( "mock", "7a1" );
+        mgr.registerModel ( 1, key1, new MockStorageProvider ( key1.getKey (), "foo" ) );
+
+        mgr.accessRun ( key1, MockStorageViewModel.class, m1 -> {
+            StorageManager.executeAfterPersist ( () -> result.add ( "1" ) );
+            // this was executed immediately
+            assertArrayEquals ( new Object[] { "1" }, result.toArray () );
+        } );
+
+        mgr.modifyRun ( key1, MockStorageModel.class, m1 -> {
+            StorageManager.executeAfterPersist ( () -> result.add ( "2" ) );
+            // this was scheduled for later
+            assertArrayEquals ( new Object[] { "1" }, result.toArray () );
+        } );
+
+        // finally check all
+        System.out.println ( result );
+        assertArrayEquals ( new Object[] { "1", "2" }, result.toArray () );
+
+        mgr.close ();
+    }
+
+    /**
+     * Test plain "after" execution.
+     */
+    @Test
+    public void test7b ()
+    {
+        final LinkedList<String> result = new LinkedList<> ();
+
+        final StorageManager mgr = new StorageManager ( basePath );
+
+        final MetaKey key1 = new MetaKey ( "mock", "7b1" );
+        mgr.registerModel ( 1, key1, new MockStorageProvider ( key1.getKey (), "foo" ) );
+
+        mgr.modifyRun ( key1, MockStorageModel.class, m1 -> {
+
+            StorageManager.executeAfterPersist ( () -> result.add ( "1" ) );
+            // scheduled
+            assertArrayEquals ( new Object[] {}, result.toArray () );
+
+            mgr.accessRun ( key1, MockStorageViewModel.class, m1a -> {
+                StorageManager.executeAfterPersist ( () -> result.add ( "2" ) );
+                // should be scheduled as well, since we have an outer modify call
+                assertArrayEquals ( new Object[] {}, result.toArray () );
+            } );
+
+            // again, no change
+            assertArrayEquals ( new Object[] {}, result.toArray () );
+        } );
+
+        // finally check all
+        System.out.println ( result );
+        assertArrayEquals ( new Object[] { "1", "2" }, result.toArray () );
 
         mgr.close ();
     }

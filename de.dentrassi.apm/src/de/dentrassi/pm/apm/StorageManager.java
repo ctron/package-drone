@@ -57,6 +57,12 @@ public class StorageManager
          */
         private final State parent;
 
+        /**
+         * This will hold the first parent (nearest to the root) with the same
+         * key, may be <code>null</code>
+         */
+        private final State sameKeyParent;
+
         private final long priority;
 
         private final MetaKey key;
@@ -67,12 +73,15 @@ public class StorageManager
 
         private Object writeModel;
 
+        private List<Runnable> afterTasks;
+
         public State ( final State parent, final LockType type, final long priority, final MetaKey key )
         {
             this.parent = parent;
             this.priority = priority;
             this.key = key;
             this.type = type;
+            this.sameKeyParent = getSameParent ( parent, key );
 
             if ( parent == null )
             {
@@ -141,10 +150,61 @@ public class StorageManager
             }
             return false;
         }
+
+        public void addAfterTask ( final Runnable runnable )
+        {
+            if ( this.afterTasks == null )
+            {
+                this.afterTasks = new LinkedList<> ();
+            }
+
+            this.afterTasks.add ( runnable );
+        }
+
+        public void runAfterTasks ()
+        {
+            if ( this.afterTasks == null )
+            {
+                return;
+            }
+
+            LinkedList<Exception> errors = null;
+            for ( final Runnable runnable : this.afterTasks )
+            {
+                try
+                {
+                    runnable.run ();
+                }
+                catch ( final Exception e )
+                {
+                    if ( errors == null )
+                    {
+                        errors = new LinkedList<> ();
+                    }
+                    errors.add ( e );
+                }
+            }
+
+            this.afterTasks.clear ();
+
+            handleErrors ( "Failed to run 'after' tasks", errors );
+        }
     }
 
-    private static State getSameParent ( State current, final MetaKey key )
+    /**
+     * Traverse up from the provided parent and find the first which uses the
+     * same key
+     *
+     * @param parent
+     *            the first parent candidate
+     * @param key
+     *            the key to look for
+     * @return the first parent (which may be the input parameter), which uses
+     *         the same key
+     */
+    private static State getSameParent ( final State parent, final MetaKey key )
     {
+        State current = parent;
         while ( current != null )
         {
             if ( current.key.equals ( key ) )
@@ -366,7 +426,7 @@ public class StorageManager
         final State current = getCurrent ();
 
         // try to get same from parent of current
-        final State same = current.parent != null ? getSameParent ( current.parent, entry.key ) : null;
+        final State same = current.sameKeyParent;
 
         final M writeModel;
 
@@ -395,6 +455,8 @@ public class StorageManager
             {
                 throw new RuntimeException ( String.format ( "Failed to persist model of %s", entry.key ), e );
             }
+
+            current.runAfterTasks ();
         }
         // otherwise: -> save later
 
@@ -500,6 +562,49 @@ public class StorageManager
         } );
     }
 
+    /**
+     * Execute a task after the current state has been persisted
+     * <p>
+     * If the current state will not persist the model (because a parent opened
+     * the model before and is required to perform persisting the model), then
+     * the task will be executed at the time the parent state causes persisting
+     * the model.
+     * </p>
+     * <p>
+     * If there is no open state or the parent state is read-lock, the runnable
+     * will be executed immediately.
+     * </p>
+     *
+     * @param runnable
+     *            the runnable to execute
+     */
+    public static void executeAfterPersist ( final Runnable runnable )
+    {
+        final State state = getCurrent ();
+        if ( state == null )
+        {
+            runnable.run ();
+            return;
+        }
+
+        final MetaKey key = state.key;
+        if ( key == null )
+        {
+            runnable.run ();
+            return;
+        }
+
+        final State parent = state.sameKeyParent == null ? state : state.sameKeyParent;
+
+        if ( parent.type == LockType.READ )
+        {
+            runnable.run ();
+            return;
+        }
+
+        parent.addAfterTask ( runnable );
+    }
+
     public void close ()
     {
         List<Entry> providers;
@@ -543,14 +648,22 @@ public class StorageManager
 
         // handle errors
 
+        handleErrors ( "Failed to close provider", allErrors );
+    }
+
+    private static void handleErrors ( final String message, final LinkedList<Exception> allErrors )
+    {
+        if ( allErrors == null )
+        {
+            return;
+        }
+
         if ( !allErrors.isEmpty () )
         {
-            final RuntimeException e = new RuntimeException ( "Failed to close provider", allErrors.poll () );
+            final RuntimeException e = new RuntimeException ( message, allErrors.poll () );
 
-            if ( !allErrors.isEmpty () )
-            {
-                allErrors.forEach ( e::addSuppressed );
-            }
+            // add remaining
+            allErrors.forEach ( e::addSuppressed );
 
             throw e;
         }
@@ -563,4 +676,5 @@ public class StorageManager
             throw new IllegalStateException ( "Storage is already closed" );
         }
     }
+
 }
