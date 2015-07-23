@@ -14,20 +14,22 @@ import org.eclipse.scada.utils.ExceptionHelper;
 
 public class ErrorInformation
 {
-    private String message;
+    private final String message;
 
-    private String formatted;
+    private final String formatted;
 
-    private String rootFormatted;
+    private final String rootFormatted;
+
+    ErrorInformation ( final String message, final String formatted, final String rootFormatted )
+    {
+        this.message = message;
+        this.formatted = formatted;
+        this.rootFormatted = rootFormatted;
+    }
 
     public String getMessage ()
     {
         return this.message;
-    }
-
-    public void setMessage ( final String message )
-    {
-        this.message = message;
     }
 
     public String getFormatted ()
@@ -35,19 +37,9 @@ public class ErrorInformation
         return this.formatted;
     }
 
-    public void setFormatted ( final String formatted )
-    {
-        this.formatted = formatted;
-    }
-
     public String getRootFormatted ()
     {
         return this.rootFormatted;
-    }
-
-    public void setRootFormatted ( final String rootFormatted )
-    {
-        this.rootFormatted = rootFormatted;
     }
 
     public static ErrorInformation createFrom ( final Throwable e )
@@ -57,11 +49,8 @@ public class ErrorInformation
             return null;
         }
 
-        final ErrorInformation err = new ErrorInformation ();
-        err.setFormatted ( ExceptionHelper.formatted ( e ) );
-        err.setMessage ( ExceptionHelper.getMessage ( e ) );
-        err.setRootFormatted ( ExceptionHelper.formatted ( ExceptionHelper.getRootCause ( e ) ) );
-        return err;
+        return new ErrorInformation ( ExceptionHelper.getMessage ( e ), ExceptionHelper.formatted ( e ), ExceptionHelper.formatted ( ExceptionHelper.getRootCause ( e ) ) );
+
     }
 
 }

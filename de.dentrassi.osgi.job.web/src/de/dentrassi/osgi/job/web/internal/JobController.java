@@ -61,8 +61,8 @@ public class JobController
 
     @RequestMapping ( value = "/{factoryId}/create", method = RequestMethod.POST )
     @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
-    public ModelAndView create ( @PathVariable ( "factoryId" ) final String factoryId, @RequestParameter ( required = false,
-            value = "data" ) final String data )
+    public ModelAndView create ( @PathVariable ( "factoryId" ) final String factoryId, @RequestParameter (
+            required = false, value = "data" ) final String data)
     {
         final JobHandle job = this.manager.startJob ( factoryId, data );
 
@@ -71,7 +71,7 @@ public class JobController
     }
 
     @RequestMapping ( "/{id}/view" )
-    public ModelAndView view ( @PathVariable ( "id" ) final String id )
+    public ModelAndView view ( @PathVariable ( "id" ) final String id)
     {
         final JobHandle job = this.manager.getJob ( id );
 
@@ -88,9 +88,18 @@ public class JobController
      * @return the view
      */
     @RequestMapping ( "/{id}/monitor" )
-    public ModelAndView monitor ( @PathVariable ( "id" ) final String id )
+    public ModelAndView monitor ( @PathVariable ( "id" ) final String id)
     {
         final JobHandle job = this.manager.getJob ( id );
+
+        if ( job != null )
+        {
+            logger.debug ( "Job: {} - {}", job.getId (), job.getState () );
+        }
+        else
+        {
+            logger.debug ( "No job: {}", id );
+        }
 
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "job", job );
@@ -98,7 +107,7 @@ public class JobController
     }
 
     @RequestMapping ( "/{id}/result" )
-    public ModelAndView result ( @PathVariable ( "id" ) final String id, final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
+    public ModelAndView result ( @PathVariable ( "id" ) final String id, final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
     {
         final JobHandle job = this.manager.getJob ( id );
 
@@ -139,7 +148,7 @@ public class JobController
 
     protected ModelAndView defaultResult ( final JobHandle job )
     {
-        final Map<String, Object> model = new HashMap<> ();
+        final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "job", job );
         return new ModelAndView ( "defaultResult", model );
     }

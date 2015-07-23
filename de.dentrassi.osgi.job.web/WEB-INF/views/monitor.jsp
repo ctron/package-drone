@@ -24,7 +24,8 @@ else
 
 		<div class="panel panel-${type }">
 		    <div class="panel-heading">
-		        <h4 class="panel-title"><c:if test="${not job.complete }"><i class="fa fa-spinner fa-pulse"></i>${ ' ' }</c:if>${fn:escapeXml(job.label) }</h4>
+		        <%-- when we upgrade to font awesome 4.3, we can use fp-pulse again --%>
+		        <h4 class="panel-title"><c:if test="${not job.complete }"><i class="fa fa-spinner fa-spin"></i>${ ' ' }</c:if>${fn:escapeXml(job.label) }</h4>
 		    </div>
 		    
 		    <div class="panel-body">

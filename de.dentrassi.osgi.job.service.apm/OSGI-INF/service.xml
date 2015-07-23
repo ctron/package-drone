@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.osgi.job.service.apm">
+   <implementation class="de.dentrassi.osgi.job.service.apm.JobManagerImpl"/>
+   <service>
+      <provide interface="de.dentrassi.osgi.job.JobManager"/>
+   </service>
+   <reference bind="setStorageManager" cardinality="1..1" interface="de.dentrassi.pm.apm.StorageManager" name="StorageManager" policy="static"/>
+</scr:component>
