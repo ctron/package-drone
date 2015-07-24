@@ -29,7 +29,9 @@ index 518e007..cf68456 100644
 
 ### Allow javax.servlet.jsp to be of version 2.4. 
 
-Changed `javax.servlet.jsp;version="[2.0, 2.3)",`  to `javax.servlet.jsp;version="[2.0, 2.4)",` 
+Changed `javax.servlet.jsp;version="[2.0, 2.3)",`  to `javax.servlet.jsp;version="[2.0, 2.4)",`
+
+Filed [bug 473471](https://bugs.eclipse.org/bugs/show_bug.cgi?id=473471) at the Eclipse bug tracker. 
 
 ### Change to Java SE 6
 
