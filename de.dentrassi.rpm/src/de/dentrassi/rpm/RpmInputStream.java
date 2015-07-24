@@ -47,7 +47,7 @@ public class RpmInputStream extends InputStream
 
     private RpmHeader<RpmTag> payloadHeader;
 
-    private InputStream playloadStream;
+    private InputStream payloadStream;
 
     private CpioArchiveInputStream cpioStream;
 
@@ -88,10 +88,10 @@ public class RpmInputStream extends InputStream
 
         // set up content stream
 
-        if ( this.playloadStream == null )
+        if ( this.payloadStream == null )
         {
-            this.playloadStream = setupPayloadStream ();
-            this.cpioStream = new CpioArchiveInputStream ( this.playloadStream ); // we did ensure that we only support CPIO before
+            this.payloadStream = setupPayloadStream ();
+            this.cpioStream = new CpioArchiveInputStream ( this.payloadStream ); // we did ensure that we only support CPIO before
         }
     }
 
@@ -276,41 +276,41 @@ public class RpmInputStream extends InputStream
     public void reset () throws IOException
     {
         ensureInit ();
-        this.playloadStream.reset ();
+        this.payloadStream.reset ();
     }
 
     @Override
     public int read () throws IOException
     {
         ensureInit ();
-        return this.playloadStream.read ();
+        return this.payloadStream.read ();
     }
 
     @Override
     public long skip ( final long n ) throws IOException
     {
         ensureInit ();
-        return this.playloadStream.skip ( n );
+        return this.payloadStream.skip ( n );
     }
 
     @Override
     public int available () throws IOException
     {
         ensureInit ();
-        return this.playloadStream.available ();
+        return this.payloadStream.available ();
     }
 
     @Override
     public int read ( final byte[] b ) throws IOException
     {
         ensureInit ();
-        return this.playloadStream.read ( b );
+        return this.payloadStream.read ( b );
     }
 
     @Override
     public int read ( final byte[] b, final int off, final int len ) throws IOException
     {
-        return this.playloadStream.read ( b, off, len );
+        return this.payloadStream.read ( b, off, len );
     }
 
 }
