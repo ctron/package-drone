@@ -85,10 +85,10 @@ if ( p instanceof UserInformationPrincipal )
                 <c:if test="${not empty gravatar }"><img class="gravatar" src="https://secure.gravatar.com/avatar/${gravatar }.jpg?s=24"  width="24" height="24" />&nbsp;</c:if>
                 
                 <a href="<c:url value="/user/${principal.id}/view"/>">
-                <c:choose>
-                    <c:when test="${not empty principal.details.name }">${fn:escapeXml(principal.details.name) }</c:when>
-                    <c:otherwise>Profile</c:otherwise>
-                </c:choose>
+	                <c:choose>
+	                    <c:when test="${not empty principal.details.name }">${fn:escapeXml(principal.details.name) }</c:when>
+	                    <c:otherwise>Profile</c:otherwise>
+	                </c:choose>
                 </a>
                 
                 &mdash;
@@ -114,6 +114,7 @@ if ( p instanceof UserInformationPrincipal )
                 </c:when>
             </c:choose>
         </p>
+        
         
     </jsp:attribute>
 </h:navbar>

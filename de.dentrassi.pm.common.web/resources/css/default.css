@@ -25,6 +25,16 @@ ul.validation-error {
 	margin-top: -5px;
 }
 
+.navbar-link > span.badge {
+	/* fix an issue with the navbar */
+	margin-bottom: -3px;
+}
+
+.navbar img.gravatar {
+	margin-top: -5px;
+	margin-bottom: -5px;
+}
+
 ul.validation-error li {
 	color: red;
 	display: inline-block;
