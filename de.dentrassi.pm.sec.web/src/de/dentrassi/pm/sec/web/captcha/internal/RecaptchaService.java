@@ -43,9 +43,9 @@ import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.web.captcha.CaptchaResult;
 import de.dentrassi.pm.sec.web.captcha.CaptchaService;
 
+@SuppressWarnings ( "restriction" )
 public class RecaptchaService implements CaptchaService
 {
-
     private final static Logger logger = LoggerFactory.getLogger ( RecaptchaService.class );
 
     private static final URI SITE_VERIFY_URI = URI.create ( System.getProperty ( "drone.recaptche.siteVerifyUri", "https://www.google.com/recaptcha/api/siteverify" ) );
@@ -81,7 +81,6 @@ public class RecaptchaService implements CaptchaService
 
     private CoreService coreService;
 
-    @SuppressWarnings ( "restriction" )
     private CloseableHttpClient client;
 
     public void setCoreService ( final CoreService coreService )
@@ -89,7 +88,6 @@ public class RecaptchaService implements CaptchaService
         this.coreService = coreService;
     }
 
-    @SuppressWarnings ( "restriction" )
     public void start ()
     {
         this.client = HttpClients.createDefault ();
@@ -111,7 +109,6 @@ public class RecaptchaService implements CaptchaService
         return service.getCoreProperty ( new MetaKey ( "recaptcha", "recaptcha-secret-key" ) );
     }
 
-    @SuppressWarnings ( "restriction" )
     @Override
     public CaptchaResult checkCaptcha ( final HttpServletRequest request )
     {
