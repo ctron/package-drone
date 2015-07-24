@@ -45,6 +45,7 @@ public class InputStreamTest
         dumpHeader ( "Signature", in.getSignatureHeader (), tag -> RpmSignatureTag.find ( tag ) );
         dumpHeader ( "Payload", in.getPayloadHeader (), tag -> RpmTag.find ( tag ) );
 
+        @SuppressWarnings ( "resource" )
         final CpioArchiveInputStream cpio = in.getCpioStream ();
 
         CpioArchiveEntry entry;
