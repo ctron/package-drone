@@ -266,23 +266,17 @@
 	</tag>
 	
 	<tag>
-	   <name>withResult</name>
-	   <tag-class>de.dentrassi.osgi.web.form.tags.WithResult</tag-class>
+	   <name>withBinding</name>
+	   <tag-class>de.dentrassi.osgi.web.form.tags.WithBinding</tag-class>
 	   <body-content>JSP</body-content>
 	   
-        <attribute>
-            <name>path</name>
-            <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        
         <attribute>
             <name>command</name>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         
         <attribute>
-            <description>The name of the page context variable that will get the result. The default is 'result'.</description>
+            <description>The name of the page context variable that will get the binding. The default is 'result'.</description>
             <name>var</name>
         </attribute>
         
