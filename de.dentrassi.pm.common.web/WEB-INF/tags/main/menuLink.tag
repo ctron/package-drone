@@ -14,10 +14,10 @@
 <c:set var="url" value="${entry.target.renderFull(pageContext)}" />
 
 <a
-    <c:if test="${not empty entry.modal }">data-toggle="modal" data-target="#modal-${entry.id }" href="#"</c:if>
-    <c:if test="${empty entry.modal }">href="${url }"</c:if>
-    ${' '} ${ ( not empty role ) ? 'role="'.concat(role).concat('"') : '' } ${' '} ${ ( not empty cssClass ) ? 'class="'.concat(cssClass).concat('"') : '' }
-    
+    <c:if test="${not empty entry.modal }">${' ' } data-toggle="modal" data-target="#modal-${entry.id }" href="#"</c:if>
+    <c:if test="${empty entry.modal }">${' ' } href="${url }"</c:if>
+    <c:if test="${not empty role }">${' ' } role="${role }"</c:if>
+    <c:if test="${not empty cssClass }">${' ' } class="${cssClass }"</c:if>
     <c:if test="${entry.newWindow }"> target="_blank"</c:if>
 ><h:menuEntry entry="${entry }"></h:menuEntry></a>
 
