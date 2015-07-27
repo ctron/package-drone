@@ -28,12 +28,11 @@ import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
-import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.system.SystemService;
+import de.dentrassi.pm.system.SitePrefixService;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -43,33 +42,16 @@ public class MavenController implements InterfaceExtender
 {
     private StorageService service;
 
-    private CoreService coreService;
-
-    private SystemService systemService;
+    private SitePrefixService sitePrefixService;
 
     public void setService ( final StorageService service )
     {
         this.service = service;
     }
 
-    public void setCoreService ( final CoreService coreService )
+    public void setSitePrefixService ( final SitePrefixService sitePrefixService )
     {
-        this.coreService = coreService;
-    }
-
-    public void setSystemService ( final SystemService systemService )
-    {
-        this.systemService = systemService;
-    }
-
-    protected String getSitePrefix ()
-    {
-        final String prefix = this.coreService.getCoreProperty ( "site-prefix", this.systemService.getDefaultSitePrefix () );
-        if ( prefix != null )
-        {
-            return prefix;
-        }
-        return "http://localhost:8080";
+        this.sitePrefixService = sitePrefixService;
     }
 
     @Override
@@ -123,7 +105,7 @@ public class MavenController implements InterfaceExtender
 
         model.put ( "mavenRepo", channel.hasAspect ( "maven.repo" ) );
         model.put ( "channel", channel );
-        model.put ( "sitePrefix", getSitePrefix () );
+        model.put ( "sitePrefix", this.sitePrefixService.getSitePrefix () );
 
         return new ModelAndView ( "helpMaven", model );
     }
