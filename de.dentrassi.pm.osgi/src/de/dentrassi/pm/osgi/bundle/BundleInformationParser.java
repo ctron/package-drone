@@ -49,6 +49,7 @@ public class BundleInformationParser
         this.manifest = manifest;
     }
 
+    @SuppressWarnings ( "deprecation" )
     public BundleInformation parse () throws IOException
     {
         final BundleInformation result = new BundleInformation ();
