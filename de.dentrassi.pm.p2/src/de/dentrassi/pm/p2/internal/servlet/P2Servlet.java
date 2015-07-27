@@ -141,7 +141,7 @@ public class P2Servlet extends HttpServlet
         }
         else if ( paths.length == 6 && "plugins".equals ( paths[2] ) )
         {
-            logger.warn ( "Download plugin: {}", req.getPathInfo () );
+            logger.debug ( "Download plugin: {}", req.getPathInfo () );
             final String id = paths[3];
             final String version = paths[4];
             final String fileName = paths[5];
@@ -149,7 +149,7 @@ public class P2Servlet extends HttpServlet
         }
         else if ( paths.length == 6 && "features".equals ( paths[2] ) )
         {
-            logger.warn ( "Download feature: {}", path );
+            logger.debug ( "Download feature: {}", path );
             final String id = paths[3];
             final String version = paths[4];
             final String fileName = paths[5];
@@ -157,7 +157,7 @@ public class P2Servlet extends HttpServlet
         }
         else
         {
-            logger.warn ( "Not found for: {}", path );
+            logger.info ( "Not found for: {}", path );
             notFound ( req, resp, "Resource not found: " + path );
         }
     }
