@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.sec.service.core;
 
+import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.core.CoreHelper;
 import de.dentrassi.pm.core.CoreService;
 import de.dentrassi.pm.sec.service.password.BadPasswordException;
@@ -17,6 +18,8 @@ import de.dentrassi.pm.sec.service.password.PasswordChecker;
 
 public class CorePasswordChecker implements PasswordChecker
 {
+    private static final MetaKey KEY_MIN_PASSWORD_LENGTH = new MetaKey ( "core", "min-password-length" );
+
     private static final int DEFAULT_MIN_LENGTH = 6;
 
     private CoreService service;
@@ -29,7 +32,7 @@ public class CorePasswordChecker implements PasswordChecker
     @Override
     public void checkPassword ( final String password ) throws BadPasswordException
     {
-        int minLength = CoreHelper.getInteger ( this.service, "min-password-length", DEFAULT_MIN_LENGTH );
+        int minLength = CoreHelper.getInteger ( this.service, KEY_MIN_PASSWORD_LENGTH, DEFAULT_MIN_LENGTH );
         if ( minLength <= 0 )
         {
             minLength = 6;

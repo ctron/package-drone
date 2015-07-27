@@ -10,13 +10,15 @@
  *******************************************************************************/
 package de.dentrassi.pm.core;
 
+import de.dentrassi.pm.common.MetaKey;
+
 public final class CoreHelper
 {
     private CoreHelper ()
     {
     }
 
-    public static int getInteger ( final CoreService service, final String key, final int defaultValue )
+    public static int getInteger ( final CoreService service, final MetaKey key, final int defaultValue )
     {
         final String result = service.getCoreProperty ( key, null );
         if ( result == null )
