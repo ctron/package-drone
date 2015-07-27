@@ -33,8 +33,6 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.profiler.Profile;
 import de.dentrassi.osgi.profiler.Profile.Handle;
@@ -45,9 +43,6 @@ import de.dentrassi.pm.common.Version;
 
 public class ChannelAspectProcessor
 {
-
-    private final static Logger logger = LoggerFactory.getLogger ( ChannelAspectProcessor.class );
-
     private final ServiceTracker<ChannelAspectFactory, FactoryEntry> tracker;
 
     private ServiceTracker<Group, GroupInformation> groupTracker;
