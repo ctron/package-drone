@@ -58,11 +58,6 @@ public class DownloadHandler implements Handler
     }
 
     @Override
-    public void prepare () throws Exception
-    {
-    }
-
-    @Override
     public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
     {
         logger.debug ( "Looking for bundle: {}/{}", this.id, this.version );
