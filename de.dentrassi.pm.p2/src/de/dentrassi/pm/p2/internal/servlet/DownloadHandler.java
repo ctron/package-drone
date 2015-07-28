@@ -20,10 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
+import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
 public class DownloadHandler implements Handler
@@ -48,9 +49,12 @@ public class DownloadHandler implements Handler
 
     private final String classifier;
 
-    public DownloadHandler ( final Channel channel, final String id, final String version, final String filename, final String classifier )
+    private final StorageService service;
+
+    public DownloadHandler ( final Channel channel, final StorageService service, final String id, final String version, final String filename, final String classifier )
     {
         this.channel = channel;
+        this.service = service;
         this.id = id;
         this.version = version;
         this.filename = filename;
@@ -63,9 +67,9 @@ public class DownloadHandler implements Handler
         logger.debug ( "Looking for bundle: {}/{}", this.id, this.version );
 
         // TODO: speed up search
-        for ( final Artifact a : this.channel.getArtifacts () )
+        for ( final DetailedArtifactInformation a : this.channel.getDetailedArtifacts () )
         {
-            final Map<MetaKey, String> md = a.getInformation ().getMetaData ();
+            final Map<MetaKey, String> md = a.getMetaData ();
 
             final String thisClassifier = md.get ( KEY_OSGI_CLASSIFIER );
             final String thisId = md.get ( KEY_OSGI_ID );
@@ -88,8 +92,8 @@ public class DownloadHandler implements Handler
                 continue;
             }
 
-            logger.debug ( "Streaming artifact: {} / {} ", a.getInformation ().getName (), a.getId () );
-            DownloadHelper.streamArtifact ( resp, a, md.get ( KEY_MIME_TYPE ), true, art -> this.filename );
+            logger.debug ( "Streaming artifact: {} / {} ", a.getName (), a.getId () );
+            DownloadHelper.streamArtifact ( resp, this.service, a.getId (), md.get ( KEY_MIME_TYPE ), true, art -> this.filename );
             return;
         }
 

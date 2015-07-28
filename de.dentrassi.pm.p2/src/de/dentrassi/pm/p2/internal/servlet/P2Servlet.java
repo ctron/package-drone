@@ -145,7 +145,7 @@ public class P2Servlet extends HttpServlet
             final String id = paths[3];
             final String version = paths[4];
             final String fileName = paths[5];
-            process ( req, resp, new DownloadHandler ( channel, id, version, fileName, "bundle" ) );
+            process ( req, resp, new DownloadHandler ( channel, service, id, version, fileName, "bundle" ) );
         }
         else if ( paths.length == 6 && "features".equals ( paths[2] ) )
         {
@@ -153,7 +153,7 @@ public class P2Servlet extends HttpServlet
             final String id = paths[3];
             final String version = paths[4];
             final String fileName = paths[5];
-            process ( req, resp, new DownloadHandler ( channel, id, version, fileName, "eclipse.feature" ) );
+            process ( req, resp, new DownloadHandler ( channel, service, id, version, fileName, "eclipse.feature" ) );
         }
         else
         {
