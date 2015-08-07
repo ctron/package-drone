@@ -17,11 +17,11 @@ import java.util.List;
 
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.SimpleArtifactInformation;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelId;
 
 public class Functions
 {
-    public static String channel ( final Channel channel )
+    public static String channel ( final ChannelId channel )
     {
         if ( channel == null )
         {

@@ -44,6 +44,7 @@ import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.GeneratorArtifact;
+import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.channel.ChannelController;
@@ -59,9 +60,16 @@ public class ArtifactController implements InterfaceExtender
 {
     private StorageService service;
 
+    private ChannelService channelService;
+
     public void setService ( final StorageService service )
     {
         this.service = service;
+    }
+
+    public void setChannelService ( final ChannelService channelService )
+    {
+        this.channelService = channelService;
     }
 
     @Secured ( false )

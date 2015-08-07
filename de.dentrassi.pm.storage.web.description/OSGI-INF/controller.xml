@@ -4,5 +4,5 @@
    <service>
       <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
    </service>
-   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
+   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.ChannelService" name="StorageService" policy="static"/>
 </scr:component>

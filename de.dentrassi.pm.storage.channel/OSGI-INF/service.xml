@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.pm.storage.channel">
+   <implementation class="de.dentrassi.pm.storage.channel.internal.ChannelServiceImpl"/>
+   <service>
+      <provide interface="de.dentrassi.pm.storage.channel.ChannelService"/>
+   </service>
+   <reference bind="setStorageManager" cardinality="1..1" interface="de.dentrassi.pm.apm.StorageManager" name="StorageManager" policy="static"/>
+   <property name="osgi.command.scope" type="String" value="drone"/>
+   <property name="osgi.command.function" type="String">deleteMapping
+listUnclaimedMappings
+   </property>
+</scr:component>

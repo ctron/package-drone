@@ -10,7 +10,7 @@
 	<function>
 		<name>channel</name>
 		<function-class>de.dentrassi.pm.storage.web.tags.Functions</function-class>
-		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.Channel)</function-signature>
+		<function-signature>java.lang.String channel(de.dentrassi.pm.storage.channel.ChannelId)</function-signature>
 	</function>
 	
     <function>

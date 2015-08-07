@@ -34,8 +34,12 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelId;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 
 @Controller
 @ControllerInterceptor ( SecuredControllerInterceptor.class )
@@ -43,45 +47,50 @@ import de.dentrassi.pm.storage.service.StorageService;
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 public class DescriptionController implements InterfaceExtender
 {
-    private StorageService service;
+    private static final MetaKey KEY_DESCRIPTION = new MetaKey ( "sys", "description" );
 
-    public void setService ( final StorageService service )
+    private ChannelService service;
+
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
 
     @RequestMapping ( value = "/channel/{channelId}/description" )
-    public ModelAndView channelDescription ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView channelDescription ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-
-        if ( channel == null )
+        try
+        {
+            return this.service.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+                final Map<String, Object> model = new HashMap<> ( 1 );
+                model.put ( "channel", channel.getInformation () );
+                return new ModelAndView ( "description", model );
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             return CommonController.createNotFound ( "channel", channelId );
         }
-
-        final Map<String, Object> model = new HashMap<> ( 1 );
-
-        model.put ( "channel", channel );
-
-        return new ModelAndView ( "description", model );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/description", method = RequestMethod.POST )
-    public ModelAndView channelDescriptionPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "data" ) final String data )
+    public ModelAndView channelDescriptionPost ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "data" ) final String data)
     {
-        final Channel channel = this.service.getChannel ( channelId );
+        try
+        {
+            return this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
 
-        if ( channel == null )
+                channel.applyMetaData ( Collections.singletonMap ( KEY_DESCRIPTION, data ) );
+
+                final Map<String, Object> model = new HashMap<> ( 1 );
+                model.put ( "channel", channel.getInformation () );
+                return new ModelAndView ( "description", model );
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             return CommonController.createNotFound ( "channel", channelId );
         }
-
-        channel.applyMetaData ( Collections.singletonMap ( new MetaKey ( "sys", "description" ), data ) );
-
-        final Map<String, Object> model = new HashMap<> ( 1 );
-        model.put ( "channel", channel );
-        return new ModelAndView ( "description", model );
     }
 
     // interface extensions
@@ -89,12 +98,12 @@ public class DescriptionController implements InterfaceExtender
     @Override
     public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
-        if ( ! ( object instanceof Channel ) )
+        if ( ! ( object instanceof ChannelId ) )
         {
             return null;
         }
 
-        final Channel channel = (Channel)object;
+        final ChannelId channel = (ChannelId)object;
 
         final List<MenuEntry> result = new LinkedList<> ();
 
