@@ -108,6 +108,10 @@ public class DispatcherServlet extends HttpServlet
                     Responses.notFound ( request, response );
                 }
             }
+            catch ( final ServletException e )
+            {
+                throw e;
+            }
             catch ( final Exception e )
             {
                 ex = e;
@@ -117,6 +121,10 @@ public class DispatcherServlet extends HttpServlet
             {
                 runAfterCompletion ( interceptors, request, response, ex );
             }
+        }
+        catch ( final ServletException e )
+        {
+            throw e;
         }
         catch ( final Exception e )
         {

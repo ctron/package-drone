@@ -63,6 +63,10 @@ public class ControllerCall
                 {
                     return runForward ( index + 1, chainReq, chainRes, last );
                 }
+                catch ( final RuntimeException e )
+                {
+                    throw e;
+                }
                 catch ( final Exception e )
                 {
                     throw new RuntimeException ( e );
@@ -112,6 +116,10 @@ public class ControllerCall
                     return result;
                 }
             } );
+        }
+        catch ( final RuntimeException e )
+        {
+            throw e;
         }
         catch ( final Exception e )
         {
