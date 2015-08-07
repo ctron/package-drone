@@ -12,9 +12,19 @@ package de.dentrassi.pm.apm;
 
 public abstract class AbstractSimpleStorageModelProvider<V, W> implements StorageModelProvider<V, W>
 {
-    private V viewModel;
 
     private StorageContext context;
+
+    private V viewModel;
+
+    private W writeModel;
+
+    private final Class<W> writeModelClazz;
+
+    public AbstractSimpleStorageModelProvider ( final Class<V> viewClazz, final Class<W> writeClazz )
+    {
+        this.writeModelClazz = writeClazz;
+    }
 
     @Override
     public V getViewModel ()
@@ -27,9 +37,8 @@ public abstract class AbstractSimpleStorageModelProvider<V, W> implements Storag
     {
         this.context = context;
 
-        final W writeModel = loadWriteModel ( context );
-        this.viewModel = renderViewModel ( writeModel );
-        updateWriteModel ( writeModel );
+        this.writeModel = loadWriteModel ( context );
+        this.viewModel = makeViewModel ( this.writeModel );
     }
 
     @Override
@@ -37,24 +46,34 @@ public abstract class AbstractSimpleStorageModelProvider<V, W> implements Storag
     {
     }
 
-    protected void updateWriteModel ( final W writeModel )
+    @Override
+    public W cloneWriteModel ()
     {
+        return cloneWriteModel ( this.writeModel );
     }
 
     @Override
     public void persistWriteModel ( final W writeModel ) throws Exception
     {
-        final V newViewModel = renderViewModel ( writeModel );
+        final V viewModel = makeViewModel ( writeModel );
 
         persistWriteModel ( this.context, writeModel );
-        updateWriteModel ( writeModel );
 
-        this.viewModel = newViewModel;
+        this.writeModel = writeModel;
+        this.viewModel = viewModel;
     }
 
-    protected abstract void persistWriteModel ( StorageContext context, final W writeModel ) throws Exception;
+    @Override
+    public V makeViewModel ( final Object writeModel )
+    {
+        return makeViewModelTyped ( this.writeModelClazz.cast ( writeModel ) );
+    }
 
-    protected abstract V renderViewModel ( final W writeModel );
+    protected abstract V makeViewModelTyped ( W writeModel );
+
+    protected abstract W cloneWriteModel ( final W writeModel );
+
+    protected abstract void persistWriteModel ( StorageContext context, final W writeModel ) throws Exception;
 
     protected abstract W loadWriteModel ( StorageContext context ) throws Exception;
 

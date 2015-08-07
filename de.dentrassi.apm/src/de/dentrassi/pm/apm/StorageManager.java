@@ -24,7 +24,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import de.dentrassi.pm.common.MetaKey;
 
@@ -81,7 +80,16 @@ public class StorageManager
             this.priority = priority;
             this.key = key;
             this.type = type;
-            this.sameKeyParent = getSameParent ( parent, key );
+
+            final State sameParent = getSameParent ( parent, key );
+            if ( sameParent != null && sameParent.sameKeyParent != null )
+            {
+                this.sameKeyParent = sameParent.sameKeyParent;
+            }
+            else
+            {
+                this.sameKeyParent = sameParent;
+            }
 
             if ( parent == null )
             {
@@ -375,12 +383,23 @@ public class StorageManager
     {
         return doWithModel ( modelKey, entry -> {
 
-            return doWithState ( entry, LockType.READ, () -> {
+            return doWithState ( entry, LockType.READ, ( state ) -> {
 
                 entry.lock.readLock ().lock ();
                 try
                 {
-                    final Object viewModel = entry.storageProvider.getViewModel ();
+                    final State same = state.sameKeyParent;
+
+                    final Object viewModel;
+                    if ( same != null && same.writeModel != null )
+                    {
+                        viewModel = entry.storageProvider.makeViewModel ( same.writeModel );
+                    }
+                    else
+                    {
+                        viewModel = entry.storageProvider.getViewModel ();
+                    }
+
                     if ( viewModel == null || modelClazz.isAssignableFrom ( viewModel.getClass () ) )
                     {
                         return function.apply ( modelClazz.cast ( viewModel ) );
@@ -397,13 +416,14 @@ public class StorageManager
 
             } );
         } );
+
     }
 
     public <T, M> T modifyCall ( final MetaKey modelKey, final Class<M> modelClazz, final Function<M, T> function )
     {
         return doWithModel ( modelKey, entry -> {
 
-            return doWithState ( entry, LockType.WRITE, () -> {
+            return doWithState ( entry, LockType.WRITE, ( state ) -> {
 
                 entry.lock.writeLock ().lock ();
                 try
@@ -496,7 +516,7 @@ public class StorageManager
         }
     }
 
-    protected static <T> T doWithState ( final Entry entry, final LockType type, final Supplier<T> function )
+    protected static <T> T doWithState ( final Entry entry, final LockType type, final Function<State, T> function )
     {
         final Deque<State> stack = lockStates.get ();
 
@@ -508,7 +528,7 @@ public class StorageManager
             if ( type == LockType.WRITE && current.isReadLocked ( entry.key ) )
             {
                 // lock upgrade is not allowed -> fail
-                throw new IllegalStateException ( String.format ( "%s is already read locked. Upgrading read locks to write locks is not supported! (State: )", entry.key, current ) );
+                throw new IllegalStateException ( String.format ( "%s is already read locked. Upgrading read locks to write locks is not supported! (State: %s)", entry.key, current ) );
             }
 
             if ( !current.isLocked ( entry.key ) )
@@ -525,7 +545,7 @@ public class StorageManager
 
         try
         {
-            return function.get ();
+            return function.apply ( next );
         }
         finally
         {

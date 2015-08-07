@@ -25,22 +25,19 @@ import de.dentrassi.pm.common.MetaKey;
 
 public class CoreStorageModelProvider extends AbstractSimpleStorageModelProvider<CoreServiceViewModel, CoreServiceModel>
 {
-    private CoreServiceModel writeModel;
-
-    @Override
-    public void updateWriteModel ( final CoreServiceModel writeModel )
+    public CoreStorageModelProvider ()
     {
-        this.writeModel = writeModel;
+        super ( CoreServiceViewModel.class, CoreServiceModel.class );
     }
 
     @Override
-    public CoreServiceModel cloneWriteModel ()
+    public CoreServiceModel cloneWriteModel ( final CoreServiceModel writeModel )
     {
-        return new CoreServiceModel ( this.writeModel );
+        return new CoreServiceModel ( writeModel );
     }
 
     @Override
-    protected CoreServiceViewModel renderViewModel ( final CoreServiceModel writeModel )
+    protected CoreServiceViewModel makeViewModelTyped ( final CoreServiceModel writeModel )
     {
         return new CoreServiceViewModel ( writeModel.getProperties () );
     }

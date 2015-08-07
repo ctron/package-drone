@@ -28,25 +28,21 @@ import de.dentrassi.pm.apm.StorageContext;
 
 public class UserStorageModelProvider extends AbstractSimpleStorageModelProvider<UserModel, UserWriteModel>
 {
+    public UserStorageModelProvider ()
+    {
+        super ( UserModel.class, UserWriteModel.class );
+    }
+
     private final static Logger logger = LoggerFactory.getLogger ( UserStorageModelProvider.class );
 
-    private UserWriteModel writeModel;
-
     @Override
-    public UserWriteModel cloneWriteModel ()
+    public UserWriteModel cloneWriteModel ( final UserWriteModel writeModel )
     {
-        return new UserWriteModel ( this.writeModel );
+        return new UserWriteModel ( writeModel );
     }
 
     @Override
-    protected void updateWriteModel ( final UserWriteModel writeModel )
-    {
-        super.updateWriteModel ( writeModel );
-        this.writeModel = writeModel;
-    }
-
-    @Override
-    protected UserModel renderViewModel ( final UserWriteModel writeModel )
+    public UserModel makeViewModelTyped ( final UserWriteModel writeModel )
     {
         return new UserModel ( writeModel.getAll ().values () );
     }

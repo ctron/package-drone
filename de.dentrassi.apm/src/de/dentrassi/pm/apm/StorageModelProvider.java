@@ -20,5 +20,7 @@ public interface StorageModelProvider<V, W>
 
     public W cloneWriteModel ();
 
+    public V makeViewModel ( Object writeModel );
+
     public void persistWriteModel ( W model ) throws Exception;
 }

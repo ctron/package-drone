@@ -14,9 +14,9 @@ public class MockStorageViewModel
 {
     private final String value;
 
-    public MockStorageViewModel ( final String value )
+    public MockStorageViewModel ( final MockStorageModel writeModel )
     {
-        this.value = value;
+        this.value = writeModel.getValue ();
     }
 
     public String getValue ()

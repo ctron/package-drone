@@ -22,30 +22,24 @@ public class MockStorageProvider extends AbstractSimpleStorageModelProvider<Mock
 
     private final String initialValue;
 
-    private MockStorageModel writeModel;
-
     public MockStorageProvider ( final String key, final String initialValue )
     {
+        super ( MockStorageViewModel.class, MockStorageModel.class );
+
         this.key = key;
         this.initialValue = initialValue;
     }
 
     @Override
-    public MockStorageModel cloneWriteModel ()
+    public MockStorageViewModel makeViewModelTyped ( final MockStorageModel writeModel )
     {
-        return new MockStorageModel ( this.writeModel );
+        return new MockStorageViewModel ( writeModel );
     }
 
     @Override
-    protected MockStorageViewModel renderViewModel ( final MockStorageModel writeModel )
+    protected MockStorageModel cloneWriteModel ( final MockStorageModel writeModel )
     {
-        return new MockStorageViewModel ( writeModel.getValue () );
-    }
-
-    @Override
-    protected void updateWriteModel ( final MockStorageModel writeModel )
-    {
-        this.writeModel = writeModel;
+        return new MockStorageModel ( writeModel );
     }
 
     @Override

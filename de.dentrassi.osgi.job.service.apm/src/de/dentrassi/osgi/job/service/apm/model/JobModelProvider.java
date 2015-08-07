@@ -15,20 +15,15 @@ import de.dentrassi.pm.apm.StorageContext;
 
 public class JobModelProvider extends AbstractSimpleStorageModelProvider<JobModel, JobWriteModel>
 {
-
-    private JobWriteModel writeModel;
-
-    @Override
-    public JobWriteModel cloneWriteModel ()
+    public JobModelProvider ()
     {
-        return new JobWriteModel ( this.writeModel.makeJobMap () );
+        super ( JobModel.class, JobWriteModel.class );
     }
 
     @Override
-    protected void updateWriteModel ( final JobWriteModel writeModel )
+    public JobWriteModel cloneWriteModel ( final JobWriteModel writeModel )
     {
-        super.updateWriteModel ( writeModel );
-        this.writeModel = writeModel;
+        return new JobWriteModel ( writeModel.makeJobMap () );
     }
 
     @Override
@@ -38,7 +33,7 @@ public class JobModelProvider extends AbstractSimpleStorageModelProvider<JobMode
     }
 
     @Override
-    protected JobModel renderViewModel ( final JobWriteModel writeModel )
+    protected JobModel makeViewModelTyped ( final JobWriteModel writeModel )
     {
         return new JobModel ( writeModel.makeJobMap ().values () );
     }
