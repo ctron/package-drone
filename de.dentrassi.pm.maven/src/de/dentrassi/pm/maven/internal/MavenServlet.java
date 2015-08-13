@@ -474,6 +474,29 @@ public class MavenServlet extends AbstractStorageServiceServlet
                     }
                 }
 
+                if (plain.isEmpty() && classified.isEmpty()) 
+                {
+                    // no upload will happen in this case - maybe we should make up
+                    // some information based on what we do know, presuming that this
+                    // metadata describes a single snapshot jar artifact.
+                    final MavenInformation synthetic = new MavenInformation ();
+                    info.setGroupId ( groupId );
+                    info.setArtifactId ( artifactId );
+                    info.setVersion ( version );
+                    
+                    // let us not set a classifier and assume it is a jar
+                    info.setExtension("jar");
+                    // this should be something like 1.2.3-120398120398.129837192387
+                    info.setSnapshotVersion(
+                        String.format("%s-%s-%s",
+                            version.substring(0, version.length() - "SNAPSHOT".length()),
+                            snapshotTimestamp,
+                            snapshotBuildNumber));
+                    info.setBuildNumber(snapshotBuildNumber);
+                    
+                    plain.add(info);
+                }
+
                 store ( channel, plain, classified );
             }
         }
