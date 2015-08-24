@@ -178,6 +178,10 @@ public class RepositoryCreator
             );
 
             reqs.put ( "filter", filter );
+            
+            if(pi.isOptional()) {
+            	reqs.put ( "resolution", "optional");
+            }
 
             addRequirement ( writer, "osgi.wiring.package", reqs );
         }
