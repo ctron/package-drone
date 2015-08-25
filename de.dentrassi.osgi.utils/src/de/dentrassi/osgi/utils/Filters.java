@@ -94,6 +94,29 @@ public class Filters
 
     }
 
+    public static class Negate implements Node
+    {
+
+        private final Node child;
+
+        public Negate ( final Node node )
+        {
+            this.child = node;
+        }
+
+        public Node getChild ()
+        {
+            return this.child;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "(!" + this.child.toString() + ")";
+        }
+
+    }
+
     public static String join ( final List<? extends Node> nodes, final String oper )
     {
         final List<String> s = new LinkedList<> ();
@@ -172,6 +195,15 @@ public class Filters
         return new Pair ( key, value, operator );
     }
 
+    public static Node negate ( final Node node )
+    {
+        if ( node == null )
+        {
+            return null;
+        }
+        return new Negate ( node );
+    }
+
     private static String version ( final Version version )
     {
         if ( version == null )
@@ -206,7 +238,7 @@ public class Filters
         {
             if ( versionRange.getRightType () == VersionRange.RIGHT_OPEN )
             {
-                add ( nodes, pair ( name, version ( versionRange.getRight () ), "<" ) );
+                add ( nodes, negate ( pair ( name, version ( versionRange.getRight () ), ">=" ) ) );
             }
             else if ( versionRange.getRightType () == VersionRange.RIGHT_CLOSED )
             {
