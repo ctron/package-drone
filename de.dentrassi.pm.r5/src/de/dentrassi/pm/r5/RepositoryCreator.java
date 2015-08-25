@@ -140,6 +140,15 @@ public class RepositoryCreator
             addCapability ( writer, "osgi.wiring.bundle", caps );
         }
 
+        {
+            final Map<String, Object> caps = new HashMap<> ();
+
+            caps.put ( "osgi.wiring.host", bi.getId () );
+            caps.put ( "bundle-version", bi.getVersion () );
+
+            addIndexCapability ( writer, "osgi.wiring.host", caps );
+        }
+
         for ( final BundleRequirement br : bi.getBundleRequirements () )
         {
             final Map<String, String> reqs = new HashMap<> ();
