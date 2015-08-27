@@ -52,6 +52,8 @@ public class RepositoryCreator
 
     private static final DateFormat OBR_DATE_FORMAT = new SimpleDateFormat ( "YYYYMMDDHHmmss.SSS" );
 
+    private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
+
     private final OutputSpooler indexStreamBuilder;
 
     private final String name;
@@ -242,6 +244,18 @@ public class RepositoryCreator
             }
 
             addIndexCapability ( writer, "osgi.wiring.package", caps );
+
+            // Add a 'osgi.contract' capability if this bundle is a framework package 
+            if ( FRAMEWORK_PACKAGE.equals ( pe.getName() ) ) {
+                Version specVersion = mapFrameworkPackageVersion ( pe.getVersion () );
+                if ( specVersion != null )
+                {
+                    final Map<String, Object> frameworkCaps = new HashMap<> ();
+                    frameworkCaps.put ( "osgi.contract", "OSGiFramework" );
+                    frameworkCaps.put ( "version", specVersion );
+                    addIndexCapability ( writer, "osgi.contract", frameworkCaps );
+                }
+            }
         }
 
         for ( final PackageImport pi : bi.getPackageImports () )
@@ -555,6 +569,45 @@ public class RepositoryCreator
     {
         xsw.writeEndElement (); // repository
         xsw.writeEndDocument ();
+    }
+
+    private static Version mapFrameworkPackageVersion ( final Version pv )
+    {
+        if (pv.getMajor() != 1)
+            return null;
+
+        Version version;
+        switch (pv.getMinor()) {
+        case 7:
+            version = new Version(5, 0, 0);
+            break;
+        case 6:
+            version = new Version(4, 3, 0);
+            break;
+        case 5:
+            version = new Version(4, 2, 0);
+            break;
+        case 4:
+            version = new Version(4, 1, 0);
+            break;
+        case 3:
+            version = new Version(4, 0, 0);
+            break;
+        case 2:
+            version = new Version(3, 0, 0);
+            break;
+        case 1:
+            version = new Version(2, 0, 0);
+            break;
+        case 0:
+            version = new Version(1, 0, 0);
+            break;
+        default:
+            version = null;
+            break;
+        }
+
+        return version;
     }
 
 }
