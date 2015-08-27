@@ -26,6 +26,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.osgi.framework.Version;
+
 import de.dentrassi.osgi.utils.Filters;
 import de.dentrassi.osgi.utils.Filters.Node;
 import de.dentrassi.pm.VersionInformation;
@@ -43,6 +45,8 @@ import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageImport;
 public class RepositoryCreator
 {
     private static final MetaKey KEY_SHA_256 = new MetaKey ( "hasher", "sha256" );
+
+    private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
 
     private final OutputSpooler indexStreamBuilder;
 
@@ -175,6 +179,19 @@ public class RepositoryCreator
             }
 
             addCapability ( writer, "osgi.wiring.package", caps );
+
+            // Add a 'osgi.contract' capability if this bundle is a framework package
+            if ( FRAMEWORK_PACKAGE.equals ( pe.getName () ) )
+            {
+                final Version specVersion = mapFrameworkPackageVersion ( pe.getVersion () );
+                if ( specVersion != null )
+                {
+                    final Map<String, Object> frameworkCaps = new HashMap<> ();
+                    frameworkCaps.put ( "osgi.contract", "OSGiFramework" );
+                    frameworkCaps.put ( "version", specVersion );
+                    addCapability ( writer, "osgi.contract", frameworkCaps );
+                }
+            }
         }
 
         for ( final PackageImport pi : bi.getPackageImports () )
@@ -315,5 +332,47 @@ public class RepositoryCreator
                 throw new IOException ( e );
             }
         } );
+    }
+
+    private static Version mapFrameworkPackageVersion ( final Version pv )
+    {
+        if ( pv.getMajor () != 1 )
+        {
+            return null;
+        }
+
+        Version version;
+        switch ( pv.getMinor () )
+        {
+            case 7:
+                version = new Version ( 5, 0, 0 );
+                break;
+            case 6:
+                version = new Version ( 4, 3, 0 );
+                break;
+            case 5:
+                version = new Version ( 4, 2, 0 );
+                break;
+            case 4:
+                version = new Version ( 4, 1, 0 );
+                break;
+            case 3:
+                version = new Version ( 4, 0, 0 );
+                break;
+            case 2:
+                version = new Version ( 3, 0, 0 );
+                break;
+            case 1:
+                version = new Version ( 2, 0, 0 );
+                break;
+            case 0:
+                version = new Version ( 1, 0, 0 );
+                break;
+            default:
+                version = null;
+                break;
+        }
+
+        return version;
     }
 }
