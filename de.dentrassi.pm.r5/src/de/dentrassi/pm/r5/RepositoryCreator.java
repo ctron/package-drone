@@ -164,6 +164,11 @@ public class RepositoryCreator
 
             reqs.put ( "filter", filter );
 
+            if ( br.isOptional () )
+            {
+                reqs.put ( "resolution", "optional" );
+            }
+
             addRequirement ( writer, "osgi.wiring.bundle", reqs );
         }
 
