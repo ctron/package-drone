@@ -27,6 +27,7 @@ import de.dentrassi.osgi.utils.Locks.Locked;
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.channel.AspectableChannel;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
 import de.dentrassi.pm.storage.channel.ChannelId;
 import de.dentrassi.pm.storage.channel.ChannelInformation;
@@ -455,6 +456,10 @@ public class ChannelServiceImpl implements ChannelService
             {
                 return handleDescribe ( findChannel ( by ), (ChannelOperation<R, DescriptorAdapter>)operation );
             }
+        }
+        else if ( AspectableChannel.class.equals ( clazz ) )
+        {
+            return accessModify ( findChannel ( by ), (ChannelOperation<R, ModifiableChannel>)operation );
         }
         else
         {

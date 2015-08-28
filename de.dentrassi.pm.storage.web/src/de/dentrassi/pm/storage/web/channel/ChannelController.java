@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.net.UrlEscapers;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.web.Controller;
@@ -78,7 +79,6 @@ import de.dentrassi.pm.aspect.recipe.RecipeInformation;
 import de.dentrassi.pm.aspect.recipe.RecipeNotFoundException;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
@@ -90,19 +90,22 @@ import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.DeployGroup;
-import de.dentrassi.pm.storage.DeployKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.AspectableChannel;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
 import de.dentrassi.pm.storage.channel.ChannelId;
 import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ChannelService.ChannelOperation;
 import de.dentrassi.pm.storage.channel.DescriptorAdapter;
 import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.service.DeployAuthService;
 import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
@@ -195,7 +198,6 @@ public class ChannelController implements InterfaceExtender
         final ModelAndView result = new ModelAndView ( "redirect:/channel" );
 
         this.channelService.create ( null, null );
-        // this.service.createChannel ();
 
         return result;
     }
@@ -217,7 +219,6 @@ public class ChannelController implements InterfaceExtender
             desc.setDescription ( data.getDescription () );
             final ChannelId channel = this.channelService.create ( null, desc );
 
-            // final Channel channel = this.service.createChannel ( data.getName (), data.getDescription () );
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", urlPathSegmentEscaper ().escape ( channel.getId () ) ) );
         }
 
@@ -243,27 +244,36 @@ public class ChannelController implements InterfaceExtender
         if ( !result.hasErrors () )
         {
 
-            final Holder<Channel> holder = new Holder<> ();
+            final Holder<ChannelId> holder = new Holder<> ();
             final Holder<String> targetHolder = new Holder<> ();
 
             if ( recipeId == null || recipeId.isEmpty () )
             {
                 // without recipe
-                holder.value = this.service.createChannel ( data.getName (), data.getDescription () );
+                final ChannelDetails desc = new ChannelDetails ();
+                desc.setDescription ( data.getDescription () );
+                holder.value = this.channelService.create ( null, desc );
             }
             else
             {
                 // with recipe
                 Activator.getRecipes ().process ( recipeId, recipe -> {
-                    final Channel channel = this.service.createChannel ( data.getName (), data.getDescription () );
-                    final LinkTarget target = recipe.setup ( channel );
+                    final ChannelDetails desc = new ChannelDetails ();
+                    desc.setDescription ( data.getDescription () );
 
-                    if ( target != null )
-                    {
-                        final Map<String, String> model = new HashMap<> ( 1 );
-                        model.put ( "channelId", channel.getId () );
-                        targetHolder.value = target.expand ( model ).getUrl ();
-                    }
+                    final ChannelId channel = this.channelService.create ( null, desc );
+
+                    this.channelService.access ( By.id ( channel.getId () ), AspectableChannel.class, aspChannel -> {
+
+                        final LinkTarget target = recipe.setup ( channel.getId (), aspChannel );
+
+                        if ( target != null )
+                        {
+                            final Map<String, String> model = new HashMap<> ( 1 );
+                            model.put ( "channelId", channel.getId () );
+                            targetHolder.value = target.expand ( model ).getUrl ();
+                        }
+                    } );
 
                     holder.value = channel;
                 } );
@@ -277,7 +287,7 @@ public class ChannelController implements InterfaceExtender
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", URLEncoder.encode ( holder.value.getId (), "UTF-8" ) ) );
         }
 
-        final Map<String, Object> model = new HashMap<> ( 2 );
+        final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
@@ -288,10 +298,10 @@ public class ChannelController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView view ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
     {
-        final Channel channel = this.service.getChannelByAlias ( channelId );
-        if ( channel != null )
+        final Optional<ChannelInformation> channel = this.channelService.getState ( By.name ( channelId ) );
+        if ( channel.isPresent () )
         {
-            return new ModelAndView ( String.format ( "redirect:/channel/%s/view", channel.getId () ) );
+            return new ModelAndView ( String.format ( "redirect:/channel/%s/view", channel.get ().getId () ) );
         }
         else
         {
@@ -311,8 +321,8 @@ public class ChannelController implements InterfaceExtender
         {
             this.channelService.access ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
 
-                final List<ArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getContext ().getArtifacts () );
-                sortedArtifacts.sort ( Comparator.comparing ( ArtifactInformation::getId ) ); // FIXME: change to name
+                final List<ArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getContext ().getArtifacts ().values () );
+                sortedArtifacts.sort ( Comparator.comparing ( ArtifactInformation::getName ) );
 
                 result.put ( "channel", channel.getInformation () );
                 result.put ( "sortedArtifacts", sortedArtifacts );
@@ -338,11 +348,11 @@ public class ChannelController implements InterfaceExtender
         {
             this.channelService.access ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
 
-                final Map<String, List<SimpleArtifactInformation>> tree = new HashMap<> ();
+                final Map<String, List<ArtifactInformation>> tree = new HashMap<> ();
 
-                for ( final ArtifactInformation entry : channel.getArtifacts () )
+                for ( final ArtifactInformation entry : channel.getContext ().getArtifacts ().values () )
                 {
-                    List<SimpleArtifactInformation> list = tree.get ( entry.getParentId () );
+                    List<ArtifactInformation> list = tree.get ( entry.getParentId () );
                     if ( list == null )
                     {
                         list = new LinkedList<> ();
@@ -370,18 +380,21 @@ public class ChannelController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView viewValidation ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
+        try
+        {
+            return this.channelService.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+                final ModelAndView result = new ModelAndView ( "channel/validation" );
+
+                result.put ( "channel", channel.getInformation () );
+                result.put ( "messages", channel.getInformation ().getState ().getValidationMessages () );
+
+                return result;
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             return CommonController.createNotFound ( "channel", channelId );
         }
-
-        final ModelAndView result = new ModelAndView ( "channel/validation" );
-        result.put ( "channel", channel );
-        result.put ( "messages", channel.getValidationMessages () );
-        result.put ( "aspects", Activator.getAspects ().getAspectInformations () ); // FIXME: why?
-
-        return result;
     }
 
     @Secured ( false )
@@ -420,6 +433,45 @@ public class ChannelController implements InterfaceExtender
         }
 
         return result;
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifacts/{artifactId}/delete", method = RequestMethod.GET )
+    public ModelAndView deleteArtifact ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId)
+    {
+        return withChannel ( channelId, ModifiableChannel.class, channel -> {
+            channel.getContext ().deleteArtifact ( artifactId );
+            return redirectDefaultView ( channelId, true );
+        } );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifacts/{artifactId}/get", method = RequestMethod.GET )
+    public void getArtifact ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId, final HttpServletResponse response) throws IOException
+    {
+        DownloadHelper.streamArtifact ( response, this.channelService, channelId, artifactId, null, true );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifacts/{artifactId}/dump", method = RequestMethod.GET )
+    public void dumpArtifact ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId, final HttpServletResponse response) throws IOException
+    {
+        DownloadHelper.streamArtifact ( response, this.channelService, channelId, artifactId, null, false );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifacts/{artifactId}/view", method = RequestMethod.GET )
+    public ModelAndView viewArtifact ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId)
+    {
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+
+            final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );
+            if ( !artifact.isPresent () )
+            {
+                return CommonController.createNotFound ( "aspect", artifactId );
+            }
+
+            final Map<String, Object> model = new HashMap<String, Object> ( 1 );
+            model.put ( "artifact", artifact.get () );
+
+            return new ModelAndView ( "artifact/view", model );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
@@ -496,9 +548,10 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/clear", method = RequestMethod.GET )
     public ModelAndView clear ( @PathVariable ( "channelId" ) final String channelId)
     {
-        this.service.clearChannel ( channelId );
-
-        return redirectDefaultView ( channelId, true );
+        return withChannel ( channelId, ModifiableChannel.class, channel -> {
+            channel.getContext ().clear ();
+            return redirectDefaultView ( channelId, true );
+        } );
     }
 
     protected ModelAndView redirectDefaultView ( final String channelId, final boolean force )
@@ -533,25 +586,33 @@ public class ChannelController implements InterfaceExtender
         return groups;
     }
 
+    protected <T> ModelAndView withChannel ( final String channelId, final Class<T> clazz, final ChannelOperation<ModelAndView, T> operation )
+    {
+        try
+        {
+            return this.channelService.access ( By.id ( channelId ), clazz, operation );
+        }
+        catch ( final ChannelNotFoundException e )
+        {
+            return CommonController.createNotFound ( "channel", channelId );
+        }
+    }
+
     @RequestMapping ( "/channel/{channelId}/help/p2" )
     @Secured ( false )
     @HttpConstraint ( PERMIT )
     public ModelAndView helpP2 ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
 
-        model.put ( "channel", channel );
-        model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
+            model.put ( "p2Active", channel.hasAspect ( "p2.repo" ) );
 
-        model.put ( "p2Active", channel.hasAspect ( "p2.repo" ) );
-
-        return new ModelAndView ( "channel/help/p2", model );
+            return new ModelAndView ( "channel/help/p2", model );
+        } );
     }
 
     @RequestMapping ( "/channel/{channelId}/help/api" )
@@ -559,31 +620,28 @@ public class ChannelController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView helpApi ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
 
-        model.put ( "channel", channel );
-        model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
+            final String exampleKey;
+            if ( request.isUserInRole ( "MANAGER" ) )
+            {
+                //FIXME:  exampleKey = channel.getDeployGroups ().stream ().flatMap ( dg -> dg.getKeys ().stream () ).map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
+                exampleKey = DEFAULT_EXAMPLE_KEY;
+            }
+            else
+            {
+                exampleKey = DEFAULT_EXAMPLE_KEY;
+            }
 
-        final String exampleKey;
-        if ( request.isUserInRole ( "MANAGER" ) )
-        {
-            exampleKey = channel.getDeployGroups ().stream ().flatMap ( dg -> dg.getKeys ().stream () ).map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
-        }
-        else
-        {
-            exampleKey = DEFAULT_EXAMPLE_KEY;
-        }
+            model.put ( "exampleKey", exampleKey );
+            model.put ( "exampleSitePrefix", makeCredentialsPrefix ( this.sitePrefix.getSitePrefix (), "deploy", exampleKey ) );
 
-        model.put ( "exampleKey", exampleKey );
-        model.put ( "exampleSitePrefix", makeCredentialsPrefix ( this.sitePrefix.getSitePrefix (), "deploy", exampleKey ) );
-
-        return new ModelAndView ( "channel/help/api", model );
+            return new ModelAndView ( "channel/help/api", model );
+        } );
     }
 
     private String makeCredentialsPrefix ( final String sitePrefix, final String name, final String password )
@@ -632,64 +690,57 @@ public class ChannelController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView aspects ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
 
-        final ModelAndView model = new ModelAndView ( "channel/aspects" );
+            final ModelAndView model = new ModelAndView ( "channel/aspects" );
 
-        final ChannelAspectProcessor aspects = Activator.getAspects ();
-        final Collection<GroupInformation> groups = aspects.getGroups ();
+            final ChannelAspectProcessor aspects = Activator.getAspects ();
+            final Collection<GroupInformation> groups = aspects.getGroups ();
 
-        model.put ( "channel", channel );
+            model.put ( "channel", channel.getInformation () );
 
-        final Set<String> assigned = channel.getAspectIds ();
+            final Set<String> assigned = channel.getInformation ().getAspectStates ().keySet ();
 
-        final List<AspectInformation> allAspects = AspectInformation.resolve ( groups, aspects.getAspectInformations ().values () );
+            final List<AspectInformation> allAspects = AspectInformation.resolve ( groups, aspects.getAspectInformations ().values () );
 
-        final List<AspectInformation> assignedAspects = AspectInformation.filterIds ( allAspects, ( id ) -> assigned.contains ( id ) );
-        model.put ( "assignedAspects", assignedAspects );
+            final List<AspectInformation> assignedAspects = AspectInformation.filterIds ( allAspects, ( id ) -> assigned.contains ( id ) );
+            model.put ( "assignedAspects", assignedAspects );
 
-        model.put ( "groupedAssignedAspects", AspectInformation.group ( assignedAspects ) );
+            model.put ( "groupedAssignedAspects", AspectInformation.group ( assignedAspects ) );
 
-        model.put ( "addAspects", AspectInformation.group ( AspectInformation.filterIds ( allAspects, ( id ) -> !assigned.contains ( id ) ) ) );
+            model.put ( "addAspects", AspectInformation.group ( AspectInformation.filterIds ( allAspects, ( id ) -> !assigned.contains ( id ) ) ) );
 
-        final Map<String, String> nameMap = new HashMap<> ();
-        for ( final AspectInformation ai : allAspects )
-        {
-            nameMap.put ( ai.getFactoryId (), ai.getName () );
-        }
+            final Map<String, String> nameMap = new HashMap<> ();
+            for ( final AspectInformation ai : allAspects )
+            {
+                nameMap.put ( ai.getFactoryId (), ai.getName () );
+            }
 
-        model.put ( "nameMapJson", new GsonBuilder ().create ().toJson ( nameMap ) );
+            model.put ( "nameMapJson", new GsonBuilder ().create ().toJson ( nameMap ) );
 
-        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
+            model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), Breadcrumbs.create ( "Channel", ChannelController.class, "view", "channelId", channelId ), new Entry ( "Aspects" ) ) );
 
-        return model;
+            return model;
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/viewAspectVersions", method = RequestMethod.GET )
     public ModelAndView viewAspectVersions ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+            final Map<String, String> states = channel.getInformation ().getAspectStates ();
 
-        final Map<String, String> states = channel.getAspectStates ();
+            final List<ChannelAspectInformation> aspects = Activator.getAspects ().resolve ( states.keySet () );
+            Collections.sort ( aspects, ChannelAspectInformation.NAME_COMPARATOR );
 
-        final Map<String, Object> model = new HashMap<> ( 3 );
+            final Map<String, Object> model = new HashMap<> ( 3 );
 
-        final List<ChannelAspectInformation> aspects = channel.getAspects ();
-        Collections.sort ( aspects, ChannelAspectInformation.NAME_COMPARATOR );
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "states", states );
+            model.put ( "aspects", aspects );
 
-        model.put ( "channel", channel );
-        model.put ( "states", states );
-        model.put ( "aspects", aspects );
-
-        return new ModelAndView ( "channel/viewAspectVersions", model );
+            return new ModelAndView ( "channel/viewAspectVersions", model );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/lock", method = RequestMethod.GET )
@@ -729,36 +780,46 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/addAspect", method = RequestMethod.POST )
     public ModelAndView addAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
-        this.service.addChannelAspect ( channelId, aspectFactoryId, false );
-        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        return withChannel ( channelId, AspectableChannel.class, channel -> {
+            channel.addAspects ( false, aspectFactoryId );
+            return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/addAspectWithDependencies", method = RequestMethod.POST )
     public ModelAndView addAspectWithDependencies ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
-        this.service.addChannelAspect ( channelId, aspectFactoryId, true );
-        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        return withChannel ( channelId, AspectableChannel.class, channel -> {
+            channel.addAspects ( true, aspectFactoryId );
+            return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeAspect", method = RequestMethod.POST )
     public ModelAndView removeAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
-        this.service.removeChannelAspect ( channelId, aspectFactoryId );
-        return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        return withChannel ( channelId, AspectableChannel.class, channel -> {
+            channel.removeAspects ( aspectFactoryId );
+            return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAspect", method = RequestMethod.POST )
     public ModelAndView refreshAspect ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "aspect" ) final String aspectFactoryId)
     {
-        this.service.refreshChannelAspect ( channelId, aspectFactoryId );
-        return new ModelAndView ( String.format ( "referer:/channel/" + channelId + "/aspects", channelId ) );
+        return withChannel ( channelId, AspectableChannel.class, channel -> {
+            channel.refreshAspects ( aspectFactoryId );
+            return new ModelAndView ( String.format ( "redirect:aspects", channelId ) );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/refreshAllAspects", method = RequestMethod.GET )
     public ModelAndView refreshAllAspects ( @PathVariable ( "channelId" ) final String channelId, final HttpServletRequest request)
     {
-        this.service.refreshAllChannelAspects ( channelId );
-        return redirectDefaultView ( channelId, false );
+        return withChannel ( channelId, AspectableChannel.class, channel -> {
+            channel.refreshAspects ();
+            return redirectDefaultView ( channelId, false );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.GET )
@@ -817,45 +878,35 @@ public class ChannelController implements InterfaceExtender
     @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
     public ModelAndView viewCache ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "cacheEntries", channel.getCacheEntries ().values () );
 
-        model.put ( "channel", channel );
-        model.put ( "cacheEntries", channel.getAllCacheEntries () );
-
-        return new ModelAndView ( "channel/viewCache", model );
+            return new ModelAndView ( "channel/viewCache", model );
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/viewCacheEntry", method = RequestMethod.GET )
     @HttpConstraint ( rolesAllowed = { "MANAGER", "ADMIN" } )
     public ModelAndView viewCacheEntry ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "namespace" ) final String namespace, @RequestParameter ( "key" ) final String key, final HttpServletResponse response)
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), entry -> {
+                response.setContentLengthLong ( entry.getSize () );
+                response.setContentType ( entry.getMimeType () );
+                response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( entry.getName (), "UTF-8" ) ) );
+                // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", entry.getName () ) );
+                ByteStreams.copy ( entry.getStream (), response.getOutputStream () );
+            } ) )
+            {
+                return CommonController.createNotFound ( "channel cache entry", String.format ( "%s:%s", namespace, key ) );
+            }
 
-        model.put ( "channel", channel );
-
-        if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), ( cacheEntry ) -> {
-            response.setContentLengthLong ( cacheEntry.getSize () );
-            response.setContentType ( cacheEntry.getMimeType () );
-            response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( cacheEntry.getName (), "UTF-8" ) ) );
-            // response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", info.getName () ) );
-            ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
-        } ) )
-        {
-            return CommonController.createNotFound ( "channel cache entry", String.format ( "%s:%s", namespace, key ) );
-        }
-        return null;
+            return null;
+        } );
     }
 
     @Override
@@ -907,6 +958,27 @@ public class ChannelController implements InterfaceExtender
                 result.add ( new MenuEntry ( "Create Channel", 120, LinkTarget.createFromController ( ChannelController.class, "createWithRecipe" ), Modifier.PRIMARY, null ) );
                 result.add ( new MenuEntry ( "Maintenance", 160, "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
                 result.add ( new MenuEntry ( "Maintenance", 160, "Export all channels", 300, LinkTarget.createFromController ( ChannelController.class, "exportAll" ), Modifier.DEFAULT, "export" ) );
+            }
+
+            return result;
+        }
+        else if ( object instanceof de.dentrassi.pm.storage.channel.ChannelArtifactInformation )
+        {
+            final ChannelArtifactInformation ai = (ChannelArtifactInformation)object;
+
+            final List<MenuEntry> result = new LinkedList<> ();
+
+            final Map<String, Object> model = new HashMap<> ( 2 );
+            model.put ( "channelId", ai.getChannelId ().getId () );
+            model.put ( "artifactId", ai.getId () );
+
+            if ( request.isUserInRole ( "MANAGER" ) )
+            {
+                if ( ai.is ( "stored" ) )
+                {
+                    result.add ( new MenuEntry ( "Attach Artifact", 200, LinkTarget.createFromController ( ChannelController.class, "attachArtifact" ).expand ( model ), Modifier.PRIMARY, null ) );
+                    result.add ( new MenuEntry ( "Delete", 1000, LinkTarget.createFromController ( ChannelController.class, "deleteArtifact" ).expand ( model ), Modifier.DANGER, "trash" ) );
+                }
             }
 
             return result;
@@ -1099,6 +1171,52 @@ public class ChannelController implements InterfaceExtender
         {
             return EXPORT_ALL_PATTERN.format ( new Object[] { new Date () } );
         }
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifact/{artifactId}/attach", method = RequestMethod.GET )
+    public ModelAndView attachArtifact ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId)
+    {
+        return withChannel ( channelId, ReadableChannel.class, channel -> {
+            final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );
+            if ( !artifact.isPresent () )
+            {
+                return CommonController.createNotFound ( "artifact", artifactId );
+            }
+
+            return new ModelAndView ( "/artifact/attach", "artifact", artifact.get () );
+        } );
+    }
+
+    @RequestMapping ( value = "/channel/{channelId}/artifact/{artifactId}/attach", method = RequestMethod.POST )
+    public ModelAndView attachArtifactPost ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId, @RequestParameter (
+            required = false, value = "name" ) final String name, final @RequestParameter ( "file" ) Part file)
+    {
+        return withChannel ( channelId, ModifiableChannel.class, channel -> {
+
+            String targetName = name;
+
+            final Optional<ChannelArtifactInformation> parentArtifact = channel.getArtifact ( artifactId );
+            if ( !parentArtifact.isPresent () )
+            {
+                return CommonController.createNotFound ( "artifact", artifactId );
+            }
+
+            try
+            {
+                if ( targetName == null || targetName.isEmpty () )
+                {
+                    targetName = file.getSubmittedFileName ();
+                }
+
+                channel.getContext ().createArtifact ( artifactId, file.getInputStream (), targetName, null );
+            }
+            catch ( final IOException e )
+            {
+                return new ModelAndView ( "/error/upload" );
+            }
+
+            return new ModelAndView ( "redirect:/channel/" + UrlEscapers.urlPathSegmentEscaper ().escape ( channelId ) + "/view" );
+        } );
     }
 
 }

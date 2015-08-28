@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.apm.blob;
+package de.dentrassi.pm.storage.channel.apm.store;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -82,7 +82,7 @@ public class BlobStore implements Closeable
             testDone ();
             this.done = true;
 
-            handleCommit ( this, this.deleted );
+            handleCommit ( this, this.deleted, this.added );
         }
 
         @Override
@@ -173,7 +173,7 @@ public class BlobStore implements Closeable
 
         Files.createDirectories ( path.getParent () );
 
-        try ( CountingOutputStream stream = new CountingOutputStream ( new BufferedOutputStream ( Files.newOutputStream ( path ) ) ) )
+        try ( CountingOutputStream stream = new CountingOutputStream ( new BufferedOutputStream ( Files.newOutputStream ( path, StandardOpenOption.CREATE_NEW ) ) ) )
         {
             consumer.accept ( stream );
             return stream.getCount ();
@@ -203,8 +203,9 @@ public class BlobStore implements Closeable
     {
         final Path path = makeDataPath ( id );
 
-        try ( InputStream stream = new BufferedInputStream ( Files.newInputStream ( path, StandardOpenOption.CREATE_NEW ) ) )
+        try ( InputStream stream = new BufferedInputStream ( Files.newInputStream ( path, StandardOpenOption.READ ) ) )
         {
+            consumer.accept ( stream );
             return true;
         }
         catch ( final NoSuchFileException e )
@@ -224,7 +225,7 @@ public class BlobStore implements Closeable
         throw new IllegalStateException ( "Transaction already in progress" );
     }
 
-    protected synchronized void handleCommit ( final Transaction transaction, final Set<String> deleted )
+    protected synchronized void handleCommit ( final Transaction transaction, final Set<String> deleted, final Set<String> added )
     {
         if ( this.transaction != transaction )
         {
@@ -236,6 +237,7 @@ public class BlobStore implements Closeable
         {
             final Set<String> index = new HashSet<> ( this.currentIndex );
             index.removeAll ( deleted );
+            index.addAll ( added );
 
             writeIndex ( index );
 

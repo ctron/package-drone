@@ -7,7 +7,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://dentrassi.de/pm" prefix="pm" %>
 
-<h:main title="Artifact" subtitle="${fn:escapeXml(artifact.information.name) } (${fn:escapeXml(artifact.id) })">
+<h:main title="Artifact" subtitle="${fn:escapeXml(artifact.name) } (${fn:escapeXml(artifact.id) })">
 
 <h:buttonbar menu="${menuManager.getActions(artifact) }" />
 
@@ -28,8 +28,8 @@
 		<div class="row">
 		    <div class="col-xs-6">
 		        <h3 class="details-heading">
-		           ${fn:escapeXml(artifact.information.name) }
-	                    <c:forEach var="value" items="${pm:metadata(artifact.information.metaData,null,'artifactLabel') }">
+		           ${fn:escapeXml(artifact.name) }
+	                    <c:forEach var="value" items="${pm:metadata(artifact.metaData,null,'artifactLabel') }">
 	                        <small><span class="label label-info">${fn:escapeXml(value) }</span></small>
 	                    </c:forEach>
 		        </h3>
@@ -40,7 +40,7 @@
 		            
 		            <dt>Facets</dt>
 		            <dd>
-		                <c:forEach var="i" items="${artifact.information.facets }"><span class="label label-default">${fn:escapeXml(i) }</span> </c:forEach>
+		                <c:forEach var="i" items="${artifact.facets }"><span class="label label-default">${fn:escapeXml(i) }</span> </c:forEach>
 		            </dd>
 		            
 		        </dl>
@@ -53,7 +53,7 @@
 <%-- META DATA --%>
 
 <div role="tabpanel" class="tab-pane" id="md">
-<h:metaDataTable metaData="${artifact.information.metaData }"/>
+<h:metaDataTable metaData="${artifact.metaData }"/>
 </div>
 
 <%-- VALIDATION --%>
@@ -69,14 +69,14 @@
 <div role="tabpanel" class="tab-pane" id="relations">
 <dl class="dl-horizontal">
 
-<c:if test="${not empty artifact.information.parentId }">
-<dt>Parent<dt><dd><a href="<c:url value="/artifact/${artifact.information.parentId }/view"/>">${ artifact.information.parentId }</a></dd>
+<c:if test="${not empty artifact.parentId }">
+<dt>Parent<dt><dd><a href="<c:url value="/artifact/${artifact.parentId }/view"/>">${ artifact.parentId }</a></dd>
 </c:if>
 
-<c:if test="${not empty artifact.information.childIds }">
+<c:if test="${not empty artifact.childIds }">
 <dt>Children<dt><dd>
     <ul>
-        <c:forEach var="child" items="${artifact.information.childIds }">
+        <c:forEach var="child" items="${artifact.childIds }">
           <li><a href="<c:url value="/artifact/${child }/view"/>">${ child }</a></li>
         </c:forEach>
     </ul>

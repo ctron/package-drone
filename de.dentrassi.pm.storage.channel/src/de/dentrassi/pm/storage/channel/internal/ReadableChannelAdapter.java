@@ -17,7 +17,7 @@ public class ReadableChannelAdapter implements ReadableChannel
     }
 
     @Override
-    public ChannelId getDescriptor ()
+    public ChannelId getId ()
     {
         return this.descriptor;
     }
@@ -27,5 +27,4 @@ public class ReadableChannelAdapter implements ReadableChannel
     {
         return this.context;
     }
-
 }

@@ -47,17 +47,17 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
 </thead>
 
 <tbody>
-<c:forEach items="${sortedArtifacts }" var="artifact">
+<c:forEach items="${ sortedArtifacts }" var="artifact">
     <tr id="row-${artifact.id }" class="${storage:severityWithDefault(artifact.getOverallValidationState(), '') }">
-        <td>${fn:escapeXml(artifact.name) }</td>
+        <td>${ fn:escapeXml(artifact.name) }</td>
         <td class="text-right"><web:bytes amount="${ artifact.size}"/></td>
         <td style="white-space: nowrap;"><fmt:formatDate value="${artifact.creationTimestamp }" type="both" /> </td>
-        <td><a href="<c:url value="/artifact/${artifact.id}/get"/>">Download</a></td>
+        <td><a href="<c:url value="/channel/${ fn:escapeXml(channel.id) }/artifacts/${ fn:escapeXml(artifact.id) }/get"/>">Download</a></td>
         <td>
-          <c:if test='${artifact.is("deletable") and manager}'><a href="<c:url value="/artifact/${artifact.id}/delete"/>">Delete</a></c:if>
+          <c:if test='${artifact.is("deletable") and manager}'><a href="<c:url value="/channel/${ fn:escapeXml(channel.id) }/artifacts/${ fn:escapeXml(artifact.id) }/delete"/>">Delete</a></c:if>
         </td>
-        <td><a href="<c:url value="/artifact/${artifact.id}/view"/>">Details</a></td>
-        <td><a href="<c:url value="/artifact/${artifact.id}/dump"/>">View</a></td>
+        <td><a href="<c:url value="/channel/${ fn:escapeXml(channel.id) }/artifacts/${ fn:escapeXml(artifact.id) }/view"/>">Details</a></td>
+        <td><a href="<c:url value="/channel/${ fn:escapeXml(channel.id) }/artifacts/${ fn:escapeXml(artifact.id) }/dump"/>">View</a></td>
     </tr>
 </c:forEach>
 </tbody>

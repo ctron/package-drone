@@ -3,7 +3,6 @@ package de.dentrassi.pm.storage.channel.apm;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,10 +20,17 @@ public class ChannelModel
 
     private final Map<String, ArtifactModel> artifacts;
 
+    private final Map<MetaKey, CacheEntryModel> cacheEntries;
+
+    private final AspectMapModel aspects;
+
     public ChannelModel ()
     {
         this.metaData = new HashMap<> ();
         this.artifacts = new HashMap<> ();
+        this.cacheEntries = new HashMap<> ();
+
+        this.aspects = new AspectMapModel ();
     }
 
     public ChannelModel ( final ChannelModel other )
@@ -34,7 +40,13 @@ public class ChannelModel
         this.locked = other.locked;
 
         this.metaData = new HashMap<> ( other.metaData );
+
+        // copy by ctor
+
         this.artifacts = other.artifacts.entrySet ().stream ().collect ( toMap ( Entry::getKey, entry -> new ArtifactModel ( entry.getValue () ) ) );
+        this.cacheEntries = other.cacheEntries.entrySet ().stream ().collect ( toMap ( Entry::getKey, entry -> new CacheEntryModel ( entry.getValue () ) ) );
+
+        this.aspects = new AspectMapModel ( other.aspects );
     }
 
     public void setDescription ( final String description )
@@ -69,11 +81,12 @@ public class ChannelModel
 
     public void addArtifact ( final ArtifactInformation ai )
     {
-        final ArtifactModel art = new ArtifactModel ();
-        art.setName ( ai.getName () );
-        art.setSize ( ai.getSize () );
-        art.setDate ( new Date ( ai.getCreationInstant ().toEpochMilli () ) );
-        this.artifacts.put ( ai.getId (), art );
+        this.artifacts.put ( ai.getId (), ArtifactModel.fromInformation ( ai ) );
+    }
+
+    public void removeArtifact ( final String artifactId )
+    {
+        this.artifacts.remove ( artifactId );
     }
 
     public Map<String, ArtifactModel> getArtifacts ()
@@ -81,4 +94,13 @@ public class ChannelModel
         return Collections.unmodifiableMap ( this.artifacts );
     }
 
+    public AspectMapModel getAspects ()
+    {
+        return this.aspects;
+    }
+
+    public Map<MetaKey, CacheEntryModel> getCacheEntries ()
+    {
+        return this.cacheEntries;
+    }
 }

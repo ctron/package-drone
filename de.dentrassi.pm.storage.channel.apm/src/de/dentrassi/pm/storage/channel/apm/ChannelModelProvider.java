@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,10 @@ import com.google.gson.LongSerializationPolicy;
 import de.dentrassi.pm.apm.AbstractSimpleStorageModelProvider;
 import de.dentrassi.pm.apm.StorageContext;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.channel.apm.blob.BlobStore;
-import de.dentrassi.pm.storage.channel.apm.blob.BlobStore.Transaction;
+import de.dentrassi.pm.storage.channel.apm.internal.Finally;
+import de.dentrassi.pm.storage.channel.apm.store.BlobStore;
+import de.dentrassi.pm.storage.channel.apm.store.BlobStore.Transaction;
+import de.dentrassi.pm.storage.channel.apm.store.CacheStore;
 import de.dentrassi.pm.storage.channel.provider.AccessContext;
 
 public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<AccessContext, ModifyContextImpl>
@@ -34,6 +37,8 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     private final String channelId;
 
     private BlobStore store;
+
+    private CacheStore cacheStore;
 
     public ChannelModelProvider ( final String channelId )
     {
@@ -46,6 +51,7 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     public void start ( final StorageContext context ) throws Exception
     {
         this.store = new BlobStore ( makeBasePath ( context, this.channelId ).resolve ( "blobs" ) );
+        this.cacheStore = new CacheStore ( makeBasePath ( context, this.channelId ).resolve ( "cache" ) );
         super.start ( context );
     }
 
@@ -54,6 +60,7 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     {
         super.stop ();
         this.store.close ();
+        this.cacheStore.close ();
     }
 
     @Override
@@ -85,6 +92,7 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         builder.setPrettyPrinting ();
         builder.serializeNulls ();
         builder.setLongSerializationPolicy ( LongSerializationPolicy.STRING );
+        builder.setDateFormat ( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
         builder.registerTypeAdapter ( MetaKey.class, new JsonDeserializer<MetaKey> () {
 
             @Override
@@ -100,23 +108,54 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     @Override
     protected void persistWriteModel ( final StorageContext context, final ModifyContextImpl writeModel ) throws Exception
     {
-        Transaction t = writeModel.claimTransaction ();
+        final AtomicReference<Transaction> t = new AtomicReference<> ( writeModel.claimTransaction () );
+        final AtomicReference<CacheStore.Transaction> ct = new AtomicReference<> ( writeModel.claimCacheTransaction () );
+
+        final Finally f = new Finally ();
+
+        f.add ( () -> {
+            final Transaction v = t.get ();
+            if ( v != null )
+            {
+                v.rollback ();
+            }
+        } );
+
+        f.add ( () -> {
+            final CacheStore.Transaction v = ct.get ();
+            if ( v != null )
+            {
+                v.rollback ();
+            }
+        } );
 
         try
         {
             final Path path = makeStatePath ( context, this.channelId );
             Files.createDirectories ( path.getParent () );
 
-            if ( t != null )
+            // commit blob store
+
+            if ( t.get () != null )
             {
-                t.commit ();
-                t = null;
+                t.get ().commit ();
+                t.set ( null );
             }
+
+            // write model
 
             try ( Writer writer = Files.newBufferedWriter ( path, StandardCharsets.UTF_8 ) )
             {
                 final Gson gson = createGson ();
                 gson.toJson ( writeModel.getModel (), writer );
+            }
+
+            // commit cache store
+
+            if ( ct.get () != null )
+            {
+                ct.get ().commit ();
+                ct.set ( null );
             }
         }
         catch ( final Exception e )
@@ -126,10 +165,7 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         }
         finally
         {
-            if ( t != null )
-            {
-                t.rollback ();
-            }
+            f.runAll ();
         }
     }
 
@@ -142,12 +178,17 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         {
             final Gson gson = createGson ();
             final ChannelModel model = gson.fromJson ( reader, ChannelModel.class );
-            return new ModifyContextImpl ( this.store, model );
+            if ( model == null )
+            {
+                // FIXME: handle broken channel state
+                throw new IllegalStateException ( "Unable to load channel model" );
+            }
+            return new ModifyContextImpl ( this.store, this.cacheStore, model );
         }
         catch ( final NoSuchFileException e )
         {
             // create a new model
-            return new ModifyContextImpl ( this.store, new ChannelModel () );
+            return new ModifyContextImpl ( this.store, this.cacheStore, new ChannelModel () );
         }
     }
 

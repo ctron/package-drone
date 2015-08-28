@@ -61,7 +61,7 @@ public interface ChannelService
 
         public static By nameOrId ( final String nameOrId )
         {
-            return new By ( Type.COMPOSITE, new Object[] { id ( nameOrId ), name ( nameOrId ) } );
+            return new By ( Type.COMPOSITE, new By[] { id ( nameOrId ), name ( nameOrId ) } );
         }
     }
 
@@ -75,8 +75,21 @@ public interface ChannelService
 
     public boolean delete ( By by );
 
+    /**
+     * @param by
+     * @param clazz
+     * @param operation
+     * @return
+     * @throws ChannelNotFoundException
+     */
     public <R, T> R access ( By by, Class<T> clazz, ChannelOperation<R, T> operation );
 
+    /**
+     * @param by
+     * @param clazz
+     * @param operation
+     * @throws ChannelNotFoundException
+     */
     public default <T> void access ( final By by, final Class<T> clazz, final ChannelOperationVoid<T> operation )
     {
         access ( by, clazz, channel -> {

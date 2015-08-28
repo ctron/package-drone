@@ -9,17 +9,15 @@
 
 <h:main title="Aspect states" subtitle="${pm:channel(channel) }">
 
-<h:buttonbar>
-    <jsp:attribute name="before">
-        <div class="btn-group" role="group"><a class="btn btn-default" href="view">Cancel</a></div>
-    </jsp:attribute>
-    
+<h:buttonbar menu="${menuManager.getActions(channel) }">
     <jsp:attribute name="after">
         <div class="btn-group" role="group">
             <a href="<c:url value="/channel/${channel.id }/refreshAllAspects"/>" role="button" class="btn btn-success"><span class="glyphicon glyphicon-refresh"></span> Refresh aspects</a>
         </div>
     </jsp:attribute>
 </h:buttonbar>
+
+<h:nav menu="${menuManager.getViews(channel) }"/>
 
 <div class="table-responsive">
 

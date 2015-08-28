@@ -2,6 +2,7 @@ package de.dentrassi.pm.storage.channel.provider;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
@@ -19,5 +20,16 @@ public interface ModifyContext extends AccessContext
 
     public ArtifactInformation createArtifact ( InputStream source, String name, Map<MetaKey, String> providedMetaData );
 
+    public ArtifactInformation createArtifact ( String parentId, InputStream source, String name, Map<MetaKey, String> providedMetaData );
+
     public boolean deleteArtifact ( String id );
+
+    public void clear ();
+
+    public void addAspects ( Set<String> aspectIds );
+
+    public void removeAspects ( Set<String> aspectIds );
+
+    public void refreshAspects ( Set<String> aspectIds );
+
 }

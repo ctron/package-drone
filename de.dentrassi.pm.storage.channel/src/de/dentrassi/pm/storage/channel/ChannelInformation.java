@@ -11,16 +11,20 @@ public class ChannelInformation extends ChannelId
 
     private final SortedMap<MetaKey, String> metaData;
 
-    public ChannelInformation ( final ChannelId id, final ChannelState state, final SortedMap<MetaKey, String> metaData )
+    private final SortedMap<String, String> aspectStates;
+
+    public ChannelInformation ( final ChannelId id, final ChannelState state, final SortedMap<MetaKey, String> metaData, final SortedMap<String, String> aspectStates )
     {
-        this ( id.getId (), id.getName (), state, metaData );
+        this ( id.getId (), id.getName (), state, metaData, aspectStates );
     }
 
-    private ChannelInformation ( final String id, final String name, final ChannelState state, final SortedMap<MetaKey, String> metaData )
+    private ChannelInformation ( final String id, final String name, final ChannelState state, final SortedMap<MetaKey, String> metaData, final SortedMap<String, String> aspectStates )
     {
         super ( id, name );
+
         this.state = state;
         this.metaData = Collections.unmodifiableSortedMap ( metaData );
+        this.aspectStates = Collections.unmodifiableSortedMap ( aspectStates );
     }
 
     public ChannelState getState ()
@@ -43,4 +47,8 @@ public class ChannelInformation extends ChannelId
         return getMetaData ( new MetaKey ( namespace, key ) );
     }
 
+    public SortedMap<String, String> getAspectStates ()
+    {
+        return this.aspectStates;
+    }
 }

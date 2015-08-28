@@ -1,15 +1,31 @@
 package de.dentrassi.pm.storage.channel;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
+
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import de.dentrassi.pm.common.Validated;
+import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
 
 public class ArtifactInformation implements Comparable<ArtifactInformation>, Validated
 {
     private final String id;
+
+    private final String parentId;
+
+    private final Set<String> childIds;
 
     private final String name;
 
@@ -17,25 +33,85 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
 
     private final Instant creationTimestamp;
 
-    private final Set<String> types;
+    private final Set<String> facets;
 
-    public ArtifactInformation ( final String id, final String name, final long size, final Instant creationTimestamp, final Set<String> types )
+    private final List<ValidationMessage> messages;
+
+    private final Map<MetaKey, String> providedMetaData;
+
+    private final Map<MetaKey, String> extractedMetaData;
+
+    private final Map<MetaKey, String> metaData;
+
+    public ArtifactInformation ( final String id, final String parentId, final Set<String> childIds, final String name, final long size, final Instant creationTimestamp, final Set<String> facets, final List<ValidationMessage> messages, final Map<MetaKey, String> providedMetaData, final Map<MetaKey, String> extractedMetaData )
     {
         this.id = id;
+
+        this.parentId = parentId;
+        this.childIds = childIds != null ? unmodifiableSet ( new CopyOnWriteArraySet<> ( childIds ) ) : Collections.emptySet ();
+
         this.name = name;
         this.size = size;
         this.creationTimestamp = creationTimestamp;
-        this.types = new CopyOnWriteArraySet<> ( types );
+        this.facets = unmodifiableSet ( new CopyOnWriteArraySet<> ( facets ) );
+
+        this.messages = unmodifiableList ( new CopyOnWriteArrayList<> ( messages ) );
+
+        this.providedMetaData = providedMetaData != null ? unmodifiableMap ( new HashMap<> ( providedMetaData ) ) : emptyMap ();
+        this.extractedMetaData = extractedMetaData != null ? unmodifiableMap ( new HashMap<> ( extractedMetaData ) ) : emptyMap ();
+
+        this.metaData = MetaKeys.union ( providedMetaData, extractedMetaData );
+    }
+
+    protected ArtifactInformation ( final ArtifactInformation other )
+    {
+        this.id = other.id;
+
+        this.parentId = other.parentId;
+        this.childIds = other.childIds;
+
+        this.name = other.name;
+        this.size = other.size;
+        this.creationTimestamp = other.creationTimestamp;
+        this.facets = other.facets;
+
+        this.messages = other.messages;
+
+        this.providedMetaData = other.providedMetaData;
+        this.extractedMetaData = other.extractedMetaData;
+
+        this.metaData = other.metaData;
     }
 
     public boolean is ( final String type )
     {
-        return this.types.contains ( type );
+        if ( "deletable".equals ( type ) )
+        {
+            // FIXME: remove debug code
+            return true;
+        }
+
+        return this.facets.contains ( type );
+    }
+
+    public Set<String> getFacets ()
+    {
+        return this.facets;
     }
 
     public String getId ()
     {
         return this.id;
+    }
+
+    public String getParentId ()
+    {
+        return this.parentId;
+    }
+
+    public Set<String> getChildIds ()
+    {
+        return this.childIds;
     }
 
     public String getName ()
@@ -56,6 +132,21 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
     public Date getCreationTimestamp ()
     {
         return new Date ( this.creationTimestamp.toEpochMilli () );
+    }
+
+    public Map<MetaKey, String> getMetaData ()
+    {
+        return this.metaData;
+    }
+
+    public Map<MetaKey, String> getExtractedMetaData ()
+    {
+        return this.extractedMetaData;
+    }
+
+    public Map<MetaKey, String> getProvidedMetaData ()
+    {
+        return this.providedMetaData;
     }
 
     @Override
@@ -104,17 +195,8 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
     }
 
     @Override
-    public long getValidationErrorCount ()
+    public Collection<ValidationMessage> getValidationMessages ()
     {
-        // FIXME: implement
-        return 0;
+        return this.messages;
     }
-
-    @Override
-    public long getValidationWarningCount ()
-    {
-        // FIXME: implement
-        return 0;
-    }
-
 }

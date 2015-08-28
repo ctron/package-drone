@@ -11,12 +11,12 @@
 package de.dentrassi.pm.aspect.recipe;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.AspectableChannel;
 
 /**
  * A recipe which will initially configure a channel
  */
 public interface Recipe
 {
-    public LinkTarget setup ( Channel channel );
+    public LinkTarget setup ( String channelId, AspectableChannel channel );
 }

@@ -15,17 +15,17 @@ import java.util.Map;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.aspect.recipe.Recipe;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.AspectableChannel;
 
 public class AptRecipe implements Recipe
 {
     @Override
-    public LinkTarget setup ( final Channel channel )
+    public LinkTarget setup ( final String channelId, final AspectableChannel channel )
     {
         channel.addAspects ( true, "apt", "deb" );
 
         final Map<String, Object> model = new HashMap<> ( 1 );
-        model.put ( "channelId", channel.getId () );
+        model.put ( "channelId", channelId );
         return LinkTarget.createFromController ( ConfigController.class, "edit" ).expand ( model );
     }
 }

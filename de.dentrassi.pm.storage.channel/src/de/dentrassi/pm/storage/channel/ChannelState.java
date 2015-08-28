@@ -1,6 +1,9 @@
 package de.dentrassi.pm.storage.channel;
 
-import de.dentrassi.pm.common.Validated;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChannelState implements Validated
 {
@@ -8,11 +11,9 @@ public class ChannelState implements Validated
 
     private long numberOfArtifacts;
 
-    private long warningCount;
-
-    private long errorCount;
-
     private boolean locked;
+
+    private List<ValidationMessage> messages = Collections.emptyList ();
 
     private ChannelState ()
     {
@@ -20,13 +21,9 @@ public class ChannelState implements Validated
 
     private ChannelState ( final ChannelState other )
     {
+        this.messages = other.messages;
         this.description = other.description;
-
         this.numberOfArtifacts = other.numberOfArtifacts;
-
-        this.warningCount = other.warningCount;
-        this.errorCount = other.errorCount;
-
         this.locked = other.locked;
     }
 
@@ -40,21 +37,15 @@ public class ChannelState implements Validated
         return this.numberOfArtifacts;
     }
 
-    @Override
-    public long getValidationWarningCount ()
-    {
-        return this.warningCount;
-    }
-
-    @Override
-    public long getValidationErrorCount ()
-    {
-        return this.errorCount;
-    }
-
     public boolean isLocked ()
     {
         return this.locked;
+    }
+
+    @Override
+    public Collection<ValidationMessage> getValidationMessages ()
+    {
+        return this.messages;
     }
 
     public static class Builder
@@ -99,6 +90,12 @@ public class ChannelState implements Validated
         {
             checkFork ();
             this.value.locked = locked;
+        }
+
+        public void setValidationMessages ( final List<ValidationMessage> messages )
+        {
+            checkFork ();
+            this.value.messages = Collections.unmodifiableList ( new CopyOnWriteArrayList<> ( messages ) );
         }
 
         private void checkFork ()

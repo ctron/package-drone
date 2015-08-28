@@ -11,9 +11,9 @@
 package de.dentrassi.pm.storage.web.channel;
 
 import de.dentrassi.pm.common.Severity;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public interface TreeTester
 {
-    public Severity getState ( SimpleArtifactInformation artifact );
+    public Severity getState ( ArtifactInformation artifact );
 }

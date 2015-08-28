@@ -15,16 +15,16 @@ import java.util.List;
 import java.util.Map;
 
 import de.dentrassi.pm.common.Severity;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class TreeTesterImpl implements TreeTester
 {
 
-    private final Map<String, List<SimpleArtifactInformation>> tree;
+    private final Map<String, List<ArtifactInformation>> tree;
 
     private final Map<String, Severity> cache = new HashMap<> ();
 
-    public TreeTesterImpl ( final Map<String, List<SimpleArtifactInformation>> tree )
+    public TreeTesterImpl ( final Map<String, List<ArtifactInformation>> tree )
     {
         this.tree = tree;
     }
@@ -33,7 +33,7 @@ public class TreeTesterImpl implements TreeTester
      * @see de.dentrassi.pm.storage.web.channel.TreeTester#getState(de.dentrassi.pm.common.SimpleArtifactInformation)
      */
     @Override
-    public Severity getState ( final SimpleArtifactInformation artifact )
+    public Severity getState ( final ArtifactInformation artifact )
     {
         if ( this.cache.containsKey ( artifact.getId () ) )
         {
@@ -45,7 +45,7 @@ public class TreeTesterImpl implements TreeTester
         return sev;
     }
 
-    private Severity evalSeverity ( final SimpleArtifactInformation artifact )
+    private Severity evalSeverity ( final ArtifactInformation artifact )
     {
         final Severity sev = artifact.getOverallValidationState ();
         if ( sev == Severity.ERROR )
@@ -71,9 +71,9 @@ public class TreeTesterImpl implements TreeTester
         return sev;
     }
 
-    private Severity getChildState ( final SimpleArtifactInformation artifact )
+    private Severity getChildState ( final ArtifactInformation artifact )
     {
-        final List<SimpleArtifactInformation> childs = this.tree.get ( artifact.getId () );
+        final List<ArtifactInformation> childs = this.tree.get ( artifact.getId () );
 
         if ( childs == null )
         {
@@ -82,7 +82,7 @@ public class TreeTesterImpl implements TreeTester
 
         Severity maxSev = null;
 
-        for ( final SimpleArtifactInformation child : childs )
+        for ( final ArtifactInformation child : childs )
         {
             final Severity sev = getState ( child );
             if ( sev == Severity.ERROR )

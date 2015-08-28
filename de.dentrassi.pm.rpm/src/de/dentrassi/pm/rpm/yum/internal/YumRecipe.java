@@ -12,12 +12,12 @@ package de.dentrassi.pm.rpm.yum.internal;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.aspect.recipe.Recipe;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.AspectableChannel;
 
 public class YumRecipe implements Recipe
 {
     @Override
-    public LinkTarget setup ( final Channel channel )
+    public LinkTarget setup ( final String channelId, final AspectableChannel channel )
     {
         channel.addAspects ( true, "rpm", "yum" );
         return null;

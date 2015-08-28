@@ -9,6 +9,7 @@ Import-Package: com.google.common.collect;version="18.0.0",
  de.dentrassi.osgi.utils;version="1.0.0",
  de.dentrassi.pm.apm;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
+ de.dentrassi.pm.common.utils;version="1.0.0",
  org.eclipse.scada.utils.str;version="0.2.0",
  org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker

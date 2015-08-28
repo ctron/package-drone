@@ -11,6 +11,7 @@
 package de.dentrassi.pm.common;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -231,5 +232,26 @@ public final class MetaKeys
         }
 
         findFields ( clazz.getSuperclass (), result );
+    }
+
+    public static Map<MetaKey, String> union ( final Map<MetaKey, String> providedMetaData, final Map<MetaKey, String> extractedMetaData )
+    {
+        final int size1 = providedMetaData != null ? providedMetaData.size () : 0;
+        final int size2 = extractedMetaData != null ? extractedMetaData.size () : 0;
+
+        final Map<MetaKey, String> result = new HashMap<> ( size1 + size2 );
+
+        if ( extractedMetaData != null )
+        {
+            result.putAll ( extractedMetaData );
+        }
+
+        // provided will override
+        if ( providedMetaData != null )
+        {
+            result.putAll ( providedMetaData );
+        }
+
+        return Collections.unmodifiableMap ( result );
     }
 }
