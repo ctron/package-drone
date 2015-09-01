@@ -42,8 +42,8 @@ import de.dentrassi.pm.maven.ChannelData.ArtifactNode;
 import de.dentrassi.pm.maven.ChannelData.ContentNode;
 import de.dentrassi.pm.maven.ChannelData.DirectoryNode;
 import de.dentrassi.pm.maven.ChannelData.Node;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
 public class MavenHandler
 {

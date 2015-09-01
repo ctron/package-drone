@@ -1,6 +1,7 @@
 package de.dentrassi.pm.storage.channel.internal;
 
 import static de.dentrassi.osgi.utils.Locks.lock;
+import static de.dentrassi.pm.common.utils.Splits.split;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,9 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import de.dentrassi.osgi.utils.Locks.Locked;
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
@@ -33,9 +37,13 @@ import de.dentrassi.pm.storage.channel.ChannelId;
 import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
 import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.DeployKeysChannelAdapter;
 import de.dentrassi.pm.storage.channel.DescriptorAdapter;
 import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.channel.deploy.DeployAuthService;
+import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
+import de.dentrassi.pm.storage.channel.deploy.DeployKey;
 import de.dentrassi.pm.storage.channel.provider.AccessContext;
 import de.dentrassi.pm.storage.channel.provider.Channel;
 import de.dentrassi.pm.storage.channel.provider.ChannelProvider;
@@ -43,34 +51,8 @@ import de.dentrassi.pm.storage.channel.provider.ChannelProvider.Listener;
 import de.dentrassi.pm.storage.channel.provider.ModifyContext;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
 
-public class ChannelServiceImpl implements ChannelService
+public class ChannelServiceImpl implements ChannelService, DeployAuthService
 {
-
-    public class DescriptorAdapterImpl implements DescriptorAdapter
-    {
-        @SuppressWarnings ( "unused" )
-        private final ChannelEntry channel;
-
-        private ChannelId descriptor;
-
-        public DescriptorAdapterImpl ( final ChannelEntry channel )
-        {
-            this.channel = channel;
-            this.descriptor = channel.getId ();
-        }
-
-        @Override
-        public void setName ( final String name )
-        {
-            this.descriptor = new ChannelId ( this.descriptor.getId (), name );
-        }
-
-        @Override
-        public ChannelId getDescriptor ()
-        {
-            return this.descriptor;
-        }
-    }
 
     private class Entry implements Listener
     {
@@ -112,42 +94,6 @@ public class ChannelServiceImpl implements ChannelService
 
     }
 
-    private static class ChannelEntry
-    {
-        private ChannelId id;
-
-        private final Channel channel;
-
-        private final ChannelProvider provider;
-
-        public ChannelEntry ( final ChannelId id, final Channel channel, final ChannelProvider provider )
-        {
-            this.id = id;
-            this.channel = channel;
-            this.provider = provider;
-        }
-
-        public ChannelId getId ()
-        {
-            return this.id;
-        }
-
-        public void setId ( final ChannelId descriptor )
-        {
-            this.id = descriptor;
-        }
-
-        public Channel getChannel ()
-        {
-            return this.channel;
-        }
-
-        public ChannelProvider getProvider ()
-        {
-            return this.provider;
-        }
-    }
-
     private static final MetaKey KEY_STORAGE = new MetaKey ( "channels", "service" );
 
     private final BundleContext context;
@@ -173,8 +119,14 @@ public class ChannelServiceImpl implements ChannelService
 
     };
 
+    /**
+     * Used to read-lock the channel and provider map
+     */
     private final Lock readLock;
 
+    /**
+     * Used to write-lock the channel and provider map
+     */
     private final Lock writeLock;
 
     private final ServiceTracker<ChannelProvider, Entry> tracker;
@@ -190,6 +142,11 @@ public class ChannelServiceImpl implements ChannelService
     private StorageManager manager;
 
     private StorageRegistration handle;
+
+    /**
+     * Map channel ids to deploy groups, cache
+     */
+    private final Multimap<String, DeployGroup> deployKeysMap = HashMultimap.create (); // FIXME: load from storage
 
     public ChannelServiceImpl ()
     {
@@ -247,7 +204,9 @@ public class ChannelServiceImpl implements ChannelService
 
     public void start ()
     {
-        this.handle = this.manager.registerModel ( 10_000, KEY_STORAGE, new ChannelServiceModelProvider () );
+        this.handle = this.manager.registerModel ( 1_000, KEY_STORAGE, new ChannelServiceModelProvider () );
+
+        this.manager.accessRun ( KEY_STORAGE, ChannelServiceAccess.class, ( model ) -> updateDeployGroupCache ( model ) );
 
         try ( Locked l = lock ( this.writeLock ) )
         {
@@ -322,9 +281,6 @@ public class ChannelServiceImpl implements ChannelService
 
     /**
      * Find a channel by name
-     * <p>
-     * FIXME: improve performance
-     * </p>
      *
      * @param name
      *            the channel name to look for
@@ -338,11 +294,13 @@ public class ChannelServiceImpl implements ChannelService
             return Optional.empty ();
         }
 
+        // FIXME: improve performance
+
         for ( final ChannelEntry entry : this.channelMap.values () )
         {
             if ( name.equals ( entry.getId ().getName () ) )
             {
-                Optional.of ( entry );
+                return Optional.of ( entry );
             }
         }
 
@@ -429,7 +387,7 @@ public class ChannelServiceImpl implements ChannelService
             final ChannelEntry entry = channel.get ();
 
             // explicitly delete the mapping
-            deleteMapping ( entry.getId ().getId (), entry.getId ().getName () );
+            deleteChannel ( entry.getId ().getId () );
             handleUpdate ( entry.getProvider (), null, Collections.singleton ( entry.getChannel () ) );
 
             entry.getChannel ().delete ();
@@ -450,12 +408,13 @@ public class ChannelServiceImpl implements ChannelService
         {
             return accessModify ( findChannel ( by ), (ChannelOperation<R, ModifiableChannel>)operation );
         }
+        else if ( DeployKeysChannelAdapter.class.equals ( clazz ) )
+        {
+            return handleDeployKeys ( findChannel ( by ), (ChannelOperation<R, DeployKeysChannelAdapter>)operation );
+        }
         else if ( DescriptorAdapter.class.equals ( clazz ) )
         {
-            try ( Locked l = lock ( this.writeLock ) )
-            {
-                return handleDescribe ( findChannel ( by ), (ChannelOperation<R, DescriptorAdapter>)operation );
-            }
+            return handleDescribe ( findChannel ( by ), (ChannelOperation<R, DescriptorAdapter>)operation );
         }
         else if ( AspectableChannel.class.equals ( clazz ) )
         {
@@ -490,34 +449,82 @@ public class ChannelServiceImpl implements ChannelService
         } );
     }
 
+    private <R> R handleDeployKeys ( final ChannelEntry channel, final ChannelOperation<R, DeployKeysChannelAdapter> operation )
+    {
+        try ( Locked l = lock ( this.writeLock ) )
+        {
+            return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+                final DeployKeysChannelAdapterImpl adapter = new DeployKeysChannelAdapterImpl ( channel.getId ().getId (), model) {
+
+                    @Override
+                    public void assignDeployGroup ( final String groupId )
+                    {
+                        super.assignDeployGroup ( groupId );
+                        StorageManager.executeAfterPersist ( () -> {
+                            updateDeployGroupCache ( this.model );
+                        } );
+                    }
+
+                    @Override
+                    public void unassignDeployGroup ( final String groupId )
+                    {
+                        super.unassignDeployGroup ( groupId );
+                        StorageManager.executeAfterPersist ( () -> {
+                            updateDeployGroupCache ( this.model );
+                        } );
+                    }
+
+                };
+                return runDisposing ( operation, DeployKeysChannelAdapter.class, adapter );
+            } );
+        }
+    }
+
+    private <R, T> R runDisposing ( final ChannelOperation<R, T> operation, final Class<T> clazz, final T target )
+    {
+        try ( Disposing<T> adapter = Disposing.proxy ( clazz, target ) )
+        {
+            return operation.process ( adapter.getTarget () );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException ( e );
+        }
+    }
+
+    @Override
+    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( final String channelId )
+    {
+        try ( Locked l = lock ( this.readLock ) )
+        {
+            return Optional.ofNullable ( this.deployKeysMap.get ( channelId ) ).map ( Collections::unmodifiableCollection );
+        }
+    }
+
     private <R> R handleDescribe ( final ChannelEntry channel, final ChannelOperation<R, DescriptorAdapter> operation )
     {
-        return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+        try ( Locked l = lock ( this.writeLock ) )
+        {
+            return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
 
-            final DescriptorAdapter dai = new DescriptorAdapterImpl ( channel) {
-                @Override
-                public void setName ( final String name )
-                {
-                    model.putMapping ( getDescriptor ().getId (), name );
+                final DescriptorAdapter dai = new DescriptorAdapterImpl ( channel) {
+                    @Override
+                    public void setName ( final String name )
+                    {
+                        model.putMapping ( getDescriptor ().getId (), name );
 
-                    super.setName ( name );
+                        super.setName ( name );
 
-                    final ChannelId desc = getDescriptor ();
-                    StorageManager.executeAfterPersist ( () -> {
-                        channel.setId ( desc );
-                    } );
-                }
-            };
+                        final ChannelId desc = getDescriptor ();
+                        StorageManager.executeAfterPersist ( () -> {
+                            channel.setId ( desc );
+                        } );
+                    }
+                };
 
-            try ( Disposing<DescriptorAdapter> adapter = Disposing.proxy ( DescriptorAdapter.class, dai ) )
-            {
-                return operation.process ( adapter.getTarget () );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( e );
-            }
-        } );
+                return runDisposing ( operation, DescriptorAdapter.class, dai );
+            } );
+        }
     }
 
     private ChannelEntry findChannel ( final By by )
@@ -543,7 +550,7 @@ public class ChannelServiceImpl implements ChannelService
         {
             return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
 
-                final Map<String, String> map = model.getMap ();
+                final Map<String, String> map = model.getNameMap ();
 
                 for ( final ChannelEntry entry : this.channelMap.values () )
                 {
@@ -575,27 +582,153 @@ public class ChannelServiceImpl implements ChannelService
         Tables.showTable ( System.out, Arrays.asList ( "ID", "Name" ), rows, 2 );
     }
 
-    @Override
-    public void deleteMapping ( final String id, final String name )
+    public void deleteChannel ( final String channelId )
     {
         try ( Locked l = lock ( this.writeLock ) )
         {
             this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
 
-                final String affectedId = model.deleteMapping ( id, name );
-                if ( affectedId != null )
+                model.deleteChannel ( channelId );
+
+                StorageManager.executeAfterPersist ( () -> {
+
+                    // try to remove from mapped channels
+                    final ChannelEntry channel = this.channelMap.get ( channelId );
+                    if ( channel != null )
+                    {
+                        channel.setId ( new ChannelId ( channelId, null ) );
+                    }
+
+                    // remove deploy groups for channel
+                    this.deployKeysMap.removeAll ( channelId );
+                } );
+            } );
+
+        }
+    }
+
+    @Override
+    public void deleteMapping ( final String id, final String name )
+    {
+        try ( final Locked l = lock ( this.writeLock ) )
+        {
+            this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> internalDeleteMapping ( id, name, model ) );
+        }
+    }
+
+    private void internalDeleteMapping ( final String id, final String name, final ChannelServiceModify model )
+    {
+        final String affectedId = model.deleteMapping ( id, name );
+        if ( affectedId != null )
+        {
+            StorageManager.executeAfterPersist ( () -> {
+                final ChannelEntry channel = this.channelMap.get ( id );
+                // try to remove from mapped channels
+                if ( channel != null )
                 {
-                    StorageManager.executeAfterPersist ( () -> {
-                        // try to remove from mapped channels
-                        final ChannelEntry channel = this.channelMap.get ( id );
-                        if ( channel != null )
-                        {
-                            channel.id = new ChannelId ( id, null );
-                        }
-                    } );
+                    channel.setId ( new ChannelId ( id, null ) );
                 }
             } );
         }
+    }
+
+    /**
+     * Update the channel to deploy group cache map
+     *
+     * @param model
+     *            the model to fill the cache from
+     */
+    private void updateDeployGroupCache ( final ChannelServiceAccess model )
+    {
+        // this will simply rebuild the complete map
+
+        // clear first
+        this.deployKeysMap.clear ();
+
+        // fill afterwards
+        for ( final Map.Entry<String, Set<String>> entry : model.getDeployGroupMap ().entrySet () )
+        {
+            final String channelId = entry.getKey ();
+            final List<DeployGroup> groups = entry.getValue ().stream ().map ( groupId -> model.getDeployGroup ( groupId ) ).collect ( Collectors.toList () );
+            this.deployKeysMap.putAll ( channelId, groups );
+        }
+    }
+
+    // methods of DeployAuthService
+
+    @Override
+    public List<DeployGroup> listGroups ( final int position, final int count )
+    {
+        return this.manager.accessCall ( KEY_STORAGE, ChannelServiceAccess.class, model -> {
+            return split ( model.getDeployGroups (), position, count );
+        } );
+    }
+
+    @Override
+    public DeployGroup createGroup ( final String name )
+    {
+        return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            return model.createGroup ( name );
+        } );
+    }
+
+    @Override
+    public void deleteGroup ( final String groupId )
+    {
+        this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            model.deleteGroup ( groupId );
+            StorageManager.executeAfterPersist ( () -> {
+                updateDeployGroupCache ( model );
+            } );
+        } );
+    }
+
+    @Override
+    public void updateGroup ( final String groupId, final String name )
+    {
+        this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            model.updateGroup ( groupId, name );
+        } );
+    }
+
+    @Override
+    public DeployGroup getGroup ( final String groupId )
+    {
+        return this.manager.accessCall ( KEY_STORAGE, ChannelServiceAccess.class, model -> {
+            return model.getDeployGroup ( groupId );
+        } );
+    }
+
+    @Override
+    public DeployKey createDeployKey ( final String groupId, final String name )
+    {
+        return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            return model.createKey ( groupId, name );
+        } );
+    }
+
+    @Override
+    public DeployKey deleteDeployKey ( final String keyId )
+    {
+        return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            return model.deleteKey ( keyId );
+        } );
+    }
+
+    @Override
+    public DeployKey getDeployKey ( final String keyId )
+    {
+        return this.manager.accessCall ( KEY_STORAGE, ChannelServiceAccess.class, model -> {
+            return model.getDeployKey ( keyId );
+        } );
+    }
+
+    @Override
+    public DeployKey updateDeployKey ( final String keyId, final String name )
+    {
+        return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            return model.updateKey ( keyId, name );
+        } );
     }
 
 }

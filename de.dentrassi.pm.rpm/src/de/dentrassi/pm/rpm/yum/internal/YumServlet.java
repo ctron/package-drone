@@ -30,8 +30,8 @@ import de.dentrassi.pm.rpm.Constants;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.CacheEntryInformation;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 import de.dentrassi.pm.system.SitePrefixService;
 

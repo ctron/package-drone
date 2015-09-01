@@ -1,7 +1,9 @@
-<%@page import="de.dentrassi.pm.storage.DeployGroup"%>
-<%@page import="de.dentrassi.pm.storage.DeployKey"%>
-<%@page import="java.util.Collections"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+
+<%@ page import="java.util.Collections"%>
+<%@ page import="java.util.Arrays"%>
+<%@ page import="de.dentrassi.pm.storage.channel.deploy.DeployGroup"%>
+<%@ page import="de.dentrassi.pm.storage.channel.deploy.DeployKey"%>
 
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -11,7 +13,10 @@
 
 <%
 DeployGroup dg = (DeployGroup)request.getAttribute ( "group" );
-Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
+
+DeployKey[] keys = dg.getKeys ().toArray ( new DeployKey[0] );
+Arrays.sort ( keys, DeployKey.NAME_COMPARATOR  );
+request.setAttribute ( "keys", keys );
 %>
 
 <h:main title="Group" subtitle="${fn:escapeXml( (empty group.name) ? group.id : group.name ) }">
@@ -50,7 +55,6 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
 <section>
     <h2>Deploy keys</h2>
     
-    
     <div class="table-responsive">
     <table class="table">
     
@@ -64,12 +68,12 @@ Collections.sort ( dg.getKeys(), DeployKey.NAME_COMPARATOR );
         </thead>
     
         <tbody>
-            <c:forEach var="key" items="${group.keys}">
+            <c:forEach var="key" items="${keys}">
                 <tr>
                     <td>${fn:escapeXml(key.id) }</td>
                     <td>${fn:escapeXml(key.name) }</td>
                     <td style="white-space: nowrap;">
-                        <fmt:formatDate value="${key.creationTimestamp }" type="both" />
+                        <fmt:formatDate value="${ key.creationDate  }" type="both" />
                     </td>
                     <td rowspan="2">
                         <a class="btn btn-default" href="<c:url value="/deploy/auth/key/${key.id }/edit"/>">Edit</a>

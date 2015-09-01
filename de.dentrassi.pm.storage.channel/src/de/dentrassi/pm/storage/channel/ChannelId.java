@@ -1,5 +1,7 @@
 package de.dentrassi.pm.storage.channel;
 
+import java.util.Comparator;
+
 public class ChannelId
 {
     private final String id;
@@ -21,4 +23,6 @@ public class ChannelId
     {
         return this.name;
     }
+
+    public static Comparator<? super ChannelId> NAME_COMPARATOR = Comparator.nullsLast ( Comparator.comparing ( ChannelId::getName ) );
 }

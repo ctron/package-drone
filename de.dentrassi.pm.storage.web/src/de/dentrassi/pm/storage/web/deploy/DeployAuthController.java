@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.deploy;
 
+import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,9 +42,9 @@ import de.dentrassi.pm.sec.web.controller.HttpConstraints;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.DeployGroup;
-import de.dentrassi.pm.storage.DeployKey;
-import de.dentrassi.pm.storage.service.DeployAuthService;
+import de.dentrassi.pm.storage.channel.deploy.DeployAuthService;
+import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
+import de.dentrassi.pm.storage.channel.deploy.DeployKey;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 
@@ -111,15 +113,15 @@ public class DeployAuthController implements InterfaceExtender
         return result;
     }
 
-    protected void addBreadcrumbs ( final String action, final DeployGroup group, final Map<String, Object> model )
+    protected void addBreadcrumbs ( final String action, final String groupId, final Map<String, Object> model )
     {
         final List<Entry> entries = new LinkedList<> ();
 
         entries.add ( new Entry ( "Home", "/" ) );
         entries.add ( Breadcrumbs.create ( "Deploy Groups", DeployAuthController.class, "listGroups" ) );
-        if ( group != null )
+        if ( groupId != null )
         {
-            entries.add ( Breadcrumbs.create ( "Group", DeployAuthController.class, "viewGroup", Collections.singletonMap ( "groupId", group.getId () ) ) );
+            entries.add ( Breadcrumbs.create ( "Group", DeployAuthController.class, "viewGroup", Collections.singletonMap ( "groupId", groupId ) ) );
         }
         entries.add ( new Entry ( action ) );
 
@@ -127,7 +129,7 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/group", method = RequestMethod.GET )
-    public ModelAndView listGroups ( @RequestParameter ( required = false, value = "position" ) Integer position )
+    public ModelAndView listGroups ( @RequestParameter ( required = false, value = "position" ) Integer position)
     {
         final ModelAndView result = new ModelAndView ( "listGroups" );
 
@@ -163,7 +165,7 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/key", method = RequestMethod.GET )
-    public ModelAndView listKeys ( @RequestParameter ( required = false, value = "position" ) Integer position )
+    public ModelAndView listKeys ( @RequestParameter ( required = false, value = "position" ) Integer position)
     {
         final ModelAndView result = new ModelAndView ( "listKeys" );
 
@@ -199,13 +201,13 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/key/{keyId}/delete", method = RequestMethod.GET )
-    public ModelAndView deleteKeyForGroup ( @PathVariable ( "keyId" ) final String keyId )
+    public ModelAndView deleteKeyForGroup ( @PathVariable ( "keyId" ) final String keyId)
     {
-        final DeployKey key = this.service.deleteKey ( keyId );
+        final DeployKey key = this.service.deleteDeployKey ( keyId );
 
-        if ( key != null && key.getGroupId () != null )
+        if ( key != null && key.getGroup ().getId () != null )
         {
-            return new ModelAndView ( "redirect:/deploy/auth/group/" + key.getGroupId () + "/view" );
+            return new ModelAndView ( "redirect:/deploy/auth/group/" + urlPathSegmentEscaper ().escape ( key.getGroup ().getId () ) + "/view" );
         }
         else
         {
@@ -224,14 +226,14 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/group/{groupId}/delete", method = RequestMethod.GET )
-    public String deleteGroup ( @PathVariable ( "groupId" ) final String groupId )
+    public String deleteGroup ( @PathVariable ( "groupId" ) final String groupId)
     {
         this.service.deleteGroup ( groupId );
         return "redirect:/deploy/auth/group";
     }
 
     @RequestMapping ( value = "/addGroup", method = RequestMethod.POST )
-    public ModelAndView addGroupPost ( @RequestParameter ( "name" ) final String name )
+    public ModelAndView addGroupPost ( @RequestParameter ( "name" ) final String name)
     {
         try
         {
@@ -245,7 +247,7 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/group/{groupId}/view" )
-    public ModelAndView viewGroup ( @PathVariable ( "groupId" ) final String groupId )
+    public ModelAndView viewGroup ( @PathVariable ( "groupId" ) final String groupId)
     {
         final DeployGroup group = this.service.getGroup ( groupId );
 
@@ -263,7 +265,7 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/group/{groupId}/edit" )
-    public ModelAndView editGroup ( @PathVariable ( "groupId" ) final String groupId )
+    public ModelAndView editGroup ( @PathVariable ( "groupId" ) final String groupId)
     {
         final DeployGroup group = this.service.getGroup ( groupId );
 
@@ -274,34 +276,32 @@ public class DeployAuthController implements InterfaceExtender
 
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "command", group );
-        addBreadcrumbs ( "Edit", group, model );
+        model.put ( "command", DeployGroupBean.fromGroup ( group ) );
+        addBreadcrumbs ( "Edit", groupId, model );
 
         return new ModelAndView ( "editGroup", model );
     }
 
     @RequestMapping ( value = "/group/{groupId}/edit", method = RequestMethod.POST )
-    public ModelAndView editGroupPost ( @PathVariable ( "groupId" ) final String groupId, @Valid @FormData ( "command" ) final DeployGroup group, final BindingResult result )
+    public ModelAndView editGroupPost ( @PathVariable ( "groupId" ) final String groupId, @Valid @FormData ( "command" ) final DeployGroupBean group, final BindingResult result)
     {
-        final Map<String, Object> model = new HashMap<> ();
-
-        group.setId ( groupId );
+        final Map<String, Object> model = new HashMap<> ( 1 );
 
         if ( !result.hasErrors () )
         {
-            this.service.updateGroup ( group );
+            this.service.updateGroup ( groupId, group.getName () );
         }
 
         model.put ( "command", group );
-        addBreadcrumbs ( "Edit", group, model );
+        addBreadcrumbs ( "Edit", groupId, model );
 
         return new ModelAndView ( "editGroup", model );
     }
 
     @RequestMapping ( value = "/key/{keyId}/edit" )
-    public ModelAndView editKey ( @PathVariable ( "keyId" ) final String keyId )
+    public ModelAndView editKey ( @PathVariable ( "keyId" ) final String keyId)
     {
-        final DeployKey key = this.service.getKey ( keyId );
+        final DeployKey key = this.service.getDeployKey ( keyId );
 
         if ( key == null )
         {
@@ -310,22 +310,20 @@ public class DeployAuthController implements InterfaceExtender
 
         final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "command", key );
+        model.put ( "command", DeployKeyBean.fromKey ( key ) );
 
         return new ModelAndView ( "editKey", model );
     }
 
     @RequestMapping ( value = "/key/{keyId}/edit", method = RequestMethod.POST )
-    public ModelAndView editKeyPost ( @PathVariable ( "keyId" ) final String groupId, @Valid @FormData ( "command" ) DeployKey key, final BindingResult result )
+    public ModelAndView editKeyPost ( @PathVariable ( "keyId" ) final String keyId, @Valid @FormData ( "command" ) final DeployKeyBean key, final BindingResult result)
     {
-        key.setId ( groupId );
-
         if ( !result.hasErrors () )
         {
-            key = this.service.updateKey ( key );
-            if ( key != null && key.getGroupId () != null )
+            final DeployKey dk = this.service.updateDeployKey ( keyId, key.getName () );
+            if ( dk != null && dk.getGroup ().getId () != null )
             {
-                return new ModelAndView ( "redirect:/deploy/auth/group/" + key.getGroupId () + "/view" );
+                return new ModelAndView ( "redirect:/deploy/auth/group/" + urlPathSegmentEscaper ().escape ( dk.getGroup ().getId () ) + "/view" );
             }
         }
 
@@ -333,7 +331,7 @@ public class DeployAuthController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/group/{groupId}/createKey" )
-    public ModelAndView createDeployKey ( @PathVariable ( "groupId" ) final String groupId )
+    public ModelAndView createDeployKey ( @PathVariable ( "groupId" ) final String groupId)
     {
         final DeployGroup group = this.service.getGroup ( groupId );
 
@@ -345,19 +343,19 @@ public class DeployAuthController implements InterfaceExtender
         final Map<String, Object> model = new HashMap<> ();
 
         model.put ( "group", group );
-        addBreadcrumbs ( "Create key", group, model );
+        addBreadcrumbs ( "Create key", groupId, model );
 
         return new ModelAndView ( "createDeployKey", model );
     }
 
     @RequestMapping ( value = "/group/{groupId}/createKey", method = RequestMethod.POST )
-    public ModelAndView createDeployKeyPost ( @PathVariable ( "groupId" ) final String groupId, @RequestParameter ( value = "name",
-            required = false ) final String name )
+    public ModelAndView createDeployKeyPost ( @PathVariable ( "groupId" ) final String groupId, @RequestParameter (
+            value = "name", required = false ) final String name)
     {
         try
         {
             this.service.createDeployKey ( groupId, name );
-            return new ModelAndView ( "redirect:/deploy/auth/group/" + groupId + "/view" );
+            return new ModelAndView ( "redirect:/deploy/auth/group/" + urlPathSegmentEscaper ().escape ( groupId ) + "/view" );
         }
         catch ( final Exception e )
         {

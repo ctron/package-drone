@@ -18,15 +18,15 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 
 public class ChannelCacheHandler implements Handler
 {
-    private final Channel channel;
+    private final ReadableChannel channel;
 
     private final MetaKey key;
 
-    public ChannelCacheHandler ( final Channel channel, final MetaKey key )
+    public ChannelCacheHandler ( final ReadableChannel channel, final MetaKey key )
     {
         this.channel = channel;
         this.key = key;
@@ -35,7 +35,7 @@ public class ChannelCacheHandler implements Handler
     @Override
     public void process ( final OutputStream stream ) throws IOException
     {
-        this.channel.streamCacheData ( this.key, stream );
+        this.channel.streamCacheEntry ( this.key, entry -> ByteStreams.copy ( entry.getStream (), stream ) );
     }
 
     @Override

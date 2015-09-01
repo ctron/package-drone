@@ -39,6 +39,11 @@ public interface ReadableChannel
         return getInformation ().getAspectStates ().containsKey ( aspectId );
     }
 
+    public default Map<MetaKey, String> getMetaData ()
+    {
+        return getContext ().getMetaData ();
+    }
+
     public default Map<MetaKey, CacheEntryInformation> getCacheEntries ()
     {
         return getContext ().getCacheEntries ();

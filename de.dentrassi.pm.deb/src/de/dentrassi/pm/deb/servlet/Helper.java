@@ -34,6 +34,7 @@ public class Helper
 
     public static void render ( final HttpServletResponse response, final URL url, final String title, final Map<String, Object> model ) throws IOException
     {
+        @SuppressWarnings ( "resource" )
         final PrintWriter w = response.getWriter ();
         response.setContentType ( "text/html" );
         final String content = StringReplacer.replace ( loadResource ( url ), new ExtendedPropertiesReplacer ( model ), StringReplacer.DEFAULT_PATTERN, true );

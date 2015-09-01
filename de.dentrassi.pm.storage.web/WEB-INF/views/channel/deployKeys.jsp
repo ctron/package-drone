@@ -1,12 +1,11 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 
-<%@page import="de.dentrassi.pm.storage.DeployKey"%>
-<%@page import="java.util.Collections"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="de.dentrassi.pm.storage.DeployGroup"%>
-<%@page import="java.util.List"%>
-<%@page import="de.dentrassi.pm.storage.Channel"%>
+<%@ page import="java.util.Collections"%>
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.List"%>
+<%@ page import="de.dentrassi.pm.storage.channel.deploy.DeployGroup"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -16,12 +15,6 @@
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
 <%@ taglib uri="http://dentrassi.de/osgi/web" prefix="web" %>
 
-<%
-Channel channel = (Channel)request.getAttribute ( "channel" );
-List<DeployGroup> groups = new ArrayList<> (channel.getDeployGroups ()) ;
-Collections.sort ( groups, DeployGroup.NAME_COMPARATOR );
-pageContext.setAttribute ( "groups", groups );
-%>
 
 <web:define name="named">
 <c:choose>
@@ -43,7 +36,7 @@ pageContext.setAttribute ( "groups", groups );
 	   
 	       <c:choose>
 	       
-	           <c:when test="${empty groups}">
+	           <c:when test="${empty channelDeployGroups}">
 	               <div class="well well-lg">
 	                   <p>There are no deploy keys assigned to this channel. It will not be possible to deploy to this channel using <code>mvn deploy</code>.
 	                   Select deploy groups on the right side and assign them to this channel.
@@ -59,7 +52,7 @@ pageContext.setAttribute ( "groups", groups );
 			           </thead>
 			           
 			           <tbody>
-				           <c:forEach var="dg" items="${groups }">
+				           <c:forEach var="dg" items="${channelDeployGroups }">
 				              <tr>
 			                  <td><a href="<c:url value="/deploy/auth/group/${dg.id}/view"/>"><web:call name="named" named="${dg }"/></a></td>
 			                  <td>
@@ -105,7 +98,7 @@ pageContext.setAttribute ( "groups", groups );
                 
                     <c:choose>
                 
-                        <c:when test="${empty deployGroups and empty groups}">
+                        <c:when test="${empty deployGroups and empty channelDeployGroups}">
 	                        <div class="alert alert-warning">
 	                            <strong>No deploy groups!</strong> You did not set up any deploy group.
 	                            

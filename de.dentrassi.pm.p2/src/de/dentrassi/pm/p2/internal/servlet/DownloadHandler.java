@@ -24,8 +24,8 @@ import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
 public class DownloadHandler implements Handler
 {

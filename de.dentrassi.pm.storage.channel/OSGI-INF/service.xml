@@ -3,6 +3,7 @@
    <implementation class="de.dentrassi.pm.storage.channel.internal.ChannelServiceImpl"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.channel.ChannelService"/>
+      <provide interface="de.dentrassi.pm.storage.channel.deploy.DeployAuthService"/>
    </service>
    <reference bind="setStorageManager" cardinality="1..1" interface="de.dentrassi.pm.apm.StorageManager" name="StorageManager" policy="static"/>
    <property name="osgi.command.scope" type="String" value="drone"/>

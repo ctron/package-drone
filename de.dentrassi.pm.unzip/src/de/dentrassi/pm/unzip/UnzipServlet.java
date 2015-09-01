@@ -41,8 +41,8 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
 
 public class UnzipServlet extends AbstractStorageServiceServlet
 {

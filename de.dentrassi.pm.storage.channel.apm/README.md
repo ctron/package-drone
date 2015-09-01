@@ -2,12 +2,12 @@
 
 ## Core tasks
 
- * use cache store
+ * use cache store (OK)
  * implement generators
  * implement aggregators
  * implement virtualizers
  * implement parent/child (OK)
- * implement deploy keys
+ * implement deploy keys (OK)
  * resolve FIXMEs
  * finish validation
  * implement import/export
@@ -17,3 +17,4 @@
  * Refactor
  * Kick out old JPA stuff
  * Fix the build
+ * Test, test, test …

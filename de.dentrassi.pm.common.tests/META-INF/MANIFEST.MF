@@ -9,4 +9,5 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  ch.qos.logback.classic;bundle-version="1.0.7",
  ch.qos.logback.core;bundle-version="1.0.7"
 Import-Package: de.dentrassi.pm.common.lm;version="1.0.0",
+ de.dentrassi.pm.common.utils;version="1.0.0",
  org.slf4j;version="1.7.2"

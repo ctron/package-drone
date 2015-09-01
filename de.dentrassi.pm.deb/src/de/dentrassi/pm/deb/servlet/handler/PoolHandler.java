@@ -18,20 +18,23 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.io.ByteStreams;
 
-import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 
 public class PoolHandler implements Handler
 {
+    private final String channelId;
+
     private final String artifactId;
 
     private final String name;
 
-    private final StorageService service;
+    private final ChannelService service;
 
-    public PoolHandler ( final StorageService service, final String artifactId, final String name )
+    public PoolHandler ( final ChannelService service, final String channelId, final String artifactId, final String name )
     {
         this.service = service;
+        this.channelId = channelId;
         this.artifactId = artifactId;
         this.name = name;
     }
@@ -46,13 +49,13 @@ public class PoolHandler implements Handler
             return;
         }
 
-        DownloadHelper.streamArtifact ( response, this.service, this.artifactId, null, true, info -> this.name );
+        DownloadHelper.streamArtifact ( response, this.service, this.channelId, this.artifactId, null, true, info -> this.name );
     }
 
     @Override
     public void process ( final OutputStream stream ) throws IOException
     {
-        if ( !this.service.streamArtifact ( this.artifactId, ( ai, in ) -> ByteStreams.copy ( in, stream ) ) )
+        if ( !this.service.streamArtifact ( this.channelId, this.artifactId, ( ai, in ) -> ByteStreams.copy ( in, stream ) ) )
         {
             throw new FileNotFoundException ( this.artifactId );
         }

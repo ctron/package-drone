@@ -89,7 +89,6 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.DeployGroup;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.AspectableChannel;
 import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
@@ -100,12 +99,14 @@ import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ChannelService.By;
 import de.dentrassi.pm.storage.channel.ChannelService.ChannelOperation;
+import de.dentrassi.pm.storage.channel.DeployKeysChannelAdapter;
 import de.dentrassi.pm.storage.channel.DescriptorAdapter;
 import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
-import de.dentrassi.pm.storage.service.DeployAuthService;
+import de.dentrassi.pm.storage.channel.deploy.DeployAuthService;
+import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
@@ -186,7 +187,7 @@ public class ChannelController implements InterfaceExtender
         final ModelAndView result = new ModelAndView ( "channel/list" );
 
         final List<ChannelInformation> channels = new ArrayList<> ( this.channelService.list () );
-        // FIXME. channels.sort ( ChannelNameComparator.INSTANCE );
+        channels.sort ( ChannelId.NAME_COMPARATOR );
         result.put ( "channels", channels );
 
         return result;
@@ -195,11 +196,10 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/create", method = RequestMethod.GET )
     public ModelAndView create ()
     {
-        final ModelAndView result = new ModelAndView ( "redirect:/channel" );
-
+        // FIXME: with provider id
         this.channelService.create ( null, null );
 
-        return result;
+        return new ModelAndView ( "redirect:/channel" );
     }
 
     @RequestMapping ( value = "/channel/createDetailed", method = RequestMethod.GET )
@@ -217,7 +217,9 @@ public class ChannelController implements InterfaceExtender
         {
             final ChannelDetails desc = new ChannelDetails ();
             desc.setDescription ( data.getDescription () );
+            // FIXME: with provider id
             final ChannelId channel = this.channelService.create ( null, desc );
+            setChannelName ( channel, data.getName () );
 
             return new ModelAndView ( String.format ( "redirect:/channel/%s/view", urlPathSegmentEscaper ().escape ( channel.getId () ) ) );
         }
@@ -252,7 +254,9 @@ public class ChannelController implements InterfaceExtender
                 // without recipe
                 final ChannelDetails desc = new ChannelDetails ();
                 desc.setDescription ( data.getDescription () );
+                //FIXME: add provider id
                 holder.value = this.channelService.create ( null, desc );
+                setChannelName ( holder.value, data.getName () );
             }
             else
             {
@@ -261,7 +265,10 @@ public class ChannelController implements InterfaceExtender
                     final ChannelDetails desc = new ChannelDetails ();
                     desc.setDescription ( data.getDescription () );
 
+                    //FIXME: add provider id
                     final ChannelId channel = this.channelService.create ( null, desc );
+
+                    setChannelName ( channel, data.getName () );
 
                     this.channelService.access ( By.id ( channel.getId () ), AspectableChannel.class, aspChannel -> {
 
@@ -291,6 +298,13 @@ public class ChannelController implements InterfaceExtender
         model.put ( "recipes", Activator.getRecipes ().getSortedRecipes ( RecipeInformation::getLabel ) );
 
         return new ModelAndView ( "channel/createWithRecipe", model );
+    }
+
+    protected void setChannelName ( final ChannelId id, final String name )
+    {
+        this.channelService.access ( By.id ( id.getId () ), DescriptorAdapter.class, channel -> {
+            channel.setName ( name );
+        } );
     }
 
     @Secured ( false )
@@ -502,8 +516,6 @@ public class ChannelController implements InterfaceExtender
                 channel.getContext ().createArtifact ( file.getInputStream (), finalName, null );
             } );
 
-            // FIXME: this.service.createArtifact ( channelId, name, file.getInputStream (), null );
-
             return redirectDefaultView ( channelId, true );
         }
         catch ( final Exception e )
@@ -530,8 +542,6 @@ public class ChannelController implements InterfaceExtender
             this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 channel.getContext ().createArtifact ( file.getInputStream (), finalName, null );
             } );
-
-            // FIXME: this.service.createArtifact ( channelId, name, file.getInputStream (), null );
         }
         catch ( final Throwable e )
         {
@@ -562,26 +572,28 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/deployKeys" )
     public ModelAndView deployKeys ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, DeployKeysChannelAdapter.class, deployChannel -> {
+            return withChannel ( channelId, ReadableChannel.class, channel -> {
+                final Map<String, Object> model = new HashMap<> ();
 
-        final Map<String, Object> model = new HashMap<> ();
+                final List<DeployGroup> channelDeployGroups = new ArrayList<> ( deployChannel.getDeployGroups () );
+                Collections.sort ( channelDeployGroups, DeployGroup.NAME_COMPARATOR );
 
-        model.put ( "channel", channel );
-        model.put ( "deployGroups", getGroupsForChannel ( channel ) );
+                model.put ( "channel", channel.getInformation () );
+                model.put ( "channelDeployGroups", channelDeployGroups );
+                model.put ( "deployGroups", getGroupsForChannel ( channelDeployGroups ) );
 
-        model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
+                model.put ( "sitePrefix", this.sitePrefix.getSitePrefix () );
 
-        return new ModelAndView ( "channel/deployKeys", model );
+                return new ModelAndView ( "channel/deployKeys", model );
+            } );
+        } );
     }
 
-    protected List<DeployGroup> getGroupsForChannel ( final Channel channel )
+    protected List<DeployGroup> getGroupsForChannel ( final Collection<DeployGroup> channelDeployGroups )
     {
-        final List<DeployGroup> groups = this.deployAuthService.listGroups ( 0, -1 );
-        groups.removeAll ( channel.getDeployGroups () );
+        final List<DeployGroup> groups = new ArrayList<> ( this.deployAuthService.listGroups ( 0, -1 ) );
+        groups.removeAll ( channelDeployGroups );
         Collections.sort ( groups, DeployGroup.NAME_COMPARATOR );
         return groups;
     }
@@ -663,26 +675,22 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/addDeployGroup", method = RequestMethod.POST )
     public ModelAndView addDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId)
     {
-        return modifyDeployGroup ( channelId, groupId, Channel::addDeployGroup );
+        return modifyDeployGroup ( channelId, groupId, DeployKeysChannelAdapter::assignDeployGroup );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/removeDeployGroup", method = RequestMethod.POST )
     public ModelAndView removeDeployGroup ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter ( "groupId" ) final String groupId)
     {
-        return modifyDeployGroup ( channelId, groupId, Channel::removeDeployGroup );
+        return modifyDeployGroup ( channelId, groupId, DeployKeysChannelAdapter::unassignDeployGroup );
     }
 
-    protected ModelAndView modifyDeployGroup ( final String channelId, final String groupId, final BiConsumer<Channel, String> cons )
+    protected ModelAndView modifyDeployGroup ( final String channelId, final String groupId, final BiConsumer<DeployKeysChannelAdapter, String> cons )
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return withChannel ( channelId, DeployKeysChannelAdapter.class, channel -> {
+            cons.accept ( channel, groupId );
 
-        cons.accept ( channel, groupId );
-
-        return new ModelAndView ( "redirect:/channel/" + channelId + "/deployKeys" );
+            return new ModelAndView ( "redirect:/channel/" + channelId + "/deployKeys" );
+        } );
     }
 
     @Secured ( false )

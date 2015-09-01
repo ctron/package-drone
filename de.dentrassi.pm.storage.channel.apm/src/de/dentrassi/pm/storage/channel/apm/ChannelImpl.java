@@ -30,7 +30,7 @@ public class ChannelImpl implements Channel
 
         this.provider = provider;
 
-        this.handle = manager.registerModel ( 1_000, storageKey, new ChannelModelProvider ( id ) );
+        this.handle = manager.registerModel ( 10_000, storageKey, new ChannelModelProvider ( id ) );
     }
 
     public void dispose ()

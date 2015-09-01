@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.service.util.DownloadHelper;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 
 public class DownloadHandler implements Handler
 {

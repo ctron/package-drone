@@ -1,9 +1,17 @@
 package de.dentrassi.pm.storage.channel;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
+import de.dentrassi.pm.storage.channel.deploy.DeployKey;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
 
 public interface ChannelService
@@ -18,6 +26,12 @@ public interface ChannelService
     public interface ChannelOperationVoid<T>
     {
         public void process ( T channel ) throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface ArtifactReceiver
+    {
+        public void consume ( ArtifactInformation artifact, InputStream stream ) throws IOException;
     }
 
     public static final class By
@@ -101,4 +115,40 @@ public interface ChannelService
     public Map<String, String> getUnclaimedMappings ();
 
     public void deleteMapping ( String id, String name );
+
+    public default Optional<Collection<DeployKey>> getChannelDeployKeys ( final String channelId )
+    {
+        return getChannelDeployGroups ( channelId ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).collect ( toList () ) );
+    }
+
+    public default Optional<Set<String>> getChannelDeployKeyStrings ( final String channelId )
+    {
+        return getChannelDeployGroups ( channelId ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).map ( DeployKey::getKey ).collect ( toSet () ) );
+    }
+
+    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( String channelId );
+
+    public default boolean streamArtifact ( final String channelId, final String artifactId, final ArtifactReceiver receiver )
+    {
+        try
+        {
+            return access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+
+                final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );
+                if ( !artifact.isPresent () )
+                {
+                    return false;
+                }
+
+                return channel.getContext ().stream ( artifactId, stream -> {
+                    receiver.consume ( artifact.get (), stream );
+                } );
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
+        {
+            return false;
+        }
+    }
+
 }
