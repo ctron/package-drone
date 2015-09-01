@@ -21,7 +21,7 @@ import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.common.utils.ThrowingConsumer;
-import de.dentrassi.pm.storage.ArtifactReceiver;
+import de.dentrassi.pm.storage.channel.ChannelService.ArtifactReceiver;
 
 public interface AggregationContext extends AggregationValidationContext
 {

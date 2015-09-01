@@ -1,6 +1,6 @@
 package de.dentrassi.pm.storage.channel.apm;
 
-import java.util.concurrent.Callable;
+import static de.dentrassi.osgi.utils.Exceptions.wrapException;
 
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
@@ -44,28 +44,16 @@ public class ChannelImpl implements Channel
         return this.id;
     }
 
-    private static <T> T ignoreException ( final Callable<T> callable )
-    {
-        try
-        {
-            return callable.call ();
-        }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException ( e );
-        }
-    }
-
     @Override
     public <T> T access ( final ChannelOperation<T, AccessContext> operation )
     {
-        return this.manager.accessCall ( this.storageKey, AccessContext.class, model -> ignoreException ( () -> operation.process ( model ) ) );
+        return this.manager.accessCall ( this.storageKey, AccessContext.class, model -> wrapException ( () -> operation.process ( model ) ) );
     }
 
     @Override
     public <T> T modify ( final ChannelOperation<T, ModifyContext> operation )
     {
-        return this.manager.modifyCall ( this.storageKey, ModifyContext.class, model -> ignoreException ( () -> operation.process ( model ) ) );
+        return this.manager.modifyCall ( this.storageKey, ModifyContext.class, model -> wrapException ( () -> operation.process ( model ) ) );
     }
 
     @Override

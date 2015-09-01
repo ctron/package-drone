@@ -8,17 +8,19 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.common;
+package de.dentrassi.pm.storage.channel;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
 
+import de.dentrassi.pm.common.MetaKey;
+
 public interface ArtifactContext
 {
     /**
      * Get the information of the artifact which is currently being processed
-     * 
+     *
      * @return the artifact information of the current artifact, never returns
      *         <code>null</code>
      */

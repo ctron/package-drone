@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.internal;
+package de.dentrassi.pm.storage.channel.impl;
 
 import java.io.OutputStreamWriter;
 import java.io.Reader;

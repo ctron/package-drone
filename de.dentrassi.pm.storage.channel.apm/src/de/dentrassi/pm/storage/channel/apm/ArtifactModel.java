@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,16 @@ public class ArtifactModel
 
     private Set<String> facets;
 
+    private String virtualizerAspectId;
+
     public ArtifactModel ()
     {
+        this.childIds = new CopyOnWriteArraySet<> ();
+        this.facets = new CopyOnWriteArraySet<> ();
+
         this.validationMessages = new LinkedList<> ();
         this.providedMetaData = new HashMap<> ();
         this.extractedMetaData = new HashMap<> ();
-        this.facets = new CopyOnWriteArraySet<> ();
     }
 
     public ArtifactModel ( final ArtifactModel other )
@@ -57,6 +62,8 @@ public class ArtifactModel
         this.validationMessages = new CopyOnWriteArrayList<> ( other.validationMessages );
         this.providedMetaData = new HashMap<> ( other.providedMetaData );
         this.extractedMetaData = new HashMap<> ( other.extractedMetaData );
+
+        this.virtualizerAspectId = other.virtualizerAspectId;
     }
 
     public void setParentId ( final String parentId )
@@ -149,10 +156,20 @@ public class ArtifactModel
         return this.facets;
     }
 
+    public void setVirtualizerAspectId ( final String virtualizerAspectId )
+    {
+        this.virtualizerAspectId = virtualizerAspectId;
+    }
+
+    public String getVirtualizerAspectId ()
+    {
+        return this.virtualizerAspectId;
+    }
+
     public static ArtifactInformation toInformation ( final String id, final ArtifactModel model )
     {
         final List<ValidationMessage> messages = model.getValidationMessages ().stream ().map ( ValidationMessageModel::toMessage ).collect ( Collectors.toList () );
-        return new ArtifactInformation ( id, model.getParentId (), model.getChildIds (), model.getName (), model.getSize (), model.getDate ().toInstant (), model.getFacets (), messages, model.getProvidedMetaData (), model.getExtractedMetaData () );
+        return new ArtifactInformation ( id, model.getParentId (), model.getChildIds (), model.getName (), model.getSize (), model.getDate ().toInstant (), model.getFacets (), messages, model.getProvidedMetaData (), model.getExtractedMetaData (), model.getVirtualizerAspectId () );
     }
 
     public static ArtifactInformation toInformation ( final Map.Entry<String, ArtifactModel> entry )
@@ -167,14 +184,16 @@ public class ArtifactModel
         result.setFacets ( ai.getFacets () );
 
         result.setParentId ( ai.getParentId () );
-        result.setChildIds ( ai.getChildIds () );
+        result.setChildIds ( new HashSet<> ( ai.getChildIds () ) );
 
         result.setName ( ai.getName () );
         result.setSize ( ai.getSize () );
         result.setDate ( new Date ( ai.getCreationInstant ().toEpochMilli () ) );
 
-        result.setExtractedMetaData ( ai.getExtractedMetaData () );
-        result.setProvidedMetaData ( ai.getProvidedMetaData () );
+        result.setExtractedMetaData ( new HashMap<> ( ai.getExtractedMetaData () ) );
+        result.setProvidedMetaData ( new HashMap<> ( ai.getProvidedMetaData () ) );
+
+        result.setVirtualizerAspectId ( ai.getVirtualizerAspectId () );
 
         result.setValidationMessages ( ai.getValidationMessages ().stream ().map ( ValidationMessageModel::fromMessage ).collect ( toList () ) );
 

@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.internal;
+package de.dentrassi.pm.storage.channel.impl;
 
 import de.dentrassi.pm.storage.channel.ChannelId;
 import de.dentrassi.pm.storage.channel.DescriptorAdapter;

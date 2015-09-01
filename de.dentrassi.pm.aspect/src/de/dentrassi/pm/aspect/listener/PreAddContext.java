@@ -20,8 +20,6 @@ public interface PreAddContext
 
     public void vetoAdd ();
 
-    public String getChannelId ();
-
     /**
      * A flag if this is an external or internal add operation
      */

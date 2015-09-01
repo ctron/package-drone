@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.internal;
+package de.dentrassi.pm.storage.channel.impl;
 
 import java.util.HashMap;
 import java.util.List;

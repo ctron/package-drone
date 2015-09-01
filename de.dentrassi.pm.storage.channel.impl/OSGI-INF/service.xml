@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.pm.storage.channel">
-   <implementation class="de.dentrassi.pm.storage.channel.internal.ChannelServiceImpl"/>
+   <implementation class="de.dentrassi.pm.storage.channel.impl.ChannelServiceImpl"/>
    <service>
       <provide interface="de.dentrassi.pm.storage.channel.ChannelService"/>
       <provide interface="de.dentrassi.pm.storage.channel.deploy.DeployAuthService"/>

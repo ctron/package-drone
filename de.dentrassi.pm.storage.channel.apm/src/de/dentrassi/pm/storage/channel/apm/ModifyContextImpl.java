@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import de.dentrassi.osgi.utils.Exceptions;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
@@ -219,7 +220,6 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public ArtifactInformation createArtifact ( final String parentId, final InputStream source, final String name, final Map<MetaKey, String> providedMetaData )
     {
         testLocked ();
-        ensureTransaction ();
 
         if ( parentId != null )
         {
@@ -233,12 +233,14 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             }
         }
 
-        return this.aspectContext.createArtifact ( parentId, source, name, providedMetaData );
+        return Exceptions.wrapException ( () -> this.aspectContext.createArtifact ( parentId, source, name, providedMetaData ) );
     }
 
     @Override
-    public ArtifactInformation createPlainArtifact ( final String parentId, final InputStream source, final String name, final Map<MetaKey, String> providedMetaData, final Set<String> facets )
+    public ArtifactInformation createPlainArtifact ( final String parentId, final InputStream source, final String name, final Map<MetaKey, String> providedMetaData, final Set<String> facets, final String virtualizerAspectId )
     {
+        ensureTransaction ();
+
         final String id = UUID.randomUUID ().toString ();
 
         try
@@ -262,7 +264,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 parent = null;
             }
 
-            final ArtifactInformation ai = new ArtifactInformation ( id, parentId, Collections.emptySet (), name, size, Instant.now (), facets, Collections.emptyList (), providedMetaData, null );
+            final ArtifactInformation ai = new ArtifactInformation ( id, parentId, Collections.emptySet (), name, size, Instant.now (), facets, Collections.emptyList (), providedMetaData, null, virtualizerAspectId );
             this.model.addArtifact ( ai );
             this.modArtifacts.put ( ai.getId (), ai );
 
@@ -288,6 +290,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     private boolean internalDeleteArtifact ( final String id ) throws IOException
     {
+        ensureTransaction ();
+
         final boolean result = this.transaction.delete ( id );
 
         this.model.removeArtifact ( id );
@@ -321,14 +325,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         try
         {
             final ArtifactInformation artifact = this.modArtifacts.get ( id );
+
             if ( artifact == null )
             {
                 return false;
-            }
-
-            if ( !artifact.is ( "stored" ) )
-            {
-                throw new IllegalStateException ( String.format ( "Unable to delete artifact '%s'. It is not 'stored'.", id ) );
             }
 
             return internalDeleteArtifact ( id );
@@ -344,6 +344,17 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         testLocked ();
         ensureTransaction ();
+
+        final ArtifactInformation artifact = this.modArtifacts.get ( id );
+        if ( artifact == null )
+        {
+            return false;
+        }
+
+        if ( !artifact.is ( "stored" ) )
+        {
+            throw new IllegalStateException ( String.format ( "Unable to delete artifact '%s'. It is not 'stored'.", id ) );
+        }
 
         return this.aspectContext.deleteArtifacts ( Collections.singleton ( id ) );
     }
@@ -441,7 +452,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     }
 
     @Override
-    public void setExtractedMetaData ( final String artifactId, final Map<MetaKey, String> metaData )
+    public ArtifactInformation setExtractedMetaData ( final String artifactId, final Map<MetaKey, String> metaData )
     {
         final ArtifactModel art = this.model.getArtifacts ().get ( artifactId );
         if ( art == null )
@@ -452,8 +463,19 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         // set the extracted data
         art.setExtractedMetaData ( new HashMap<> ( metaData ) );
 
+        //
+        final ArtifactInformation result = ArtifactModel.toInformation ( artifactId, art );
+
         // update from the model
-        this.modArtifacts.put ( artifactId, ArtifactModel.toInformation ( artifactId, art ) );
+        this.modArtifacts.put ( artifactId, result );
+
+        return result;
+    }
+
+    @Override
+    public Map<MetaKey, String> getChannelProvidedMetaData ()
+    {
+        return Collections.unmodifiableMap ( this.model.getMetaData () );
     }
 
 }

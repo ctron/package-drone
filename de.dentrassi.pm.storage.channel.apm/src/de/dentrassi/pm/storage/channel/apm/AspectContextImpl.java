@@ -1,5 +1,6 @@
 package de.dentrassi.pm.storage.channel.apm;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.util.function.Consumer;
 
 import com.google.common.io.ByteStreams;
 
+import de.dentrassi.osgi.utils.Exceptions;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.extract.Extractor;
@@ -36,11 +38,14 @@ public class AspectContextImpl
 
     private final AspectMapModel model;
 
+    private final EventProcessor eventProcessor;
+
     public AspectContextImpl ( final AspectableContext context, final ChannelAspectProcessor processor )
     {
         this.context = context;
         this.processor = processor;
         this.model = context.getAspectModel ();
+        this.eventProcessor = new EventProcessor ();
     }
 
     public SortedMap<String, String> getAspectStates ()
@@ -62,10 +67,12 @@ public class AspectContextImpl
             }
         }
 
+        // run extractors
+
         extractFor ( addedAspects );
 
-        // TODO: run extractors
         // TODO: run virtualizers
+        virtualizeFor ( addedAspects );
 
         // TODO: flush generators
 
@@ -79,7 +86,10 @@ public class AspectContextImpl
             this.model.remove ( aspectId );
         }
 
+        // remove selected extracted meta data
+
         removeExtractedFor ( aspectIds );
+        removeVirtualized ( aspectIds );
 
         // TODO: remove virtualized
 
@@ -88,32 +98,140 @@ public class AspectContextImpl
         // TODO: run aggregators
     }
 
-    public void refreshAspects ( final Set<String> aspectIds )
+    public void refreshAspects ( Set<String> aspectIds )
     {
+        if ( aspectIds == null )
+        {
+            aspectIds = new HashSet<> ( this.model.getAspectIds () );
+        }
+
+        // update version map
+        for ( final ChannelAspectInformation aspect : this.processor.resolve ( aspectIds ) )
+        {
+            final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
+            this.model.put ( aspect.getFactoryId (), versionString );
+        }
+
+        // extract metadata ... well clear itself first
+
         extractFor ( aspectIds );
 
-        // TODO: remove virtualized
-        // TODO: run virtualized
+        // delete virtualized
+        removeVirtualized ( aspectIds );
+
+        // run virtualized
+        virtualizeFor ( aspectIds );
 
         // TODO: run flush generators
 
         // TODO: run aggregators
     }
 
-    public ArtifactInformation createArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    @FunctionalInterface
+    public interface ArtifactCreator
     {
-        final ArtifactInformation result = this.context.createPlainArtifact ( parentId, stream, name, providedMetaData, Collections.singleton ( "stored" ) );
+        public ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, String virtualizerAspectId ) throws IOException;
+    }
 
-        final Map<MetaKey, String> metaData = extractMetaData ( result, this.model.getAspectIds () );
-        this.context.setExtractedMetaData ( result.getId (), metaData );
+    public ArtifactInformation createArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData ) throws IOException
+    {
+        return internalCreateArtifact ( parentId, stream, name, providedMetaData, ArtifactType.STORED, null );
+    }
 
-        // TODO: run virtualizers for artifact
+    private ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, final String virtualizerAspectId ) throws IOException
+    {
+        final Path tmp = Files.createTempFile ( "upload-", null );
 
-        // TODO: flush generators
+        try
+        {
 
-        // TODO: run aggregators
+            // spool out to tmp file
 
-        return result;
+            try ( OutputStream out = new BufferedOutputStream ( Files.newOutputStream ( tmp ) ) )
+            {
+                ByteStreams.copy ( stream, out );
+            }
+
+            // check veto
+
+            if ( checkVetoAdd ( name, tmp, type.isExternal () ) )
+            {
+                return null;
+            }
+
+            // store artifact
+
+            ArtifactInformation result;
+            try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( tmp ) ) )
+            {
+                result = this.context.createPlainArtifact ( parentId, in, name, providedMetaData, Collections.singleton ( type.getFacetType () ), virtualizerAspectId );
+            }
+
+            // extract meta data
+
+            final Map<MetaKey, String> metaData = extractMetaData ( result, this.model.getAspectIds () ); // FIXME: do with tmp file
+            result = this.context.setExtractedMetaData ( result.getId (), metaData );
+
+            // TODO: notify generators
+
+            // run virtualizers for artifact
+            virtualize ( result, tmp, this.model.getAspectIds () );
+
+            // TODO: flush generators
+
+            // TODO: run aggregators
+
+            return result;
+        }
+        finally
+        {
+            Files.deleteIfExists ( tmp );
+        }
+    }
+
+    private void virtualizeFor ( final Set<String> aspects )
+    {
+        // we need to iterate over an array
+
+        for ( final ArtifactInformation artifact : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
+        {
+            doStreamed ( artifact.getId (), tmp -> {
+                virtualize ( artifact, tmp, aspects );
+            } );
+        }
+    }
+
+    private void removeVirtualized ( final Set<String> aspectIds )
+    {
+        final Set<String> artifacts = new HashSet<> ();
+
+        for ( final ArtifactInformation artifact : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
+        {
+            final String virtualizer = artifact.getVirtualizerAspectId ();
+            if ( aspectIds.contains ( virtualizer ) )
+            {
+                artifacts.add ( artifact.getId () );
+            }
+        }
+
+        deleteArtifacts ( artifacts );
+    }
+
+    private void virtualize ( final ArtifactInformation artifact, final Path tmp, final Collection<String> aspects )
+    {
+        this.processor.processWithAspect ( aspects, ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> {
+            final VirtualizerContextImpl ctx = new VirtualizerContextImpl ( aspect.getId (), tmp, artifact, this.context, this::internalCreateArtifact );
+            virtualizer.virtualize ( ctx );
+        } );
+    }
+
+    private boolean checkVetoAdd ( final String name, final Path file, final boolean external )
+    {
+        final PreAddContextImpl ctx = new PreAddContextImpl ( name, file, external );
+        this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelListener, listener -> {
+            Exceptions.wrapException ( () -> listener.artifactPreAdd ( ctx ) );
+        } );
+        return ctx.isVeto ();
     }
 
     public boolean deleteArtifacts ( final Set<String> artifactIds )

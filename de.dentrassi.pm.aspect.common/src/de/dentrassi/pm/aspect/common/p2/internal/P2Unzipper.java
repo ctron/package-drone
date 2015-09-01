@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.common.p2.P2UnzipAspectFactory;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class P2Unzipper implements Virtualizer
 {

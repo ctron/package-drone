@@ -43,7 +43,9 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
 
     private final Map<MetaKey, String> metaData;
 
-    public ArtifactInformation ( final String id, final String parentId, final Set<String> childIds, final String name, final long size, final Instant creationTimestamp, final Set<String> facets, final List<ValidationMessage> messages, final Map<MetaKey, String> providedMetaData, final Map<MetaKey, String> extractedMetaData )
+    private final String virtualizerAspectId;
+
+    public ArtifactInformation ( final String id, final String parentId, final Set<String> childIds, final String name, final long size, final Instant creationTimestamp, final Set<String> facets, final List<ValidationMessage> messages, final Map<MetaKey, String> providedMetaData, final Map<MetaKey, String> extractedMetaData, final String virtualizerAspectId )
     {
         this.id = id;
 
@@ -61,6 +63,8 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
         this.extractedMetaData = extractedMetaData != null ? unmodifiableMap ( new HashMap<> ( extractedMetaData ) ) : emptyMap ();
 
         this.metaData = MetaKeys.union ( providedMetaData, extractedMetaData );
+
+        this.virtualizerAspectId = virtualizerAspectId;
     }
 
     protected ArtifactInformation ( final ArtifactInformation other )
@@ -81,16 +85,11 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
         this.extractedMetaData = other.extractedMetaData;
 
         this.metaData = other.metaData;
+        this.virtualizerAspectId = other.virtualizerAspectId;
     }
 
     public boolean is ( final String type )
     {
-        if ( "deletable".equals ( type ) )
-        {
-            // FIXME: remove debug code
-            return true;
-        }
-
         return this.facets.contains ( type );
     }
 
@@ -149,6 +148,11 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
         return this.providedMetaData;
     }
 
+    public String getVirtualizerAspectId ()
+    {
+        return this.virtualizerAspectId;
+    }
+
     @Override
     public int hashCode ()
     {
@@ -199,4 +203,5 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
     {
         return this.messages;
     }
+
 }

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.storage.channel.ChannelService;
-import de.dentrassi.pm.storage.service.StorageService;
 
 /**
  * This is an abstract implementation for implementing servlets which require

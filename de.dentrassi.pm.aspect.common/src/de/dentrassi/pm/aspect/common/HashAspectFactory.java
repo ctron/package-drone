@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
@@ -62,6 +61,12 @@ public class HashAspectFactory implements ChannelAspectFactory
         }
 
         @Override
+        public Virtualizer getArtifactVirtualizer ()
+        {
+            return new VirtualizerImpl ();
+        }
+
+        @Override
         public String getId ()
         {
             return ID;
@@ -95,7 +100,7 @@ public class HashAspectFactory implements ChannelAspectFactory
         @Override
         public void virtualize ( final Context context )
         {
-            final SortedMap<MetaKey, String> md = context.getArtifactInformation ().getMetaData ();
+            final Map<MetaKey, String> md = context.getArtifactInformation ().getMetaData ();
 
             if ( md.containsKey ( KEY_FILE_TYPE ) )
             {

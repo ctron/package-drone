@@ -42,12 +42,6 @@ public class PreAddContentImpl implements PreAddContext
     }
 
     @Override
-    public String getChannelId ()
-    {
-        return this.channelId;
-    }
-
-    @Override
     public String getName ()
     {
         return this.name;

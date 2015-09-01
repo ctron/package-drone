@@ -28,12 +28,11 @@ import java.util.Set;
 import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
-import de.dentrassi.pm.storage.StorageAccessor;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class CategoryGenerator implements ArtifactGenerator
 {
@@ -63,7 +62,7 @@ public class CategoryGenerator implements ArtifactGenerator
         {
             try ( final BufferedOutputStream out = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
             {
-                createMetaDataXml ( out, context.getArtifactInformation ().getMetaData (), context.getStorage (), context.getArtifactInformation ().getChannelId () );
+                createMetaDataXml ( out, context.getArtifactInformation ().getMetaData (), context );
             }
 
             final Map<MetaKey, String> providedMetaData = new HashMap<> ();
@@ -78,7 +77,7 @@ public class CategoryGenerator implements ArtifactGenerator
         }
     }
 
-    private void createMetaDataXml ( final OutputStream out, final Map<MetaKey, String> map, final StorageAccessor storage, final String channelid ) throws Exception
+    private void createMetaDataXml ( final OutputStream out, final Map<MetaKey, String> map, final GenerationContext context ) throws Exception
     {
         final String id = getString ( map, ID, "id" );
         final String name = getString ( map, ID, "name" );
@@ -93,7 +92,7 @@ public class CategoryGenerator implements ArtifactGenerator
                 final Set<String> ctx = new HashSet<> ();
 
                 final Element reqs = XmlHelper.addElement ( unit, "requires" );
-                for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
+                for ( final ArtifactInformation a : context.getChannelArtifacts () )
                 {
                     if ( Helper.isFeature ( a.getMetaData () ) )
                     {

@@ -13,13 +13,15 @@ public interface AspectableContext
 {
     public AspectMapModel getAspectModel ();
 
-    public ArtifactInformation createPlainArtifact ( String parentArtifactId, InputStream source, String name, Map<MetaKey, String> providedMetaData, Set<String> facets );
+    public ArtifactInformation createPlainArtifact ( String parentArtifactId, InputStream source, String name, Map<MetaKey, String> providedMetaData, Set<String> facets, String virtualizerAspectId );
 
     public boolean deletePlainArtifact ( String artifactId );
 
     public boolean stream ( String artifactId, IOConsumer<InputStream> consumer ) throws IOException;
 
-    public void setExtractedMetaData ( String artifactId, Map<MetaKey, String> metaData );
+    public ArtifactInformation setExtractedMetaData ( String artifactId, Map<MetaKey, String> metaData );
 
     public Map<String, ArtifactInformation> getArtifacts ();
+
+    public Map<MetaKey, String> getChannelProvidedMetaData ();
 }

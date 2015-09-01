@@ -21,7 +21,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
@@ -30,6 +29,7 @@ import de.dentrassi.pm.generator.p2.GeneratorController;
 import de.dentrassi.pm.generator.p2.Helper;
 import de.dentrassi.pm.generator.p2.Type;
 import de.dentrassi.pm.generator.p2.xml.CategoryDefinition.Category;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 /**
  * Create categories based on an uploaded <code>category.xml</code>
@@ -57,7 +57,7 @@ public class CategoryXmlGenerator implements ArtifactGenerator
 
         final Map<String, Set<ArtifactInformation>> map = new HashMap<> ();
 
-        for ( final ArtifactInformation ai : context.getStorage ().getArtifacts ( context.getArtifactInformation ().getChannelId () ) )
+        for ( final ArtifactInformation ai : context.getChannelArtifacts () )
         {
             if ( Helper.isBundle ( ai.getMetaData () ) )
             {

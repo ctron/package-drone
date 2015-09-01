@@ -33,13 +33,12 @@ import org.w3c.dom.Element;
 
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
-import de.dentrassi.pm.storage.StorageAccessor;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class FeatureGenerator implements ArtifactGenerator
 {
@@ -89,7 +88,7 @@ public class FeatureGenerator implements ArtifactGenerator
             {
                 final ZipEntry ze = new ZipEntry ( "feature.xml" );
                 jar.putNextEntry ( ze );
-                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData (), context.getStorage (), context.getArtifactInformation ().getChannelId () );
+                createFeatureXml ( jar, context.getArtifactInformation ().getMetaData (), context );
             }
 
             final Map<MetaKey, String> providedMetaData = new HashMap<> ();
@@ -104,7 +103,7 @@ public class FeatureGenerator implements ArtifactGenerator
         }
     }
 
-    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final StorageAccessor storage, final String channelid ) throws Exception
+    private void createFeatureXml ( final OutputStream out, final Map<MetaKey, String> map, final GenerationContext context ) throws Exception
     {
         final String id = getString ( map, ID, "id" );
         final String version = makeVersion ( getString ( map, ID, "version" ) );
@@ -137,7 +136,7 @@ public class FeatureGenerator implements ArtifactGenerator
         createLegalEntry ( root, "copyright", copyright, copyrightUrl );
         createLegalEntry ( root, "license", license, licenseUrl );
 
-        for ( final ArtifactInformation a : storage.getArtifacts ( channelid ) )
+        for ( final ArtifactInformation a : context.getChannelArtifacts () )
         {
             processPlugin ( root, a );
         }

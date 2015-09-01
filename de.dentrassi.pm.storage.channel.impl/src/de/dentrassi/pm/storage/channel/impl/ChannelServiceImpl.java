@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.internal;
+package de.dentrassi.pm.storage.channel.impl;
 
 import static de.dentrassi.osgi.utils.Locks.lock;
 import static de.dentrassi.pm.common.utils.Splits.split;

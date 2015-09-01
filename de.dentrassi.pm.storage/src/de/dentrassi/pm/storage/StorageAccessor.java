@@ -16,6 +16,7 @@ import de.dentrassi.pm.common.ArtifactInformation;
 
 public interface StorageAccessor
 {
+    @Deprecated
     public void updateChannel ( String channelId, String name, String description );
 
     public Set<ArtifactInformation> getArtifacts ( String channelId );

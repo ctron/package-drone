@@ -28,13 +28,13 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public final class Helper
 {
