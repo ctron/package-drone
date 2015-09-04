@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public interface Processor
 {

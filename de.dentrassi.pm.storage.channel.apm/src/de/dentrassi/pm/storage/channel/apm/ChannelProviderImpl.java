@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
+import de.dentrassi.pm.storage.channel.IdTransformer;
 import de.dentrassi.pm.storage.channel.provider.Channel;
 import de.dentrassi.pm.storage.channel.provider.ChannelProvider;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
@@ -111,9 +112,9 @@ public class ChannelProviderImpl implements ChannelProvider
     }
 
     @Override
-    public Channel create ( final ChannelDetails details )
+    public Channel create ( final ChannelDetails details, final IdTransformer idTransformer )
     {
-        final ChannelImpl channel = createNewChannel ( details );
+        final ChannelImpl channel = createNewChannel ( details, idTransformer );
         registerChannel ( channel );
         return channel;
     }
@@ -125,7 +126,7 @@ public class ChannelProviderImpl implements ChannelProvider
         registerChannel ( channel );
     }
 
-    protected ChannelImpl createNewChannel ( final ChannelDetails details )
+    protected ChannelImpl createNewChannel ( final ChannelDetails details, final IdTransformer idTransformer )
     {
         final String id = UUID.randomUUID ().toString ();
         final MetaKey key = new MetaKey ( "channel", id );
@@ -138,7 +139,7 @@ public class ChannelProviderImpl implements ChannelProvider
             {
                 model.setDetails ( details );
             }
-        } );
+        } , idTransformer );
         return channel;
     }
 

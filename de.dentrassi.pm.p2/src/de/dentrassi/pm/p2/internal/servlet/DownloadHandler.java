@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.servlet;
 
+import static java.util.Optional.empty;
+
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,18 +22,17 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
-import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.channel.util.DownloadHelper;
-import de.dentrassi.pm.storage.service.StorageService;
 
 public class DownloadHandler implements Handler
 {
     private final static Logger logger = LoggerFactory.getLogger ( DownloadHandler.class );
-
-    private static final MetaKey KEY_MIME_TYPE = new MetaKey ( "mime", "type" );
 
     private static final MetaKey KEY_OSGI_CLASSIFIER = new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_CLASSIFIER );
 
@@ -39,7 +40,7 @@ public class DownloadHandler implements Handler
 
     private static final MetaKey KEY_OSGI_VERSION = new MetaKey ( OsgiAspectFactory.ID, OsgiExtractor.KEY_VERSION );
 
-    private final Channel channel;
+    private final String channelId;
 
     private final String id;
 
@@ -49,11 +50,11 @@ public class DownloadHandler implements Handler
 
     private final String classifier;
 
-    private final StorageService service;
+    private final ChannelService service;
 
-    public DownloadHandler ( final Channel channel, final StorageService service, final String id, final String version, final String filename, final String classifier )
+    public DownloadHandler ( final String channelId, final ChannelService service, final String id, final String version, final String filename, final String classifier )
     {
-        this.channel = channel;
+        this.channelId = channelId;
         this.service = service;
         this.id = id;
         this.version = version;
@@ -66,41 +67,47 @@ public class DownloadHandler implements Handler
     {
         logger.debug ( "Looking for bundle: {}/{}", this.id, this.version );
 
-        // TODO: speed up search
-        for ( final DetailedArtifactInformation a : this.channel.getDetailedArtifacts () )
-        {
-            final Map<MetaKey, String> md = a.getMetaData ();
+        this.service.access ( By.id ( this.channelId ), ReadableChannel.class, channel -> {
 
-            final String thisClassifier = md.get ( KEY_OSGI_CLASSIFIER );
-            final String thisId = md.get ( KEY_OSGI_ID );
-            final String thisVersion = md.get ( KEY_OSGI_VERSION );
-
-            logger.debug ( "This - id: {}, version: {}, classifier: {}", thisId, thisVersion, thisClassifier );
-
-            if ( thisClassifier == null || !thisClassifier.equals ( this.classifier ) )
+            // TODO: speed up search
+            for ( final ArtifactInformation a : channel.getContext ().getArtifacts ().values () )
             {
-                continue;
+                final Map<MetaKey, String> md = a.getMetaData ();
+
+                final String thisClassifier = md.get ( KEY_OSGI_CLASSIFIER );
+                final String thisId = md.get ( KEY_OSGI_ID );
+                final String thisVersion = md.get ( KEY_OSGI_VERSION );
+
+                logger.debug ( "This - id: {}, version: {}, classifier: {}", thisId, thisVersion, thisClassifier );
+
+                if ( thisClassifier == null || !thisClassifier.equals ( this.classifier ) )
+                {
+                    continue;
+                }
+
+                if ( thisId == null || !thisId.equals ( this.id ) )
+                {
+                    continue;
+                }
+
+                if ( thisVersion == null || !thisVersion.equals ( this.version ) )
+                {
+                    continue;
+                }
+
+                logger.debug ( "Streaming artifact: {} / {} ", a.getName (), a.getId () );
+                DownloadHelper.streamArtifact ( resp, this.service, this.channelId, a.getId (), empty (), true, art -> this.filename );
+                return; // exit search loop
             }
 
-            if ( thisId == null || !thisId.equals ( this.id ) )
-            {
-                continue;
-            }
+            // handle - not found
 
-            if ( thisVersion == null || !thisVersion.equals ( this.version ) )
-            {
-                continue;
-            }
+            final String message = String.format ( "Artifact not found - name: %s, version: %s, classifier: %s", this.id, this.version, this.classifier );
+            logger.warn ( message );
+            resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+            resp.setContentType ( "text/plain" );
+            resp.getWriter ().println ( message );
+        } );
 
-            logger.debug ( "Streaming artifact: {} / {} ", a.getName (), a.getId () );
-            DownloadHelper.streamArtifact ( resp, this.service, a.getId (), md.get ( KEY_MIME_TYPE ), true, art -> this.filename );
-            return;
-        }
-
-        final String message = String.format ( "Artifact not found - name: %s, version: %s, classifier: %s", this.id, this.version, this.classifier );
-        logger.warn ( message );
-        resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-        resp.setContentType ( "text/plain" );
-        resp.getWriter ().println ( message );
     }
 }

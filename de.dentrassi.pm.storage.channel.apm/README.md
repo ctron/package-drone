@@ -3,9 +3,9 @@
 ## Core tasks
 
  * use cache store (OK)
- * implement generators
- * implement aggregators
- * implement virtualizers
+ * implement generators (triggers missing)
+ * implement aggregators (OK)
+ * implement virtualizers (OK)
  * implement parent/child (OK)
  * implement deploy keys (OK)
  * resolve FIXMEs

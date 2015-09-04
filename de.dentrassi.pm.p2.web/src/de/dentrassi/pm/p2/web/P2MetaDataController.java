@@ -14,7 +14,6 @@ import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
 import javax.servlet.annotation.HttpConstraint;
 import javax.validation.Valid;
@@ -31,14 +30,15 @@ import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.aspect.common.p2.P2MetaDataInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
-import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @RequestMapping ( value = "/p2.metadata" )
@@ -49,9 +49,9 @@ import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class P2MetaDataController
 {
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -61,48 +61,41 @@ public class P2MetaDataController
     @HttpConstraint ( PERMIT )
     public ModelAndView info ( @PathVariable ( "channelId" ) final String channelId) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<MetaKey, String> metaData = channel.getMetaData ();
 
-        final SortedMap<MetaKey, String> metaData = channel.getMetaData ();
+            final P2MetaDataInformation channelInfo = new P2MetaDataInformation ();
+            MetaKeys.bind ( channelInfo, metaData );
 
-        final P2MetaDataInformation channelInfo = new P2MetaDataInformation ();
-        MetaKeys.bind ( channelInfo, metaData );
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "channelInfo", channelInfo );
 
-        model.put ( "channel", channel );
-        model.put ( "channelInfo", channelInfo );
+            return new ModelAndView ( "p2info", model );
+        } );
 
-        return new ModelAndView ( "p2info", model );
     }
 
     @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.GET )
     public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<MetaKey, String> metaData = channel.getContext ().getProvidedMetaData ();
 
-        final SortedMap<MetaKey, String> metaData = channel.getProvidedMetaData ();
+            final P2MetaDataInformation channelInfo = new P2MetaDataInformation ();
 
-        final P2MetaDataInformation channelInfo = new P2MetaDataInformation ();
+            MetaKeys.bind ( channelInfo, metaData );
 
-        MetaKeys.bind ( channelInfo, metaData );
+            model.put ( "channel", channel );
+            model.put ( "command", channelInfo );
 
-        model.put ( "channel", channel );
-        model.put ( "command", channelInfo );
+            fillBreadcrumbs ( model, channel.getId ().getId (), "Edit" );
 
-        fillBreadcrumbs ( model, channel.getId (), "Edit" );
-
-        return new ModelAndView ( "p2edit", model );
+            return new ModelAndView ( "p2edit", model );
+        } );
     }
 
     private void fillBreadcrumbs ( final Map<String, Object> model, final String channelId, final String action )
@@ -113,26 +106,23 @@ public class P2MetaDataController
     @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.POST )
     public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final P2MetaDataInformation data, final BindingResult result) throws Exception
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return Channels.withChannel ( this.service, channelId, ModifiableChannel.class, channel -> {
 
-        final Map<String, Object> model = new HashMap<> ();
+            final Map<String, Object> model = new HashMap<> ();
 
-        if ( result.hasErrors () )
-        {
-            model.put ( "channel", channel );
-            model.put ( "command", data );
-            fillBreadcrumbs ( model, channelId, "Edit" );
-            return new ModelAndView ( "p2edit", model );
-        }
+            if ( result.hasErrors () )
+            {
+                model.put ( "channel", channel );
+                model.put ( "command", data );
+                fillBreadcrumbs ( model, channelId, "Edit" );
+                return new ModelAndView ( "p2edit", model );
+            }
 
-        final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
+            final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
 
-        channel.applyMetaData ( providedMetaData );
+            channel.applyMetaData ( providedMetaData );
 
-        return new ModelAndView ( "redirect:/p2.metadata/" + channelId + "/info", model );
+            return new ModelAndView ( "redirect:/p2.metadata/" + channelId + "/info", model );
+        } );
     }
 }

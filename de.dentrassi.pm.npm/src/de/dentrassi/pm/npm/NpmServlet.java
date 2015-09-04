@@ -21,13 +21,42 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.system.SystemService;
 
 public class NpmServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
+
+    private ServiceTracker<ChannelService, ChannelService> tracker;
+
+    private ServiceTracker<SystemService, SystemService> sysTracker;
+
+    @Override
+    public void init () throws ServletException
+    {
+        super.init ();
+
+        final BundleContext context = FrameworkUtil.getBundle ( NpmServlet.class ).getBundleContext ();
+
+        this.tracker = new ServiceTracker<> ( context, ChannelService.class, null );
+        this.tracker.open ();
+
+        this.sysTracker = new ServiceTracker<> ( context, SystemService.class, null );
+        this.sysTracker.open ();
+    }
+
+    @Override
+    public void destroy ()
+    {
+        this.tracker.close ();
+        this.sysTracker.close ();
+
+        super.destroy ();
+    }
 
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
@@ -45,7 +74,7 @@ public class NpmServlet extends HttpServlet
             return;
         }
 
-        final StorageService service = this.tracker.getService ();
+        final ChannelService service = this.tracker.getService ();
         final SystemService sysService = this.sysTracker.getService ();
 
         if ( service == null || sysService == null )
@@ -65,18 +94,20 @@ public class NpmServlet extends HttpServlet
             return;
         }
 
-        final Channel channel = service.getChannelWithAlias ( toks[0] );
-        if ( channel == null )
+        try
+        {
+            service.access ( By.nameOrId ( toks[0] ), ReadableChannel.class, channel -> {
+                processGet ( request, response, sysService, channel, toks );
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             response.getWriter ().format ( "Channel '%s' not found", toks[0] );
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-            return;
         }
-
-        processGet ( request, response, sysService, channel, toks );
     }
 
-    private void processGet ( final HttpServletRequest request, final HttpServletResponse response, final SystemService service, final Channel channel, final String[] toks ) throws IOException
+    private void processGet ( final HttpServletRequest request, final HttpServletResponse response, final SystemService service, final ReadableChannel channel, final String[] toks ) throws IOException
     {
         if ( toks.length == 2 )
         {
@@ -86,33 +117,6 @@ public class NpmServlet extends HttpServlet
 
         response.getWriter ().write ( "No handler" );
         response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-    }
-
-    private ServiceTracker<StorageService, StorageService> tracker;
-
-    private ServiceTracker<SystemService, SystemService> sysTracker;
-
-    @Override
-    public void init () throws ServletException
-    {
-        super.init ();
-
-        final BundleContext context = FrameworkUtil.getBundle ( NpmServlet.class ).getBundleContext ();
-
-        this.tracker = new ServiceTracker<> ( context, StorageService.class, null );
-        this.tracker.open ();
-
-        this.sysTracker = new ServiceTracker<> ( context, SystemService.class, null );
-        this.sysTracker.open ();
-    }
-
-    @Override
-    public void destroy ()
-    {
-        this.tracker.close ();
-        this.sysTracker.close ();
-
-        super.destroy ();
     }
 
     private void notFound ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException

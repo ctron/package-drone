@@ -51,4 +51,9 @@ public class ChannelInformation extends ChannelId
     {
         return this.aspectStates;
     }
+
+    public boolean hasAspect ( final String aspectId )
+    {
+        return this.aspectStates.containsKey ( aspectId );
+    }
 }

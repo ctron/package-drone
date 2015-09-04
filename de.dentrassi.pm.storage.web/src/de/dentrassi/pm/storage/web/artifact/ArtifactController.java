@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.web.artifact;
 
+import static de.dentrassi.pm.storage.web.internal.Activator.getGeneratorProcessor;
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.util.HashMap;
@@ -20,6 +21,8 @@ import java.util.Map;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.net.UrlEscapers;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
@@ -28,7 +31,7 @@ import de.dentrassi.osgi.web.RequestMethod;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
-import de.dentrassi.pm.common.web.CommonController;
+import de.dentrassi.pm.common.utils.Holder;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
@@ -36,11 +39,11 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.sec.web.filter.SecurityFilter;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.GeneratorArtifact;
 import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.web.channel.ChannelController;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
@@ -50,29 +53,21 @@ import de.dentrassi.pm.storage.web.channel.ChannelController;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ArtifactController implements InterfaceExtender
 {
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
 
-    @RequestMapping ( value = "/artifact/{artifactId}/generate", method = RequestMethod.GET )
+    @RequestMapping ( value = "/channel/{channelId}/artifacts/{artifactId}/generate", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView generate ( @PathVariable ( "artifactId" ) final String artifactId)
+    public ModelAndView generate ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId)
     {
-        final Artifact artifact = this.service.getArtifact ( artifactId );
-        if ( artifact == null )
-        {
-            return CommonController.createNotFound ( "artifact", artifactId );
-        }
-
-        if ( artifact instanceof GeneratorArtifact )
-        {
-            ( (GeneratorArtifact)artifact ).generate ();
-        }
-
-        return new ModelAndView ( "redirect:/channel/" + artifact.getChannel ().getId () + "/view" );
+        return Channels.withArtifact ( this.service, channelId, artifactId, ModifiableChannel.class, ( channel, artifact ) -> {
+            channel.getContext ().regenerate ( artifact.getId () );
+            return new ModelAndView ( "redirect:/channel/" + UrlEscapers.urlPathSegmentEscaper ().escape ( artifact.getChannelId ().getId () ) + "/view" );
+        } );
     }
 
     @Override
@@ -92,17 +87,18 @@ public class ArtifactController implements InterfaceExtender
 
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                /* FIXME:
-                if ( art instanceof GeneratorArtifact )
+                if ( ai.is ( "generator" ) )
                 {
-                    final GeneratorArtifact genart = (GeneratorArtifact)art;
-                
-                    if ( genart.getEditTarget () != null )
+                    final Holder<LinkTarget> holder = new Holder<> ();
+                    getGeneratorProcessor ().process ( ai.getVirtualizerAspectId (), generator -> {
+                        holder.value = generator.getEditTarget ( ai );
+                    } );
+
+                    if ( holder.value != null )
                     {
-                        result.add ( new MenuEntry ( "Edit", 400, genart.getEditTarget (), Modifier.DEFAULT, null ) );
+                        result.add ( new MenuEntry ( "Edit", 400, holder.value, Modifier.DEFAULT, null ) );
                     }
                 }
-                */
             }
 
             if ( SecurityFilter.isLoggedIn ( request ) )
@@ -120,4 +116,5 @@ public class ArtifactController implements InterfaceExtender
         }
         return null;
     }
+
 }

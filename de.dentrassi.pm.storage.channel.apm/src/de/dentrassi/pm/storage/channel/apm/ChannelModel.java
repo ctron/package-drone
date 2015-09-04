@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.apm.aspect.AspectMapModel;
 
 public class ChannelModel
 {
@@ -16,7 +17,9 @@ public class ChannelModel
 
     private boolean locked;
 
-    private Map<MetaKey, String> metaData;
+    private Map<MetaKey, String> providedMetaData;
+
+    private Map<MetaKey, String> extractedMetaData;
 
     private final Map<String, ArtifactModel> artifacts;
 
@@ -26,7 +29,7 @@ public class ChannelModel
 
     public ChannelModel ()
     {
-        this.metaData = new HashMap<> ();
+        this.providedMetaData = new HashMap<> ();
         this.artifacts = new HashMap<> ();
         this.cacheEntries = new HashMap<> ();
 
@@ -39,7 +42,7 @@ public class ChannelModel
 
         this.locked = other.locked;
 
-        this.metaData = new HashMap<> ( other.metaData );
+        this.providedMetaData = new HashMap<> ( other.providedMetaData );
 
         // copy by ctor
 
@@ -59,14 +62,24 @@ public class ChannelModel
         return this.description;
     }
 
-    public void setMetaData ( final Map<MetaKey, String> metaData )
+    public void setProvidedMetaData ( final Map<MetaKey, String> providedMetaData )
     {
-        this.metaData = metaData;
+        this.providedMetaData = providedMetaData;
     }
 
-    public Map<MetaKey, String> getMetaData ()
+    public Map<MetaKey, String> getProvidedMetaData ()
     {
-        return this.metaData;
+        return this.providedMetaData;
+    }
+
+    public void setExtractedMetaData ( final Map<MetaKey, String> extractedMetaData )
+    {
+        this.extractedMetaData = extractedMetaData;
+    }
+
+    public Map<MetaKey, String> getExtractedMetaData ()
+    {
+        return this.extractedMetaData;
     }
 
     public void setLocked ( final boolean locked )

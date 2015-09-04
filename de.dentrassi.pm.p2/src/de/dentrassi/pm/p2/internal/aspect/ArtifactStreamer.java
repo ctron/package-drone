@@ -10,12 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
+import java.io.IOException;
 import java.io.InputStream;
 
-import de.dentrassi.pm.common.utils.ThrowingConsumer;
+import de.dentrassi.pm.common.utils.IOConsumer;
 
 @FunctionalInterface
 public interface ArtifactStreamer
 {
-    public void stream ( String artifactId, ThrowingConsumer<InputStream> receiver );
+    public void stream ( String artifactId, IOConsumer<InputStream> receiver ) throws IOException;
 }

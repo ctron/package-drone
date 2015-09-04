@@ -2,6 +2,7 @@ package de.dentrassi.pm.storage.channel.apm;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +21,10 @@ import de.dentrassi.pm.storage.channel.CacheEntryInformation;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
 import de.dentrassi.pm.storage.channel.ChannelState;
 import de.dentrassi.pm.storage.channel.ChannelState.Builder;
+import de.dentrassi.pm.storage.channel.IdTransformer;
+import de.dentrassi.pm.storage.channel.apm.aspect.AspectContextImpl;
+import de.dentrassi.pm.storage.channel.apm.aspect.AspectMapModel;
+import de.dentrassi.pm.storage.channel.apm.aspect.AspectableContext;
 import de.dentrassi.pm.storage.channel.apm.internal.Activator;
 import de.dentrassi.pm.storage.channel.apm.store.BlobStore;
 import de.dentrassi.pm.storage.channel.apm.store.BlobStore.Transaction;
@@ -28,15 +33,13 @@ import de.dentrassi.pm.storage.channel.provider.ModifyContext;
 
 public class ModifyContextImpl implements ModifyContext, AspectableContext
 {
+    private final String localChannelId;
+
     private final BlobStore store;
 
     private final CacheStore cacheStore;
 
     private final ChannelModel model;
-
-    private final SortedMap<MetaKey, String> metaData;
-
-    private final SortedMap<MetaKey, String> modMetaData;
 
     private final Map<String, ArtifactInformation> artifacts;
 
@@ -54,15 +57,18 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     private final AspectContextImpl aspectContext;
 
-    public ModifyContextImpl ( final BlobStore store, final CacheStore cacheStore, final ChannelModel other )
+    private SortedMap<MetaKey, String> metaDataCache;
+
+    private IdTransformer idTransformer;
+
+    public ModifyContextImpl ( final String localChannelId, final BlobStore store, final CacheStore cacheStore, final ChannelModel other )
     {
+        this.localChannelId = localChannelId;
+
         this.store = store;
         this.cacheStore = cacheStore;
 
         this.model = new ChannelModel ( other );
-
-        this.modMetaData = new TreeMap<> ( other.getMetaData () );
-        this.metaData = Collections.unmodifiableSortedMap ( this.modMetaData );
 
         this.modArtifacts = new HashMap<> ( other.getArtifacts ().size () );
         for ( final Map.Entry<String, ArtifactModel> am : other.getArtifacts ().entrySet () )
@@ -87,9 +93,14 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     public ModifyContextImpl ( final ModifyContextImpl other )
     {
-        this ( other.store, other.cacheStore, other.getModel () );
+        this ( other.localChannelId, other.store, other.cacheStore, other.getModel () );
 
         // FIXME: prevent unnecessary copies
+    }
+
+    public void setIdTransformer ( final IdTransformer idTransformer )
+    {
+        this.idTransformer = idTransformer;
     }
 
     public ChannelModel getModel ()
@@ -104,9 +115,33 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     }
 
     @Override
+    public String getChannelId ()
+    {
+        if ( this.idTransformer == null )
+        {
+            throw new IllegalStateException ( "'idTransformer' was not set, it is required to get the external channel id" );
+        }
+
+        return this.idTransformer.transform ( this.localChannelId );
+    }
+
+    @Override
     public SortedMap<MetaKey, String> getMetaData ()
     {
-        return this.metaData;
+        if ( this.metaDataCache == null )
+        {
+            final TreeMap<MetaKey, String> tmp = new TreeMap<> ();
+            if ( this.model.getExtractedMetaData () != null )
+            {
+                tmp.putAll ( this.model.getExtractedMetaData () );
+            }
+            if ( this.model.getProvidedMetaData () != null )
+            {
+                tmp.putAll ( this.model.getProvidedMetaData () );
+            }
+            this.metaDataCache = Collections.unmodifiableSortedMap ( tmp );
+        }
+        return this.metaDataCache;
     }
 
     @Override
@@ -146,14 +181,51 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
             if ( value == null )
             {
-                this.modMetaData.remove ( value );
-                this.model.getMetaData ().remove ( value );
+                this.model.getProvidedMetaData ().remove ( value );
             }
             else
             {
-                this.modMetaData.put ( key, value );
-                this.model.getMetaData ().put ( key, value );
+                this.model.getProvidedMetaData ().put ( key, value );
             }
+        }
+    }
+
+    @Override
+    public void applyMetaData ( final String artifactId, final Map<MetaKey, String> changes )
+    {
+        testLocked ();
+
+        final ArtifactModel artifact = this.model.getArtifacts ().get ( artifactId );
+        if ( artifact == null )
+        {
+            throw new IllegalStateException ( String.format ( "Artifact '%s' is unknown", artifactId ) );
+        }
+
+        for ( final Map.Entry<MetaKey, String> entry : changes.entrySet () )
+        {
+            final MetaKey key = entry.getKey ();
+            final String value = entry.getValue ();
+            if ( value == null )
+            {
+                artifact.getProvidedMetaData ().remove ( key );
+            }
+            else
+            {
+                artifact.getProvidedMetaData ().put ( key, value );
+            }
+        }
+
+        // clear cache
+
+        this.metaDataCache = null;
+
+        // update
+
+        updateArtifact ( artifactId, artifact );
+
+        if ( artifact.getFacets ().contains ( "generator" ) )
+        {
+            this.aspectContext.regenerate ( artifactId );
         }
     }
 
@@ -187,12 +259,13 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         }
     }
 
-    @SuppressWarnings ( "unused" )
     private void ensureCacheTransaction ()
     {
         if ( this.cacheTransaction == null )
         {
             this.cacheTransaction = this.cacheStore.startTransaction ();
+            this.modCacheEntries.clear ();
+            this.model.getCacheEntries ().clear ();
         }
     }
 
@@ -228,12 +301,20 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             {
                 if ( !parent.is ( "stored" ) )
                 {
-                    throw new IllegalArgumentException ( String.format ( "Unable to use artifact %s as parent, it is not a stored artifact.", parentId ) );
+                    throw new IllegalArgumentException ( String.format ( "Unable to use artifact %s as parent, it is not a stored artifact", parentId ) );
                 }
             }
         }
 
         return Exceptions.wrapException ( () -> this.aspectContext.createArtifact ( parentId, source, name, providedMetaData ) );
+    }
+
+    @Override
+    public ArtifactInformation createGeneratorArtifact ( final String generatorId, final InputStream source, final String name, final Map<MetaKey, String> providedMetaData )
+    {
+        testLocked ();
+
+        return Exceptions.wrapException ( () -> this.aspectContext.createGeneratorArtifact ( generatorId, source, name, providedMetaData ) );
     }
 
     @Override
@@ -378,6 +459,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public boolean streamCacheEntry ( final MetaKey key, final IOConsumer<CacheEntry> consumer ) throws IOException
     {
         final CacheEntryInformation entry = this.cacheEntries.get ( key );
+
         if ( entry == null )
         {
             return false;
@@ -404,6 +486,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         testLocked ();
         ensureTransaction ();
+        ensureCacheTransaction ();
 
         final String[] keys = this.modArtifacts.keySet ().toArray ( new String[this.modArtifacts.size ()] );
         for ( final String art : keys )
@@ -418,7 +501,23 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             }
         }
 
-        // FIXME: clear all meta data, run aggreators, etc ...
+        // clear cache entries
+
+        this.modCacheEntries.clear ();
+        this.model.getCacheEntries ().clear ();
+
+        Exceptions.wrapException ( () -> this.cacheTransaction.clear () );
+
+        // clear extracted channel meta data
+
+        if ( this.model.getExtractedMetaData () != null )
+        {
+            this.model.getExtractedMetaData ().clear ();
+        }
+
+        // clear meta data cache
+
+        this.metaDataCache = null;
     }
 
     @Override
@@ -473,9 +572,54 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     }
 
     @Override
-    public Map<MetaKey, String> getChannelProvidedMetaData ()
+    public void setExtractedMetaData ( final Map<MetaKey, String> metaData )
     {
-        return Collections.unmodifiableMap ( this.model.getMetaData () );
+        this.model.setExtractedMetaData ( new HashMap<> ( metaData ) );
     }
 
+    @Override
+    public void regenerate ( final String artifactId )
+    {
+        testLocked ();
+
+        this.aspectContext.regenerate ( artifactId );
+    }
+
+    @Override
+    public Map<MetaKey, String> getChannelProvidedMetaData ()
+    {
+        return Collections.unmodifiableMap ( this.model.getProvidedMetaData () );
+    }
+
+    @Override
+    public Map<MetaKey, String> getProvidedMetaData ()
+    {
+        return getChannelProvidedMetaData ();
+    }
+
+    @Override
+    public Map<MetaKey, String> getExtractedMetaData ()
+    {
+        return Collections.unmodifiableMap ( this.model.getExtractedMetaData () );
+    }
+
+    @Override
+    public void createCacheEntry ( final MetaKey key, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
+    {
+        ensureCacheTransaction ();
+
+        final long size = this.cacheTransaction.put ( key, creator );
+
+        final CacheEntryInformation entry = new CacheEntryInformation ( key, name, size, mimeType, Instant.now () );
+        this.modCacheEntries.put ( key, entry );
+        this.model.getCacheEntries ().put ( key, CacheEntryModel.fromInformation ( entry ) );
+    }
+
+    @Override
+    public ChannelDetails getChannelDetails ()
+    {
+        final ChannelDetails result = new ChannelDetails ();
+        result.setDescription ( this.model.getDescription () );
+        return result;
+    }
 }

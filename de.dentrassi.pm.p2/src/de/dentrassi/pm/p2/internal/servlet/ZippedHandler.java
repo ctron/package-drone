@@ -26,16 +26,16 @@ import de.dentrassi.pm.aspect.common.osgi.OsgiExtractor;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
 import de.dentrassi.pm.p2.internal.aspect.ChannelStreamer;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 
 public class ZippedHandler implements Handler
 {
-    private final Channel channel;
+    private final ReadableChannel channel;
 
     private final Set<String> nameCache = new HashSet<> ();
 
-    public ZippedHandler ( final Channel channel )
+    public ZippedHandler ( final ReadableChannel channel )
     {
         this.channel = channel;
     }
@@ -53,19 +53,15 @@ public class ZippedHandler implements Handler
         resp.setContentType ( "application/zip" );
         final ZipOutputStream zos = new ZipOutputStream ( resp.getOutputStream () );
 
-        String channelName = this.channel.getName ();
-        if ( channelName == null )
-        {
-            channelName = this.channel.getId ();
-        }
+        final String channelName = this.channel.getId ().getNameOrId ();
 
         final ChannelStreamer streamer = new ChannelStreamer ( channelName, this.channel.getMetaData (), false, true );
 
-        for ( final Artifact a : this.channel.getArtifacts () )
+        for ( final ArtifactInformation a : this.channel.getContext ().getArtifacts ().values () )
         {
-            streamer.process ( a.getInformation (), ( ai, receiver ) -> a.streamData ( receiver ) );
+            streamer.process ( a, ( ai, receiver ) -> this.channel.getContext ().stream ( ai, receiver ) );
 
-            final Map<MetaKey, String> md = a.getInformation ().getMetaData ();
+            final Map<MetaKey, String> md = a.getMetaData ();
 
             final String classifier = md.get ( new MetaKey ( "osgi", OsgiExtractor.KEY_CLASSIFIER ) );
             final String symbolicName = md.get ( new MetaKey ( "osgi", OsgiExtractor.KEY_NAME ) );
@@ -81,10 +77,10 @@ public class ZippedHandler implements Handler
             switch ( classifier )
             {
                 case "bundle":
-                    stream ( zos, a, "plugins/" + name );
+                    stream ( zos, this.channel, a, "plugins/" + name );
                     break;
                 case "eclipse.feature":
-                    stream ( zos, a, "features/" + name );
+                    stream ( zos, this.channel, a, "features/" + name );
                     break;
             }
         }
@@ -98,7 +94,7 @@ public class ZippedHandler implements Handler
         zos.close ();
     }
 
-    private void stream ( final ZipOutputStream zos, final Artifact a, final String name ) throws IOException
+    private void stream ( final ZipOutputStream zos, final ReadableChannel channel, final ArtifactInformation a, final String name ) throws IOException
     {
         if ( !this.nameCache.add ( name ) )
         {
@@ -107,7 +103,7 @@ public class ZippedHandler implements Handler
         }
 
         zos.putNextEntry ( new ZipEntry ( name ) );
-        a.streamData ( ( ai, stream ) -> ByteStreams.copy ( stream, zos ) );
+        channel.getContext ().stream ( a, stream -> ByteStreams.copy ( stream, zos ) );
         zos.closeEntry ();
     }
 }

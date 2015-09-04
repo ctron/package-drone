@@ -4,10 +4,13 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +24,8 @@ import de.dentrassi.pm.common.MetaKeys;
 
 public class ArtifactInformation implements Comparable<ArtifactInformation>, Validated
 {
+    public static final Comparator<ArtifactInformation> NAME_COMPARATOR = nullsFirst ( comparing ( ArtifactInformation::getName ) );
+
     private final String id;
 
     private final String parentId;

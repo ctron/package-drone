@@ -11,6 +11,7 @@
 package de.dentrassi.pm.generator;
 
 import de.dentrassi.osgi.web.LinkTarget;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
 
 public interface ArtifactGenerator
 {
@@ -22,7 +23,7 @@ public interface ArtifactGenerator
 
     public LinkTarget getAddTarget ();
 
-    public default LinkTarget getEditTarget ( final String artifactId )
+    public default LinkTarget getEditTarget ( final ChannelArtifactInformation artifact )
     {
         return null;
     }

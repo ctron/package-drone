@@ -14,6 +14,8 @@ public interface ModifyContext extends AccessContext
 
     public void applyMetaData ( Map<MetaKey, String> changes );
 
+    public void applyMetaData ( String artifactId, Map<MetaKey, String> changes );
+
     public void lock ();
 
     public void unlock ();
@@ -22,7 +24,9 @@ public interface ModifyContext extends AccessContext
 
     public ArtifactInformation createArtifact ( String parentId, InputStream source, String name, Map<MetaKey, String> providedMetaData );
 
-    public boolean deleteArtifact ( String id );
+    public ArtifactInformation createGeneratorArtifact ( String generatorId, InputStream source, String name, Map<MetaKey, String> providedMetaData );
+
+    public boolean deleteArtifact ( String artifactId );
 
     public void clear ();
 
@@ -32,4 +36,5 @@ public interface ModifyContext extends AccessContext
 
     public void refreshAspects ( Set<String> aspectIds );
 
+    public void regenerate ( String artifactId );
 }

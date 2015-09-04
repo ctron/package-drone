@@ -36,4 +36,8 @@ public interface AccessContext
     public Map<MetaKey, CacheEntryInformation> getCacheEntries ();
 
     public boolean streamCacheEntry ( MetaKey key, IOConsumer<CacheEntry> consumer ) throws IOException;
+
+    public Map<MetaKey, String> getProvidedMetaData ();
+
+    public Map<MetaKey, String> getExtractedMetaData ();
 }

@@ -197,9 +197,14 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         return this.manager.accessCall ( KEY_STORAGE, ChannelServiceAccess.class, model -> model.mapToName ( mappedId ) );
     }
 
-    private String makeMappedId ( final ChannelProvider provider, final Channel channel )
+    private static String makeMappedId ( final ChannelProvider provider, final Channel channel )
     {
-        return String.format ( "%s_%s", provider.getId (), channel.getId () );
+        return makeMappedId ( provider.getId (), channel.getId () );
+    }
+
+    private static String makeMappedId ( final String providerId, final String channelId )
+    {
+        return String.format ( "%s_%s", providerId, channelId );
     }
 
     public void start ()
@@ -367,7 +372,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
             }
         }
 
-        final Channel channel = provider.create ( description );
+        final Channel channel = provider.create ( description, localId -> makeMappedId ( providerId, localId ) );
 
         final String id = makeMappedId ( provider, channel );
         return new ChannelId ( id, mapName ( id ) );
@@ -435,7 +440,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
             {
                 return operation.process ( channel.getTarget () );
             }
-        } );
+        } , localId -> makeMappedId ( channelEntry.getProvider ().getId (), localId ) );
     }
 
     private static <T, R> R accessModify ( final ChannelEntry channelEntry, final ChannelOperation<R, ModifiableChannel> operation )
@@ -446,7 +451,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
             {
                 return operation.process ( ModifiableChannel.class.cast ( new ModifiableChannelAdapter ( channelEntry.getId (), ctx ) ) );
             }
-        } );
+        } , localId -> makeMappedId ( channelEntry.getProvider ().getId (), localId ) );
     }
 
     private <R> R handleDeployKeys ( final ChannelEntry channel, final ChannelOperation<R, DeployKeysChannelAdapter> operation )

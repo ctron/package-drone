@@ -183,12 +183,12 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
                 // FIXME: handle broken channel state
                 throw new IllegalStateException ( "Unable to load channel model" );
             }
-            return new ModifyContextImpl ( this.store, this.cacheStore, model );
+            return new ModifyContextImpl ( this.channelId, this.store, this.cacheStore, model );
         }
         catch ( final NoSuchFileException e )
         {
             // create a new model
-            return new ModifyContextImpl ( this.store, this.cacheStore, new ChannelModel () );
+            return new ModifyContextImpl ( this.channelId, this.store, this.cacheStore, new ChannelModel () );
         }
     }
 

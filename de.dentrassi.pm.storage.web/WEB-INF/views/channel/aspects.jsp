@@ -193,7 +193,7 @@ function doAction ( action, factoryId )
         <button type="button" class="btn btn-warning" id="modal-req-without">Add without dependencies</button>
         <button type="button" class="btn btn-primary" id="modal-req-with">Add with dependencies</button>
       </div>
-    </div><<%-- modal-content --%>
+    </div><%-- modal-content --%>
   </div><%-- modal-dialog --%>
 </div><%-- modal --%>
 

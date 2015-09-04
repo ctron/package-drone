@@ -6,6 +6,7 @@ import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ChannelService.ChannelOperation;
+import de.dentrassi.pm.storage.channel.IdTransformer;
 import de.dentrassi.pm.storage.channel.provider.AccessContext;
 import de.dentrassi.pm.storage.channel.provider.Channel;
 import de.dentrassi.pm.storage.channel.provider.ModifyContext;
@@ -45,15 +46,21 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public <T> T access ( final ChannelOperation<T, AccessContext> operation )
+    public <T> T access ( final ChannelOperation<T, AccessContext> operation, final IdTransformer idTransformer )
     {
-        return this.manager.accessCall ( this.storageKey, AccessContext.class, model -> wrapException ( () -> operation.process ( model ) ) );
+        return this.manager.accessCall ( this.storageKey, AccessContext.class, model -> wrapException ( () -> {
+            ( (ModifyContextImpl)model ).setIdTransformer ( idTransformer );
+            return operation.process ( model );
+        } ) );
     }
 
     @Override
-    public <T> T modify ( final ChannelOperation<T, ModifyContext> operation )
+    public <T> T modify ( final ChannelOperation<T, ModifyContext> operation, final IdTransformer idTransformer )
     {
-        return this.manager.modifyCall ( this.storageKey, ModifyContext.class, model -> wrapException ( () -> operation.process ( model ) ) );
+        return this.manager.modifyCall ( this.storageKey, ModifyContext.class, model -> wrapException ( () -> {
+            ( (ModifyContextImpl)model ).setIdTransformer ( idTransformer );
+            return operation.process ( model );
+        } ) );
     }
 
     @Override

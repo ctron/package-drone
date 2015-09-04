@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 
 public class ChannelCacheHandler
 {
@@ -34,17 +34,17 @@ public class ChannelCacheHandler
         this.key = key;
     }
 
-    public void process ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    public void process ( final ReadableChannel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         if ( !channel.streamCacheEntry ( this.key, ( cacheEntry ) -> {
             response.setContentType ( cacheEntry.getMimeType () );
             response.setContentLengthLong ( cacheEntry.getSize () );
-            response.setDateHeader ( "Last-Modified", cacheEntry.getTimestamp ().getTime () );
+            response.setDateHeader ( "Last-Modified", cacheEntry.getTimestamp ().toEpochMilli () );
             final long len = ByteStreams.copy ( cacheEntry.getStream (), response.getOutputStream () );
             logger.trace ( "Transfered {} bytes of data from cache entry: {}", len, this.key );
         } ) )
         {
-            logger.warn ( "Unable to find channel cache entry: " + this.key );
+            logger.warn ( "Unable to find channel cache entry: {}", this.key );
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.setContentType ( "text/plain" );
             response.getWriter ().format ( "Unable to find: %s", request.getRequestURI () );

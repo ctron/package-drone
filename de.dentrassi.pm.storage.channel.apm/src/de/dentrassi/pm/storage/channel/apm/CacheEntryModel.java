@@ -71,4 +71,16 @@ public class CacheEntryModel
     {
         return new CacheEntryInformation ( key, model.name, model.size, model.mimeType, model.timestamp.toInstant () );
     }
+
+    public static CacheEntryModel fromInformation ( final CacheEntryInformation entry )
+    {
+        final CacheEntryModel result = new CacheEntryModel ();
+
+        result.setSize ( entry.getSize () );
+        result.setName ( entry.getName () );
+        result.setMimeType ( entry.getMimeType () );
+        result.setTimestamp ( entry.getTimestampAsDate () );
+
+        return result;
+    }
 }

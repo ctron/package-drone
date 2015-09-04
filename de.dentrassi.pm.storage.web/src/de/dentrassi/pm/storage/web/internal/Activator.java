@@ -15,6 +15,7 @@ import org.osgi.framework.BundleContext;
 
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.recipe.RecipeProcessor;
+import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.storage.web.services.ServiceTracker;
 
 public class Activator implements BundleActivator
@@ -28,6 +29,8 @@ public class Activator implements BundleActivator
 
     private RecipeProcessor recipes;
 
+    private GeneratorProcessor generatorProcessor;
+
     /*
      * (non-Javadoc)
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
@@ -40,6 +43,8 @@ public class Activator implements BundleActivator
         this.tracker.open ();
         this.aspects = new ChannelAspectProcessor ( bundleContext );
         this.recipes = new RecipeProcessor ( bundleContext );
+        this.generatorProcessor = new GeneratorProcessor ( bundleContext );
+        this.generatorProcessor.open ();
     }
 
     /*
@@ -52,6 +57,7 @@ public class Activator implements BundleActivator
         this.tracker.close ();
         this.aspects.close ();
         this.recipes.dispose ();
+        this.generatorProcessor.close ();
 
         Activator.INSTANCE = null;
     }
@@ -69,5 +75,10 @@ public class Activator implements BundleActivator
     public static RecipeProcessor getRecipes ()
     {
         return INSTANCE.recipes;
+    }
+
+    public static GeneratorProcessor getGeneratorProcessor ()
+    {
+        return INSTANCE.generatorProcessor;
     }
 }

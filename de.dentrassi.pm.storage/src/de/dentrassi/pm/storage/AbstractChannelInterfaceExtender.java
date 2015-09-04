@@ -16,13 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 
 /**
  * An abstract InterfaceExtender which only processes Channel instances
  */
 public abstract class AbstractChannelInterfaceExtender implements InterfaceExtender
 {
-    protected boolean filterChannel ( final Channel channel )
+    protected boolean filterChannel ( final ChannelInformation channel )
     {
         return true;
     }
@@ -30,9 +31,9 @@ public abstract class AbstractChannelInterfaceExtender implements InterfaceExten
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
             if ( filterChannel ( channel ) )
             {
                 return getChannelActions ( request, channel );
@@ -41,7 +42,7 @@ public abstract class AbstractChannelInterfaceExtender implements InterfaceExten
         return null;
     }
 
-    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final ChannelInformation channel )
     {
         return null;
     }
@@ -49,9 +50,9 @@ public abstract class AbstractChannelInterfaceExtender implements InterfaceExten
     @Override
     public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
             if ( filterChannel ( channel ) )
             {
                 return getChannelViews ( request, channel );
@@ -60,7 +61,7 @@ public abstract class AbstractChannelInterfaceExtender implements InterfaceExten
         return null;
     }
 
-    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final ChannelInformation channel )
     {
         return null;
     }

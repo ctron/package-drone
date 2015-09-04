@@ -46,11 +46,12 @@ public final class DownloadHelper
         streamArtifact ( response, service, channelId, artifactId, mimetype, download, ArtifactInformation::getName );
     }
 
-    public static void streamArtifact ( final HttpServletResponse response, final ChannelService service, final String channelId, final String artifactId, final String mimetype, final boolean download, final Function<ArtifactInformation, String> nameFunc ) throws IOException
+    public static void streamArtifact ( final HttpServletResponse response, final ChannelService service, final String channelId, final String artifactId, final Optional<String> mimetype, final boolean download, final Function<ArtifactInformation, String> nameFunc ) throws IOException
     {
         try
         {
             service.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+
                 final ArtifactInformation artifact = channel.getContext ().getArtifacts ().get ( artifactId );
                 if ( artifact == null )
                 {
@@ -60,12 +61,7 @@ public final class DownloadHelper
                     return;
                 }
 
-                if ( !channel.getContext ().stream ( artifactId, stream -> {
-                    streamArtifact ( response, artifact, stream, Optional.ofNullable ( mimetype ), download );
-                } ) )
-                {
-                    // failed to stream
-                }
+                streamArtifact ( response, artifact, mimetype, download, channel, nameFunc );
             } );
         }
         catch ( final ChannelNotFoundException e )
@@ -76,7 +72,19 @@ public final class DownloadHelper
         }
     }
 
-    private static void streamArtifact ( final HttpServletResponse response, final de.dentrassi.pm.storage.channel.ArtifactInformation artifact, final InputStream stream, final Optional<String> mimetype, final boolean download ) throws IOException
+    public static void streamArtifact ( final HttpServletResponse response, final ChannelService service, final String channelId, final String artifactId, final String mimetype, final boolean download, final Function<ArtifactInformation, String> nameFunc ) throws IOException
+    {
+        streamArtifact ( response, service, channelId, artifactId, Optional.ofNullable ( mimetype ), download, nameFunc );
+    }
+
+    public static boolean streamArtifact ( final HttpServletResponse response, final ArtifactInformation artifact, final Optional<String> mimetype, final boolean download, final ReadableChannel channel, final Function<ArtifactInformation, String> nameFunc ) throws IOException
+    {
+        return channel.getContext ().stream ( artifact.getId (), stream -> {
+            streamArtifact ( response, artifact, stream, mimetype, download, nameFunc );
+        } );
+    }
+
+    public static void streamArtifact ( final HttpServletResponse response, final ArtifactInformation artifact, final InputStream stream, final Optional<String> mimetype, final boolean download, final Function<ArtifactInformation, String> nameFunc ) throws IOException
     {
         final String mt = mimetype.orElseGet ( () -> evalMimeType ( artifact ) );
 

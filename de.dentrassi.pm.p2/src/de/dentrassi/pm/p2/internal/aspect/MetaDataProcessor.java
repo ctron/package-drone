@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class MetaDataProcessor extends AbstractRepositoryProcessor
 {

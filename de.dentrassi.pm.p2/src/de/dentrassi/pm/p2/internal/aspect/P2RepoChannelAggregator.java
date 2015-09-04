@@ -21,7 +21,7 @@ import de.dentrassi.osgi.profiler.Profile;
 import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class P2RepoChannelAggregator implements ChannelAggregator
 {
@@ -35,7 +35,7 @@ public class P2RepoChannelAggregator implements ChannelAggregator
             handle.task ( "Process : " + context.getArtifacts ().size () );
 
             final Map<String, String> result = new HashMap<> ();
-            final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelNameOrId (), context.getChannelMetaData (), true, true );
+            final ChannelStreamer streamer = new ChannelStreamer ( context.getChannelId (), context.getChannelMetaData (), true, true );
 
             Date lastTimestamp = null;
             for ( final ArtifactInformation ai : context.getArtifacts () )

@@ -29,7 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ArtifactsProcessor extends AbstractRepositoryProcessor
 {

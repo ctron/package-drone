@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.dentrassi.pm.common.Severity;
-import de.dentrassi.pm.common.SimpleArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.ChannelId;
 
 public class Functions
@@ -38,16 +38,16 @@ public class Functions
         }
     }
 
-    public static List<SimpleArtifactInformation> nameSorted ( final Collection<SimpleArtifactInformation> artifacts )
+    public static List<ArtifactInformation> nameSorted ( final Collection<ArtifactInformation> artifacts )
     {
         if ( artifacts == null )
         {
             return null;
         }
 
-        final List<SimpleArtifactInformation> result = new ArrayList<> ( artifacts );
+        final List<ArtifactInformation> result = new ArrayList<> ( artifacts );
 
-        Collections.sort ( result, SimpleArtifactInformation.NAME_COMPARATOR );
+        Collections.sort ( result, ArtifactInformation.NAME_COMPARATOR );
 
         return result;
     }

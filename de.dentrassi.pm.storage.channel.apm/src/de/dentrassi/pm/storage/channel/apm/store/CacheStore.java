@@ -11,12 +11,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 
 public class CacheStore implements AutoCloseable
 {
+    private final static Logger logger = LoggerFactory.getLogger ( CacheStore.TransactionImpl.class );
+
     public class TransactionImpl implements Transaction
     {
         private Path tmp;
@@ -26,7 +30,7 @@ public class CacheStore implements AutoCloseable
         }
 
         @Override
-        public void put ( final MetaKey key, final IOConsumer<OutputStream> source ) throws IOException
+        public long put ( final MetaKey key, final IOConsumer<OutputStream> source ) throws IOException
         {
             makeTemp ();
 
@@ -36,6 +40,25 @@ public class CacheStore implements AutoCloseable
             try ( OutputStream stream = new BufferedOutputStream ( Files.newOutputStream ( path ) ) )
             {
                 source.accept ( stream );
+            }
+
+            return Files.size ( path );
+        }
+
+        @Override
+        public void clear () throws IOException
+        {
+            synchronized ( CacheStore.this )
+            {
+                // if we have a "next" dir
+                if ( this.tmp != null )
+                {
+                    // delete it
+                    Files.walkFileTree ( this.tmp, new RecursiveDeleteVisitor () );
+                }
+
+                // and ensure we always have one
+                makeTemp ();
             }
         }
 
@@ -128,9 +151,11 @@ public class CacheStore implements AutoCloseable
 
     public interface Transaction
     {
-        public void put ( MetaKey key, IOConsumer<OutputStream> data ) throws IOException;
+        public long put ( MetaKey key, IOConsumer<OutputStream> data ) throws IOException;
 
         public boolean stream ( final MetaKey key, final IOConsumer<InputStream> consumer ) throws IOException;
+
+        public void clear () throws IOException;
 
         public void commit ();
 
@@ -193,6 +218,8 @@ public class CacheStore implements AutoCloseable
     private boolean streamFrom ( final Path basePath, final MetaKey key, final IOConsumer<InputStream> consumer ) throws IOException
     {
         final Path path = makePath ( basePath, key );
+
+        logger.trace ( "streamFrom - key: %s, path: %s", key, path );
 
         try ( InputStream stream = new BufferedInputStream ( Files.newInputStream ( path ) ) )
         {

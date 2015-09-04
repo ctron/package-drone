@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.p2.internal.aspect;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import org.w3c.dom.Document;
 
-import de.dentrassi.pm.common.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class DocumentCache
 {
@@ -48,9 +49,20 @@ public class DocumentCache
         else
         {
             streamer.stream ( artifact.getId (), stream -> {
-                final Document newDoc = this.documentBuilder.parse ( stream );
-                this.cacheMap.put ( key, newDoc );
-                consumer.accept ( artifact, newDoc );
+                try
+                {
+                    final Document newDoc = this.documentBuilder.parse ( stream );
+                    this.cacheMap.put ( key, newDoc );
+                    consumer.accept ( artifact, newDoc );
+                }
+                catch ( final IOException e )
+                {
+                    throw e;
+                }
+                catch ( final Exception e )
+                {
+                    throw new IOException ( e );
+                }
             } );
         }
     }

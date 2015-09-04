@@ -1,6 +1,7 @@
 package de.dentrassi.pm.storage.channel;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,5 +53,10 @@ public interface ReadableChannel
     public default boolean streamCacheEntry ( final MetaKey key, final IOConsumer<CacheEntry> consumer ) throws IOException
     {
         return getContext ().streamCacheEntry ( key, consumer );
+    }
+
+    public default Collection<ArtifactInformation> getArtifacts ()
+    {
+        return getContext ().getArtifacts ().values ();
     }
 }

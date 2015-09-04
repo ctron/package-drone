@@ -31,15 +31,19 @@ import com.google.gson.JsonParser;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.npm.aspect.NpmChannelAspectFactory;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.system.SystemService;
 
 public class ModuleHandler
 {
+    private static final MetaKey KEY_NPM_PACKAGE_JSON = new MetaKey ( NpmChannelAspectFactory.ID, "package.json" );
+
+    private static final MetaKey KEY_SHA1 = new MetaKey ( "hasher", "sha1" );
+
     private final static Logger logger = LoggerFactory.getLogger ( ModuleHandler.class );
 
-    private final Channel channel;
+    private final ReadableChannel channel;
 
     private final String moduleName;
 
@@ -47,7 +51,7 @@ public class ModuleHandler
 
     private final SystemService service;
 
-    public ModuleHandler ( final SystemService service, final Channel channel, final String moduleName, final boolean pretty )
+    public ModuleHandler ( final SystemService service, final ReadableChannel channel, final String moduleName, final boolean pretty )
     {
         this.service = service;
         this.channel = channel;
@@ -67,16 +71,16 @@ public class ModuleHandler
 
         private final PackageInfo info;
 
-        private final Artifact artifact;
+        private final ArtifactInformation artifact;
 
-        public PackageEntry ( final PackageInfo info, final JsonElement element, final Artifact artifact )
+        public PackageEntry ( final PackageInfo info, final JsonElement element, final ArtifactInformation artifact )
         {
             this.info = info;
             this.element = element;
             this.artifact = artifact;
         }
 
-        public Artifact getArtifact ()
+        public ArtifactInformation getArtifact ()
         {
             return this.artifact;
         }
@@ -110,9 +114,9 @@ public class ModuleHandler
 
         final TreeMap<String, PackageEntry> versions = new TreeMap<> ();
 
-        for ( final Artifact art : this.channel.getArtifacts () )
+        for ( final ArtifactInformation art : this.channel.getArtifacts () )
         {
-            final String pkg = art.getInformation ().getMetaData ().get ( new MetaKey ( NpmChannelAspectFactory.ID, "package.json" ) );
+            final String pkg = art.getMetaData ().get ( KEY_NPM_PACKAGE_JSON );
             if ( pkg == null )
             {
                 continue;
@@ -166,14 +170,14 @@ public class ModuleHandler
         for ( final Map.Entry<String, PackageEntry> entry : versions.entrySet () )
         {
             final PackageInfo pi = entry.getValue ().getInfo ();
-            final Artifact art = entry.getValue ().getArtifact ();
+            final ArtifactInformation art = entry.getValue ().getArtifact ();
 
-            times.add ( pi.getVersion (), gson.toJsonTree ( art.getInformation ().getCreationTimestamp () ) );
+            times.add ( pi.getVersion (), gson.toJsonTree ( art.getCreationTimestamp () ) );
 
             final JsonObject ele = (JsonObject)entry.getValue ().getElement ();
 
             final JsonObject dist = new JsonObject ();
-            dist.addProperty ( "shasum", art.getInformation ().getMetaData ().get ( new MetaKey ( "hasher", "sha1" ) ) );
+            dist.addProperty ( "shasum", art.getMetaData ().get ( KEY_SHA1 ) );
             dist.addProperty ( "tarball", String.format ( "%s/artifact/%s/dump", sitePrefix, art.getId () ) );
 
             ele.add ( "dist", dist );

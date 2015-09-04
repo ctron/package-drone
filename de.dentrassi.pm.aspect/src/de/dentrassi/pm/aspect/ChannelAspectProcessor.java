@@ -160,7 +160,7 @@ public class ChannelAspectProcessor
         }
     }
 
-    public <T> void processWithAspect ( final Collection<String> factoryIds, final Function<ChannelAspect, T> getter, final BiConsumer<ChannelAspect, T> consumer )
+    public <T> void process ( final Collection<String> factoryIds, final Function<ChannelAspect, T> getter, final BiConsumer<ChannelAspect, T> consumer )
     {
         final Collection<ChannelAspect> aspects = createAspects ( factoryIds );
         for ( final ChannelAspect aspect : aspects )

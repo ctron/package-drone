@@ -111,6 +111,7 @@ import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
 import de.dentrassi.pm.storage.web.internal.Activator;
+import de.dentrassi.pm.storage.web.utils.Channels;
 import de.dentrassi.pm.system.SitePrefixService;
 
 @Secured
@@ -600,14 +601,7 @@ public class ChannelController implements InterfaceExtender
 
     protected <T> ModelAndView withChannel ( final String channelId, final Class<T> clazz, final ChannelOperation<ModelAndView, T> operation )
     {
-        try
-        {
-            return this.channelService.access ( By.id ( channelId ), clazz, operation );
-        }
-        catch ( final ChannelNotFoundException e )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return Channels.withChannel ( this.channelService, channelId, clazz, operation );
     }
 
     @RequestMapping ( "/channel/{channelId}/help/p2" )
@@ -903,6 +897,8 @@ public class ChannelController implements InterfaceExtender
         return withChannel ( channelId, ReadableChannel.class, channel -> {
 
             if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), entry -> {
+                logger.trace ( "Length: %s, Mime: %s", entry.getSize (), entry.getMimeType () );
+
                 response.setContentLengthLong ( entry.getSize () );
                 response.setContentType ( entry.getMimeType () );
                 response.setHeader ( "Content-Disposition", String.format ( "inline; filename=%s", URLEncoder.encode ( entry.getName (), "UTF-8" ) ) );

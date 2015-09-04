@@ -10,6 +10,9 @@
  *******************************************************************************/
 package de.dentrassi.pm.generator.p2;
 
+import static de.dentrassi.pm.storage.web.utils.Channels.redirectViewArtifact;
+import static de.dentrassi.pm.storage.web.utils.Channels.redirectViewChannel;
+
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,17 +33,19 @@ import de.dentrassi.osgi.web.controller.binding.RequestParameter;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
-import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.generator.p2.xml.CategoryXmlGenerator;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/%s.jsp" )
 public class GeneratorController
 {
-    private StorageService service;
+    private ChannelService service;
 
     private final GeneratorProcessor generators = new GeneratorProcessor ( FrameworkUtil.getBundle ( GeneratorController.class ).getBundleContext () );
 
@@ -58,35 +63,34 @@ public class GeneratorController
         this.generators.close ();
     }
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/editFeature", method = RequestMethod.GET )
-    public ModelAndView editFeature ( @PathVariable ( "artifactId" ) final String artifactId) throws Exception
+    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/artifact/{artifactId}/editFeature",
+            method = RequestMethod.GET )
+    public ModelAndView editFeature ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withArtifact ( this.service, channelId, artifactId, ReadableChannel.class, ( channel, artifact ) -> {
 
-        model.put ( "artifactId", artifactId );
+            final Map<String, Object> model = new HashMap<> ( 3 );
 
-        final Artifact art = this.service.getArtifact ( artifactId );
-        if ( art == null )
-        {
-            return CommonController.createNotFound ( "artifact", artifactId );
-        }
+            model.put ( "artifactId", artifactId );
 
-        final FeatureData data = new FeatureData ();
-        MetaKeys.bind ( data, art.getInformation ().getMetaData () );
+            final FeatureData data = new FeatureData ();
+            MetaKeys.bind ( data, artifact.getMetaData () );
 
-        model.put ( "command", data );
-        model.put ( "channelId", art.getChannel ().getId () );
+            model.put ( "command", data );
+            model.put ( "channelId", artifact.getChannelId ().getId () );
 
-        return new ModelAndView ( "edit", model );
+            return new ModelAndView ( "edit", model );
+        } );
     }
 
-    @RequestMapping ( value = "/generators/p2.feature/artifact/{artifactId}/editFeature", method = RequestMethod.POST )
-    public ModelAndView editFeaturePost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result) throws Exception
+    @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/artifact/{artifactId}/editFeature",
+            method = RequestMethod.POST )
+    public ModelAndView editFeaturePost ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final FeatureData data, final BindingResult result) throws Exception
     {
         if ( result.hasErrors () )
         {
@@ -97,9 +101,11 @@ public class GeneratorController
 
         final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
 
-        this.service.getArtifact ( artifactId ).applyMetaData ( providedMetaData );
+        return Channels.withArtifact ( this.service, channelId, artifactId, ModifiableChannel.class, ( channel, artifact ) -> {
+            channel.getContext ().applyMetaData ( artifactId, providedMetaData );
 
-        return new ModelAndView ( "redirect:/artifact/" + artifactId + "/view" );
+            return redirectViewArtifact ( channelId, artifactId );
+        } );
     }
 
     @RequestMapping ( value = "/generators/p2.feature/channel/{channelId}/createFeature", method = RequestMethod.GET )
@@ -133,38 +139,39 @@ public class GeneratorController
         providedMetaData.put ( new MetaKey ( FeatureGenerator.ID, "label" ), data.getLabel () );
 
         final String name = String.format ( "%s-%s.feature", data.getId (), data.getVersion () );
-        this.service.createGeneratorArtifact ( channelId, name, FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
 
-        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            channel.getContext ().createGeneratorArtifact ( FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, providedMetaData );
+        } );
+
+        return Channels.redirectViewChannel ( channelId );
     }
 
     // category
 
-    @RequestMapping ( value = "/generators/p2.category/artifact/{artifactId}/editCategory", method = RequestMethod.GET )
-    public ModelAndView editCategory ( @PathVariable ( "artifactId" ) final String artifactId) throws Exception
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/artifact/{artifactId}/editCategory",
+            method = RequestMethod.GET )
+    public ModelAndView editCategory ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withArtifact ( this.service, channelId, artifactId, ReadableChannel.class, ( channel, artifact ) -> {
 
-        model.put ( "artifactId", artifactId );
+            final Map<String, Object> model = new HashMap<> ( 3 );
 
-        final Artifact art = this.service.getArtifact ( artifactId );
-        if ( art == null )
-        {
-            return CommonController.createNotFound ( "artifact", artifactId );
-        }
+            model.put ( "artifactId", artifactId );
 
-        final CategoryData data = new CategoryData ();
-        MetaKeys.bind ( data, art.getInformation ().getMetaData () );
+            final CategoryData data = new CategoryData ();
+            MetaKeys.bind ( data, artifact.getMetaData () );
 
-        model.put ( "command", data );
-        model.put ( "channelId", art.getChannel ().getId () );
+            model.put ( "command", data );
+            model.put ( "channelId", artifact.getChannelId ().getId () );
 
-        return new ModelAndView ( "editCategory", model );
+            return new ModelAndView ( "editCategory", model );
+        } );
     }
 
-    @RequestMapping ( value = "/generators/p2.category/artifact/{artifactId}/editCategory",
+    @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/artifact/{artifactId}/editCategory",
             method = RequestMethod.POST )
-    public ModelAndView editCategoryPost ( @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final CategoryData data, final BindingResult result) throws Exception
+    public ModelAndView editCategoryPost ( @PathVariable ( "channelId" ) final String channelId, @PathVariable ( "artifactId" ) final String artifactId, @Valid @FormData ( "command" ) final CategoryData data, final BindingResult result) throws Exception
     {
         if ( result.hasErrors () )
         {
@@ -175,9 +182,11 @@ public class GeneratorController
 
         final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
 
-        this.service.getArtifact ( artifactId ).applyMetaData ( providedMetaData );
+        return Channels.withArtifact ( this.service, channelId, artifactId, ModifiableChannel.class, ( channel, artifact ) -> {
+            channel.getContext ().applyMetaData ( artifactId, providedMetaData );
 
-        return new ModelAndView ( "redirect:/artifact/" + artifactId + "/view" );
+            return redirectViewArtifact ( channelId, artifactId );
+        } );
     }
 
     @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategory", method = RequestMethod.GET )
@@ -207,9 +216,12 @@ public class GeneratorController
         final Map<MetaKey, String> providedMetaData = MetaKeys.unbind ( data );
 
         final String name = String.format ( "%s.category", data.getId () );
-        this.service.createGeneratorArtifact ( channelId, name, CategoryGenerator.ID, new ByteArrayInputStream ( new byte[0] ), providedMetaData );
 
-        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            channel.getContext ().createGeneratorArtifact ( CategoryGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, providedMetaData );
+        } );
+
+        return Channels.redirectViewChannel ( channelId );
     }
 
     @RequestMapping ( value = "/generators/p2.category/channel/{channelId}/createCategoryXml",
@@ -237,8 +249,11 @@ public class GeneratorController
         }
 
         final String name = file.getSubmittedFileName ();
-        this.service.createGeneratorArtifact ( channelId, name, CategoryXmlGenerator.ID, file.getInputStream (), null );
 
-        return new ModelAndView ( "redirect:/channel/" + channelId + "/view" );
+        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            channel.getContext ().createGeneratorArtifact ( CategoryXmlGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, null );
+        } );
+
+        return redirectViewChannel ( channelId );
     }
 }

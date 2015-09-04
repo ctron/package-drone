@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,6 +32,7 @@ import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.generator.ArtifactGenerator;
 import de.dentrassi.pm.generator.GenerationContext;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
 
 public class CategoryGenerator implements ArtifactGenerator
 {
@@ -45,9 +45,14 @@ public class CategoryGenerator implements ArtifactGenerator
     }
 
     @Override
-    public LinkTarget getEditTarget ( final String artifactId )
+    public LinkTarget getEditTarget ( final ChannelArtifactInformation artifact )
     {
-        final String url = LinkTarget.createFromController ( GeneratorController.class, "editCategory" ).render ( Collections.singletonMap ( "artifactId", artifactId ) );
+        final Map<String, String> model = new HashMap<> ( 2 );
+
+        model.put ( "channelId", artifact.getChannelId ().getId () );
+        model.put ( "artifactId", artifact.getId () );
+
+        final String url = LinkTarget.createFromController ( GeneratorController.class, "editCategory" ).render ( model );
         return new LinkTarget ( url );
     }
 

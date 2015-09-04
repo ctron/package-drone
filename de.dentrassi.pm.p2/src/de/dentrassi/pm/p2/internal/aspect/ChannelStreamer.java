@@ -20,9 +20,9 @@ import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPathFactory;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChannelStreamer
 {
@@ -36,9 +36,9 @@ public class ChannelStreamer
 
     private final XmlHelper xml = new XmlHelper ();
 
-    public ChannelStreamer ( final String channelNameOrId, final Map<MetaKey, String> channelMetaData, final boolean writeCompressed, final boolean writePlain )
+    public ChannelStreamer ( final String channelId, final Map<MetaKey, String> channelMetaData, final boolean writeCompressed, final boolean writePlain )
     {
-        final String title = makeTitle ( channelNameOrId, null, channelMetaData );
+        final String title = makeTitle ( channelId, channelMetaData );
 
         this.processors = new LinkedList<> ();
 
@@ -71,7 +71,7 @@ public class ChannelStreamer
 
     }
 
-    public static String makeTitle ( final String id, final String name, final Map<MetaKey, String> channelMetaData )
+    public static String makeTitle ( final String id, final Map<MetaKey, String> channelMetaData )
     {
         final String title = channelMetaData.get ( new MetaKey ( "p2.repo", "title" ) );
         if ( title != null && !title.isEmpty () )
@@ -79,9 +79,7 @@ public class ChannelStreamer
             return title;
         }
 
-        final String channelName = name != null ? name : id;
-
-        return String.format ( "Package Drone Channel: %s", channelName );
+        return String.format ( "Package Drone Channel: %s", id );
     }
 
     public void stream ( final Collection<ArtifactInformation> artifacts, final ArtifactStreamer streamer )

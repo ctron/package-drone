@@ -22,14 +22,14 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
 import de.dentrassi.pm.storage.AbstractChannelInterfaceExtender;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 
 public class P2InterfaceExtender extends AbstractChannelInterfaceExtender
 {
     public static final String P2_METADATA_ASPECT_ID = "p2.metadata";
 
     @Override
-    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final ChannelInformation channel )
     {
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "channelId", channel.getId () );
@@ -46,7 +46,7 @@ public class P2InterfaceExtender extends AbstractChannelInterfaceExtender
         return result;
     }
 
-    private void metaDataActions ( final HttpServletRequest request, final Channel channel, final Map<String, Object> model, final List<MenuEntry> result )
+    private void metaDataActions ( final HttpServletRequest request, final ChannelInformation channel, final Map<String, Object> model, final List<MenuEntry> result )
     {
         if ( !channel.hasAspect ( P2_METADATA_ASPECT_ID ) )
         {
@@ -59,7 +59,7 @@ public class P2InterfaceExtender extends AbstractChannelInterfaceExtender
         }
     }
 
-    private void repoActions ( final HttpServletRequest request, final Channel channel, final Map<String, Object> model, final List<MenuEntry> result )
+    private void repoActions ( final HttpServletRequest request, final ChannelInformation channel, final Map<String, Object> model, final List<MenuEntry> result )
     {
         if ( !channel.hasAspect ( P2RepositoryAspect.ID ) )
         {
@@ -80,7 +80,7 @@ public class P2InterfaceExtender extends AbstractChannelInterfaceExtender
     }
 
     @Override
-    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final ChannelInformation channel )
     {
         final Map<String, Object> model = new HashMap<> ( 1 );
         model.put ( "channelId", channel.getId () );

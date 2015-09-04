@@ -3,6 +3,7 @@ package de.dentrassi.pm.storage.channel.provider;
 import java.util.Collection;
 
 import de.dentrassi.pm.storage.channel.ChannelDetails;
+import de.dentrassi.pm.storage.channel.IdTransformer;
 
 public interface ChannelProvider
 {
@@ -15,7 +16,7 @@ public interface ChannelProvider
 
     public void removeListener ( Listener listener );
 
-    public Channel create ( ChannelDetails details );
+    public Channel create ( ChannelDetails details, IdTransformer idTransformer );
 
     public ProviderInformation getInformation ();
 

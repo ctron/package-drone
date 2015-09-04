@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.deb.servlet.handler;
 
+import static java.util.Optional.empty;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,7 +51,7 @@ public class PoolHandler implements Handler
             return;
         }
 
-        DownloadHelper.streamArtifact ( response, this.service, this.channelId, this.artifactId, null, true, info -> this.name );
+        DownloadHelper.streamArtifact ( response, this.service, this.channelId, this.artifactId, empty (), true, info -> this.name );
     }
 
     @Override

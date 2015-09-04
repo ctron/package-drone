@@ -26,7 +26,6 @@ import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.deb.ChannelConfiguration;
@@ -34,6 +33,7 @@ import de.dentrassi.pm.deb.aspect.DebianAspectInformation;
 import de.dentrassi.pm.deb.aspect.DistributionInformation;
 import de.dentrassi.pm.deb.aspect.internal.RepoBuilder.PackageInformation;
 import de.dentrassi.pm.signing.SigningService;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class AptAggregator implements ChannelAggregator
 {

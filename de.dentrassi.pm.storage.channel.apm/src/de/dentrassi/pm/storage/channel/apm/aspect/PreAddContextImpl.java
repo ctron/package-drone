@@ -1,4 +1,4 @@
-package de.dentrassi.pm.storage.channel.apm;
+package de.dentrassi.pm.storage.channel.apm.aspect;
 
 import java.nio.file.Path;
 

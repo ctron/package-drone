@@ -24,5 +24,14 @@ public class ChannelId
         return this.name;
     }
 
+    public String getNameOrId ()
+    {
+        if ( this.name != null )
+        {
+            return this.name;
+        }
+        return this.id;
+    }
+
     public static Comparator<? super ChannelId> NAME_COMPARATOR = Comparator.nullsLast ( Comparator.comparing ( ChannelId::getName ) );
 }

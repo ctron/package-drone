@@ -33,8 +33,8 @@ import org.w3c.dom.Node;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChecksumValidatorProcessor extends AbstractDocumentProcessor
 {
