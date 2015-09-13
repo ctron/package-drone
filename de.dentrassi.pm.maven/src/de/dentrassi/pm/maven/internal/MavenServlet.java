@@ -479,7 +479,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
                     // no upload will happen in this case - maybe we should make up
                     // some information based on what we do know, presuming that this
                     // metadata describes a single snapshot jar artifact.
-                    final MavenInformation synthetic = new MavenInformation ();
+                    final MavenInformation info = new MavenInformation ();
                     info.setGroupId ( groupId );
                     info.setArtifactId ( artifactId );
                     info.setVersion ( version );
