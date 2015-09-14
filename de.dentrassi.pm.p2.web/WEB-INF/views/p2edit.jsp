@@ -20,17 +20,6 @@
         <form:input path="title" cssClass="form-control" placeholder="Optional title for the repository" required="false"/>
     </h:formEntry>
     
-    <h:formEntry label="System Bundle Alias" path="systemBundleAlias" command="command">
-        <form:input path="systemBundleAlias" cssClass="form-control" required="false"/>
-        <span class="help-block">
-        If set this value will be used a dependency installable unit ID when a bundle
-        declares a dependency on the OSGi <code>system.bundle</code>.
-        </span>
-        <span class="help-block">
-        See also <a href="http://wiki.osgi.org/wiki/System_Bundle">http://wiki.osgi.org/wiki/System_Bundle</a>.
-        </span>
-    </h:formEntry>
-    
     <h:formButtons>
         <button type="submit" class="btn btn-primary">Update</button>
         <button type="reset" class="btn btn-default">Reset</button>

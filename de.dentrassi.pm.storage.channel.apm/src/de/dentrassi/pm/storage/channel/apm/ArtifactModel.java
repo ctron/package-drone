@@ -45,6 +45,7 @@ public class ArtifactModel
         this.facets = new CopyOnWriteArraySet<> ();
 
         this.validationMessages = new LinkedList<> ();
+
         this.providedMetaData = new HashMap<> ();
         this.extractedMetaData = new HashMap<> ();
     }
@@ -60,6 +61,7 @@ public class ArtifactModel
         this.date = other.date;
 
         this.validationMessages = new CopyOnWriteArrayList<> ( other.validationMessages );
+
         this.providedMetaData = new HashMap<> ( other.providedMetaData );
         this.extractedMetaData = new HashMap<> ( other.extractedMetaData );
 

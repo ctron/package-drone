@@ -2,8 +2,10 @@ package de.dentrassi.pm.storage.channel.apm;
 
 import static java.util.stream.Collectors.toMap;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -27,6 +29,8 @@ public class ChannelModel
 
     private final AspectMapModel aspects;
 
+    private List<ValidationMessageModel> validationMessages;
+
     public ChannelModel ()
     {
         this.providedMetaData = new HashMap<> ();
@@ -34,6 +38,8 @@ public class ChannelModel
         this.cacheEntries = new HashMap<> ();
 
         this.aspects = new AspectMapModel ();
+
+        this.validationMessages = new ArrayList<> ();
     }
 
     public ChannelModel ( final ChannelModel other )
@@ -50,6 +56,8 @@ public class ChannelModel
         this.cacheEntries = other.cacheEntries.entrySet ().stream ().collect ( toMap ( Entry::getKey, entry -> new CacheEntryModel ( entry.getValue () ) ) );
 
         this.aspects = new AspectMapModel ( other.aspects );
+
+        this.validationMessages = other.validationMessages != null ? new ArrayList<> ( other.validationMessages ) : new ArrayList<> ();
     }
 
     public void setDescription ( final String description )
@@ -116,4 +124,15 @@ public class ChannelModel
     {
         return this.cacheEntries;
     }
+
+    public void setValidationMessages ( final List<ValidationMessageModel> validationMessages )
+    {
+        this.validationMessages = validationMessages;
+    }
+
+    public List<ValidationMessageModel> getValidationMessages ()
+    {
+        return this.validationMessages;
+    }
+
 }

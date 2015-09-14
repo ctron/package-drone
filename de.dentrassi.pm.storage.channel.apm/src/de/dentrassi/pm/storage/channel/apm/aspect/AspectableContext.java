@@ -3,6 +3,8 @@ package de.dentrassi.pm.storage.channel.apm.aspect;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
+import de.dentrassi.pm.storage.channel.ValidationMessage;
 
 public interface AspectableContext
 {
@@ -17,13 +20,19 @@ public interface AspectableContext
 
     public ArtifactInformation createPlainArtifact ( String parentArtifactId, InputStream source, String name, Map<MetaKey, String> providedMetaData, Set<String> facets, String virtualizerAspectId );
 
-    public boolean deletePlainArtifact ( String artifactId );
+    public ArtifactInformation deletePlainArtifact ( String artifactId );
 
     public boolean stream ( String artifactId, IOConsumer<InputStream> consumer ) throws IOException;
 
     public ArtifactInformation setExtractedMetaData ( String artifactId, Map<MetaKey, String> metaData );
 
+    public ArtifactInformation setValidationMessages ( String id, List<ValidationMessage> messages );
+
     public void setExtractedMetaData ( Map<MetaKey, String> metaData );
+
+    public void setValidationMessages ( List<ValidationMessage> messages );
+
+    public Collection<ValidationMessage> getValidationMessages ();
 
     public Map<String, ArtifactInformation> getArtifacts ();
 
@@ -48,4 +57,5 @@ public interface AspectableContext
      * @return a fresh copy of the channel details
      */
     public ChannelDetails getChannelDetails ();
+
 }

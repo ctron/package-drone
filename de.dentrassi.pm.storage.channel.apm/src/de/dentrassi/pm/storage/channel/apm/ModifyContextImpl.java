@@ -1,16 +1,22 @@
 package de.dentrassi.pm.storage.channel.apm;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import de.dentrassi.osgi.utils.Exceptions;
 import de.dentrassi.pm.common.MetaKey;
@@ -22,6 +28,7 @@ import de.dentrassi.pm.storage.channel.ChannelDetails;
 import de.dentrassi.pm.storage.channel.ChannelState;
 import de.dentrassi.pm.storage.channel.ChannelState.Builder;
 import de.dentrassi.pm.storage.channel.IdTransformer;
+import de.dentrassi.pm.storage.channel.ValidationMessage;
 import de.dentrassi.pm.storage.channel.apm.aspect.AspectContextImpl;
 import de.dentrassi.pm.storage.channel.apm.aspect.AspectMapModel;
 import de.dentrassi.pm.storage.channel.apm.aspect.AspectableContext;
@@ -80,6 +87,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         this.state = new ChannelState.Builder ();
         this.state.setDescription ( other.getDescription () );
+        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+        this.state.setValidationMessages ( other.getValidationMessages ().stream ().map ( ValidationMessageModel::toMessage ).collect ( Collectors.toList () ) );
 
         this.modCacheEntries = new HashMap<> ( other.getCacheEntries ().size () );
         for ( final Map.Entry<MetaKey, CacheEntryModel> cm : other.getCacheEntries ().entrySet () )
@@ -188,6 +197,14 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 this.model.getProvidedMetaData ().put ( key, value );
             }
         }
+
+        // clear cache
+
+        this.metaDataCache = null;
+
+        // re-aggregate
+
+        this.aspectContext.aggregate ();
     }
 
     @Override
@@ -214,10 +231,6 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 artifact.getProvidedMetaData ().put ( key, value );
             }
         }
-
-        // clear cache
-
-        this.metaDataCache = null;
 
         // update
 
@@ -356,6 +369,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 updateArtifact ( parentId, parent );
             }
 
+            // refresh number of artifacts
+
+            this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+
             return ai;
         }
         catch ( final IOException e )
@@ -364,9 +381,11 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         }
     }
 
-    private void updateArtifact ( final String id, final ArtifactModel artifact )
+    private ArtifactInformation updateArtifact ( final String id, final ArtifactModel artifact )
     {
-        this.modArtifacts.put ( id, ArtifactModel.toInformation ( id, artifact ) );
+        final ArtifactInformation result = ArtifactModel.toInformation ( id, artifact );
+        this.modArtifacts.put ( id, result );
+        return result;
     }
 
     private boolean internalDeleteArtifact ( final String id ) throws IOException
@@ -397,11 +416,15 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             }
         }
 
+        // refresh number of artifacts
+
+        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+
         return result;
     }
 
     @Override
-    public boolean deletePlainArtifact ( final String id )
+    public ArtifactInformation deletePlainArtifact ( final String id )
     {
         try
         {
@@ -409,10 +432,12 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
             if ( artifact == null )
             {
-                return false;
+                return null;
             }
 
-            return internalDeleteArtifact ( id );
+            final ArtifactInformation result = internalDeleteArtifact ( id ) ? artifact : null;
+
+            return result;
         }
         catch ( final IOException e )
         {
@@ -437,7 +462,12 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             throw new IllegalStateException ( String.format ( "Unable to delete artifact '%s'. It is not 'stored'.", id ) );
         }
 
-        return this.aspectContext.deleteArtifacts ( Collections.singleton ( id ) );
+        final boolean result = this.aspectContext.deleteArtifacts ( Collections.singleton ( id ) );
+
+        // refresh number of artifacts
+        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+
+        return result;
     }
 
     @Override
@@ -518,6 +548,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         // clear meta data cache
 
         this.metaDataCache = null;
+
+        // refresh number of artifacts
+
+        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
     }
 
     @Override
@@ -550,8 +584,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         return this.model.getAspects ();
     }
 
-    @Override
-    public ArtifactInformation setExtractedMetaData ( final String artifactId, final Map<MetaKey, String> metaData )
+    protected ArtifactInformation modifyArtifact ( final String artifactId, final Consumer<ArtifactModel> modification )
     {
         final ArtifactModel art = this.model.getArtifacts ().get ( artifactId );
         if ( art == null )
@@ -559,22 +592,51 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             throw new IllegalStateException ( String.format ( "Unable to find artifact '%s'", artifactId ) );
         }
 
-        // set the extracted data
-        art.setExtractedMetaData ( new HashMap<> ( metaData ) );
+        // perform modification
 
-        //
-        final ArtifactInformation result = ArtifactModel.toInformation ( artifactId, art );
+        modification.accept ( art );
 
         // update from the model
-        this.modArtifacts.put ( artifactId, result );
 
-        return result;
+        return updateArtifact ( artifactId, art );
+    }
+
+    @Override
+    public ArtifactInformation setExtractedMetaData ( final String artifactId, final Map<MetaKey, String> metaData )
+    {
+        return modifyArtifact ( artifactId, art -> {
+            // set the extracted data
+            art.setExtractedMetaData ( new HashMap<> ( metaData ) );
+        } );
+    }
+
+    @Override
+    public ArtifactInformation setValidationMessages ( final String artifactId, final List<ValidationMessage> messages )
+    {
+        return modifyArtifact ( artifactId, art -> {
+            // set validation messages
+            art.setValidationMessages ( messages.stream ().map ( ValidationMessageModel::fromMessage ).collect ( toList () ) );
+        } );
     }
 
     @Override
     public void setExtractedMetaData ( final Map<MetaKey, String> metaData )
     {
         this.model.setExtractedMetaData ( new HashMap<> ( metaData ) );
+        this.metaDataCache = null;
+    }
+
+    @Override
+    public void setValidationMessages ( final List<ValidationMessage> messages )
+    {
+        this.model.setValidationMessages ( messages.stream ().map ( ValidationMessageModel::fromMessage ).collect ( toList () ) );
+        this.state.setValidationMessages ( messages );
+    }
+
+    @Override
+    public Collection<ValidationMessage> getValidationMessages ()
+    {
+        return Collections.unmodifiableCollection ( this.state.build ().getValidationMessages () );
     }
 
     @Override

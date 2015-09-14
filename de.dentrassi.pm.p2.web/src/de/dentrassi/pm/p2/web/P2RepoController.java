@@ -18,6 +18,8 @@ import java.util.Map;
 import javax.servlet.annotation.HttpConstraint;
 import javax.validation.Valid;
 
+import com.google.common.net.UrlEscapers;
+
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
@@ -73,7 +75,6 @@ public class P2RepoController
             model.put ( "channelInfo", channelInfo );
 
             return new ModelAndView ( "p2info", model );
-
         } );
     }
 
@@ -100,7 +101,7 @@ public class P2RepoController
 
     private void fillBreadcrumbs ( final Map<String, Object> model, final String channelId, final String action )
     {
-        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), new Entry ( "Channel", "/channel/" + channelId + "/view" ), new Entry ( action ) ) );
+        model.put ( "breadcrumbs", new Breadcrumbs ( new Entry ( "Home", "/" ), new Entry ( "Channel", Channels.channelTarget ( channelId ) ), new Entry ( action ) ) );
     }
 
     @RequestMapping ( value = "/{channelId}/edit", method = RequestMethod.POST )
@@ -112,7 +113,7 @@ public class P2RepoController
 
             if ( result.hasErrors () )
             {
-                model.put ( "channel", channel );
+                model.put ( "channel", channel.getInformation () );
                 model.put ( "command", data );
                 fillBreadcrumbs ( model, channelId, "Edit" );
                 return new ModelAndView ( "p2edit", model );
@@ -122,7 +123,7 @@ public class P2RepoController
 
             channel.applyMetaData ( providedMetaData );
 
-            return new ModelAndView ( "redirect:/p2.repo/" + channelId + "/info", model );
+            return new ModelAndView ( "redirect:/p2.repo/" + UrlEscapers.urlPathSegmentEscaper ().escape ( channelId ) + "/info", model );
         } );
     }
 }

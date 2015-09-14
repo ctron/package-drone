@@ -13,10 +13,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -34,12 +37,15 @@ import de.dentrassi.pm.aspect.extract.Extractor;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.Severity;
-import de.dentrassi.pm.common.utils.IOConsumer;
+import de.dentrassi.pm.common.event.AddedEvent;
+import de.dentrassi.pm.common.event.RemovedEvent;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
-import de.dentrassi.pm.storage.channel.ChannelDetails;
-import de.dentrassi.pm.storage.channel.ChannelService.ArtifactReceiver;
+import de.dentrassi.pm.storage.channel.ValidationMessage;
 import de.dentrassi.pm.storage.channel.apm.internal.Activator;
 
+/*
+ * FIXME: combine call groups with doStreamed
+ */
 public class AspectContextImpl
 {
     private final static Logger logger = LoggerFactory.getLogger ( AspectContextImpl.class );
@@ -50,18 +56,18 @@ public class AspectContextImpl
 
     private final AspectMapModel model;
 
-    private final EventProcessor eventProcessor;
-
     private final Guard aggregation;
+
+    private final RegenerationTracker tracker;
 
     public AspectContextImpl ( final AspectableContext context, final ChannelAspectProcessor processor )
     {
         this.context = context;
         this.processor = processor;
         this.model = context.getAspectModel ();
-        this.eventProcessor = new EventProcessor ();
 
         this.aggregation = new Guard ( this::runAggregators );
+        this.tracker = new RegenerationTracker ( this::runRegeneration );
     }
 
     public SortedMap<String, String> getAspectStates ()
@@ -75,10 +81,11 @@ public class AspectContextImpl
         Profile.run ( this, "runAggregators", () -> {
 
             final Map<MetaKey, String> metaData = new HashMap<> ();
+            final List<ValidationMessage> messages = new CopyOnWriteArrayList<> ();
 
             this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
 
-                final AggregationContext ctx = new AggregationContextImpl ( this.context, aspect.getId (), this.context.getChannelId (), this.context::getChannelDetails );
+                final AggregationContext ctx = new AggregationContextImpl ( this.context, aspect.getId (), this.context.getChannelId (), this.context::getChannelDetails, messages::add );
 
                 final Map<String, String> result = Exceptions.wrapException ( () -> aggregator.aggregateMetaData ( ctx ) );
 
@@ -86,64 +93,117 @@ public class AspectContextImpl
             } );
 
             this.context.setExtractedMetaData ( metaData );
+            this.context.setValidationMessages ( messages );
+        } );
+    }
+
+    protected void runRegeneration ( final Set<String> artifactIds )
+    {
+        logger.debug ( "Running regeneration: {}", artifactIds );
+        Profile.run ( this, "runRegeneration", () -> {
+            for ( final String artifactId : artifactIds )
+            {
+                regenerate ( artifactId );
+            }
         } );
     }
 
     public void addAspects ( final Set<String> aspectIds )
     {
         this.aggregation.guarded ( () -> {
-            final Set<String> addedAspects = new HashSet<> ();
-            for ( final ChannelAspectInformation aspect : this.processor.resolve ( aspectIds ) )
-            {
-                final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
-
-                if ( !this.model.getAspectIds ().contains ( aspect.getFactoryId () ) )
+            this.tracker.run ( () -> {
+                final Set<String> addedAspects = new HashSet<> ();
+                for ( final ChannelAspectInformation aspect : this.processor.resolve ( aspectIds ) )
                 {
-                    this.model.put ( aspect.getFactoryId (), versionString );
-                    addedAspects.add ( aspect.getFactoryId () );
+                    final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
+
+                    if ( !this.model.getAspectIds ().contains ( aspect.getFactoryId () ) )
+                    {
+                        this.model.put ( aspect.getFactoryId (), versionString );
+                        addedAspects.add ( aspect.getFactoryId () );
+                    }
                 }
-            }
 
-            // run extractors
+                // run extractors
 
-            extractFor ( addedAspects );
+                extractFor ( addedAspects );
 
-            // run virtualizers
+                // run virtualizers
 
-            virtualizeFor ( addedAspects );
+                virtualizeFor ( addedAspects );
 
-            // TODO: flush generators
+                // -> flush regeneration
 
-            // aggregators run after with guard
+            } );
+
+            // -> aggregators run after with guard
         } );
     }
 
     public void removeAspects ( final Set<String> aspectIds )
     {
         this.aggregation.guarded ( () -> {
-            for ( final String aspectId : aspectIds )
+
+            this.tracker.run ( () -> {
+
+                for ( final String aspectId : aspectIds )
+                {
+                    this.model.remove ( aspectId );
+                }
+
+                // remove selected extracted meta data
+
+                removeExtractedFor ( aspectIds );
+
+                // remove virtualized
+
+                removeVirtualized ( aspectIds );
+
+                // remove validation
+
+                removeValidationMessages ( aspectIds );
+
+                // ->flush regeneration
+            } );
+
+            // ->aggregators run after with guard
+        } );
+    }
+
+    private void removeValidationMessages ( final Set<String> aspectIds )
+    {
+        filterValidation ( this.context::getValidationMessages, this.context::setValidationMessages, aspectIds );
+    }
+
+    private void filterValidation ( final Supplier<Collection<ValidationMessage>> input, final Consumer<List<ValidationMessage>> output, final Set<String> aspectIds )
+    {
+        final Collection<ValidationMessage> list = input.get ();
+
+        boolean modified = false;
+
+        final List<ValidationMessage> result = new CopyOnWriteArrayList<> ();
+
+        for ( final ValidationMessage msg : list )
+        {
+            if ( aspectIds.contains ( msg.getAspectId () ) )
             {
-                this.model.remove ( aspectId );
+                modified = true;
+                continue;
             }
 
-            // remove selected extracted meta data
+            result.add ( msg );
+        }
 
-            removeExtractedFor ( aspectIds );
-
-            // remove virtualized
-
-            removeVirtualized ( aspectIds );
-
-            // TODO: flush generators
-
-            // aggregators run after with guard
-        } );
+        if ( modified )
+        {
+            output.accept ( result );
+        }
     }
 
     public void refreshAspects ( final Set<String> aspectIds )
     {
         Set<String> effectiveAspectIds;
-        if ( aspectIds == null )
+        if ( aspectIds == null || aspectIds.isEmpty () )
         {
             effectiveAspectIds = new HashSet<> ( this.model.getAspectIds () );
         }
@@ -154,101 +214,32 @@ public class AspectContextImpl
 
         this.aggregation.guarded ( () -> {
 
-            // update version map
-            for ( final ChannelAspectInformation aspect : this.processor.resolve ( effectiveAspectIds ) )
-            {
-                final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
-                this.model.put ( aspect.getFactoryId (), versionString );
-            }
+            this.tracker.run ( () -> {
 
-            // extract metadata ... well clear itself first
+                // update version map
+                for ( final ChannelAspectInformation aspect : this.processor.resolve ( effectiveAspectIds ) )
+                {
+                    final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
+                    this.model.put ( aspect.getFactoryId (), versionString );
+                }
 
-            extractFor ( effectiveAspectIds );
+                // extract metadata ... well clear itself first
 
-            // delete virtualized
-            removeVirtualized ( effectiveAspectIds );
+                extractFor ( effectiveAspectIds );
 
-            // run virtualized
-            virtualizeFor ( effectiveAspectIds );
+                // delete virtualized
 
-            // TODO: run flush generators
+                removeVirtualized ( effectiveAspectIds );
 
-            // aggregators run after with guard
+                // run virtualized
+
+                virtualizeFor ( effectiveAspectIds );
+
+                // -> flush regeneration
+            } );
+
+            // -> aggregators run after with guard
         } );
-    }
-
-    public static class AggregationContextImpl implements AggregationContext
-    {
-        private final AspectableContext ctx;
-
-        private final String aspectId;
-
-        private final String channelId;
-
-        private final Supplier<ChannelDetails> details;
-
-        public AggregationContextImpl ( final AspectableContext ctx, final String aspectId, final String channelId, final Supplier<ChannelDetails> details )
-        {
-            this.ctx = ctx;
-            this.aspectId = aspectId;
-            this.channelId = channelId;
-
-            this.details = details;
-        }
-
-        @Override
-        public void validationMessage ( final Severity severity, final String message, final Set<String> artifactIds )
-        {
-            // FIXME: implement
-        }
-
-        @Override
-        public Collection<ArtifactInformation> getArtifacts ()
-        {
-            return Collections.unmodifiableCollection ( this.ctx.getArtifacts ().values () );
-        }
-
-        @Override
-        public String getChannelId ()
-        {
-            return this.channelId;
-        }
-
-        @Override
-        public String getChannelDescription ()
-        {
-            return this.details.get ().getDescription ();
-        }
-
-        @Override
-        public Map<MetaKey, String> getChannelMetaData ()
-        {
-            return Collections.unmodifiableMap ( this.ctx.getChannelProvidedMetaData () );
-        }
-
-        @Override
-        public void createCacheEntry ( final String id, final String name, final String mimeType, final IOConsumer<OutputStream> creator ) throws IOException
-        {
-            this.ctx.createCacheEntry ( new MetaKey ( this.aspectId, id ), name, mimeType, creator );
-        }
-
-        @Override
-        public boolean streamArtifact ( final String artifactId, final ArtifactReceiver receiver ) throws IOException
-        {
-            final ArtifactInformation artifact = this.ctx.getArtifacts ().get ( artifactId );
-            if ( artifact == null )
-            {
-                return false;
-            }
-
-            return this.ctx.stream ( artifactId, stream -> receiver.consume ( artifact, stream ) );
-        }
-
-        @Override
-        public boolean streamArtifact ( final String artifactId, final IOConsumer<InputStream> consumer ) throws IOException
-        {
-            return this.ctx.stream ( artifactId, consumer );
-        }
     }
 
     @FunctionalInterface
@@ -259,41 +250,63 @@ public class AspectContextImpl
 
     public ArtifactInformation createArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData ) throws IOException
     {
-        return internalCreateArtifact ( parentId, stream, name, providedMetaData, ArtifactType.STORED, null );
+        return this.aggregation.guarded ( () -> {
+
+            return this.tracker.run ( () -> {
+
+                return internalCreateArtifact ( parentId, stream, name, providedMetaData, ArtifactType.STORED, null );
+
+                // -> flush regeneration
+            } );
+
+            // --> aggregators run after guard
+        } );
     }
 
     public ArtifactInformation createGeneratorArtifact ( final String generatorId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData ) throws IOException
     {
         return this.aggregation.guarded ( () -> {
-            final ArtifactInformation result = internalCreateArtifact ( null, stream, name, providedMetaData, ArtifactType.GENERATOR, generatorId );
 
-            // run generator
+            return this.tracker.run ( () -> {
 
-            generate ( result );
+                final ArtifactInformation result = internalCreateArtifact ( null, stream, name, providedMetaData, ArtifactType.GENERATOR, generatorId );
 
-            // TODO: run flush generators
+                // run generator
 
-            // aggregators run after with guard
-            return result;
+                generate ( result );
+
+                // --> flush regeneration
+
+                return result;
+
+            } );
+
+            // --> aggregators run after guard
+
         } );
     }
 
     public void regenerate ( final String artifactId )
     {
         this.aggregation.guarded ( () -> {
-            final ArtifactInformation artifact = this.context.getArtifacts ().get ( artifactId );
 
-            if ( artifact == null )
-            {
-                throw new IllegalStateException ( String.format ( "Unable to find artifact '%s'", artifactId ) );
-            }
+            this.tracker.run ( () -> {
 
-            deleteGenerated ( artifact );
-            generate ( artifact );
+                final ArtifactInformation artifact = this.context.getArtifacts ().get ( artifactId );
 
-            // TODO: run flush generators
+                if ( artifact == null )
+                {
+                    throw new IllegalStateException ( String.format ( "Unable to find artifact '%s'", artifactId ) );
+                }
 
-            // aggregators run after with guard
+                deleteGenerated ( artifact );
+                generate ( artifact );
+
+                // -> flush regeneration
+
+            } );
+
+            // -> aggregators run after with guard
         } );
     }
 
@@ -337,51 +350,92 @@ public class AspectContextImpl
         final Path tmp = Files.createTempFile ( "upload-", null );
 
         return this.aggregation.guarded ( () -> {
-            try
-            {
-                // spool out to tmp file
 
-                try ( OutputStream out = new BufferedOutputStream ( Files.newOutputStream ( tmp ) ) )
+            return this.tracker.run ( () -> {
+
+                try
                 {
-                    ByteStreams.copy ( stream, out );
+                    // spool out to tmp file
+
+                    try ( OutputStream out = new BufferedOutputStream ( Files.newOutputStream ( tmp ) ) )
+                    {
+                        ByteStreams.copy ( stream, out );
+                    }
+
+                    // check veto
+
+                    if ( checkVetoAdd ( name, tmp, type.isExternal () ) )
+                    {
+                        return null;
+                    }
+
+                    // store artifact
+
+                    ArtifactInformation result;
+                    try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( tmp ) ) )
+                    {
+                        result = this.context.createPlainArtifact ( parentId, in, name, providedMetaData, type.getFacetTypes (), virtualizerAspectId );
+                    }
+
+                    // extract meta data
+
+                    final ExtractionResult extraction = extractMetaData ( result, this.model.getAspectIds () ); // FIXME: do with tmp file
+                    result = this.context.setExtractedMetaData ( result.getId (), extraction.metadata );
+                    result = this.context.setValidationMessages ( result.getId (), extraction.messages );
+
+                    fireArtifactCreated ( result );
+
+                    // run virtualizers for artifact
+
+                    virtualize ( result, tmp, this.model.getAspectIds () );
+
+                    // -> flush regeneration
+
+                    return result;
+                }
+                finally
+                {
+                    Files.deleteIfExists ( tmp );
                 }
 
-                // check veto
+            } );
 
-                if ( checkVetoAdd ( name, tmp, type.isExternal () ) )
-                {
-                    return null;
-                }
+            // -> aggregators run after with guard
 
-                // store artifact
-
-                ArtifactInformation result;
-                try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( tmp ) ) )
-                {
-                    result = this.context.createPlainArtifact ( parentId, in, name, providedMetaData, type.getFacetTypes (), virtualizerAspectId );
-                }
-
-                // extract meta data
-
-                final Map<MetaKey, String> metaData = extractMetaData ( result, this.model.getAspectIds () ); // FIXME: do with tmp file
-                result = this.context.setExtractedMetaData ( result.getId (), metaData );
-
-                // TODO: notify generators
-
-                // run virtualizers for artifact
-
-                virtualize ( result, tmp, this.model.getAspectIds () );
-
-                // TODO: flush generators
-
-                // aggregators run after with guard
-                return result;
-            }
-            finally
-            {
-                Files.deleteIfExists ( tmp );
-            }
         } );
+    }
+
+    private void fireArtifactCreated ( final ArtifactInformation artifact )
+    {
+        fireArtifactEvent ( artifact, new AddedEvent ( artifact.getId (), artifact.getMetaData () ) );
+    }
+
+    private void fireArtifactDeleted ( final ArtifactInformation artifact )
+    {
+        fireArtifactEvent ( artifact, new RemovedEvent ( artifact.getId (), artifact.getMetaData () ) );
+    }
+
+    private void fireArtifactEvent ( final ArtifactInformation modifiedArtifact, final Object event )
+    {
+        for ( final ArtifactInformation artifact : this.context.getArtifacts ().values () )
+        {
+            if ( artifact.equals ( modifiedArtifact ) )
+            {
+                continue;
+            }
+
+            if ( !artifact.is ( "generator" ) )
+            {
+                continue;
+            }
+
+            Activator.getGeneratorProcessor ().process ( artifact.getVirtualizerAspectId (), generator -> {
+                if ( generator.shouldRegenerate ( event ) )
+                {
+                    this.tracker.mark ( artifact.getId () );
+                }
+            } );
+        }
     }
 
     private void virtualizeFor ( final Set<String> aspects )
@@ -432,31 +486,37 @@ public class AspectContextImpl
     public boolean deleteArtifacts ( final Set<String> artifactIds )
     {
         return this.aggregation.guarded ( () -> {
-            int count = 0;
-            for ( final String artifactId : artifactIds )
-            {
-                final boolean result = internalDeleteArtifact ( artifactId );
-                if ( result )
+
+            return this.tracker.run ( () -> {
+
+                int count = 0;
+                for ( final String artifactId : artifactIds )
                 {
-                    count++;
+                    final boolean result = internalDeleteArtifact ( artifactId ) != null;
+                    if ( result )
+                    {
+                        count++;
+                    }
                 }
-            }
 
-            // TODO: run flush generators
+                return count > 0;
 
-            // aggregators run after with guard
+                // -> flush regeneration
 
-            return count > 0;
+            } );
+
+            // -> aggregators run after with guard
+
         } );
     }
 
-    private boolean internalDeleteArtifact ( final String artifactId )
+    private ArtifactInformation internalDeleteArtifact ( final String artifactId )
     {
-        final boolean result = this.context.deletePlainArtifact ( artifactId );
+        final ArtifactInformation result = this.context.deletePlainArtifact ( artifactId );
 
-        if ( result )
+        if ( result != null )
         {
-            // FIXME: run trigger
+            fireArtifactDeleted ( result );
         }
 
         return result;
@@ -482,6 +542,7 @@ public class AspectContextImpl
             final Map<MetaKey, String> newMetaData = new HashMap<> ( art.getExtractedMetaData () );
 
             // remove all meta keys which we want to update
+
             removeNamespaces ( aspectIds, newMetaData );
 
             this.context.setExtractedMetaData ( art.getId (), newMetaData );
@@ -494,49 +555,65 @@ public class AspectContextImpl
 
         for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
         {
-            final Map<MetaKey, String> updatedMetaData = extractMetaData ( art, aspectIds );
+            final ExtractionResult result = extractMetaData ( art, aspectIds );
+            final Map<MetaKey, String> updatedMetaData = result.metadata;
             final Map<MetaKey, String> newMetaData = new HashMap<> ( art.getExtractedMetaData () );
 
             // remove all meta keys which we want to update
+
             removeNamespaces ( aspectIds, newMetaData );
 
             // insert new data
+
             newMetaData.putAll ( updatedMetaData );
 
+            // remove all validation messages which we want to update
+
+            final List<ValidationMessage> messages = new LinkedList<> ();
+            filterValidation ( art::getValidationMessages, messages::addAll, aspectIds );
+
+            // add validation messages
+
+            messages.addAll ( result.messages );
+
             this.context.setExtractedMetaData ( art.getId (), newMetaData );
+            this.context.setValidationMessages ( art.getId (), messages );
         }
     }
 
-    private Map<MetaKey, String> extractMetaData ( final ArtifactInformation artifact, final Collection<String> aspectIds )
+    private class ExtractionResult
     {
-        final Map<MetaKey, String> result = new HashMap<> ();
+        final Map<MetaKey, String> metadata = new HashMap<> ();
+
+        final List<ValidationMessage> messages = new LinkedList<> ();
+    }
+
+    private ExtractionResult extractMetaData ( final ArtifactInformation artifact, final Collection<String> aspectIds )
+    {
+        final ExtractionResult result = new ExtractionResult ();
 
         doStreamed ( artifact.getId (), path -> {
 
             this.processor.process ( aspectIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
-                try
-                {
-                    extractMetaData ( artifact, result, path, aspect, extractor );
-                }
-                catch ( final Exception e )
-                {
-                    throw new RuntimeException ( e );
-                }
+
+                Exceptions.wrapException ( () -> extractMetaData ( artifact, result.metadata, result.messages, path, aspect, extractor ) );
+
             } );
         } );
 
         return result;
     }
 
-    private void extractMetaData ( final ArtifactInformation artifact, final Map<MetaKey, String> result, final Path path, final ChannelAspect aspect, final Extractor extractor ) throws Exception
+    private void extractMetaData ( final ArtifactInformation artifact, final Map<MetaKey, String> result, final List<ValidationMessage> messages, final Path path, final ChannelAspect aspect, final Extractor extractor ) throws Exception
     {
         final Map<String, String> md = new HashMap<> ();
+
         extractor.extractMetaData ( new Extractor.Context () {
 
             @Override
             public void validationMessage ( final Severity severity, final String message )
             {
-                // FIXME: implement
+                messages.add ( new ValidationMessage ( aspect.getId (), severity, message, Collections.singleton ( artifact.getId () ) ) );
             }
 
             @Override
@@ -603,6 +680,14 @@ public class AspectContextImpl
             throw new RuntimeException ( "Failed to stream blob", e );
         }
 
+    }
+
+    /**
+     * Re-aggregate
+     */
+    public void aggregate ()
+    {
+        runAggregators ();
     }
 
 }

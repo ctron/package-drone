@@ -11,20 +11,20 @@
 package de.dentrassi.pm.common.event;
 
 import java.util.Collections;
-import java.util.SortedMap;
+import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
 
 public abstract class ArtifactEvent
 {
-    private final SortedMap<MetaKey, String> metaData;
+    private final Map<MetaKey, String> metaData;
 
     private final String artifactId;
 
-    public ArtifactEvent ( final String artifactId, final SortedMap<MetaKey, String> metaData )
+    public ArtifactEvent ( final String artifactId, final Map<MetaKey, String> metaData )
     {
         this.artifactId = artifactId;
-        this.metaData = Collections.unmodifiableSortedMap ( metaData );
+        this.metaData = Collections.unmodifiableMap ( metaData );
     }
 
     public String getArtifactId ()
@@ -32,7 +32,7 @@ public abstract class ArtifactEvent
         return this.artifactId;
     }
 
-    public SortedMap<MetaKey, String> getMetaData ()
+    public Map<MetaKey, String> getMetaData ()
     {
         return this.metaData;
     }

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.event;
 
-import java.util.SortedMap;
+import java.util.Map;
 
 import de.dentrassi.pm.common.MetaKey;
 
 public class RemovedEvent extends ArtifactEvent
 {
-    public RemovedEvent ( final String artifactId, final SortedMap<MetaKey, String> metaData )
+    public RemovedEvent ( final String artifactId, final Map<MetaKey, String> metaData )
     {
         super ( artifactId, metaData );
     }

@@ -69,6 +69,11 @@ public final class Channels
 
     public static ModelAndView redirectViewChannel ( final String channelId )
     {
-        return new ModelAndView ( "redirect:/channel/" + urlPathSegmentEscaper ().escape ( channelId ) + "/view" );
+        return new ModelAndView ( "redirect:" + channelTarget ( channelId ) );
+    }
+
+    public static String channelTarget ( final String channelId )
+    {
+        return "/channel/" + urlPathSegmentEscaper ().escape ( channelId ) + "/view";
     }
 }

@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -74,7 +73,7 @@ public final class Helper
         return false;
     }
 
-    private static boolean isChange ( final SortedMap<MetaKey, String> metaData, final Set<Type> types )
+    private static boolean isChange ( final Map<MetaKey, String> metaData, final Set<Type> types )
     {
         for ( final Type type : types )
         {

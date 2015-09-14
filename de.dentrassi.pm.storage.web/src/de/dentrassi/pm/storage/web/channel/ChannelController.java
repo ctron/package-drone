@@ -897,7 +897,7 @@ public class ChannelController implements InterfaceExtender
         return withChannel ( channelId, ReadableChannel.class, channel -> {
 
             if ( !channel.streamCacheEntry ( new MetaKey ( namespace, key ), entry -> {
-                logger.trace ( "Length: %s, Mime: %s", entry.getSize (), entry.getMimeType () );
+                logger.trace ( "Length: {}, Mime: {}", entry.getSize (), entry.getMimeType () );
 
                 response.setContentLengthLong ( entry.getSize () );
                 response.setContentType ( entry.getMimeType () );
@@ -1019,12 +1019,10 @@ public class ChannelController implements InterfaceExtender
                 result.add ( new MenuEntry ( "Internal", 400, "Aspect Versions", 100, LinkTarget.createFromController ( ChannelController.class, "viewAspectVersions" ).expand ( model ), Modifier.DEFAULT, null ) );
             }
 
-            /* FIXME:
             if ( channel.hasAspect ( "p2.repo" ) )
             {
                 result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "P2 Repository", 2_000, LinkTarget.createFromController ( ChannelController.class, "helpP2" ).expand ( model ), Modifier.DEFAULT, "info-sign" ) );
             }
-            */
 
             result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "API Upload", 1_100, LinkTarget.createFromController ( ChannelController.class, "helpApi" ).expand ( model ), Modifier.DEFAULT, "upload" ) );
 
