@@ -18,12 +18,12 @@ import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
-import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.web.utils.Channels;
 import de.dentrassi.pm.system.SitePrefixService;
 
 @Controller
@@ -35,11 +35,11 @@ import de.dentrassi.pm.system.SitePrefixService;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class YumController
 {
-    private StorageService service;
+    private ChannelService service;
 
     private SitePrefixService sitePrefixService;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -52,17 +52,13 @@ public class YumController
     @RequestMapping ( value = "/help/{channelId}" )
     public ModelAndView help ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
+            final ModelAndView model = new ModelAndView ( "help" );
 
-        final ModelAndView model = new ModelAndView ( "help" );
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "sitePrefix", this.sitePrefixService.getSitePrefix () );
 
-        model.put ( "channel", channel );
-        model.put ( "sitePrefix", this.sitePrefixService.getSitePrefix () );
-
-        return model;
+            return model;
+        } );
     }
 }

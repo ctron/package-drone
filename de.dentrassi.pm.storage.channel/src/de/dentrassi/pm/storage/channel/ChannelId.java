@@ -26,7 +26,7 @@ public class ChannelId
 
     public String getNameOrId ()
     {
-        if ( this.name != null )
+        if ( this.name != null && !this.name.isEmpty () )
         {
             return this.name;
         }

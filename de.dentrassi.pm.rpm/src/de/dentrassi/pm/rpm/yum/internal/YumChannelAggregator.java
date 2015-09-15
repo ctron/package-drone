@@ -16,11 +16,11 @@ import java.util.Map;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.common.spool.ChannelCacheTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.rpm.Constants;
 import de.dentrassi.pm.rpm.RpmInformation;
 import de.dentrassi.pm.rpm.yum.RepositoryCreator;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class YumChannelAggregator implements ChannelAggregator
 {

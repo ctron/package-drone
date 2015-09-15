@@ -29,12 +29,12 @@ import org.w3c.dom.Element;
 
 import de.dentrassi.pm.aspect.common.spool.OutputSpooler;
 import de.dentrassi.pm.aspect.common.spool.SpoolOutTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.rpm.RpmInformation;
 import de.dentrassi.pm.rpm.RpmInformation.Changelog;
 import de.dentrassi.pm.rpm.RpmInformation.Dependency;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.rpm.RpmDependencyFlags;
 import de.dentrassi.rpm.RpmVersion;
 

@@ -27,15 +27,17 @@ import org.osgi.util.tracker.ServiceTracker;
 import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.rpm.Constants;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.CacheEntryInformation;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.CacheEntryInformation;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.channel.servlet.AbstractChannelServiceServlet;
 import de.dentrassi.pm.storage.channel.util.DownloadHelper;
-import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 import de.dentrassi.pm.system.SitePrefixService;
 
-public class YumServlet extends AbstractStorageServiceServlet
+public class YumServlet extends AbstractChannelServiceServlet
 {
     private static final long serialVersionUID = 1L;
 
@@ -89,22 +91,25 @@ public class YumServlet extends AbstractStorageServiceServlet
         final String channelId = segs[0];
         final String remPath = segs.length > 1 ? segs[1] : null;
 
-        final Channel channel = getService ( request ).getChannelWithAlias ( channelId );
-        if ( channel == null )
+        try
+        {
+            getService ( request ).access ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
+                if ( handleChannel ( channel, remPath, request, response ) )
+                {
+                    return;
+                }
+
+                handleNotFound ( request, response, request.getRequestURI () );
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             handleMessage ( response, HttpServletResponse.SC_NOT_FOUND, String.format ( "Channel '%s' could not be found", channelId ) );
-            return;
         }
 
-        if ( handleChannel ( channel, remPath, request, response ) )
-        {
-            return;
-        }
-
-        handleNotFound ( request, response, request.getRequestURI () );
     }
 
-    private boolean handleChannel ( final Channel channel, final String remPath, final HttpServletRequest request, final HttpServletResponse response ) throws IOException, ServletException
+    private boolean handleChannel ( final ReadableChannel channel, final String remPath, final HttpServletRequest request, final HttpServletResponse response ) throws IOException, ServletException
     {
         if ( remPath == null || remPath.isEmpty () )
         {
@@ -149,7 +154,7 @@ public class YumServlet extends AbstractStorageServiceServlet
 
             request.setAttribute ( "channel", channel );
 
-            final List<CacheEntryInformation> files = channel.getAllCacheEntries ().stream ().filter ( ce -> ce.getKey ().getNamespace ().equals ( Constants.YUM_ASPECT_ID ) && ce.getName ().startsWith ( "repodata/" ) ).collect ( Collectors.toList () );
+            final List<CacheEntryInformation> files = channel.getCacheEntries ().values ().stream ().filter ( ce -> ce.getKey ().getNamespace ().equals ( Constants.YUM_ASPECT_ID ) && ce.getName ().startsWith ( "repodata/" ) ).collect ( Collectors.toList () );
             request.setAttribute ( "entries", files );
 
             viewJsp ( request, response, "repodata.jsp" );
@@ -165,19 +170,19 @@ public class YumServlet extends AbstractStorageServiceServlet
         return false;
     }
 
-    private void handleConfig ( final Channel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    private void handleConfig ( final ReadableChannel channel, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         response.setContentType ( "text/plain" );
 
         try ( final PrintWriter pw = response.getWriter () )
         {
-            pw.append ( '[' ).append ( channel.getNameOrId () ).append ( "]\n" );
-            final String name = makeName ( channel.getDescription () );
+            pw.append ( '[' ).append ( channel.getId ().getNameOrId () ).append ( "]\n" );
+            final String name = makeName ( channel.getInformation ().getState ().getDescription () );
             if ( name != null )
             {
                 pw.append ( "name=" ).append ( name ).append ( "\n" );
             }
-            pw.append ( "baseurl=" ).append ( getSitePrefixService ().getSitePrefix () ).append ( "/yum/" ).append ( channel.getId () ).append ( "\n" );
+            pw.append ( "baseurl=" ).append ( getSitePrefixService ().getSitePrefix () ).append ( "/yum/" ).append ( channel.getId ().getId () ).append ( "\n" );
             pw.append ( "enabled=1\n" );
             pw.append ( "gpgcheck=0\n" );
         }
@@ -202,7 +207,7 @@ public class YumServlet extends AbstractStorageServiceServlet
         }
     }
 
-    private void handlePool ( final Channel channel, final String remPath, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    private void handlePool ( final ReadableChannel channel, final String remPath, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         final String[] segs = remPath.split ( "/" );
         if ( segs.length < 3 )
@@ -211,8 +216,8 @@ public class YumServlet extends AbstractStorageServiceServlet
             return;
         }
 
-        final Artifact artifact = channel.getArtifact ( segs[1] );
-        if ( artifact == null )
+        final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( segs[1] );
+        if ( !artifact.isPresent () )
         {
             handleNotFound ( request, response, request.getRequestURI () );
             return;
@@ -220,7 +225,7 @@ public class YumServlet extends AbstractStorageServiceServlet
 
         final Optional<String> name = segs.length > 2 ? Optional.of ( segs[segs.length - 1] ) : Optional.empty ();
 
-        DownloadHelper.streamArtifact ( response, artifact, null, true, art -> name.orElse ( art.getName () ) );
+        DownloadHelper.streamArtifact ( response, artifact.get (), null, true, channel, art -> name.orElse ( art.getName () ) );
     }
 
     private void viewJsp ( final HttpServletRequest request, final HttpServletResponse response, final String viewName ) throws ServletException, IOException

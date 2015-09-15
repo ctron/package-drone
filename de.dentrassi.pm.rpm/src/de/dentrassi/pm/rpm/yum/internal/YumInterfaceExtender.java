@@ -23,20 +23,20 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.rpm.Constants;
 import de.dentrassi.pm.storage.AbstractChannelInterfaceExtender;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 
 public class YumInterfaceExtender extends AbstractChannelInterfaceExtender
 {
     private static final Escaper PATH_ESC = UrlEscapers.urlPathSegmentEscaper ();
 
     @Override
-    protected boolean filterChannel ( final Channel channel )
+    protected boolean filterChannel ( final ChannelInformation channel )
     {
         return channel.hasAspect ( Constants.YUM_ASPECT_ID );
     }
 
     @Override
-    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final ChannelInformation channel )
     {
         final List<MenuEntry> result = new LinkedList<> ();
         result.add ( new MenuEntry ( "YUM (by ID)", 6_000, new LinkTarget ( String.format ( "/yum/%s", channel.getId () ) ), Modifier.LINK, null ) );
@@ -48,7 +48,7 @@ public class YumInterfaceExtender extends AbstractChannelInterfaceExtender
     }
 
     @Override
-    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelViews ( final HttpServletRequest request, final ChannelInformation channel )
     {
         final List<MenuEntry> result = new LinkedList<> ();
 

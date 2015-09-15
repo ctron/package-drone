@@ -41,10 +41,10 @@ pageContext.setAttribute ( "NL", "\n" );
             </p>
             
 			<div class="panel panel-default">
-			    <div class="panel-heading">/etc/yum/repo.repos.d/${ fn:escapeXml(channel.getNameOrId() ) }.repo</div>
+			    <div class="panel-heading">/etc/yum/repo.repos.d/${ fn:escapeXml(channel.nameOrId ) }.repo</div>
 			    <div class="">
-			        <pre>[${fn:escapeXml(channel.getNameOrId()) }]
-<c:if test="${not empty channel.description }">name=${fn:escapeXml(fn:contains(channel.description,NL) ? fn:substringBefore(channel.description,NL) : channel.description) }${NL }
+			        <pre>[${fn:escapeXml(channel.nameOrId) }]
+<c:if test="${not empty channel.state.description }">name=${fn:escapeXml(fn:contains(channel.state.description,NL) ? fn:substringBefore(channel.state.description,NL) : channel.state.description) }${NL }
 </c:if>baseurl=${fn:escapeXml(sitePrefix) }/yum/${fn:escapeXml(channel.id) }
 enabled=1
 gpgcheck=0</pre>
@@ -55,7 +55,7 @@ gpgcheck=0</pre>
 			Or download the file by issuing the following command:
 			</p>
             
-            <pre>wget "${fn:escapeXml(sitePrefix) }/yum/${fn:escapeXml(channel.id) }/config.repo" -O "etc/yum.repos.d/${fn:escapeXml(channel.id) }.repo"</pre>
+            <pre>wget "${fn:escapeXml(sitePrefix) }/yum/${fn:escapeXml(channel.id) }/config.repo" -O "/etc/yum.repos.d/${fn:escapeXml(channel.id) }.repo"</pre>
             
         </div>
         
