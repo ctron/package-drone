@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.io.ByteStreams;
 
 import de.dentrassi.osgi.profiler.Profile;
+import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.utils.Exceptions;
 import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
@@ -39,6 +41,7 @@ import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.Severity;
 import de.dentrassi.pm.common.event.AddedEvent;
 import de.dentrassi.pm.common.event.RemovedEvent;
+import de.dentrassi.pm.common.utils.Holder;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.ValidationMessage;
 import de.dentrassi.pm.storage.channel.apm.internal.Activator;
@@ -145,13 +148,22 @@ public class AspectContextImpl
                     }
                 }
 
-                // run extractors
+                // run extractors and virtualizers at the same time
 
-                extractFor ( addedAspects );
+                for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
+                {
+                    doStreamed ( art.getId (), path -> {
 
-                // re-create all virtual
+                        // run extractors
 
-                virtualizeFor ( this.model.getAspectIds () );
+                        extractFor ( aspectIds, art, path );
+
+                        // re-create all virtual
+
+                        virtualize ( art, path, this.model.getAspectIds () );
+
+                    } );
+                }
 
                 // -> flush regeneration
             } );
@@ -164,36 +176,40 @@ public class AspectContextImpl
     {
         logger.debug ( "Removing aspects: {}", aspectIds );
 
-        this.aggregation.guarded ( () -> {
+        try ( Handle handle = Profile.start ( this, "removeAspects" ) )
+        {
+            this.aggregation.guarded ( () -> {
 
-            this.tracker.run ( () -> {
+                this.tracker.run ( () -> {
 
-                // remove all virtualized
+                    // remove all virtualized
 
-                removeVirtualized ();
+                    removeVirtualized ();
 
-                // update model
+                    // update model
 
-                for ( final String aspectId : aspectIds )
-                {
-                    this.model.remove ( aspectId );
-                }
+                    for ( final String aspectId : aspectIds )
+                    {
+                        this.model.remove ( aspectId );
+                    }
 
-                // remove selected extracted meta data
+                    // remove selected extracted meta data
 
-                removeExtractedFor ( aspectIds );
+                    removeExtractedFor ( aspectIds );
 
-                // re-create all virtual
+                    // re-create all virtual
 
-                virtualizeFor ( this.model.getAspectIds () );
+                    virtualizeFor ( this.model.getAspectIds () );
 
-                // channel validation well be re-generated
+                    // channel validation well updated when be re-generated
 
-                // ->flush regeneration
+                    // -> flush regeneration
+                } );
+
+                // -> aggregators run after with guard
             } );
 
-            // ->aggregators run after with guard
-        } );
+        }
     }
 
     private boolean filterValidation ( final Supplier<Collection<ValidationMessage>> input, final Consumer<List<ValidationMessage>> output, final Set<String> aspectIds )
@@ -248,13 +264,22 @@ public class AspectContextImpl
                     this.model.put ( aspect.getFactoryId (), versionString );
                 }
 
-                // extract metadata ... well clear itself first
+                // run extractors and virtualizers at the same time
 
-                extractFor ( effectiveAspectIds );
+                for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
+                {
+                    doStreamed ( art.getId (), path -> {
 
-                // re-create all virtual
+                        // run extractors
 
-                virtualizeFor ( this.model.getAspectIds () );
+                        extractFor ( aspectIds, art, path );
+
+                        // re-create all virtual
+
+                        virtualize ( art, path, this.model.getAspectIds () );
+
+                    } );
+                }
 
                 // -> flush regeneration
             } );
@@ -394,7 +419,7 @@ public class AspectContextImpl
 
                     // extract meta data
 
-                    final ExtractionResult extraction = extractMetaData ( result, this.model.getAspectIds () ); // FIXME: do with tmp file
+                    final ExtractionResult extraction = extractMetaData ( result, tmp, this.model.getAspectIds () );
                     result = this.context.setExtractedMetaData ( result.getId (), extraction.metadata );
                     result = this.context.setValidationMessages ( result.getId (), extraction.messages );
 
@@ -424,12 +449,16 @@ public class AspectContextImpl
 
     private void fireArtifactCreated ( final ArtifactInformation artifact )
     {
-        fireArtifactEvent ( artifact, new AddedEvent ( artifact.getId (), artifact.getMetaData () ) );
+        Profile.run ( this, "fireArtifactCreated", () -> {
+            fireArtifactEvent ( artifact, new AddedEvent ( artifact.getId (), artifact.getMetaData () ) );
+        } );
     }
 
     private void fireArtifactDeleted ( final ArtifactInformation artifact )
     {
-        fireArtifactEvent ( artifact, new RemovedEvent ( artifact.getId (), artifact.getMetaData () ) );
+        Profile.run ( this, "fireArtifactDeleted", () -> {
+            fireArtifactEvent ( artifact, new RemovedEvent ( artifact.getId (), artifact.getMetaData () ) );
+        } );
     }
 
     private void fireArtifactEvent ( final ArtifactInformation modifiedArtifact, final Object event )
@@ -440,14 +469,22 @@ public class AspectContextImpl
         {
             logger.trace ( "\tTest artifact: {}", artifact );
 
+            if ( this.tracker.isMarked ( artifact.getId () ) )
+            {
+                // already marked
+                continue;
+            }
+
             if ( artifact.equals ( modifiedArtifact ) )
             {
                 logger.trace ( "\t\t-> is the modified one" );
+                // we don't regenerate ourself
                 continue;
             }
 
             if ( !artifact.is ( "generator" ) )
             {
+                // and only true generators
                 logger.trace ( "\t\t-> is not a generator" );
                 continue;
             }
@@ -585,36 +622,32 @@ public class AspectContextImpl
         }
     }
 
-    private void extractFor ( final Set<String> aspectIds )
+    private void extractFor ( final Set<String> aspectIds, final ArtifactInformation art, final Path path )
     {
-        // we need to iterate over an array
+        final ExtractionResult result = extractMetaData ( art, path, aspectIds );
 
-        for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
-        {
-            final ExtractionResult result = extractMetaData ( art, aspectIds );
-            final Map<MetaKey, String> updatedMetaData = result.metadata;
-            final Map<MetaKey, String> newMetaData = new HashMap<> ( art.getExtractedMetaData () );
+        final Map<MetaKey, String> updatedMetaData = result.metadata;
+        final Map<MetaKey, String> newMetaData = new HashMap<> ( art.getExtractedMetaData () );
 
-            // remove all meta keys which we want to update
+        // remove all meta keys which we want to update
 
-            removeNamespaces ( aspectIds, newMetaData );
+        removeNamespaces ( aspectIds, newMetaData );
 
-            // insert new data
+        // insert new data
 
-            newMetaData.putAll ( updatedMetaData );
+        newMetaData.putAll ( updatedMetaData );
 
-            // remove all validation messages which we want to update
+        // remove all validation messages which we want to update
 
-            final List<ValidationMessage> messages = new LinkedList<> ();
-            filterValidation ( art::getValidationMessages, messages::addAll, aspectIds );
+        final List<ValidationMessage> messages = new LinkedList<> ();
+        filterValidation ( art::getValidationMessages, messages::addAll, aspectIds );
 
-            // add validation messages
+        // add validation messages
 
-            messages.addAll ( result.messages );
+        messages.addAll ( result.messages );
 
-            this.context.setExtractedMetaData ( art.getId (), newMetaData );
-            this.context.setValidationMessages ( art.getId (), messages );
-        }
+        this.context.setExtractedMetaData ( art.getId (), newMetaData );
+        this.context.setValidationMessages ( art.getId (), messages );
     }
 
     private class ExtractionResult
@@ -624,19 +657,14 @@ public class AspectContextImpl
         final List<ValidationMessage> messages = new LinkedList<> ();
     }
 
-    private ExtractionResult extractMetaData ( final ArtifactInformation artifact, final Collection<String> aspectIds )
+    private ExtractionResult extractMetaData ( final ArtifactInformation artifact, final Path path, final Collection<String> aspectIds )
     {
         final ExtractionResult result = new ExtractionResult ();
+        this.processor.process ( aspectIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
 
-        doStreamed ( artifact.getId (), path -> {
+            Exceptions.wrapException ( () -> extractMetaData ( artifact, result.metadata, result.messages, path, aspect, extractor ) );
 
-            this.processor.process ( aspectIds, ChannelAspect::getExtractor, ( aspect, extractor ) -> {
-
-                Exceptions.wrapException ( () -> extractMetaData ( artifact, result.metadata, result.messages, path, aspect, extractor ) );
-
-            } );
         } );
-
         return result;
     }
 
@@ -684,11 +712,13 @@ public class AspectContextImpl
         }
     }
 
-    private void doStreamed ( final String artifactId, final Consumer<Path> consumer )
+    private <T> T doStreamed ( final String artifactId, final Function<Path, T> operation )
     {
         try
         {
-            final boolean result = this.context.stream ( artifactId, stream -> {
+            final Holder<T> result = new Holder<> ();
+
+            final boolean streamed = this.context.stream ( artifactId, stream -> {
                 final Path tmp = Files.createTempFile ( "blob-", null );
                 try
                 {
@@ -697,7 +727,7 @@ public class AspectContextImpl
                         ByteStreams.copy ( stream, os );
                     }
 
-                    consumer.accept ( tmp );
+                    result.value = operation.apply ( tmp );
                 }
                 finally
                 {
@@ -705,17 +735,25 @@ public class AspectContextImpl
                 }
             } );
 
-            if ( !result )
+            if ( !streamed )
             {
                 throw new IllegalStateException ( "Unable to stream blob for: " + artifactId );
             }
 
+            return result.value;
         }
         catch ( final IOException e )
         {
             throw new RuntimeException ( "Failed to stream blob", e );
         }
+    }
 
+    private void doStreamed ( final String artifactId, final Consumer<Path> consumer )
+    {
+        doStreamed ( artifactId, path -> {
+            consumer.accept ( path );
+            return null;
+        } );
     }
 
     /**

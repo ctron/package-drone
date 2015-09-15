@@ -63,7 +63,7 @@ public class HashAspectFactory implements ChannelAspectFactory
         @Override
         public Virtualizer getArtifactVirtualizer ()
         {
-            return new VirtualizerImpl ();
+            return null; // return new VirtualizerImpl ();
         }
 
         @Override

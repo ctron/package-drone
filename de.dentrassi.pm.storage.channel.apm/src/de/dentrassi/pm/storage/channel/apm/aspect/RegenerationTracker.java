@@ -108,4 +108,17 @@ public class RegenerationTracker
         }
         current.add ( artifactId );
     }
+
+    public boolean isMarked ( final String artifactId )
+    {
+        final LinkedList<Set<String>> all = this.states.get ();
+        for ( final Set<String> level : all )
+        {
+            if ( level.contains ( artifactId ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

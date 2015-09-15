@@ -11,11 +11,11 @@
  * resolve FIXMEs
  * finish validation (OK)
  * implement import/export
- * improve performance when re-aspecting (doStreamed)
+ * improve performance when re-aspecting (doStreamed) (OK)
 
 ## Finally
 
- * Refactor
  * Kick out old JPA stuff
+ * Refactor
  * Fix the build
  * Test, test, test …
