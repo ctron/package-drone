@@ -22,12 +22,12 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.r5.R5RepositoryAspectFactory;
 import de.dentrassi.pm.storage.AbstractChannelInterfaceExtender;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 
 public class R5InterfaceExtender extends AbstractChannelInterfaceExtender
 {
     @Override
-    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final Channel channel )
+    protected List<MenuEntry> getChannelActions ( final HttpServletRequest request, final ChannelInformation channel )
     {
         if ( !channel.hasAspect ( R5RepositoryAspectFactory.ID ) )
         {

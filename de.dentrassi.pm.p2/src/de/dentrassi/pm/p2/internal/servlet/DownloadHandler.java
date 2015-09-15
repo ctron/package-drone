@@ -12,6 +12,7 @@ package de.dentrassi.pm.p2.internal.servlet;
 
 import static java.util.Optional.empty;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,7 +64,7 @@ public class DownloadHandler implements Handler
     }
 
     @Override
-    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
     {
         logger.debug ( "Looking for bundle: {}/{}", this.id, this.version );
 

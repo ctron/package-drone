@@ -186,7 +186,6 @@ public class P2Servlet extends AbstractChannelServiceServlet
     {
         try
         {
-            handler.prepare ();
             handler.process ( req, resp );
         }
         catch ( final Exception e )

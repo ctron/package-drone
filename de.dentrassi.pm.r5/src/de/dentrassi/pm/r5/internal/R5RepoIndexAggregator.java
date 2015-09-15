@@ -17,8 +17,8 @@ import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
 import de.dentrassi.pm.aspect.common.spool.ChannelCacheTarget;
 import de.dentrassi.pm.aspect.common.spool.SpoolOutTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.r5.RepositoryCreator;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class R5RepoIndexAggregator implements ChannelAggregator
 {
@@ -32,7 +32,7 @@ public class R5RepoIndexAggregator implements ChannelAggregator
     @Override
     public Map<String, String> aggregateMetaData ( final AggregationContext context ) throws Exception
     {
-        final String name = context.getChannelNameOrId ();
+        final String name = context.getChannelId ();
 
         final SpoolOutTarget target = new ChannelCacheTarget ( context );
 

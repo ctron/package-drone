@@ -11,6 +11,7 @@
 package de.dentrassi.pm.r5.internal;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,15 +19,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.servlet.Handler;
-import de.dentrassi.pm.r5.internal.handler.DownloadHandler;
 import de.dentrassi.pm.r5.internal.handler.NotFoundHandler;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.channel.servlet.AbstractChannelServiceServlet;
+import de.dentrassi.pm.storage.channel.util.DownloadHelper;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
-public abstract class CommonRepoServlet extends AbstractStorageServiceServlet
+public abstract class CommonRepoServlet extends AbstractChannelServiceServlet
 {
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -34,14 +38,12 @@ public abstract class CommonRepoServlet extends AbstractStorageServiceServlet
      */
     private final MetaKey keyToIndex;
 
+    private final ChannelCacheHandler indexHandler;
+
     public CommonRepoServlet ( final MetaKey keyToIndex )
     {
         this.keyToIndex = keyToIndex;
-    }
-
-    protected Artifact findArtifact ( final HttpServletRequest request, final String artifactId )
-    {
-        return getService ( request ).getArtifact ( artifactId );
+        this.indexHandler = new ChannelCacheHandler ( this.keyToIndex );
     }
 
     protected NotFoundHandler resourceNotFound ( final HttpServletRequest req )
@@ -49,54 +51,60 @@ public abstract class CommonRepoServlet extends AbstractStorageServiceServlet
         return new NotFoundHandler ( String.format ( "Resource '%s' not found.%n", req.getPathInfo () ) );
     }
 
-    protected Channel findChannel ( final HttpServletRequest request, final String channelIdOrName )
-    {
-        return getService ( request ).getChannelWithAlias ( channelIdOrName );
-    }
-
-    protected Handler findHandler ( final HttpServletRequest req, final HttpServletResponse resp )
+    protected boolean process ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
     {
         final String path = req.getPathInfo ();
 
         if ( path == null || path.isEmpty () || "/".equals ( path ) )
         {
-            return getHelpHandler ();
+            getHelpHandler ().process ( req, resp );
         }
 
         final String[] toks = req.getPathInfo ().split ( "\\/" );
 
         if ( toks.length == 2 )
         {
-            final Channel channel = findChannel ( req, toks[1] );
-            if ( channel == null )
+            try
             {
-                return new NotFoundHandler ( String.format ( "Channel '%s' not found.", toks[1] ) );
+                getService ( req ).access ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
+                    this.indexHandler.process ( channel, req, resp );
+                } );
             }
-
-            final ChannelCacheHandler indexHandler = new ChannelCacheHandler ( this.keyToIndex );
-            return new Handler () {
-                @Override
-                public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
-                {
-                    indexHandler.process ( channel, req, resp );
-                }
-            };
+            catch ( final ChannelNotFoundException e )
+            {
+                new NotFoundHandler ( String.format ( "Channel '%s' not found.", toks[1] ) ).process ( req, resp );
+            }
+            return true;
         }
 
         // - URL type #1 : /<base>/<channel>/artifact/<artifactId>
         // - URL type #2 : /<base>/<channel>/artifact/<artifactId>/<artifactName>
+
         if ( ( toks.length == 4 || toks.length == 5 ) && "artifact".equals ( toks[2] ) )
         {
-            // we can ignore the channel id since artifact ids are globally unique
-            final Artifact artifact = findArtifact ( req, toks[3] );
-            if ( artifact == null )
+            try
             {
-                return new NotFoundHandler ( String.format ( "Artifact '%s' not found.", toks[2] ) );
+                getService ( req ).access ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
+
+                    final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( toks[3] );
+                    if ( !artifact.isPresent () )
+                    {
+                        new NotFoundHandler ( String.format ( "Artifact '%s' not found.", toks[2] ) ).process ( req, resp );
+                    }
+                    else
+                    {
+                        DownloadHelper.streamArtifact ( resp, artifact.get (), Optional.of ( "application/vnd.osgi.bundle" ), true, channel, art -> toks.length == 5 ? toks[4] : art.getName () );
+                    }
+                } );
             }
-            return new DownloadHandler ( artifact );
+            catch ( final ChannelNotFoundException e )
+            {
+                new NotFoundHandler ( String.format ( "Channel '%s' not found.", toks[1] ) ).process ( req, resp );
+            }
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     protected abstract Handler getHelpHandler ();
@@ -104,25 +112,11 @@ public abstract class CommonRepoServlet extends AbstractStorageServiceServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        Handler handler = findHandler ( req, resp );
+        final boolean didProcess = process ( req, resp );
 
-        if ( handler == null )
+        if ( !didProcess )
         {
-            handler = resourceNotFound ( req );
-        }
-
-        try
-        {
-            handler.prepare ();
-            handler.process ( req, resp );
-        }
-        catch ( final IOException e )
-        {
-            throw e;
-        }
-        catch ( final Exception e )
-        {
-            throw new ServletException ( e );
+            resourceNotFound ( req ).process ( req, resp );;
         }
     }
 

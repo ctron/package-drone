@@ -10,14 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.common.servlet;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface Handler
 {
-    public default void prepare () throws Exception
-    {
-    }
-
-    public void process ( HttpServletRequest req, HttpServletResponse resp ) throws Exception;
+    public void process ( HttpServletRequest req, HttpServletResponse resp ) throws IOException;
 }

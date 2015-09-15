@@ -41,12 +41,7 @@ public class ZippedHandler implements Handler
     }
 
     @Override
-    public void prepare () throws Exception
-    {
-    }
-
-    @Override
-    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
     {
         this.nameCache.clear ();
 

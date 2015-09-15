@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.r5.internal.handler;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,12 +28,7 @@ public class NotFoundHandler implements Handler
     }
 
     @Override
-    public void prepare () throws Exception
-    {
-    }
-
-    @Override
-    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
     {
         resp.setStatus ( HttpServletResponse.SC_NOT_FOUND );
 

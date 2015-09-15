@@ -10,6 +10,8 @@
  *******************************************************************************/
 package de.dentrassi.pm.r5.internal.handler;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,12 +27,7 @@ public class HelpHandler implements Handler
     }
 
     @Override
-    public void prepare () throws Exception
-    {
-    }
-
-    @Override
-    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws Exception
+    public void process ( final HttpServletRequest req, final HttpServletResponse resp ) throws IOException
     {
         resp.setContentType ( "text/plain" );
         resp.getWriter ().write ( this.message );

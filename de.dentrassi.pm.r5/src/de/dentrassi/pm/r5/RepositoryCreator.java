@@ -38,13 +38,13 @@ import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.aspect.common.spool.OutputSpooler;
 import de.dentrassi.pm.aspect.common.spool.SpoolOutTarget;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.BundleRequirement;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageExport;
 import de.dentrassi.pm.osgi.bundle.BundleInformation.PackageImport;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class RepositoryCreator
 {

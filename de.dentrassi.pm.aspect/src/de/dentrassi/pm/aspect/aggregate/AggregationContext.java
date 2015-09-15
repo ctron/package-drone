@@ -27,6 +27,11 @@ public interface AggregationContext extends AggregationValidationContext
 {
     public Collection<ArtifactInformation> getArtifacts ();
 
+    /**
+     * Get the external channel id
+     * 
+     * @return the external channel id
+     */
     public String getChannelId ();
 
     public String getChannelDescription ();
