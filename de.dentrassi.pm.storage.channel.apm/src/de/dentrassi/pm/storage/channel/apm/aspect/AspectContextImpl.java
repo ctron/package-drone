@@ -50,6 +50,12 @@ public class AspectContextImpl
 {
     private final static Logger logger = LoggerFactory.getLogger ( AspectContextImpl.class );
 
+    @FunctionalInterface
+    public interface ArtifactCreator
+    {
+        public ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, String virtualizerAspectId ) throws IOException;
+    }
+
     private final AspectableContext context;
 
     private final ChannelAspectProcessor processor;
@@ -78,12 +84,15 @@ public class AspectContextImpl
     protected void runAggregators ()
     {
         logger.debug ( "Running aggregators" );
+
         Profile.run ( this, "runAggregators", () -> {
 
             final Map<MetaKey, String> metaData = new HashMap<> ();
             final List<ValidationMessage> messages = new CopyOnWriteArrayList<> ();
 
             this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
+
+                logger.trace ( "\tRunning aggregator: {}", aspect.getId () );
 
                 final AggregationContext ctx = new AggregationContextImpl ( this.context, aspect.getId (), this.context.getChannelId (), this.context::getChannelDetails, messages::add );
 
@@ -100,7 +109,9 @@ public class AspectContextImpl
     protected void runRegeneration ( final Set<String> artifactIds )
     {
         logger.debug ( "Running regeneration: {}", artifactIds );
+
         Profile.run ( this, "runRegeneration", () -> {
+
             for ( final String artifactId : artifactIds )
             {
                 regenerate ( artifactId );
@@ -110,8 +121,18 @@ public class AspectContextImpl
 
     public void addAspects ( final Set<String> aspectIds )
     {
+        logger.debug ( "Adding aspects: {}", aspectIds );
+
         this.aggregation.guarded ( () -> {
+
             this.tracker.run ( () -> {
+
+                // remove all virtualized
+
+                removeVirtualized ();
+
+                // add aspect information
+
                 final Set<String> addedAspects = new HashSet<> ();
                 for ( final ChannelAspectInformation aspect : this.processor.resolve ( aspectIds ) )
                 {
@@ -128,12 +149,11 @@ public class AspectContextImpl
 
                 extractFor ( addedAspects );
 
-                // run virtualizers
+                // re-create all virtual
 
-                virtualizeFor ( addedAspects );
+                virtualizeFor ( this.model.getAspectIds () );
 
                 // -> flush regeneration
-
             } );
 
             // -> aggregators run after with guard
@@ -142,9 +162,17 @@ public class AspectContextImpl
 
     public void removeAspects ( final Set<String> aspectIds )
     {
+        logger.debug ( "Removing aspects: {}", aspectIds );
+
         this.aggregation.guarded ( () -> {
 
             this.tracker.run ( () -> {
+
+                // remove all virtualized
+
+                removeVirtualized ();
+
+                // update model
 
                 for ( final String aspectId : aspectIds )
                 {
@@ -155,13 +183,11 @@ public class AspectContextImpl
 
                 removeExtractedFor ( aspectIds );
 
-                // remove virtualized
+                // re-create all virtual
 
-                removeVirtualized ( aspectIds );
+                virtualizeFor ( this.model.getAspectIds () );
 
-                // remove validation
-
-                removeValidationMessages ( aspectIds );
+                // channel validation well be re-generated
 
                 // ->flush regeneration
             } );
@@ -170,39 +196,33 @@ public class AspectContextImpl
         } );
     }
 
-    private void removeValidationMessages ( final Set<String> aspectIds )
-    {
-        filterValidation ( this.context::getValidationMessages, this.context::setValidationMessages, aspectIds );
-    }
-
-    private void filterValidation ( final Supplier<Collection<ValidationMessage>> input, final Consumer<List<ValidationMessage>> output, final Set<String> aspectIds )
+    private boolean filterValidation ( final Supplier<Collection<ValidationMessage>> input, final Consumer<List<ValidationMessage>> output, final Set<String> aspectIds )
     {
         final Collection<ValidationMessage> list = input.get ();
 
-        boolean modified = false;
-
         final List<ValidationMessage> result = new CopyOnWriteArrayList<> ();
+
+        boolean filtered = false;
 
         for ( final ValidationMessage msg : list )
         {
             if ( aspectIds.contains ( msg.getAspectId () ) )
             {
-                modified = true;
+                filtered = true;
                 continue;
             }
 
             result.add ( msg );
         }
 
-        if ( modified )
-        {
-            output.accept ( result );
-        }
+        output.accept ( result );
+
+        return filtered;
     }
 
     public void refreshAspects ( final Set<String> aspectIds )
     {
-        Set<String> effectiveAspectIds;
+        final Set<String> effectiveAspectIds;
         if ( aspectIds == null || aspectIds.isEmpty () )
         {
             effectiveAspectIds = new HashSet<> ( this.model.getAspectIds () );
@@ -216,7 +236,12 @@ public class AspectContextImpl
 
             this.tracker.run ( () -> {
 
+                // remove all virtualized
+
+                removeVirtualized ();
+
                 // update version map
+
                 for ( final ChannelAspectInformation aspect : this.processor.resolve ( effectiveAspectIds ) )
                 {
                     final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
@@ -227,25 +252,15 @@ public class AspectContextImpl
 
                 extractFor ( effectiveAspectIds );
 
-                // delete virtualized
+                // re-create all virtual
 
-                removeVirtualized ( effectiveAspectIds );
-
-                // run virtualized
-
-                virtualizeFor ( effectiveAspectIds );
+                virtualizeFor ( this.model.getAspectIds () );
 
                 // -> flush regeneration
             } );
 
             // -> aggregators run after with guard
         } );
-    }
-
-    @FunctionalInterface
-    public interface ArtifactCreator
-    {
-        public ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, String virtualizerAspectId ) throws IOException;
     }
 
     public ArtifactInformation createArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData ) throws IOException
@@ -389,9 +404,11 @@ public class AspectContextImpl
 
                     virtualize ( result, tmp, this.model.getAspectIds () );
 
-                    // -> flush regeneration
+                    // return result
 
                     return result;
+
+                    // -> flush regeneration
                 }
                 finally
                 {
@@ -417,28 +434,36 @@ public class AspectContextImpl
 
     private void fireArtifactEvent ( final ArtifactInformation modifiedArtifact, final Object event )
     {
+        logger.debug ( "fireArtifactEvent - artifact: {}, event: {}", modifiedArtifact, event );
+
         for ( final ArtifactInformation artifact : this.context.getArtifacts ().values () )
         {
+            logger.trace ( "\tTest artifact: {}", artifact );
+
             if ( artifact.equals ( modifiedArtifact ) )
             {
+                logger.trace ( "\t\t-> is the modified one" );
                 continue;
             }
 
             if ( !artifact.is ( "generator" ) )
             {
+                logger.trace ( "\t\t-> is not a generator" );
                 continue;
             }
 
             Activator.getGeneratorProcessor ().process ( artifact.getVirtualizerAspectId (), generator -> {
+                logger.trace ( "\t\t-> run 'shouldRegenerate'" );
                 if ( generator.shouldRegenerate ( event ) )
                 {
+                    logger.trace ( "\t\t-> mark for regeneration" );
                     this.tracker.mark ( artifact.getId () );
                 }
             } );
         }
     }
 
-    private void virtualizeFor ( final Set<String> aspects )
+    private void virtualizeFor ( final Collection<String> aspects )
     {
         // we need to iterate over an array
 
@@ -450,14 +475,13 @@ public class AspectContextImpl
         }
     }
 
-    private void removeVirtualized ( final Set<String> aspectIds )
+    private void removeVirtualized ()
     {
         final Set<String> artifacts = new HashSet<> ();
 
         for ( final ArtifactInformation artifact : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
         {
-            final String virtualizer = artifact.getVirtualizerAspectId ();
-            if ( aspectIds.contains ( virtualizer ) )
+            if ( artifact.is ( "virtual" ) )
             {
                 artifacts.add ( artifact.getId () );
             }
@@ -468,6 +492,8 @@ public class AspectContextImpl
 
     private void virtualize ( final ArtifactInformation artifact, final Path tmp, final Collection<String> aspects )
     {
+        logger.debug ( "Running virtualize - {} ({})", artifact, aspects );
+
         this.processor.process ( aspects, ChannelAspect::getArtifactVirtualizer, ( aspect, virtualizer ) -> {
             final VirtualizerContextImpl ctx = new VirtualizerContextImpl ( aspect.getId (), tmp, artifact, this.context, this::internalCreateArtifact, ArtifactType.VIRTUAL );
             virtualizer.virtualize ( ctx );
@@ -477,9 +503,13 @@ public class AspectContextImpl
     private boolean checkVetoAdd ( final String name, final Path file, final boolean external )
     {
         final PreAddContextImpl ctx = new PreAddContextImpl ( name, file, external );
+
         this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelListener, listener -> {
+
             Exceptions.wrapException ( () -> listener.artifactPreAdd ( ctx ) );
+
         } );
+
         return ctx.isVeto ();
     }
 
@@ -544,8 +574,14 @@ public class AspectContextImpl
             // remove all meta keys which we want to update
 
             removeNamespaces ( aspectIds, newMetaData );
-
             this.context.setExtractedMetaData ( art.getId (), newMetaData );
+
+            // remove all the validation messages which we want to update
+
+            final List<ValidationMessage> newValidationMessages = new LinkedList<> ();
+            filterValidation ( art::getValidationMessages, newValidationMessages::addAll, aspectIds );
+
+            this.context.setValidationMessages ( art.getId (), newValidationMessages );
         }
     }
 

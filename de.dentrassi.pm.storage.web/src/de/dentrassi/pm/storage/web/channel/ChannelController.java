@@ -402,6 +402,7 @@ public class ChannelController implements InterfaceExtender
 
                 result.put ( "channel", channel.getInformation () );
                 result.put ( "messages", channel.getInformation ().getState ().getValidationMessages () );
+                result.put ( "aspects", Activator.getAspects ().getAspectInformations () );
 
                 return result;
             } );
@@ -484,6 +485,8 @@ public class ChannelController implements InterfaceExtender
 
             final Map<String, Object> model = new HashMap<String, Object> ( 1 );
             model.put ( "artifact", artifact.get () );
+
+            model.put ( "aspects", Activator.getAspects ().getAspectInformations () );
 
             return new ModelAndView ( "artifact/view", model );
         } );

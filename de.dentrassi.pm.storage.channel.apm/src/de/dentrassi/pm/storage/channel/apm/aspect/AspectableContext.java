@@ -26,7 +26,7 @@ public interface AspectableContext
 
     public ArtifactInformation setExtractedMetaData ( String artifactId, Map<MetaKey, String> metaData );
 
-    public ArtifactInformation setValidationMessages ( String id, List<ValidationMessage> messages );
+    public ArtifactInformation setValidationMessages ( String artifactId, List<ValidationMessage> messages );
 
     public void setExtractedMetaData ( Map<MetaKey, String> metaData );
 

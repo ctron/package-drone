@@ -3,14 +3,15 @@
 ## Core tasks
 
  * use cache store (OK)
- * implement generators (triggers missing)
+ * implement generators (OK)
  * implement aggregators (OK)
  * implement virtualizers (OK)
  * implement parent/child (OK)
  * implement deploy keys (OK)
  * resolve FIXMEs
- * finish validation
+ * finish validation (OK)
  * implement import/export
+ * improve performance when re-aspecting (doStreamed)
 
 ## Finally
 

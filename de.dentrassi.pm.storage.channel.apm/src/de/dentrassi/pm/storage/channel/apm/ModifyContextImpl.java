@@ -218,6 +218,11 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             throw new IllegalStateException ( String.format ( "Artifact '%s' is unknown", artifactId ) );
         }
 
+        if ( !artifact.getFacets ().contains ( "stored" ) )
+        {
+            throw new IllegalStateException ( String.format ( "Artifact '%s' is not 'stored'", artifactId ) );
+        }
+
         for ( final Map.Entry<MetaKey, String> entry : changes.entrySet () )
         {
             final MetaKey key = entry.getKey ();
@@ -240,6 +245,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         {
             this.aspectContext.regenerate ( artifactId );
         }
+
+        // TODO: update generic artifacts
     }
 
     private void testLocked ()
@@ -587,6 +594,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     protected ArtifactInformation modifyArtifact ( final String artifactId, final Consumer<ArtifactModel> modification )
     {
         final ArtifactModel art = this.model.getArtifacts ().get ( artifactId );
+
         if ( art == null )
         {
             throw new IllegalStateException ( String.format ( "Unable to find artifact '%s'", artifactId ) );

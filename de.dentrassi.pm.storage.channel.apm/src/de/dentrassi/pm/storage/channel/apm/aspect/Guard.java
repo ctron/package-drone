@@ -2,11 +2,16 @@ package de.dentrassi.pm.storage.channel.apm.aspect;
 
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.dentrassi.osgi.utils.Exceptions;
 import de.dentrassi.pm.common.utils.ThrowingRunnable;
 
 public class Guard
 {
+    private final static Logger logger = LoggerFactory.getLogger ( Guard.class );
+
     private final ThreadLocal<Integer> state = ThreadLocal.withInitial ( () -> 0 );
 
     private final Runnable guardRunner;
@@ -28,12 +33,15 @@ public class Guard
     {
         final boolean first = push ();
 
+        logger.trace ( "run guarded - first: {}", first );
+
         try
         {
             final T result = Exceptions.wrapException ( action );
 
             if ( first )
             {
+                logger.debug ( "execute guard runner" );
                 // only call if the action was successful and it was the first level
                 this.guardRunner.run ();
             }
@@ -48,7 +56,7 @@ public class Guard
 
     private boolean push ()
     {
-        final Integer level = this.state.get ();
+        final int level = this.state.get ();
         this.state.set ( level + 1 );
         return level == 0;
     }

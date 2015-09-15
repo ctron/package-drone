@@ -1,5 +1,6 @@
 package de.dentrassi.pm.storage.channel.apm.aspect;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -7,10 +8,15 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.dentrassi.osgi.utils.Exceptions.ThrowingRunnable;
 
 public class RegenerationTracker
 {
+    private final static Logger logger = LoggerFactory.getLogger ( RegenerationTracker.class );
+
     private final Consumer<Set<String>> func;
 
     private final ThreadLocal<LinkedList<Set<String>>> states = ThreadLocal.withInitial ( LinkedList::new );
@@ -30,6 +36,8 @@ public class RegenerationTracker
 
     public <T> T run ( final Callable<T> action )
     {
+        logger.trace ( "Running ..." );
+
         this.states.get ().push ( new HashSet<> () );
 
         try
@@ -60,7 +68,7 @@ public class RegenerationTracker
         }
         finally
         {
-            final Set<String> current = this.states.get ().poll ();
+            final Set<String> current = this.states.get ().poll (); // always remove from the stack
             if ( !current.isEmpty () )
             {
                 throw new IllegalStateException ( "There are still marked artifacts in the finally section" );
@@ -70,19 +78,28 @@ public class RegenerationTracker
 
     private void flushAll ()
     {
-        while ( !this.states.get ().peek ().isEmpty () )
+        logger.debug ( "Flush all" );
+
+        Set<String> current;
+        while ( ! ( current = this.states.get ().poll () ).isEmpty () )
         {
-            // swap with new set
-            final Set<String> current = this.states.get ().poll ();
-            this.states.get ().add ( new HashSet<> () );
+            logger.trace ( "Flush run: {}", current );
+
+            // replace with new set
+
+            this.states.get ().push ( new HashSet<> () );
 
             // process set
             this.func.accept ( current );
         }
+
+        this.states.get ().push ( Collections.emptySet () ); // add for balance
     }
 
     public void mark ( final String artifactId )
     {
+        logger.debug ( "Mark '{}' for regeneration", artifactId );
+
         final LinkedList<Set<String>> state = this.states.get ();
         final Set<String> current = state.peek ();
         if ( current == null )
