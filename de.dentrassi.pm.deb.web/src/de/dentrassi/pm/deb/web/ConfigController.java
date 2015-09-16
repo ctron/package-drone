@@ -39,7 +39,6 @@ import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.form.FormData;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
-import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
@@ -50,7 +49,10 @@ import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.signing.SigningService;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @ViewResolver ( "/WEB-INF/views/config/%s.jsp" )
@@ -61,9 +63,9 @@ import de.dentrassi.pm.storage.service.StorageService;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigController implements InterfaceExtender
 {
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -152,54 +154,50 @@ public class ConfigController implements InterfaceExtender
     }
 
     @RequestMapping ( "/channel/{channelId}/edit" )
-    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId ) throws Exception
+    public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<String, Object> model = new HashMap<> ();
 
-        model.put ( "channel", channel );
-        model.put ( "signingServices", getSigningServices () );
+            model.put ( "channel", channel );
+            model.put ( "signingServices", getSigningServices () );
 
-        final ChannelConfiguration dist = new ChannelConfiguration ();
+            final ChannelConfiguration dist = new ChannelConfiguration ();
 
-        dist.setDistribution ( "default" );
-        dist.setDefaultComponent ( "main" );
-        dist.getArchitectures ().add ( "i386" );
-        dist.getArchitectures ().add ( "amd64" );
+            dist.setDistribution ( "default" );
+            dist.setDefaultComponent ( "main" );
+            dist.getArchitectures ().add ( "i386" );
+            dist.getArchitectures ().add ( "amd64" );
 
-        MetaKeys.bind ( dist, channel.getMetaData () );
+            MetaKeys.bind ( dist, channel.getMetaData () );
 
-        model.put ( "command", dist );
+            model.put ( "command", dist );
 
-        return new ModelAndView ( "edit", model );
+            return new ModelAndView ( "edit", model );
+
+        } );
     }
 
     @RequestMapping ( value = "/channel/{channelId}/edit", method = RequestMethod.POST )
-    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final ChannelConfiguration cfg, final BindingResult result ) throws Exception
+    public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final ChannelConfiguration cfg, final BindingResult result) throws Exception
     {
-        final Map<String, Object> model = new HashMap<> ();
+        return Channels.withChannel ( this.service, channelId, ModifiableChannel.class, channel -> {
 
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<String, Object> model = new HashMap<> ( 2 );
 
-        if ( !result.hasErrors () )
-        {
-            final Map<MetaKey, String> md = MetaKeys.unbind ( cfg );
-            channel.applyMetaData ( md );
-        }
+            if ( !result.hasErrors () )
+            {
+                final Map<MetaKey, String> md = MetaKeys.unbind ( cfg );
+                channel.applyMetaData ( md );
+            }
 
-        model.put ( "channel", channel );
-        model.put ( "signingServices", getSigningServices () );
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "signingServices", getSigningServices () );
 
-        return new ModelAndView ( "edit", model );
+            return new ModelAndView ( "edit", model );
+
+        } );
     }
 
     private List<SigningServiceEntry> getSigningServices ()
