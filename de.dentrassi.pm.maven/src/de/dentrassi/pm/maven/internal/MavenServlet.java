@@ -14,7 +14,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +54,16 @@ import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
 import de.dentrassi.pm.storage.Artifact;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
-import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.channel.servlet.AbstractChannelServiceServlet;
 import de.dentrassi.pm.storage.web.utils.ChannelCacheHandler;
 
-public class MavenServlet extends AbstractStorageServiceServlet
+public class MavenServlet extends AbstractChannelServiceServlet
 {
     private final static Logger logger = LoggerFactory.getLogger ( MavenServlet.class );
 
@@ -143,7 +147,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
             return;
         }
 
-        final StorageService service = getService ( request ); // ensured not be null
+        final ChannelService service = getService ( request ); // ensured not be null
 
         pathString = pathString.replaceAll ( "^/+", "" );
         pathString = pathString.replaceAll ( "/+$", "" );
@@ -151,8 +155,66 @@ public class MavenServlet extends AbstractStorageServiceServlet
         final String[] toks = pathString.split ( "/+", 2 );
         final String channelId = toks[0];
 
-        final Channel channel = service.getChannelWithAlias ( channelId );
-        if ( channel == null )
+        try
+        {
+            service.access ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
+
+                // init holder
+
+                final Holder<ChannelData> holder = new Holder<> ();
+
+                // fetch structure from cache
+
+                try
+                {
+                    if ( !channel.streamCacheEntry ( CHANNEL_KEY, entry -> {
+                        holder.value = ChannelData.fromReader ( new InputStreamReader ( entry.getStream (), StandardCharsets.UTF_8 ) );
+                    } ) )
+                    {
+                        commitNotConfigured ( response, channelId );
+                        return;
+                    }
+                }
+                catch ( final Exception e )
+                {
+                    logger.warn ( "Failed to load maven channel data", e );
+
+                    response.getWriter ().write ( "Corrupt channel data" );
+                    response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
+
+                    return;
+                }
+
+                // get data
+
+                final ChannelData channelData = holder.value;
+
+                // check for null
+
+                if ( channelData == null )
+                {
+                    logger.debug ( "No maven channel data: {}", channel.getId () );
+                    commitNotConfigured ( response, channelId );
+                    return;
+                }
+
+                if ( toks.length == 2 && toks[1].equals ( ".meta/repository-metadata.xml" ) )
+                {
+                    HANDLER_REPO_META.process ( channel, request, response );
+                    return;
+                }
+
+                if ( toks.length == 2 && toks[1].equals ( ".meta/prefixes.txt" ) )
+                {
+                    HANDLER_PREFIXES.process ( channel, request, response );
+                    return;
+                }
+
+                new MavenHandler ( channel, channelData ).handle ( toks.length > 1 ? toks[1] : null, request, response );
+
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.setContentType ( "text/plain" );
@@ -160,59 +222,6 @@ public class MavenServlet extends AbstractStorageServiceServlet
             return;
         }
 
-        // init holder
-
-        final Holder<ChannelData> holder = new Holder<> ();
-
-        // fetch structure from cache
-
-        try
-        {
-            channel.streamCacheData ( CHANNEL_KEY, stream -> {
-                holder.value = ChannelData.fromReader ( new InputStreamReader ( stream, StandardCharsets.UTF_8 ) );
-            } );
-        }
-        catch ( final FileNotFoundException e )
-        {
-            commitNotConfigured ( response, channelId );
-            return;
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to load maven channel data", e );
-
-            response.getWriter ().write ( "Corrupt channel data" );
-            response.setStatus ( HttpServletResponse.SC_SERVICE_UNAVAILABLE );
-
-            return;
-        }
-
-        // get data
-
-        final ChannelData channelData = holder.value;
-
-        // check for null
-
-        if ( channelData == null )
-        {
-            logger.debug ( "No maven channel data: {}", channel.getId () );
-            commitNotConfigured ( response, channelId );
-            return;
-        }
-
-        if ( toks.length == 2 && toks[1].equals ( ".meta/repository-metadata.xml" ) )
-        {
-            HANDLER_REPO_META.process ( channel, request, response );
-            return;
-        }
-
-        if ( toks.length == 2 && toks[1].equals ( ".meta/prefixes.txt" ) )
-        {
-            HANDLER_PREFIXES.process ( channel, request, response );
-            return;
-        }
-
-        new MavenHandler ( service, channelData ).handle ( toks.length > 1 ? toks[1] : null, request, response );
     }
 
     protected void commitNotConfigured ( final HttpServletResponse response, final String channelId ) throws IOException
@@ -241,7 +250,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
     }
 
-    private void processPut ( final HttpServletRequest request, final HttpServletResponse response, final StorageService service ) throws Exception
+    private void processPut ( final HttpServletRequest request, final HttpServletResponse response, final ChannelService service ) throws Exception
     {
         final String[] toks = request.getPathInfo ().split ( "/+" );
         final String channelId = toks[1];
@@ -249,39 +258,45 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
         logger.debug ( "Channel: {}, Artifact: {}", channelId, artifactName );
 
-        final Channel channel = service.getChannelWithAlias ( channelId );
-        if ( channel == null )
+        if ( !authenticate ( channelId, request, response ) )
+        {
+            return;
+        }
+
+        try
+        {
+            service.access ( By.nameOrId ( channelId ), ModifiableChannel.class, channel -> {
+
+                if ( isUpload ( toks, artifactName ) )
+                {
+                    processUpload ( request, toks, artifactName, channel );
+                }
+                else if ( isMetaData ( toks, artifactName ) )
+                {
+                    processMetaData ( channel, toks, request );
+                }
+                else if ( isChecksum ( toks, artifactName ) )
+                {
+                    //  validateChecksum ( channel, toks, artifactName, request, response );
+                }
+                else
+                {
+                    dumpSkip ( request );
+                }
+                response.setStatus ( HttpServletResponse.SC_OK );
+
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
             response.getWriter ().format ( "Channel %s not found", channelId );
             return;
         }
 
-        if ( !authenticate ( channel, request, response ) )
-        {
-            return;
-        }
-
-        if ( isUpload ( toks, artifactName ) )
-        {
-            processUpload ( request, toks, artifactName, channel );
-        }
-        else if ( isMetaData ( toks, artifactName ) )
-        {
-            processMetaData ( channel, toks, request );
-        }
-        else if ( isChecksum ( toks, artifactName ) )
-        {
-            //  validateChecksum ( channel, toks, artifactName, request, response );
-        }
-        else
-        {
-            dumpSkip ( request );
-        }
-        response.setStatus ( HttpServletResponse.SC_OK );
     }
 
-    protected void processUpload ( final HttpServletRequest request, final String[] toks, final String artifactName, final Channel channel ) throws Exception
+    protected void processUpload ( final HttpServletRequest request, final String[] toks, final String artifactName, final ModifiableChannel channel ) throws Exception
     {
         final String groupId = getGroupId ( toks );
         final String artifactId = getArtifactId ( toks );
@@ -289,7 +304,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
         if ( version.endsWith ( "-SNAPSHOT" ) )
         {
-            storeTmp ( channel.getId (), groupId, artifactId, version, artifactName, request );
+            storeTmp ( channel.getId ().getId (), groupId, artifactId, version, artifactName, request );
         }
         else
         {
@@ -303,7 +318,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
             logger.debug ( "Request to store release artifact: {}", info );
 
-            final Artifact parent;
+            final ArtifactInformation parent;
 
             if ( info.isPrimary () )
             {
@@ -392,11 +407,11 @@ public class MavenServlet extends AbstractStorageServiceServlet
         return false;
     }
 
-    private Artifact getParent ( final Channel channel, final String parentName )
+    private ArtifactInformation getParent ( final ReadableChannel channel, final String parentName )
     {
         logger.debug ( "Looking for parent as: '{}'", parentName );
 
-        final Collection<Artifact> result = channel.findByName ( parentName );
+        final Collection<ArtifactInformation> result = channel.findByName ( parentName );
         if ( result != null && result.size () == 1 )
         {
             return result.iterator ().next ();
@@ -405,7 +420,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         return null;
     }
 
-    private void processMetaData ( final Channel channel, final String[] toks, final HttpServletRequest request ) throws Exception
+    private void processMetaData ( final ModifiableChannel channel, final String[] toks, final HttpServletRequest request ) throws Exception
     {
         logger.debug ( "Processing meta data" );
 
@@ -509,7 +524,7 @@ public class MavenServlet extends AbstractStorageServiceServlet
         return null;
     }
 
-    private void store ( final Channel channel, final List<MavenInformation> plain, final List<MavenInformation> classified ) throws Exception
+    private void store ( final ModifiableChannel channel, final List<MavenInformation> plain, final List<MavenInformation> classified ) throws Exception
     {
         for ( final MavenInformation info : plain )
         {
@@ -517,18 +532,18 @@ public class MavenServlet extends AbstractStorageServiceServlet
         }
         for ( final MavenInformation info : classified )
         {
-            final Artifact parent = getParent ( channel, info.makePlainName () );
+            final ArtifactInformation parent = getParent ( channel, info.makePlainName () );
             store ( channel, info, parent );
         }
     }
 
-    private Artifact store ( final Channel channel, final MavenInformation info, final Artifact parent ) throws Exception
+    private ArtifactInformation store ( final ModifiableChannel channel, final MavenInformation info, final ArtifactInformation parent ) throws Exception
     {
         logger.debug ( "Request store - parent: {}, info: {}", info, parent );
         return pullFromTemp ( channel, info, ( is ) -> storeArtifact ( channel, info, parent, is ) );
     }
 
-    protected Artifact storeArtifact ( final Channel channel, final MavenInformation info, final Artifact parent, final InputStream is )
+    protected ArtifactInformation storeArtifact ( final ModifiableChannel channel, final MavenInformation info, final ArtifactInformation parent, final InputStream is )
     {
         logger.debug ( "Storing artifact - parent: {}, info: {}", parent, info );
 
@@ -544,17 +559,17 @@ public class MavenServlet extends AbstractStorageServiceServlet
 
         if ( parent != null )
         {
-            return parent.attachArtifact ( info.makeName (), is, md );
+            return channel.getContext ().createArtifact ( parent.getId (), is, info.makeName (), md );
         }
         else
         {
-            return channel.createArtifact ( info.makeName (), is, md );
+            return channel.getContext ().createArtifact ( is, info.makeName (), md );
         }
     }
 
-    private Artifact pullFromTemp ( final Channel channel, final MavenInformation info, final Function<InputStream, Artifact> func ) throws IOException
+    private ArtifactInformation pullFromTemp ( final ReadableChannel channel, final MavenInformation info, final Function<InputStream, ArtifactInformation> func ) throws IOException
     {
-        final File file = new File ( this.tempRoot.toFile (), String.format ( "%s/%s/%s/%s/%s", channel.getId (), info.getGroupId (), info.getArtifactId (), info.getVersion (), info.makeName () ) );
+        final File file = new File ( this.tempRoot.toFile (), String.format ( "%s/%s/%s/%s/%s", channel.getId ().getId (), info.getGroupId (), info.getArtifactId (), info.getVersion (), info.makeName () ) );
 
         logger.debug ( "Pulling in: {}", file );
 

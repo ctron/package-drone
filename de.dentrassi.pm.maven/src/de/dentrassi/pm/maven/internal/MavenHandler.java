@@ -42,8 +42,8 @@ import de.dentrassi.pm.maven.ChannelData.ArtifactNode;
 import de.dentrassi.pm.maven.ChannelData.ContentNode;
 import de.dentrassi.pm.maven.ChannelData.DirectoryNode;
 import de.dentrassi.pm.maven.ChannelData.Node;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.channel.util.DownloadHelper;
-import de.dentrassi.pm.storage.service.StorageService;
 
 public class MavenHandler
 {
@@ -51,11 +51,11 @@ public class MavenHandler
 
     private final ChannelData channelData;
 
-    private final StorageService service;
+    private final ReadableChannel channel;
 
-    public MavenHandler ( final StorageService service, final ChannelData channelData )
+    public MavenHandler ( final ReadableChannel channel, final ChannelData channelData )
     {
-        this.service = service;
+        this.channel = channel;
         this.channelData = channelData;
     }
 
@@ -99,7 +99,7 @@ public class MavenHandler
 
     private void download ( final HttpServletResponse response, final ArtifactNode node ) throws IOException
     {
-        DownloadHelper.streamArtifact ( response, this.service, node.getArtifactId (), null, false );
+        DownloadHelper.streamArtifact ( response, node.getArtifactId (), null, false, this.channel, null );
     }
 
     private static class DirRenderer

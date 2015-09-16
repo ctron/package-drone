@@ -35,12 +35,12 @@ import org.w3c.dom.Element;
 import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.aggregate.ChannelAggregator;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
 import de.dentrassi.pm.maven.ChannelData;
 import de.dentrassi.pm.maven.MavenInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.system.SitePrefixService;
 
 public class MavenRepositoryChannelAggregator implements ChannelAggregator
@@ -158,12 +158,23 @@ public class MavenRepositoryChannelAggregator implements ChannelAggregator
 
         addElement ( root, "version", "1.0.0" );
         addElement ( root, "id", context.getChannelId () );
-        addElement ( root, "name", context.getChannelNameOrId () );
+        addElement ( root, "name", makeName ( context ) );
         addElement ( root, "layout", "maven2" );
         addElement ( root, "policy", "mixed" );
         addElement ( root, "url", makeUrl ( context.getChannelId () ) );
 
         return doc;
+    }
+
+    private String makeName ( final AggregationContext context )
+    {
+        final String name = context.getChannelDescription ();
+        if ( name != null && !name.isEmpty () )
+        {
+            return name;
+        }
+
+        return context.getChannelId ();
     }
 
     private String makeUrl ( final String channelId )

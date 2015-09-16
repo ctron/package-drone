@@ -24,6 +24,7 @@ import com.google.common.io.ByteStreams;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
 import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ChannelService.By;
@@ -77,6 +78,19 @@ public final class DownloadHelper
         streamArtifact ( response, service, channelId, artifactId, Optional.ofNullable ( mimetype ), download, nameFunc );
     }
 
+    public static boolean streamArtifact ( final HttpServletResponse response, final String artifactId, final Optional<String> mimetype, final boolean download, final ReadableChannel channel, final Function<ArtifactInformation, String> nameFunc ) throws IOException
+    {
+        final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );
+        if ( !artifact.isPresent () )
+        {
+            return false;
+        }
+
+        return channel.getContext ().stream ( artifactId, stream -> {
+            streamArtifact ( response, artifact.get (), stream, mimetype, download, nameFunc );
+        } );
+    }
+
     public static boolean streamArtifact ( final HttpServletResponse response, final ArtifactInformation artifact, final Optional<String> mimetype, final boolean download, final ReadableChannel channel, final Function<ArtifactInformation, String> nameFunc ) throws IOException
     {
         return channel.getContext ().stream ( artifact.getId (), stream -> {
@@ -95,7 +109,14 @@ public final class DownloadHelper
 
         if ( download )
         {
-            response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", artifact.getName () ) );
+            if ( nameFunc != null )
+            {
+                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", nameFunc.apply ( artifact ) ) );
+            }
+            else
+            {
+                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", artifact.getName () ) );
+            }
         }
 
         final long size = ByteStreams.copy ( stream, response.getOutputStream () );

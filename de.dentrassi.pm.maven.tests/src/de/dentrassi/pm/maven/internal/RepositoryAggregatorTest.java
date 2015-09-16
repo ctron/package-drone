@@ -12,12 +12,13 @@ package de.dentrassi.pm.maven.internal;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -25,19 +26,19 @@ import java.util.TreeSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.maven.MavenInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class RepositoryAggregatorTest
 {
-    private Date now;
+    private Instant now;
 
     @Before
     public void setup ()
     {
-        this.now = new Date ();
+        this.now = Instant.now ();
     }
 
     /**
@@ -207,7 +208,10 @@ public class RepositoryAggregatorTest
 
     private ArtifactInformation makeArtifact ( final String id, final String parentId, final String name, final String groupId, final String artifactId, final String version, final String extension, final String classifier, final String[] childIds )
     {
-        return new ArtifactInformation ( id, parentId, 0, name, "channelId", this.now, 0L, 0L, Collections.emptySet (), makeMavenCoords ( groupId, artifactId, version, extension, classifier ), childIds == null ? Collections.emptySortedSet () : new TreeSet<> ( Arrays.asList ( childIds ) ) );
+        final SortedMap<MetaKey, String> md = makeMavenCoords ( groupId, artifactId, version, extension, classifier );
+        final Set<String> childIdSet = childIds == null ? Collections.emptySortedSet () : new TreeSet<> ( Arrays.asList ( childIds ) );
+
+        return new ArtifactInformation ( id, parentId, childIdSet, name, 0L, this.now, Collections.emptySet (), Collections.emptyList (), md, null, null );
     }
 
     private SortedMap<MetaKey, String> makeMavenCoords ( final String groupId, final String artifactId, final String version, final String extension, final String classifier )

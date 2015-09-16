@@ -10,14 +10,12 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven;
 
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 
 import org.junit.Test;
 
-import de.dentrassi.pm.common.ArtifactInformation;
-import de.dentrassi.pm.maven.ChannelData;
-import de.dentrassi.pm.maven.MavenInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChannelDataTest
 {
@@ -32,7 +30,7 @@ public class ChannelDataTest
         info.setArtifactId ( "d" );
         info.setVersion ( "v" );
 
-        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), 0L, 0L, Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
+        final ArtifactInformation art = new ArtifactInformation ( "id", null, Collections.emptySet (), "name", 0L, Instant.now (), Collections.singleton ( "stored" ), Collections.emptyList (), Collections.emptyMap (), Collections.emptyMap (), "virtual" );
         cd.add ( info, art );
 
         System.out.println ( " == JSON == " );
@@ -50,7 +48,7 @@ public class ChannelDataTest
         info.setArtifactId ( "d" );
         info.setVersion ( "v" );
 
-        final ArtifactInformation art = new ArtifactInformation ( "id", null, 0L, "name", "channelId", new Date (), 0L, 0L, Collections.emptySet (), Collections.emptySortedMap (), Collections.emptySortedSet () );
+        final ArtifactInformation art = new ArtifactInformation ( "id", null, Collections.emptySet (), "name", 0L, Instant.now (), Collections.singleton ( "stored" ), Collections.emptyList (), Collections.emptyMap (), Collections.emptyMap (), "virtual" );
         cd.add ( info, art );
 
         cd = ChannelData.fromJson ( cd.toJson () );

@@ -43,9 +43,9 @@ import org.w3c.dom.Element;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChannelData
 {

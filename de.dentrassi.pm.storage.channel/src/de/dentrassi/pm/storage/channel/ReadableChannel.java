@@ -2,8 +2,10 @@ package de.dentrassi.pm.storage.channel;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
@@ -58,5 +60,10 @@ public interface ReadableChannel
     public default Collection<ArtifactInformation> getArtifacts ()
     {
         return getContext ().getArtifacts ().values ();
+    }
+
+    public default List<ArtifactInformation> findByName ( final String name )
+    {
+        return getContext ().getArtifacts ().values ().stream ().filter ( art -> art.getName ().equals ( name ) ).collect ( Collectors.toList () );
     }
 }
