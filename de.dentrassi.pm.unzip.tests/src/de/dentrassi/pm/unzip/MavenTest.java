@@ -23,17 +23,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelId;
 
 public class MavenTest
 {
-    private static List<Artifact> list1;
+    private static List<ArtifactInformation> list1;
 
     @BeforeClass
     public static void setup ()
     {
+        final String channelId = "channel1";
+
         list1 = new LinkedList<> ();
         for ( int major = 0; major < 3; major++ )
         {
@@ -44,15 +46,15 @@ public class MavenTest
                     final String base = String.format ( "%s.%s.%s", major + 1, minor + 1, micro + 1 );
                     for ( int i = 0; i < 3; i++ )
                     {
-                        list1.add ( MockArtifact.maven ( "group.id", "artifact.id", base, "zip", String.format ( "201501%02d.101010-1", i + 1 ) ) );
+                        list1.add ( MockArtifact.maven ( channelId, "group.id", "artifact.id", base, "zip", String.format ( "201501%02d.101010-1", i + 1 ) ) );
                     }
 
                     for ( int rc = 0; rc < 3; rc++ )
                     {
-                        list1.add ( MockArtifact.maven ( "group.id", "artifact.id", base + "-RC" + ( rc + 1 ), "zip", null ) );
+                        list1.add ( MockArtifact.maven ( channelId, "group.id", "artifact.id", base + "-RC" + ( rc + 1 ), "zip", null ) );
                     }
 
-                    list1.add ( MockArtifact.maven ( "group.id", "artifact.id", base, "zip", null ) );
+                    list1.add ( MockArtifact.maven ( channelId, "group.id", "artifact.id", base, "zip", null ) );
                 }
             }
         }
@@ -60,16 +62,16 @@ public class MavenTest
         dumpList ( "List 1", list1 );
     }
 
-    protected static void dumpList ( final String header, final List<Artifact> list )
+    protected static void dumpList ( final String header, final List<ArtifactInformation> list )
     {
         System.out.println ( "\t" + header );
         final List<List<String>> data = new LinkedList<> ();
 
-        for ( final Artifact art : list )
+        for ( final ArtifactInformation art : list )
         {
             final List<String> row = new LinkedList<> ();
 
-            row.add ( art.getInformation ().getName () );
+            row.add ( art.getName () );
 
             data.add ( row );
         }
@@ -83,14 +85,14 @@ public class MavenTest
         dumpList ( header, list.stream ().map ( MavenVersionedArtifact::getArtifact ).collect ( Collectors.toList () ) );
     }
 
-    private final Supplier<Collection<Artifact>> test1 = ( ) -> list1;
+    private final Supplier<Collection<ArtifactInformation>> test1 = () -> list1;
 
     private void assertResult ( final List<MavenVersionedArtifact> result, final String version )
     {
         Assert.assertEquals ( 1, result.size () );
         final MavenVersionedArtifact art = result.get ( 0 );
 
-        final ArtifactInformation ai = art.getArtifact ().getInformation ();
+        final ArtifactInformation ai = art.getArtifact ();
         final String sv = ai.getMetaData ().get ( new MetaKey ( "mvn", "snapshotVersion" ) );
         final String v = ai.getMetaData ().get ( new MetaKey ( "mvn", "version" ) );
 
@@ -108,7 +110,7 @@ public class MavenTest
     public void testLatest () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), false, result::add );
+        UnzipServlet.handleMavenLatest ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id" ), false, result::add );
 
         dumpMavenList ( "Result - latest", result );
 
@@ -119,7 +121,7 @@ public class MavenTest
     public void testLatestSnapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenLatest ( this.test1, "forTesting", path ( "group.id/artifact.id" ), true, result::add );
+        UnzipServlet.handleMavenLatest ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id" ), true, result::add );
 
         dumpMavenList ( "Result - latest-SNAPSHOT", result );
 
@@ -130,7 +132,7 @@ public class MavenTest
     public void testPerfect () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-RC1" ), result::add );
+        UnzipServlet.handleMavenPerfect ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.3.1-RC1" ), result::add );
 
         dumpMavenList ( "Result - perfect", result );
 
@@ -141,7 +143,7 @@ public class MavenTest
     public void testPerfectSnapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.1.1-SNAPSHOT" ), result::add );
+        UnzipServlet.handleMavenPerfect ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.1.1-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - perfect - snapshot", result );
 
@@ -152,7 +154,7 @@ public class MavenTest
     public void testPerfectSnapshot2 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPerfect ( this.test1, "forTesting", path ( "group.id/artifact.id/2.3.1-20150102.101010-1" ), result::add );
+        UnzipServlet.handleMavenPerfect ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.3.1-20150102.101010-1" ), result::add );
 
         dumpMavenList ( "Result - perfect - snapshot 2", result );
 
@@ -163,7 +165,7 @@ public class MavenTest
     public void testPrefixed1 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x" ), result::add );
+        UnzipServlet.handleMavenPrefixed ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.x" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.x", result );
 
@@ -174,7 +176,7 @@ public class MavenTest
     public void testPrefixed2 () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x" ), result::add );
+        UnzipServlet.handleMavenPrefixed ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.2.x" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.2.x", result );
 
@@ -185,7 +187,7 @@ public class MavenTest
     public void testPrefixed1Snapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.x-SNAPSHOT" ), result::add );
+        UnzipServlet.handleMavenPrefixed ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.x-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.x", result );
 
@@ -196,7 +198,7 @@ public class MavenTest
     public void testPrefixed2Snapshot () throws IOException
     {
         final List<MavenVersionedArtifact> result = new LinkedList<> ();
-        UnzipServlet.handleMavenPrefixed ( this.test1, "forTesting", path ( "group.id/artifact.id/2.2.x-SNAPSHOT" ), result::add );
+        UnzipServlet.handleMavenPrefixed ( this.test1, new ChannelId ( "forTesting" ), path ( "group.id/artifact.id/2.2.x-SNAPSHOT" ), result::add );
 
         dumpMavenList ( "Result - prefixed 2.2.x", result );
 

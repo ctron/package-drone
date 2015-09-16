@@ -12,28 +12,36 @@ package de.dentrassi.pm.unzip;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
 
-import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class MavenVersionedArtifact implements Comparable<MavenVersionedArtifact>
 {
     private final ComparableVersion version;
 
-    private final Artifact artifact;
+    private final String channelId;
 
-    public MavenVersionedArtifact ( final ComparableVersion version, final Artifact artifact )
+    private final ArtifactInformation artifact;
+
+    public MavenVersionedArtifact ( final ComparableVersion version, final String channelId, final ArtifactInformation artifact )
     {
         this.version = version;
+        this.channelId = channelId;
         this.artifact = artifact;
-    }
-
-    public Artifact getArtifact ()
-    {
-        return this.artifact;
     }
 
     public ComparableVersion getVersion ()
     {
         return this.version;
+    }
+
+    public String getChannelId ()
+    {
+        return this.channelId;
+    }
+
+    public ArtifactInformation getArtifact ()
+    {
+        return this.artifact;
     }
 
     @Override

@@ -8,10 +8,20 @@ public class ChannelId
 
     private final String name;
 
+    public ChannelId ( final String id )
+    {
+        this ( id, null );
+    }
+
     public ChannelId ( final String id, final String name )
     {
         this.id = id;
         this.name = name;
+
+        if ( this.id == null )
+        {
+            throw new NullPointerException ( "'id' must not be null" );
+        }
     }
 
     public String getId ()
@@ -33,5 +43,5 @@ public class ChannelId
         return this.id;
     }
 
-    public static Comparator<? super ChannelId> NAME_COMPARATOR = Comparator.nullsLast ( Comparator.comparing ( ChannelId::getName ) );
+    public static Comparator<? super ChannelId> NAME_COMPARATOR = Comparator.comparing ( ChannelId::getName, Comparator.nullsLast ( Comparator.naturalOrder () ) ).thenComparing ( Comparator.comparing ( ChannelId::getId ) );
 }
