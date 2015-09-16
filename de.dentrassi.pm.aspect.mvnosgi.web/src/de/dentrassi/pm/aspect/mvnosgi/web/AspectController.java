@@ -38,7 +38,10 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @RequestMapping ( "/aspect/mvnosgi/{channelId}" )
@@ -50,9 +53,9 @@ import de.dentrassi.pm.storage.service.StorageService;
 public class AspectController implements InterfaceExtender
 {
 
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -60,56 +63,48 @@ public class AspectController implements InterfaceExtender
     @RequestMapping ( "/config" )
     public ModelAndView config ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
 
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<String, Object> model = new HashMap<> ();
 
-        final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
 
-        model.put ( "channel", channel );
+            final Configuration data = new Configuration ();
+            try
+            {
+                MetaKeys.bind ( data, channel.getMetaData () );
+                model.put ( "command", data );
+            }
+            catch ( final Exception e )
+            {
+                // ignore data
+            }
 
-        final Configuration data = new Configuration ();
-        try
-        {
-            MetaKeys.bind ( data, channel.getMetaData () );
-            model.put ( "command", data );
-        }
-        catch ( final Exception e )
-        {
-            // ignore data
-        }
+            return new ModelAndView ( "config", model );
 
-        return new ModelAndView ( "config", model );
+        } );
     }
 
     @RequestMapping ( value = "/config", method = RequestMethod.POST )
     public ModelAndView configPost ( @PathVariable ( "channelId" ) final String channelId, @FormData ( "command" ) @Valid final Configuration data, final BindingResult result)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
-
-        if ( !result.hasErrors () )
-        {
-            try
+        return Channels.withChannel ( this.service, channelId, ModifiableChannel.class, channel -> {
+            if ( !result.hasErrors () )
             {
-                channel.applyMetaData ( MetaKeys.unbind ( data ) );
+                try
+                {
+                    channel.applyMetaData ( MetaKeys.unbind ( data ) );
+                }
+                catch ( final Exception e )
+                {
+                    return CommonController.createError ( "Error", "Failed to update", e );
+                }
             }
-            catch ( final Exception e )
-            {
-                return CommonController.createError ( "Error", "Failed to update", e );
-            }
-        }
 
-        final Map<String, Object> model = new HashMap<> ();
-        model.put ( "channel", channel );
-        return new ModelAndView ( "config", model );
+            final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
+            return new ModelAndView ( "config", model );
+        } );
     }
 
     @Override
