@@ -13,6 +13,7 @@ package de.dentrassi.pm.api.upload;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,11 +22,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.scada.utils.ExceptionHelper;
 
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.servlet.AbstractStorageServiceServlet;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
+import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.servlet.AbstractChannelServiceServlet;
 
-public class UploadServlet extends AbstractStorageServiceServlet
+public class UploadServlet extends AbstractChannelServiceServlet
 {
     private static final long serialVersionUID = 1L;
 
@@ -77,10 +82,14 @@ public class UploadServlet extends AbstractStorageServiceServlet
         switch ( targetType )
         {
             case "channel":
-                processChannel ( req, resp, toks[1], toks[2] );
-                break;
-            case "artifact":
-                processArtifact ( req, resp, toks[1], toks[2] );
+                if ( toks.length <= 3 )
+                {
+                    processChannel ( req, resp, toks[1], null, toks[2] );
+                }
+                else
+                {
+                    processChannel ( req, resp, toks[1], toks[2], toks[3] );
+                }
                 break;
             default:
                 sendResponse ( resp, HttpServletResponse.SC_BAD_REQUEST, "Unkown target type: " + targetType );
@@ -88,54 +97,41 @@ public class UploadServlet extends AbstractStorageServiceServlet
         }
     }
 
-    private void processChannel ( final HttpServletRequest req, final HttpServletResponse resp, final String channelIdOrName, final String artifactName ) throws IOException
+    private void processChannel ( final HttpServletRequest req, final HttpServletResponse resp, final String channelIdOrName, final String parentArtifactId, final String artifactName ) throws IOException
     {
         // process
 
         resp.setContentType ( "text/plain" );
 
-        final Channel channel = getService ( req ).getChannelWithAlias ( channelIdOrName );
-        if ( channel == null )
+        final ChannelService service = getService ( req );
+
+        final Optional<ChannelInformation> info = service.getState ( By.nameOrId ( channelIdOrName ) );
+        if ( !info.isPresent () )
         {
             sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find channel: %s", channelIdOrName ) );
             return;
         }
 
-        // authenticate
-
-        if ( !authenticate ( channel, req, resp ) )
+        if ( !authenticate ( info.get ().getId (), req, resp ) )
         {
             return;
         }
 
-        // do store
-
-        store ( channel, artifactName, req, resp );
-    }
-
-    private void processArtifact ( final HttpServletRequest req, final HttpServletResponse resp, final String parentArtifactId, final String artifactName ) throws IOException
-    {
-        // process
-
-        resp.setContentType ( "text/plain" );
-
-        final Artifact artifact = getService ( req ).getArtifact ( parentArtifactId );
-        if ( artifact == null )
+        try
         {
-            sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find parent artifact: %s", parentArtifactId ) );
+            service.access ( By.nameOrId ( channelIdOrName ), ModifiableChannel.class, channel -> {
+
+                // do store
+
+                store ( channel, parentArtifactId, artifactName, req, resp );
+
+            } );
+        }
+        catch ( final ChannelNotFoundException e )
+        {
+            sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find channel: %s", channelIdOrName ) );;
             return;
         }
-
-        // authenticate
-
-        if ( !authenticate ( artifact.getChannel (), req, resp ) )
-        {
-            return;
-        }
-
-        // do store
-
-        store ( artifact, artifactName, req, resp );
     }
 
     private static void sendResponse ( final HttpServletResponse response, final int status, final String message ) throws IOException
@@ -145,31 +141,11 @@ public class UploadServlet extends AbstractStorageServiceServlet
         response.getWriter ().println ( message );
     }
 
-    private static void store ( final Artifact parentArtifact, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    private static void store ( final ModifiableChannel channel, final String parentArtifactId, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         try
         {
-            final Artifact art = parentArtifact.attachArtifact ( name, request.getInputStream (), makeMetaData ( request ) );
-
-            response.setStatus ( HttpServletResponse.SC_OK );
-            if ( art != null )
-            {
-                // no veto
-                response.getWriter ().println ( art.getId () );
-            }
-        }
-        catch ( final IllegalArgumentException e )
-        {
-            sendResponse ( response, HttpServletResponse.SC_BAD_REQUEST, ExceptionHelper.getMessage ( e ) );
-        }
-    }
-
-    private static void store ( final Channel channel, final String name, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
-    {
-        try
-        {
-            final Artifact art = channel.createArtifact ( name, request.getInputStream (), makeMetaData ( request ) );
-
+            final ArtifactInformation art = channel.getContext ().createArtifact ( parentArtifactId, request.getInputStream (), name, makeMetaData ( request ) );
             response.setStatus ( HttpServletResponse.SC_OK );
             if ( art != null )
             {
