@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.aspect.upgrade.allJob">
    <implementation class="de.dentrassi.pm.aspect.upgrade.UpgradeAllChannelsJob"/>
-   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="static"/>
    <service>
       <provide interface="de.dentrassi.osgi.job.JobFactory"/>
    </service>
    <property name="package.drone.job.factoryId" type="String" value="drone.aspect.refreshAllChannels"/>
+   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.ChannelService" name="ChannelService" policy="static"/>
 </scr:component>

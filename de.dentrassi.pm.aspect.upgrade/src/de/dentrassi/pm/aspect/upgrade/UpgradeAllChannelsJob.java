@@ -19,8 +19,10 @@ import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.osgi.profiler.Profile;
 import de.dentrassi.osgi.profiler.Profile.Handle;
 import de.dentrassi.osgi.web.LinkTarget;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
 
 public class UpgradeAllChannelsJob implements JobFactory
 {
@@ -36,9 +38,9 @@ public class UpgradeAllChannelsJob implements JobFactory
 
     public static final String ID = "drone.aspect.refreshAllChannels";
 
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -61,13 +63,17 @@ public class UpgradeAllChannelsJob implements JobFactory
     {
         try ( Handle handle = Profile.start ( this, "process" ) )
         {
-            final Collection<Channel> channels = this.service.listChannels ();
+            final Collection<ChannelInformation> channels = this.service.list ();
+
             ctx.beginWork ( "Refreshing channels", channels.size () );
 
-            for ( final Channel channel : channels )
+            for ( final ChannelInformation channelInformation : channels )
             {
-                ctx.setCurrentTaskName ( String.format ( "Processing %s", channel.getNameAndId () ) );
-                this.service.refreshAllChannelAspects ( channel.getId () );
+                ctx.setCurrentTaskName ( String.format ( "Processing %s", channelInformation.getNameOrId () ) );
+
+                this.service.access ( By.id ( channelInformation.getId () ), ModifiableChannel.class, channel -> {
+                    channel.getContext ().refreshAspects ( null );
+                } );
                 ctx.worked ( 1 );
             }
 

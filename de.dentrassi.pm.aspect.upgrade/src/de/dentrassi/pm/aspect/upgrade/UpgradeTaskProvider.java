@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.net.UrlEscapers;
 
 import de.dentrassi.osgi.profiler.Profile;
 import de.dentrassi.osgi.profiler.Profile.Handle;
@@ -41,8 +42,8 @@ import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.Version;
 import de.dentrassi.pm.common.web.Button;
 import de.dentrassi.pm.common.web.Modifier;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.todo.BasicTask;
 import de.dentrassi.pm.todo.DefaultTaskProvider;
 import de.dentrassi.pm.todo.Task;
@@ -66,7 +67,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         }
     };
 
-    private StorageService service;
+    private ChannelService service;
 
     private BundleContext context;
 
@@ -74,7 +75,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
     {
     }
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -132,11 +133,11 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
 
             final List<Task> result = new LinkedList<> ();
 
-            final Multimap<String, Channel> missing = HashMultimap.create ();
+            final Multimap<String, ChannelInformation> missing = HashMultimap.create ();
 
-            final Multimap<Channel, String> channels = HashMultimap.create ();
+            final Multimap<ChannelInformation, String> channels = HashMultimap.create ();
 
-            for ( final Channel channel : this.service.listChannels () )
+            for ( final ChannelInformation channel : this.service.list () )
             {
                 logger.debug ( "Checking channel: {}", channel.getId () );
 
@@ -163,17 +164,17 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
                 }
             }
 
-            for ( final Map.Entry<Channel, Collection<String>> entry : channels.asMap ().entrySet () )
+            for ( final Map.Entry<ChannelInformation, Collection<String>> entry : channels.asMap ().entrySet () )
             {
-                final Channel channel = entry.getKey ();
-                final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", channel.getId () ) );
+                final ChannelInformation channel = entry.getKey ();
+                final LinkTarget target = new LinkTarget ( String.format ( "/channel/%s/refreshAllAspects", UrlEscapers.urlPathSegmentEscaper ().escape ( channel.getId () ) ) );
                 final String description = "Channel aspects active in this channel have been updated. You can refresh the whole channel.";
                 result.add ( new BasicTask ( "Refresh channel: " + makeChannelTitle ( channel ), 100, description, target, RequestMethod.GET, PERFORM_ALL_BUTTON ) );
             }
 
-            for ( final Map.Entry<String, Collection<Channel>> entry : missing.asMap ().entrySet () )
+            for ( final Map.Entry<String, Collection<ChannelInformation>> entry : missing.asMap ().entrySet () )
             {
-                final String missingChannels = entry.getValue ().stream ().map ( Channel::getId ).collect ( Collectors.joining ( ", " ) );
+                final String missingChannels = entry.getValue ().stream ().map ( ChannelInformation::getId ).collect ( Collectors.joining ( ", " ) );
                 result.add ( new BasicTask ( String.format ( "Fix missing channel aspect: %s", entry.getKey () ), 1, String.format ( "The channel aspect '%s' is being used but not installed in the system. Channels: %s", entry.getKey (), missingChannels ), null ) );
             }
 
@@ -186,7 +187,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         }
     }
 
-    private String makeChannelTitle ( final Channel channel )
+    private String makeChannelTitle ( final ChannelInformation channel )
     {
         if ( channel.getName () != null )
         {
@@ -198,7 +199,7 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
         }
     }
 
-    private Task makeUpgradeTask ( final Channel channel, final ChannelAspectInformation info, final String fromVersion )
+    private Task makeUpgradeTask ( final ChannelInformation channel, final ChannelAspectInformation info, final String fromVersion )
     {
         final String channelName = makeChannelTitle ( channel );
 
@@ -232,10 +233,6 @@ public class UpgradeTaskProvider extends DefaultTaskProvider implements EventHan
             {
                 refresh ();
             }
-        }
-        if ( topic.endsWith ( "drone/database/schemaUpgrade" ) )
-        {
-            refresh ();
         }
     }
 }
