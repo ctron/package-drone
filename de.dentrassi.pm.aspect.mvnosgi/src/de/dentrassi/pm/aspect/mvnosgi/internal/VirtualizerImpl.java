@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     Markus Rathgeb - initial API and implementation
+ *     Jens Reimann - adapt to new API
  *******************************************************************************/
 package de.dentrassi.pm.aspect.mvnosgi.internal;
 
@@ -19,9 +20,9 @@ import org.osgi.framework.Version;
 
 import de.dentrassi.pm.aspect.common.osgi.OsgiAspectFactory;
 import de.dentrassi.pm.aspect.virtual.Virtualizer;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class VirtualizerImpl implements Virtualizer
 {
