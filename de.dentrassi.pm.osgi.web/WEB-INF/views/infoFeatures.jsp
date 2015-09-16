@@ -30,7 +30,7 @@
     <c:forEach var="feature" items="${features }">
     <tr>
         <td>
-            <a href="<c:url value="/osgi.info/artifact/${feature.artifactId }/viewFeature"/>">${fn:escapeXml(feature.id) }</a>
+            <a href="<c:url value="/osgi.info/channel/${fn:escapeXml(channel.id)}artifact/${feature.artifactId }/viewFeature"/>">${fn:escapeXml(feature.id) }</a>
         </td>
         <td>${feature.version }</td>
         
