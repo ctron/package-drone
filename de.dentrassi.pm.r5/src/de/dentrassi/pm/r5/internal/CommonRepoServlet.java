@@ -58,6 +58,7 @@ public abstract class CommonRepoServlet extends AbstractChannelServiceServlet
         if ( path == null || path.isEmpty () || "/".equals ( path ) )
         {
             getHelpHandler ().process ( req, resp );
+            return true;
         }
 
         final String[] toks = req.getPathInfo ().split ( "\\/" );
