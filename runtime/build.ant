@@ -75,11 +75,6 @@
 
         	<get src="http://www.eclipse.org/downloads/download.php?file=/equinox/drops/R-Mars-201506032000/equinox-SDK-Mars.zip&amp;r=1" dest="download/equinox-SDK.zip" usetimestamp="true" />
         	
-        	<get src="http://www.eclipse.org/downloads/download.php?file=/gemini/jpa/r1.2/milestones/gemini-jpa-1.2.0.M1.zip&amp;r=1" dest="download/gemini-jpa.zip" usetimestamp="true" />
-            <get src="http://www.eclipse.org/downloads/download.php?file=/gemini/dbaccess/r1.1/milestones/gemini-dbaccess-1.1.0.RELEASE-updates.zip&amp;r=1" dest="download/gemini-dbaccess.zip" usetimestamp="true" />
-        	
-            <get src="http://www.eclipse.org/downloads/download.php?file=/rt/eclipselink/releases/2.6.0/eclipselink-plugins-2.6.0.v20150309-bf26070.zip&amp;r=1" dest="download/eclipselink-plugins.zip" usetimestamp="true" />
-
             <orbitGet bundle="ch.qos.logback.classic" version="1.0.7" qualifier="v20121108-1250"/>
         	<orbitGet bundle="ch.qos.logback.core" version="1.0.7" qualifier="v20121108-1250"/>
         	<orbitGet bundle="ch.qos.logback.slf4j" version="1.0.7" qualifier="v201505121915"/>
@@ -115,7 +110,6 @@
             <get src="http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar" dest="download/bundles" usetimestamp="true" />
             
         	<orbitGet bundle="javax.xml" version="1.3.4" qualifier="v201005080400"/>
-            <get src="http://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar" dest="download/bundles" usetimestamp="true" />
             
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
         	<get src="http://download.eclipse.org/eclipsescada/downloads/org.eclipse.scada/drops/0.2.0/R201501260629/p2/plugins/org.eclipse.scada.utils.source_0.2.0.v20141023-0849.jar" dest="download/bundles" usetimestamp="true" />
