@@ -166,7 +166,7 @@ public class TestSuite
             final String key = entry.getKey ().toString ();
             final String value = entry.getValue ().toString ();
 
-            if ( key.startsWith ( "org.osgi." ) )
+            if ( key.startsWith ( "org.osgi." ) || key.startsWith ( "drone." ) )
             {
                 if ( sb.length () > 0 )
                 {

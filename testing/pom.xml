@@ -70,6 +70,7 @@
 						<use.postgres>${use.postgres}</use.postgres>
 						<org.osgi.service.http.host>localhost</org.osgi.service.http.host>
 						<org.osgi.service.http.port>8081</org.osgi.service.http.port>
+						<drone.storage.base>${project.build.directory}/storage</drone.storage.base>
 					</systemPropertyVariables>
 					<includes>
 						<include>**/TestSuite.java</include>
