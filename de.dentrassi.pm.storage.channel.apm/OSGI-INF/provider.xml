@@ -5,4 +5,5 @@
       <provide interface="de.dentrassi.pm.storage.channel.provider.ChannelProvider"/>
    </service>
    <reference bind="setManager" cardinality="1..1" interface="de.dentrassi.pm.apm.StorageManager" name="StorageManager" policy="static"/>
+   <reference bind="setEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static"/>
 </scr:component>

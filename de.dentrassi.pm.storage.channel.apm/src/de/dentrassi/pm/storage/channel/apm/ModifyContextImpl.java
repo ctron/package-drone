@@ -18,7 +18,11 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+
 import de.dentrassi.osgi.utils.Exceptions;
+import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
@@ -41,6 +45,8 @@ import de.dentrassi.pm.storage.channel.provider.ModifyContext;
 public class ModifyContextImpl implements ModifyContext, AspectableContext
 {
     private final String localChannelId;
+
+    private final EventAdmin eventAdmin;
 
     private final BlobStore store;
 
@@ -68,10 +74,11 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     private IdTransformer idTransformer;
 
-    public ModifyContextImpl ( final String localChannelId, final BlobStore store, final CacheStore cacheStore, final ChannelModel other )
+    public ModifyContextImpl ( final String localChannelId, final EventAdmin eventAdmin, final BlobStore store, final CacheStore cacheStore, final ChannelModel other )
     {
         this.localChannelId = localChannelId;
 
+        this.eventAdmin = eventAdmin;
         this.store = store;
         this.cacheStore = cacheStore;
 
@@ -88,6 +95,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         this.state = new ChannelState.Builder ();
         this.state.setDescription ( other.getDescription () );
         this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+        this.state.setNumberOfBytes ( this.modArtifacts.values ().stream ().mapToLong ( ArtifactInformation::getSize ).sum () );
         this.state.setValidationMessages ( other.getValidationMessages ().stream ().map ( ValidationMessageModel::toMessage ).collect ( Collectors.toList () ) );
 
         this.modCacheEntries = new HashMap<> ( other.getCacheEntries ().size () );
@@ -102,7 +110,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     public ModifyContextImpl ( final ModifyContextImpl other )
     {
-        this ( other.localChannelId, other.store, other.cacheStore, other.getModel () );
+        this ( other.localChannelId, other.eventAdmin, other.store, other.cacheStore, other.getModel () );
 
         // FIXME: prevent unnecessary copies
     }
@@ -379,6 +387,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             // refresh number of artifacts
 
             this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+            this.state.incrementNumberOfBytes ( ai.getSize () );
 
             return ai;
         }
@@ -426,6 +435,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         // refresh number of artifacts
 
         this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+        this.state.incrementNumberOfBytes ( -ai.getSize () );
 
         return result;
     }
@@ -471,8 +481,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         final boolean result = this.aspectContext.deleteArtifacts ( Collections.singleton ( id ) );
 
-        // refresh number of artifacts
-        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+        // no need to refresh
 
         return result;
     }
@@ -558,7 +567,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         // refresh number of artifacts
 
-        this.state.setNumberOfArtifacts ( this.modArtifacts.size () );
+        this.state.setNumberOfArtifacts ( 0L );
+        this.state.setNumberOfBytes ( 0L );
     }
 
     @Override
@@ -575,6 +585,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         testLocked ();
 
         this.aspectContext.removeAspects ( aspectIds );
+
+        postAspectEvents ( aspectIds, "remove" );
     }
 
     @Override
@@ -583,6 +595,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         testLocked ();
 
         this.aspectContext.refreshAspects ( aspectIds );
+
+        postAspectEvents ( aspectIds, "refresh" );
     }
 
     @Override
@@ -691,5 +705,29 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         final ChannelDetails result = new ChannelDetails ();
         result.setDescription ( this.model.getDescription () );
         return result;
+    }
+
+    protected void postAspectEvents ( final Set<String> aspectIds, final String operation )
+    {
+        final String channelId = getChannelId ();
+        StorageManager.executeAfterPersist ( () -> {
+            for ( final String aspectFactoryId : aspectIds )
+            {
+                postAspectEvent ( channelId, aspectFactoryId, operation );
+            }
+        } );
+    }
+
+    protected void postAspectEvent ( final String channelId, final String aspectId, final String operation )
+    {
+        final Map<String, Object> data = new HashMap<> ( 2 );
+        data.put ( "operation", operation );
+        data.put ( "aspectFactoryId", aspectId );
+        this.eventAdmin.postEvent ( new Event ( String.format ( "drone/channel/%s/aspect", makeSafeTopic ( channelId ) ), data ) );
+    }
+
+    private static String makeSafeTopic ( final String aspectId )
+    {
+        return aspectId.replaceAll ( "[^a-zA-Z0-9_\\-]", "_" );
     }
 }

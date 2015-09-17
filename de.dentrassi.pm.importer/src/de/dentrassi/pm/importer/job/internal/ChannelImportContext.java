@@ -15,33 +15,35 @@ import java.util.Map;
 
 import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
 
 public class ChannelImportContext extends AbstractImportContext
 {
-    private final Channel channel;
+    private final ChannelService service;
 
-    public ChannelImportContext ( final StorageService service, final String channelId, final Context context )
+    private final String channelId;
+
+    public ChannelImportContext ( final ChannelService service, final String channelId, final Context context )
     {
-        super ( context );
-        this.channel = service.getChannel ( channelId );
-        if ( this.channel == null )
-        {
-            throw new IllegalArgumentException ( String.format ( "Channel '%s' cannot be found", channelId ) );
-        }
+        super ( context, service, channelId );
+        this.service = service;
+        this.channelId = channelId;
     }
 
     @Override
     protected String getChannelId ()
     {
-        return this.channel.getId ();
+        return this.channelId;
     }
 
     @Override
-    protected Artifact performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    protected ArtifactInformation performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
-        return this.channel.createArtifact ( name, stream, providedMetaData );
+        return this.service.access ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
+            return channel.getContext ().createArtifact ( stream, name, providedMetaData );
+        } );
     }
 }

@@ -1,5 +1,8 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java"
+    contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"
+    trimDirectiveWhitespaces="true"
+    %>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -58,71 +61,6 @@
                 </div>
             </div>
             
-            <c:if test="${empty blobStoreLocation }">
-            
-	            <div class="panel panel-warning">
-	                <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> File system BLOB store</h3></div>
-	                <div class="panel-body">
-	                    <p>
-	                    Package Drone can use the file system for storing artifact data. Instead of writing the binary data of artifacts to the database
-	                    the data is stored in the local filesystem.
-	                    </p>
-	                    <p>
-	                    The conversion simply switches the storage to file system mode, which will store new artifacts in
-	                    the file system, but keep existing ones in the database. Requesting an artifact will first try the
-	                    filesystem and then the database. So existing artifacts will be served from the database.
-	                    </p>
-	                    <p>
-	                        <strong>Note: </strong> Converting to a file system based storage cannot be reversed at the moment.
-	                        See <a href="https://github.com/ctron/package-drone/wiki/File-system-BLOB-store" target="_blank">the wiki</a> for more information.
-	                    </p>
-	                </div>
-	                <div class="panel-body">
-						<form method="POST" id="fs-form" action="<c:url value="/system/storage/fileStore"/>">
-						    <div class="row">
-						        <div class="col-xs-8">
-							        <label for="location" class="sr-only">Location</label>
-							        <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server"/>
-							    </div>
-							    <div class="col-xs-4 text-right">
-	                                <button id="fs-convert" type="button" class="btn btn-warning" data-toggle="modal" data-target="#fs-modal">Convert</button>
-							    </div>
-					       </div> 
-						</form>
-	                </div>
-	            </div>
-            
-            </c:if>
-            
-            <c:if test="${not empty blobStoreLocation}">
-                <div class="panel panel-warning">
-                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> Relocate file storage</h3></div>
-                    <div class="panel-body">
-                        <p>
-                            It is possible to change the location of the file store. However this will not move the actual directory structure, but only
-                            update the settings in the database. This can be used if you moved the directory structure and need to update the
-                            configuration.
-                        </p>
-                        <p>
-                            See <a href="https://github.com/ctron/package-drone/wiki/File-system-BLOB-store" target="_blank">the wiki</a> for more information.
-                        </p>
-                    </div>
-                    <div class="panel-body">
-                        <form method="POST" id="fs-form" action="<c:url value="/system/storage/fileStore"/>">
-                            <div class="row">
-                                <div class="col-xs-8">
-                                    <label for="location" class="sr-only">Location</label>
-                                    <input type="text" id="location" class="form-control" name="location" placeholder="File system path on server" value="${fn:escapeXml(blobStoreLocation) }" required="required"/>
-                                </div>
-                                <div class="col-xs-4 text-right">
-                                    <button id="fs-relocate" type="button" class="btn btn-warning" data-toggle="modal" data-target="#fs-modal">Relocate</button>
-                                </div>
-                             </div>
-                        </form>
-                    </div>
-                </div>
-            </c:if>
-            
         </div>
         
         
@@ -152,39 +90,6 @@
             </div>
 		</div>
 	</div>
-</div>
-
-<div class="modal" id="fs-modal" tabindex="-1" role="dialog"
-    aria-labelledby="fs-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="fs-modal-label">Confirm operation</h4>
-            </div>
-            <div class="modal-body container">
-                <c:choose>
-                    <c:when test="${not empty blobStoreLocation }">
-               <p>
-                   Changing the location of the blob store might corrupt your artifacts if the target is not matching to your database.
-               </p>
-                    </c:when>
-                    <c:otherwise>
-               <p>
-                   This will convert your storage to use a file system backend. It cannot be reversed at the moment. Do you really want to do this?
-               </p>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-            <div class="modal-footer">
-                   <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                   <button id="fs-submit" type="button" onclick="$('#fs-form').submit();" class="btn btn-warning">${ (empty blobStoreLocation ? 'Convert ' : 'Relocate ' ) } storage</button>
-            </div>
-        </div>
-    </div>
-    
 </div>
 
 </h:main>

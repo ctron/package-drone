@@ -39,7 +39,6 @@ import de.dentrassi.osgi.web.ViewResolver;
 import de.dentrassi.osgi.web.controller.ControllerInterceptor;
 import de.dentrassi.osgi.web.controller.binding.PathVariable;
 import de.dentrassi.osgi.web.controller.binding.RequestParameter;
-import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
@@ -52,7 +51,9 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Secured
 @Controller
@@ -62,7 +63,7 @@ import de.dentrassi.pm.storage.service.StorageService;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ImportController implements InterfaceExtender
 {
-    private StorageService service;
+    private ChannelService service;
 
     private ImportManager impManager;
 
@@ -135,7 +136,7 @@ public class ImportController implements InterfaceExtender
         this.jobManager = jobManager;
     }
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -157,29 +158,27 @@ public class ImportController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/channel/{channelId}/import" )
-    public ModelAndView index ( @PathVariable ( "channelId" ) final String channelId )
+    public ModelAndView index ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final Channel channel = this.service.getChannel ( channelId );
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
 
-        final Map<String, Object> model = new HashMap<> ();
-        model.put ( "channel", channel );
-        model.put ( "descriptions", getDescriptions () );
+            final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
+            model.put ( "descriptions", getDescriptions () );
 
-        final ImportDescriptor desc = new ImportDescriptor ();
+            final ImportDescriptor desc = new ImportDescriptor ();
 
-        desc.setId ( channel.getId () );
-        desc.setType ( "channel" );
-        model.put ( "token", desc.toBase64 () );
+            desc.setChannelId ( channel.getId ().getId () );
+            desc.setType ( "channel" );
+            model.put ( "token", desc.toBase64 () );
 
-        return new ModelAndView ( "index", model );
+            return new ModelAndView ( "index", model );
+
+        } );
     }
 
     @RequestMapping ( value = "/import/perform", method = RequestMethod.GET )
-    public ModelAndView perform ( @RequestParameter ( "token" ) final String token, @RequestParameter ( "request" ) final ImportRequest request )
+    public ModelAndView perform ( @RequestParameter ( "token" ) final String token, @RequestParameter ( "request" ) final ImportRequest request)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -193,7 +192,7 @@ public class ImportController implements InterfaceExtender
     }
 
     @RequestMapping ( "/import/job/{id}/result" )
-    public ModelAndView viewResult ( @PathVariable ( "id" ) final String jobId )
+    public ModelAndView viewResult ( @PathVariable ( "id" ) final String jobId)
     {
         final JobHandle job = this.jobManager.getJob ( jobId );
 
@@ -206,7 +205,10 @@ public class ImportController implements InterfaceExtender
 
         if ( result != null )
         {
-            model.put ( "channel", this.service.getChannel ( result.getChannelId () ) );
+            return Channels.withChannel ( this.service, result.getChannelId (), ReadableChannel.class, channel -> {
+                model.put ( "channel", channel.getInformation () );
+                return new ModelAndView ( "result", model );
+            } );
         }
 
         return new ModelAndView ( "result", model );

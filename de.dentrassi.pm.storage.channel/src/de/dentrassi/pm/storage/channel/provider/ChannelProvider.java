@@ -9,7 +9,7 @@ public interface ChannelProvider
 {
     public interface Listener
     {
-        public void update ( Collection<Channel> added, Collection<Channel> removed );
+        public void update ( Collection<? extends Channel> added, Collection<? extends Channel> removed );
     }
 
     public void addListener ( Listener listener );
@@ -24,4 +24,9 @@ public interface ChannelProvider
     {
         return getInformation ().getId ();
     }
+
+    /**
+     * Delete all channels which are currently provided by this provider
+     */
+    public void wipe ();
 }

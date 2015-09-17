@@ -13,25 +13,14 @@ package de.dentrassi.pm.storage.web.channel;
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +31,6 @@ import java.util.function.BiConsumer;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -79,7 +67,6 @@ import de.dentrassi.pm.aspect.recipe.RecipeInformation;
 import de.dentrassi.pm.aspect.recipe.RecipeNotFoundException;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.common.utils.IOConsumer;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.Modifier;
@@ -88,7 +75,6 @@ import de.dentrassi.pm.generator.GeneratorProcessor;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.AspectableChannel;
 import de.dentrassi.pm.storage.channel.ChannelArtifactInformation;
@@ -105,8 +91,8 @@ import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.channel.deploy.DeployAuthService;
 import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
+import de.dentrassi.pm.storage.channel.deploy.DeployKey;
 import de.dentrassi.pm.storage.channel.util.DownloadHelper;
-import de.dentrassi.pm.storage.service.StorageService;
 import de.dentrassi.pm.storage.web.Tags;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
@@ -128,11 +114,7 @@ public class ChannelController implements InterfaceExtender
 
     private final static Logger logger = LoggerFactory.getLogger ( ChannelController.class );
 
-    private static final MessageFormat EXPORT_PATTERN = new MessageFormat ( "export-channel-{0}-{1,date,yyyyMMdd-HHmm}.zip" );
-
-    private static final MessageFormat EXPORT_ALL_PATTERN = new MessageFormat ( "export-all-{0,date,yyyyMMdd-HHmm}.zip" );
-
-    private StorageService service;
+    private final static List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT, null ) );
 
     private DeployAuthService deployAuthService;
 
@@ -145,11 +127,6 @@ public class ChannelController implements InterfaceExtender
     public void setChannelService ( final ChannelService channelService )
     {
         this.channelService = channelService;
-    }
-
-    public void setService ( final StorageService service )
-    {
-        this.service = service;
     }
 
     public void setDeployAuthService ( final DeployAuthService deployAuthService )
@@ -171,8 +148,6 @@ public class ChannelController implements InterfaceExtender
     {
         this.generators.close ();
     }
-
-    private static final List<MenuEntry> menuEntries = Collections.singletonList ( new MenuEntry ( "Channels", 100, new LinkTarget ( "/channel" ), Modifier.DEFAULT, null ) );
 
     @Override
     public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
@@ -638,8 +613,7 @@ public class ChannelController implements InterfaceExtender
             final String exampleKey;
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                //FIXME:  exampleKey = channel.getDeployGroups ().stream ().flatMap ( dg -> dg.getKeys ().stream () ).map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
-                exampleKey = DEFAULT_EXAMPLE_KEY;
+                exampleKey = this.channelService.getChannelDeployKeys ( channel.getId ().getId () ).orElse ( Collections.emptyList () ).stream ().map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
             }
             else
             {
@@ -950,7 +924,6 @@ public class ChannelController implements InterfaceExtender
             if ( request.getRemoteUser () != null )
             {
                 result.add ( new MenuEntry ( "Edit", 150, "Configure Aspects", 300, LinkTarget.createFromController ( ChannelController.class, "aspects" ).expand ( model ), Modifier.DEFAULT, null ) );
-                result.add ( new MenuEntry ( "Maintenance", 160, "Export channel", 200, LinkTarget.createFromController ( ChannelController.class, "exportChannel" ).expand ( model ), Modifier.DEFAULT, "export" ) );
             }
 
             return result;
@@ -963,8 +936,6 @@ public class ChannelController implements InterfaceExtender
             {
                 // result.add ( new MenuEntry ( "Create Channel", 100, LinkTarget.createFromController ( ChannelController.class, "createDetailed" ), Modifier.PRIMARY, null ) );
                 result.add ( new MenuEntry ( "Create Channel", 120, LinkTarget.createFromController ( ChannelController.class, "createWithRecipe" ), Modifier.PRIMARY, null ) );
-                result.add ( new MenuEntry ( "Maintenance", 160, "Import channel", 200, LinkTarget.createFromController ( ChannelController.class, "importChannel" ), Modifier.DEFAULT, "import" ) );
-                result.add ( new MenuEntry ( "Maintenance", 160, "Export all channels", 300, LinkTarget.createFromController ( ChannelController.class, "exportAll" ), Modifier.DEFAULT, "export" ) );
             }
 
             return result;
@@ -1057,124 +1028,6 @@ public class ChannelController implements InterfaceExtender
         if ( id != null && other != null && !other.getId ().equals ( id ) )
         {
             ctx.error ( "name", String.format ( "The channel name '%s' is already in use by channel '%s'", name, other.getId () ) );
-        }
-    }
-
-    protected ModelAndView performExport ( final HttpServletResponse response, final String filename, final IOConsumer<OutputStream> exporter )
-    {
-        try
-        {
-            final Path tmp = Files.createTempFile ( "export-", null );
-
-            try
-            {
-                try ( OutputStream tmpStream = new BufferedOutputStream ( new FileOutputStream ( tmp.toFile () ) ) )
-                {
-                    // first we spool this out to  temp file, so that we don't block the channel for too long
-                    exporter.accept ( tmpStream );
-                }
-
-                response.setContentLengthLong ( tmp.toFile ().length () );
-                response.setContentType ( "application/zip" );
-                response.setHeader ( "Content-Disposition", String.format ( "attachment; filename=%s", filename ) );
-
-                try ( InputStream inStream = new BufferedInputStream ( new FileInputStream ( tmp.toFile () ) ) )
-                {
-                    ByteStreams.copy ( inStream, response.getOutputStream () );
-                }
-
-                return null;
-            }
-            finally
-            {
-                Files.deleteIfExists ( tmp );
-            }
-        }
-        catch ( final IOException e )
-        {
-            return CommonController.createError ( "Failed to export", null, e );
-        }
-    }
-
-    @RequestMapping ( value = "/channel/{channelId}/export", method = RequestMethod.GET )
-    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView exportChannel ( @PathVariable ( "channelId" ) final String channelId, final HttpServletResponse response)
-    {
-        return performExport ( response, makeExportFileName ( channelId ), ( stream ) -> this.service.exportChannel ( channelId, stream ) );
-    }
-
-    @RequestMapping ( value = "/channel/export", method = RequestMethod.GET )
-    @HttpConstraint ( value = EmptyRoleSemantic.PERMIT )
-    public ModelAndView exportAll ( final HttpServletResponse response )
-    {
-        return performExport ( response, makeExportFileName ( null ), this.service::exportAll );
-    }
-
-    @RequestMapping ( value = "/channel/import", method = RequestMethod.GET )
-    public ModelAndView importChannel ()
-    {
-        return new ModelAndView ( "channel/importChannel" );
-    }
-
-    @RequestMapping ( value = "/channel/import", method = RequestMethod.POST )
-    public ModelAndView importChannelPost ( @RequestParameter ( "file" ) final Part part, @RequestParameter (
-            value = "useName", required = false ) final boolean useName)
-    {
-        try
-        {
-            final Channel channel = this.service.importChannel ( part.getInputStream (), useName );
-            return new ModelAndView ( "redirect:/channel/" + channel.getId () + "/view" );
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to import", e );
-            return CommonController.createError ( "Import", "Channel", "Failed to import channel", e, null );
-        }
-    }
-
-    @RequestMapping ( value = "/channel/importAll", method = RequestMethod.GET )
-    public ModelAndView importAll ( final HttpServletResponse response )
-    {
-        return new ModelAndView ( "channel/importAll" );
-    }
-
-    @RequestMapping ( value = "/channel/importAll", method = RequestMethod.POST )
-    public ModelAndView importAllPost ( @RequestParameter ( value = "useNames",
-            required = false ) final boolean useNames, @RequestParameter ( value = "wipe",
-                    required = false ) final boolean wipe, @RequestParameter ( "file" ) final Part part, @RequestParameter (
-                            value = "location", required = false ) final String location)
-    {
-        try
-        {
-            if ( location != null && !location.isEmpty () )
-            {
-                try ( BufferedInputStream stream = new BufferedInputStream ( new FileInputStream ( new File ( location ) ) ) )
-                {
-                    this.service.importAll ( stream, useNames, wipe );
-                }
-            }
-            else
-            {
-                this.service.importAll ( part.getInputStream (), useNames, wipe );
-            }
-            return new ModelAndView ( "redirect:/channel" );
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to import", e );
-            return CommonController.createError ( "Import", "Channel", "Failed to import channel", e, null );
-        }
-    }
-
-    private String makeExportFileName ( final String channelId )
-    {
-        if ( channelId != null )
-        {
-            return EXPORT_PATTERN.format ( new Object[] { channelId, new Date () } );
-        }
-        else
-        {
-            return EXPORT_ALL_PATTERN.format ( new Object[] { new Date () } );
         }
     }
 

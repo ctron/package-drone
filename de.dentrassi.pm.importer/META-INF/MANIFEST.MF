@@ -14,7 +14,8 @@ Import-Package: com.google.gson;version="2.3.1",
  de.dentrassi.osgi.web;version="1.0.0",
  de.dentrassi.pm.common;version="1.0.0",
  de.dentrassi.pm.storage;version="1.0.0",
- de.dentrassi.pm.storage.service;version="1.0.0",
+ de.dentrassi.pm.storage.channel;version="1.0.0",
+ de.dentrassi.pm.storage.channel.provider;version="1.0.0",
  org.osgi.framework;version="1.8.0",
  org.osgi.util.tracker;version="1.5.1"
 Service-Component: OSGI-INF/importJob.xml

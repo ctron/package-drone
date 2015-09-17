@@ -20,7 +20,7 @@ import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.pm.importer.Importer;
 import de.dentrassi.pm.importer.job.ImporterJobConfiguration;
 import de.dentrassi.pm.importer.job.ImporterResult;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
 
 public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration, ImporterResult>
 {
@@ -35,11 +35,11 @@ public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration
         }
     };
 
-    private StorageService service;
+    private ChannelService service;
 
     private final ServiceTracker<Importer, Importer> tracker;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -75,10 +75,10 @@ public class ImporterJob extends AbstractJsonJobFactory<ImporterJobConfiguration
         switch ( cfg.getDescriptor ().getType () )
         {
             case "channel":
-                ctx = new ChannelImportContext ( this.service, cfg.getDescriptor ().getId (), context );
+                ctx = new ChannelImportContext ( this.service, cfg.getDescriptor ().getChannelId (), context );
                 break;
             case "artifact":
-                ctx = new ArtifactImportContext ( this.service, cfg.getDescriptor ().getId (), context );
+                ctx = new ArtifactImportContext ( this.service, cfg.getDescriptor ().getChannelId (), cfg.getDescriptor ().getArtifactParentId (), context );
                 break;
             default:
                 throw new IllegalArgumentException ( String.format ( "Unknown import type: %s", cfg.getDescriptor ().getType () ) );

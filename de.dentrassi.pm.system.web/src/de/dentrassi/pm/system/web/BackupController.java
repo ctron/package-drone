@@ -49,7 +49,7 @@ import de.dentrassi.pm.sec.service.SecurityService;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.system.ConfigurationBackupService;
 
 @Controller
@@ -107,7 +107,7 @@ public class BackupController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public void provisionWithSchema ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        provision ( request, response, ( ) -> {
+        provision ( request, response, () -> {
             try ( Configurator cfg = Configurator.create () )
             {
                 try ( DatabaseSetup setup = new DatabaseSetup ( cfg.getDatabaseSettings () ) )
@@ -165,7 +165,7 @@ public class BackupController implements InterfaceExtender
     }
 
     @RequestMapping ( value = "/import", method = RequestMethod.POST )
-    public ModelAndView restoreData ( @RequestParameter ( "file" ) final Part part )
+    public ModelAndView restoreData ( @RequestParameter ( "file" ) final Part part)
     {
         try
         {
@@ -182,7 +182,7 @@ public class BackupController implements InterfaceExtender
 
     private void waitForService ()
     {
-        final ServiceTracker<?, ?> tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( BackupController.class ).getBundleContext (), StorageService.class, null );
+        final ServiceTracker<?, ?> tracker = new ServiceTracker<> ( FrameworkUtil.getBundle ( BackupController.class ).getBundleContext (), ChannelService.class, null );
         tracker.open ();
         try
         {

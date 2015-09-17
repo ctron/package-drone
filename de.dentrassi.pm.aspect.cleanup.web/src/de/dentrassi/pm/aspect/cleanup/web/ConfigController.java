@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.net.UrlEscapers;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.web.Controller;
@@ -48,10 +49,13 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
+import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs.Entry;
+import de.dentrassi.pm.storage.web.utils.Channels;
 
 @Controller
 @RequestMapping ( "/aspect/cleanup/{channelId}/config" )
@@ -66,9 +70,9 @@ public class ConfigController implements InterfaceExtender
 
     private CleanupTester tester;
 
-    private StorageService service;
+    private ChannelService service;
 
-    public void setService ( final StorageService service )
+    public void setService ( final ChannelService service )
     {
         this.service = service;
     }
@@ -83,13 +87,13 @@ public class ConfigController implements InterfaceExtender
     {
         final List<MenuEntry> result = new LinkedList<> ();
 
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
             if ( channel.hasAspect ( "cleanup" ) && request.isUserInRole ( "MANAGER" ) )
             {
                 final Map<String, String> model = new HashMap<> ();
-                model.put ( "channelId", ( (Channel)object ).getId () );
+                model.put ( "channelId", channel.getId () );
                 result.add ( new MenuEntry ( "Cleanup", 7_000, LinkTarget.createFromController ( ConfigController.class, "edit" ).expand ( model ), null, null ) );
             }
         }
@@ -101,43 +105,39 @@ public class ConfigController implements InterfaceExtender
     public ModelAndView edit ( @PathVariable ( "channelId" ) final String channelId, @RequestParameter (
             value = "configuration", required = false ) final String configString)
     {
-        final Channel channel = this.service.getChannel ( channelId );
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
 
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            final Map<String, Object> model = new HashMap<> ( 2 );
 
-        final Map<String, Object> model = new HashMap<> ();
+            model.put ( "channel", channel.getInformation () );
 
-        model.put ( "channel", channel );
+            CleanupConfiguration cfg;
 
-        CleanupConfiguration cfg;
-
-        try
-        {
-            if ( configString != null && !configString.isEmpty () )
+            try
             {
-                // use the content from the input parameter
-                cfg = new GsonBuilder ().create ().fromJson ( configString, CleanupConfiguration.class );
+                if ( configString != null && !configString.isEmpty () )
+                {
+                    // use the content from the input parameter
+                    cfg = new GsonBuilder ().create ().fromJson ( configString, CleanupConfiguration.class );
+                }
+                else
+                {
+                    cfg = MetaKeys.bind ( makeDefaultConfiguration (), channel.getMetaData () );
+                }
             }
-            else
+            catch ( final Exception e )
             {
-                cfg = MetaKeys.bind ( makeDefaultConfiguration (), channel.getMetaData () );
+                logger.info ( "Failed to parse cleanup config", e );
+                // something failed, go back to default
+                cfg = makeDefaultConfiguration ();
             }
-        }
-        catch ( final Exception e )
-        {
-            logger.info ( "Failed to parse cleanup config", e );
-            // something failed, go back to default
-            cfg = makeDefaultConfiguration ();
-        }
 
-        model.put ( "command", cfg );
+            model.put ( "command", cfg );
 
-        fillModel ( model, channelId );
+            fillModel ( model, channelId );
 
-        return new ModelAndView ( "edit", model );
+            return new ModelAndView ( "edit", model );
+        } );
     }
 
     protected CleanupConfiguration makeDefaultConfiguration ()
@@ -166,59 +166,51 @@ public class ConfigController implements InterfaceExtender
     @RequestMapping ( value = "/edit", method = RequestMethod.POST )
     public ModelAndView editPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result)
     {
-        final Channel channel = this.service.getChannel ( channelId );
+        return Channels.withChannel ( this.service, channelId, ModifiableChannel.class, channel -> {
+            final Map<String, Object> model = new HashMap<> ( 2 );
 
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            model.put ( "command", cfg );
+            model.put ( "channel", channel.getInformation () );
+            fillModel ( model, channelId );
 
-        final Map<String, Object> model = new HashMap<> ();
-
-        model.put ( "command", cfg );
-        model.put ( "channel", channel );
-        fillModel ( model, channelId );
-
-        try
-        {
-            if ( !result.hasErrors () )
+            try
             {
-                channel.applyMetaData ( MetaKeys.unbind ( cfg ) );
+                if ( !result.hasErrors () )
+                {
+                    channel.applyMetaData ( MetaKeys.unbind ( cfg ) );
+                }
             }
-        }
-        catch ( final Exception e )
-        {
-            return CommonController.createError ( "Update configuration", "Failed to update cleanup configuration", e );
-        }
+            catch ( final Exception e )
+            {
+                return CommonController.createError ( "Update configuration", "Failed to update cleanup configuration", e );
+            }
 
-        return new ModelAndView ( "edit", model );
+            return new ModelAndView ( "edit", model );
+
+        } );
     }
 
     @RequestMapping ( value = "/test", method = RequestMethod.POST )
     public ModelAndView testPost ( @PathVariable ( "channelId" ) final String channelId, @Valid @FormData ( "command" ) final CleanupConfiguration cfg, final BindingResult result)
     {
-        final Channel channel = this.service.getChannel ( channelId );
+        return Channels.withChannel ( this.service, channelId, ReadableChannel.class, channel -> {
 
-        if ( channel == null )
-        {
-            return CommonController.createNotFound ( "channel", channelId );
-        }
+            if ( !result.hasErrors () )
+            {
+                final Map<String, Object> model = new HashMap<> ();
 
-        if ( !result.hasErrors () )
-        {
-            final Map<String, Object> model = new HashMap<> ();
+                model.put ( "command", cfg );
+                model.put ( "channel", channel.getInformation () );
+                fillModel ( model, channelId );
 
-            model.put ( "command", cfg );
-            model.put ( "channel", channel );
-            fillModel ( model, channelId );
-
-            model.put ( "result", this.tester.testCleanup ( channel.getDetailedArtifacts (), cfg ) );
-            return new ModelAndView ( "testResult", model );
-        }
-        else
-        {
-            return CommonController.createError ( "Testing cleanup", "The configuration has errors", null );
-        }
+                model.put ( "result", this.tester.testCleanup ( channel.getArtifacts (), cfg ) );
+                return new ModelAndView ( "testResult", model );
+            }
+            else
+            {
+                return CommonController.createError ( "Testing cleanup", "The configuration has errors", null );
+            }
+        } );
     }
 
     private void fillModel ( final Map<String, Object> model, final String channelId )
@@ -226,7 +218,7 @@ public class ConfigController implements InterfaceExtender
         final List<Entry> entries = new LinkedList<> ();
 
         entries.add ( new Entry ( "Home", "/" ) );
-        entries.add ( new Entry ( "Channel", "/channel/" + channelId + "/view" ) );
+        entries.add ( new Entry ( "Channel", "/channel/" + UrlEscapers.urlPathSegmentEscaper ().escape ( channelId ) + "/view" ) );
         entries.add ( new Entry ( "Cleanup" ) );
 
         model.put ( "breadcrumbs", new Breadcrumbs ( entries ) );

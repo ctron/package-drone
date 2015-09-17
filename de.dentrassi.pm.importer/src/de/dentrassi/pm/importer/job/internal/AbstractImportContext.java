@@ -21,13 +21,15 @@ import java.util.Map;
 
 import de.dentrassi.osgi.job.ErrorInformation;
 import de.dentrassi.osgi.job.JobInstance.Context;
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.importer.ImportContext;
 import de.dentrassi.pm.importer.ImportSubContext;
 import de.dentrassi.pm.importer.job.ImporterResult;
 import de.dentrassi.pm.importer.job.ImporterResult.Entry;
-import de.dentrassi.pm.storage.Artifact;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
 
 public abstract class AbstractImportContext implements ImportContext, AutoCloseable
 {
@@ -46,7 +48,6 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
 
     private static abstract class AbstractEntry implements ImportEntry
     {
-
         private final String name;
 
         private final Map<MetaKey, String> providedMetaData;
@@ -198,11 +199,18 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
 
     private final Context context;
 
-    public AbstractImportContext ( final Context context )
+    private final ChannelService service;
+
+    private final String channelId;
+
+    public AbstractImportContext ( final Context context, final ChannelService service, final String channelId )
     {
         this.context = context;
+        this.service = service;
+        this.channelId = channelId;
     }
 
+    @Override
     public Context getJobContext ()
     {
         return this.context;
@@ -268,7 +276,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
         return result;
     }
 
-    private long processChildren ( final ImporterResult result, final Artifact parent, final Entry parentEntry, final List<ImportEntry> children ) throws Exception
+    private long processChildren ( final ImporterResult result, final ArtifactInformation parent, final Entry parentEntry, final List<ImportEntry> children ) throws Exception
     {
         Exception err = null;
         long bytes = 0;
@@ -279,7 +287,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
             {
                 try
                 {
-                    final Artifact art;
+                    final ArtifactInformation art;
 
                     if ( parent == null )
                     {
@@ -287,14 +295,14 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
                     }
                     else
                     {
-                        art = parent.attachArtifact ( entry.getName (), entry.openStream (), entry.getProvidedMetaData () );
+                        art = this.service.access ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
+                            return channel.getContext ().createArtifact ( parent.getId (), entry.openStream (), entry.getName (), entry.getProvidedMetaData () );
+                        } );
                     }
 
-                    final ArtifactInformation info = art.getInformation ();
+                    bytes += art.getSize ();
 
-                    bytes += info.getSize ();
-
-                    final Entry newEntry = new Entry ( art.getId (), info.getName (), info.getSize () );
+                    final Entry newEntry = new Entry ( art.getId (), art.getName (), art.getSize () );
                     result.getEntries ().add ( newEntry );
 
                     bytes += processChildren ( result, art, newEntry, entry.getChildren () );
@@ -335,7 +343,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
 
     protected abstract String getChannelId ();
 
-    protected abstract Artifact performRootImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
+    protected abstract ArtifactInformation performRootImport ( InputStream stream, String name, Map<MetaKey, String> providedMetaData );
 
     @Override
     public void close () throws Exception

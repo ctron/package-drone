@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.storage.web.transfer">
+   <implementation class="de.dentrassi.pm.storage.web.channel.TransferController"/>
+   <service>
+      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
+      <provide interface="de.dentrassi.pm.storage.web.channel.TransferController"/>
+    </service>
+
+   <reference bind="setChannelService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.ChannelService" name="ChannelService" policy="static"/>
+   <reference bind="setTransferService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.transfer.TransferService" name="TransferService" policy="static"/>
+   
+</scr:component>

@@ -17,7 +17,7 @@ import java.util.List;
 import com.google.gson.GsonBuilder;
 
 import de.dentrassi.osgi.converter.JSON;
-import de.dentrassi.pm.common.DetailedArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 @JSON
 public class Sorter
@@ -34,12 +34,12 @@ public class Sorter
         return this.fields;
     }
 
-    public Comparator<DetailedArtifactInformation> makeComparator ()
+    public Comparator<ArtifactInformation> makeComparator ()
     {
-        return new Comparator<DetailedArtifactInformation> () {
+        return new Comparator<ArtifactInformation> () {
 
             @Override
-            public int compare ( final DetailedArtifactInformation o1, final DetailedArtifactInformation o2 )
+            public int compare ( final ArtifactInformation o1, final ArtifactInformation o2 )
             {
                 for ( final Field field : Sorter.this.fields )
                 {

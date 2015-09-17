@@ -13,7 +13,7 @@ package de.dentrassi.pm.aspect.cleanup;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.SortedMap;
+import java.util.Map;
 
 import de.dentrassi.osgi.converter.JSON;
 import de.dentrassi.pm.common.MetaKey;
@@ -33,7 +33,7 @@ public class Aggregator
         this.fields = fields;
     }
 
-    public List<String> makeKey ( final SortedMap<MetaKey, String> metaData )
+    public List<String> makeKey ( final Map<MetaKey, String> metaData )
     {
         final List<String> result = new ArrayList<> ( this.fields.size () );
 

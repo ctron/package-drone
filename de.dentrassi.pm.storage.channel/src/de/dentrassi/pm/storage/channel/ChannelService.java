@@ -13,6 +13,7 @@ import java.util.Set;
 import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
 import de.dentrassi.pm.storage.channel.deploy.DeployKey;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
+import de.dentrassi.pm.storage.channel.stats.ChannelStatistics;
 
 public interface ChannelService
 {
@@ -151,4 +152,10 @@ public interface ChannelService
         }
     }
 
+    /**
+     * Delete all and everything
+     */
+    public void wipeClean ();
+
+    public ChannelStatistics getStatistics ();
 }

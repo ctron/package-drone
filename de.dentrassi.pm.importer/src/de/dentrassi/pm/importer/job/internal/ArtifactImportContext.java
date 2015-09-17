@@ -15,32 +15,38 @@ import java.util.Map;
 
 import de.dentrassi.osgi.job.JobInstance.Context;
 import de.dentrassi.pm.common.MetaKey;
-import de.dentrassi.pm.storage.Artifact;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
+import de.dentrassi.pm.storage.channel.ModifiableChannel;
 
 public class ArtifactImportContext extends AbstractImportContext
 {
-    private final Artifact artifact;
+    private final ChannelService service;
 
-    public ArtifactImportContext ( final StorageService service, final String artifactId, final Context context )
+    private final String channelId;
+
+    private final String artifactId;
+
+    public ArtifactImportContext ( final ChannelService service, final String channelId, final String artifactId, final Context context )
     {
-        super ( context );
-        this.artifact = service.getArtifact ( artifactId );
-        if ( this.artifact == null )
-        {
-            throw new IllegalArgumentException ( String.format ( "Artifact '%s' cannot be found", artifactId ) );
-        }
+        super ( context, service, channelId );
+        this.service = service;
+        this.channelId = channelId;
+        this.artifactId = artifactId;
     }
 
     @Override
     protected String getChannelId ()
     {
-        return this.artifact.getChannel ().getId ();
+        return this.channelId;
     }
 
     @Override
-    protected Artifact performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
+    protected ArtifactInformation performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
-        return this.artifact.attachArtifact ( name, stream, providedMetaData );
+        return this.service.access ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
+            return channel.getContext ().createArtifact ( this.artifactId, stream, name, providedMetaData );
+        } );
     }
 }

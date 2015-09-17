@@ -10,9 +10,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
+import org.osgi.service.event.EventAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +26,14 @@ import de.dentrassi.pm.storage.channel.provider.Channel;
 import de.dentrassi.pm.storage.channel.provider.ChannelProvider;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
 
+/**
+ * An APM based channel provider
+ * <p>
+ * <em>Note: </em> the channel provider implementation is not thread safe. It
+ * must be guaranteed by the caller (normally the ChannelService) that calls to
+ * the channel provider implementation are mutually exclusive.
+ * </p>
+ */
 public class ChannelProviderImpl implements ChannelProvider
 {
     private final static Logger logger = LoggerFactory.getLogger ( ChannelProviderImpl.class );
@@ -31,6 +41,8 @@ public class ChannelProviderImpl implements ChannelProvider
     private static final ProviderInformation INFO = new ProviderInformation ( "apm", "APM storage", "APM based channel storage" );
 
     private StorageManager manager;
+
+    private EventAdmin eventAdmin;
 
     private final CopyOnWriteArraySet<Listener> listeners = new CopyOnWriteArraySet<> ();
 
@@ -43,6 +55,11 @@ public class ChannelProviderImpl implements ChannelProvider
     public void setManager ( final StorageManager manager )
     {
         this.manager = manager;
+    }
+
+    public void setEventAdmin ( final EventAdmin eventAdmin )
+    {
+        this.eventAdmin = eventAdmin;
     }
 
     public void start ()
@@ -106,7 +123,7 @@ public class ChannelProviderImpl implements ChannelProvider
         this.listeners.remove ( listener );
     }
 
-    protected void fireChange ( final Collection<Channel> added, final Collection<Channel> removed )
+    protected void fireChange ( final Collection<? extends Channel> added, final Collection<? extends Channel> removed )
     {
         this.listeners.forEach ( listener -> listener.update ( added, removed ) );
     }
@@ -122,7 +139,7 @@ public class ChannelProviderImpl implements ChannelProvider
     private void discoveredChannel ( final String channelId )
     {
         final MetaKey key = new MetaKey ( "channel", channelId );
-        final ChannelImpl channel = new ChannelImpl ( channelId, key, this.manager, this );
+        final ChannelImpl channel = new ChannelImpl ( channelId, this.eventAdmin, key, this.manager, this );
         registerChannel ( channel );
     }
 
@@ -131,7 +148,7 @@ public class ChannelProviderImpl implements ChannelProvider
         final String id = UUID.randomUUID ().toString ();
         final MetaKey key = new MetaKey ( "channel", id );
 
-        final ChannelImpl channel = new ChannelImpl ( id, key, this.manager, this );
+        final ChannelImpl channel = new ChannelImpl ( id, this.eventAdmin, key, this.manager, this );
 
         // we always call modify, in order to persist the channel at least once
         channel.modify ( model -> {
@@ -189,6 +206,28 @@ public class ChannelProviderImpl implements ChannelProvider
         {
             throw new RuntimeException ( "Failed to delete channel content", e );
         }
+    }
+
+    @Override
+    public void wipe ()
+    {
+        final CopyOnWriteArrayList<ChannelImpl> deletedChannels = new CopyOnWriteArrayList<> ( this.channels );
+        this.channels.clear ();
+
+        for ( final Channel channel : deletedChannels )
+        {
+            try
+            {
+                ( (ChannelImpl)channel ).dispose ();
+                deleteChannelContent ( channel.getId () );
+            }
+            catch ( final Exception e )
+            {
+                logger.warn ( "Failed to wipe/delete channel: " + channel.getId (), e );
+            }
+        }
+
+        fireChange ( null, deletedChannels );
     }
 
     @Override

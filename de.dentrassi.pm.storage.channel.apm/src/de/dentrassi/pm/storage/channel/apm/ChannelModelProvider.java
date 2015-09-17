@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.osgi.service.event.EventAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +41,13 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
 
     private CacheStore cacheStore;
 
-    public ChannelModelProvider ( final String channelId )
+    private final EventAdmin eventAdmin;
+
+    public ChannelModelProvider ( final EventAdmin eventAdmin, final String channelId )
     {
         super ( AccessContext.class, ModifyContextImpl.class );
+
+        this.eventAdmin = eventAdmin;
 
         this.channelId = channelId;
     }
@@ -183,12 +188,12 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
                 // FIXME: handle broken channel state
                 throw new IllegalStateException ( "Unable to load channel model" );
             }
-            return new ModifyContextImpl ( this.channelId, this.store, this.cacheStore, model );
+            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, model );
         }
         catch ( final NoSuchFileException e )
         {
             // create a new model
-            return new ModifyContextImpl ( this.channelId, this.store, this.cacheStore, new ChannelModel () );
+            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, new ChannelModel () );
         }
     }
 

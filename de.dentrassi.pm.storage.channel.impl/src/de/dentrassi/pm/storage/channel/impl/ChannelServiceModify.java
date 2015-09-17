@@ -316,4 +316,13 @@ public class ChannelServiceModify implements ChannelServiceAccess
         }
     }
 
+    /**
+     * Clear all mappings
+     */
+    public void clear ()
+    {
+        this.model.getNameMap ().clear ();
+        this.map.clear ();
+    }
+
 }

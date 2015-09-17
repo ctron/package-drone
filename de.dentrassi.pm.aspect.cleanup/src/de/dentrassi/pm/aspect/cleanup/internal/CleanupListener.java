@@ -31,9 +31,9 @@ import de.dentrassi.pm.aspect.cleanup.ResultKey;
 import de.dentrassi.pm.aspect.cleanup.Sorter;
 import de.dentrassi.pm.aspect.listener.ChannelListener;
 import de.dentrassi.pm.aspect.listener.PostAddContext;
-import de.dentrassi.pm.common.DetailedArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.MetaKeys;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class CleanupListener implements ChannelListener
 {
@@ -53,7 +53,7 @@ public class CleanupListener implements ChannelListener
             return;
         }
 
-        final Map<List<String>, LinkedList<DetailedArtifactInformation>> artifacts = aggregate ( cfg.getAggregator (), cfg.getSorter (), cfg.isOnlyRootArtifacts (), context.getChannelArtifacts () );
+        final Map<List<String>, LinkedList<ArtifactInformation>> artifacts = aggregate ( cfg.getAggregator (), cfg.getSorter (), cfg.isOnlyRootArtifacts (), context.getChannelArtifacts () );
 
         final SortedMap<ResultKey, List<ResultEntry>> result = process ( cfg, artifacts );
 
@@ -71,13 +71,13 @@ public class CleanupListener implements ChannelListener
         }
     }
 
-    static SortedMap<ResultKey, List<ResultEntry>> process ( final CleanupConfiguration configuration, final Map<List<String>, LinkedList<DetailedArtifactInformation>> aggregation )
+    static SortedMap<ResultKey, List<ResultEntry>> process ( final CleanupConfiguration configuration, final Map<List<String>, LinkedList<ArtifactInformation>> aggregation )
     {
         final int numVersions = configuration.getNumberOfVersions ();
 
         final SortedMap<ResultKey, List<ResultEntry>> result = new TreeMap<> ();
 
-        for ( final Map.Entry<List<String>, LinkedList<DetailedArtifactInformation>> entry : aggregation.entrySet () )
+        for ( final Map.Entry<List<String>, LinkedList<ArtifactInformation>> entry : aggregation.entrySet () )
         {
             final ResultKey key = new ResultKey ( entry.getKey () );
 
@@ -90,7 +90,7 @@ public class CleanupListener implements ChannelListener
 
             final int cutOff = entry.getValue ().size () - numVersions;
             int i = 0;
-            for ( final DetailedArtifactInformation art : entry.getValue () )
+            for ( final ArtifactInformation art : entry.getValue () )
             {
                 final Action action = i < cutOff ? Action.DELETE : Action.KEEP;
                 value.add ( new ResultEntry ( art, action ) );
@@ -101,13 +101,13 @@ public class CleanupListener implements ChannelListener
         return result;
     }
 
-    static Map<List<String>, LinkedList<DetailedArtifactInformation>> aggregate ( final Aggregator aggregator, final Sorter sorter, final boolean rootOnly, final Collection<? extends DetailedArtifactInformation> artifacts )
+    static Map<List<String>, LinkedList<ArtifactInformation>> aggregate ( final Aggregator aggregator, final Sorter sorter, final boolean rootOnly, final Collection<? extends ArtifactInformation> artifacts )
     {
-        final Map<List<String>, LinkedList<DetailedArtifactInformation>> result = new HashMap<> ();
+        final Map<List<String>, LinkedList<ArtifactInformation>> result = new HashMap<> ();
 
-        for ( final DetailedArtifactInformation art : artifacts )
+        for ( final ArtifactInformation art : artifacts )
         {
-            if ( !art.is ( "deletable" ) )
+            if ( !art.is ( "stored" ) )
             {
                 continue;
             }
@@ -122,7 +122,7 @@ public class CleanupListener implements ChannelListener
             final List<String> key = aggregator.makeKey ( art.getMetaData () );
 
             // get list
-            LinkedList<DetailedArtifactInformation> list = result.get ( key );
+            LinkedList<ArtifactInformation> list = result.get ( key );
 
             // .. or create and put
             if ( list == null )
@@ -137,8 +137,8 @@ public class CleanupListener implements ChannelListener
 
         // sort by fields
 
-        final Comparator<DetailedArtifactInformation> comparator = sorter.makeComparator ();
-        for ( final LinkedList<DetailedArtifactInformation> list : result.values () )
+        final Comparator<ArtifactInformation> comparator = sorter.makeComparator ();
+        for ( final LinkedList<ArtifactInformation> list : result.values () )
         {
             Collections.sort ( list, comparator );
         }

@@ -20,8 +20,8 @@ import de.dentrassi.osgi.scheduler.ScheduledTask;
 import de.dentrassi.pm.VersionInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.core.CoreService;
-import de.dentrassi.pm.storage.service.ServiceStatistics;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.stats.ChannelStatistics;
 
 public class PingJob implements ScheduledTask
 {
@@ -31,7 +31,7 @@ public class PingJob implements ScheduledTask
 
     private static final long MAX_DIFF = TimeUnit.DAYS.toMillis ( 7 );
 
-    private StorageService storageService;
+    private ChannelService channelService;
 
     private CoreService coreService;
 
@@ -42,9 +42,9 @@ public class PingJob implements ScheduledTask
         this.coreService = coreService;
     }
 
-    public void setStorageService ( final StorageService storageService )
+    public void setChannelService ( final ChannelService channelService )
     {
-        this.storageService = storageService;
+        this.channelService = channelService;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class PingJob implements ScheduledTask
     {
         final Statistics result = new Statistics ();
 
-        final ServiceStatistics serviceStats = this.storageService.getStatistics ();
+        final ChannelStatistics serviceStats = this.channelService.getStatistics ();
 
         result.setRandomId ( makeId () );
         result.setVersion ( VersionInformation.VERSION );

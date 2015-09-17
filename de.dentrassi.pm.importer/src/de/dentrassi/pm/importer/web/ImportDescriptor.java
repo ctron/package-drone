@@ -22,16 +22,28 @@ public class ImportDescriptor
 
     private String type;
 
-    private String id;
+    private String channelId;
 
-    public void setId ( final String id )
+    private String artifactParentId;
+
+    public void setChannelId ( final String channelId )
     {
-        this.id = id;
+        this.channelId = channelId;
     }
 
-    public String getId ()
+    public String getChannelId ()
     {
-        return this.id;
+        return this.channelId;
+    }
+
+    public void setArtifactParentId ( final String artifactParentId )
+    {
+        this.artifactParentId = artifactParentId;
+    }
+
+    public String getArtifactParentId ()
+    {
+        return this.artifactParentId;
     }
 
     public void setType ( final String type )

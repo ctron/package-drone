@@ -2,6 +2,8 @@ package de.dentrassi.pm.storage.channel.apm;
 
 import static de.dentrassi.osgi.utils.Exceptions.wrapException;
 
+import org.osgi.service.event.EventAdmin;
+
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
 import de.dentrassi.pm.common.MetaKey;
@@ -23,15 +25,16 @@ public class ChannelImpl implements Channel
 
     private final StorageRegistration handle;
 
-    public ChannelImpl ( final String id, final MetaKey storageKey, final StorageManager manager, final ChannelProviderImpl provider )
+    public ChannelImpl ( final String id, final EventAdmin eventAdmin, final MetaKey storageKey, final StorageManager manager, final ChannelProviderImpl provider )
     {
         this.id = id;
+
         this.storageKey = storageKey;
         this.manager = manager;
 
         this.provider = provider;
 
-        this.handle = manager.registerModel ( 10_000, storageKey, new ChannelModelProvider ( id ) );
+        this.handle = manager.registerModel ( 10_000, storageKey, new ChannelModelProvider ( eventAdmin, id ) );
     }
 
     public void dispose ()

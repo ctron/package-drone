@@ -16,14 +16,11 @@ import org.osgi.framework.BundleContext;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.recipe.RecipeProcessor;
 import de.dentrassi.pm.generator.GeneratorProcessor;
-import de.dentrassi.pm.storage.web.services.ServiceTracker;
 
 public class Activator implements BundleActivator
 {
 
     private static Activator INSTANCE;
-
-    private ServiceTracker tracker;
 
     private ChannelAspectProcessor aspects;
 
@@ -39,8 +36,6 @@ public class Activator implements BundleActivator
     public void start ( final BundleContext bundleContext ) throws Exception
     {
         Activator.INSTANCE = this;
-        this.tracker = new ServiceTracker ( bundleContext );
-        this.tracker.open ();
         this.aspects = new ChannelAspectProcessor ( bundleContext );
         this.recipes = new RecipeProcessor ( bundleContext );
         this.generatorProcessor = new GeneratorProcessor ( bundleContext );
@@ -54,17 +49,11 @@ public class Activator implements BundleActivator
     @Override
     public void stop ( final BundleContext bundleContext ) throws Exception
     {
-        this.tracker.close ();
         this.aspects.close ();
         this.recipes.dispose ();
         this.generatorProcessor.close ();
 
         Activator.INSTANCE = null;
-    }
-
-    public static ServiceTracker getTracker ()
-    {
-        return INSTANCE.tracker;
     }
 
     public static ChannelAspectProcessor getAspects ()

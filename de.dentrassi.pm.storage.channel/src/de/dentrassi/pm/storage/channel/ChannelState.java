@@ -11,6 +11,8 @@ public class ChannelState implements Validated
 
     private long numberOfArtifacts;
 
+    private long numberOfBytes;
+
     private boolean locked;
 
     private List<ValidationMessage> messages = Collections.emptyList ();
@@ -24,6 +26,7 @@ public class ChannelState implements Validated
         this.messages = other.messages;
         this.description = other.description;
         this.numberOfArtifacts = other.numberOfArtifacts;
+        this.numberOfBytes = other.numberOfBytes;
         this.locked = other.locked;
     }
 
@@ -35,6 +38,11 @@ public class ChannelState implements Validated
     public long getNumberOfArtifacts ()
     {
         return this.numberOfArtifacts;
+    }
+
+    public long getNumberOfBytes ()
+    {
+        return this.numberOfBytes;
     }
 
     public boolean isLocked ()
@@ -86,6 +94,18 @@ public class ChannelState implements Validated
             this.value.numberOfArtifacts = numberOfArtifacts;
         }
 
+        public void setNumberOfBytes ( final long numberOfBytes )
+        {
+            checkFork ();
+            this.value.numberOfBytes = numberOfBytes;
+        }
+
+        public void incrementNumberOfBytes ( final long numberOfBytes )
+        {
+            checkFork ();
+            this.value.numberOfBytes += numberOfBytes;
+        }
+
         public void setLocked ( final boolean locked )
         {
             checkFork ();
@@ -112,6 +132,7 @@ public class ChannelState implements Validated
             this.needFork = true;
             return this.value;
         }
+
     }
 
 }

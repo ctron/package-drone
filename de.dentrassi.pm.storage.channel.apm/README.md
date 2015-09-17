@@ -8,14 +8,16 @@
  * implement virtualizers (OK)
  * implement parent/child (OK)
  * implement deploy keys (OK)
- * resolve FIXMEs
  * finish validation (OK)
- * implement import/export
+ * implement import/export (OK)
  * improve performance when re-aspecting (doStreamed) (OK)
+ * implement post add event
 
 ## Finally
 
  * Kick out old JPA stuff
+ * resolve FIXMEs
  * Refactor
+ * clean up "setup"
  * Fix the build
  * Test, test, test …

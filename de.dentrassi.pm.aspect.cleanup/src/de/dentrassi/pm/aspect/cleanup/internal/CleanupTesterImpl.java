@@ -18,13 +18,13 @@ import de.dentrassi.pm.aspect.cleanup.CleanupConfiguration;
 import de.dentrassi.pm.aspect.cleanup.CleanupTester;
 import de.dentrassi.pm.aspect.cleanup.ResultEntry;
 import de.dentrassi.pm.aspect.cleanup.ResultKey;
-import de.dentrassi.pm.common.DetailedArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class CleanupTesterImpl implements CleanupTester
 {
 
     @Override
-    public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<DetailedArtifactInformation> artifacts, final CleanupConfiguration configuration )
+    public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<ArtifactInformation> artifacts, final CleanupConfiguration configuration )
     {
         return CleanupListener.process ( configuration, CleanupListener.aggregate ( configuration.getAggregator (), configuration.getSorter (), configuration.isOnlyRootArtifacts (), artifacts ) );
     }

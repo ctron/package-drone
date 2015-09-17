@@ -50,6 +50,7 @@ import de.dentrassi.pm.storage.channel.provider.ChannelProvider;
 import de.dentrassi.pm.storage.channel.provider.ChannelProvider.Listener;
 import de.dentrassi.pm.storage.channel.provider.ModifyContext;
 import de.dentrassi.pm.storage.channel.provider.ProviderInformation;
+import de.dentrassi.pm.storage.channel.stats.ChannelStatistics;
 
 public class ChannelServiceImpl implements ChannelService, DeployAuthService
 {
@@ -79,7 +80,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         }
 
         @Override
-        public void update ( final Collection<Channel> added, final Collection<Channel> removed )
+        public void update ( final Collection<? extends Channel> added, final Collection<? extends Channel> removed )
         {
             if ( added != null )
             {
@@ -165,7 +166,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         this.manager = manager;
     }
 
-    public void handleUpdate ( final ChannelProvider provider, final Collection<Channel> added, final Collection<Channel> removed )
+    public void handleUpdate ( final ChannelProvider provider, final Collection<? extends Channel> added, final Collection<? extends Channel> removed )
     {
         try ( final Locked l = lock ( this.writeLock ) )
         {
@@ -392,6 +393,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
             final ChannelEntry entry = channel.get ();
 
             // explicitly delete the mapping
+
             deleteChannel ( entry.getId ().getId () );
             handleUpdate ( entry.getProvider (), null, Collections.singleton ( entry.getChannel () ) );
 
@@ -506,13 +508,13 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         }
     }
 
-    private <R> R handleDescribe ( final ChannelEntry channel, final ChannelOperation<R, DescriptorAdapter> operation )
+    private <R> R handleDescribe ( final ChannelEntry channelEntry, final ChannelOperation<R, DescriptorAdapter> operation )
     {
         try ( Locked l = lock ( this.writeLock ) )
         {
             return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
 
-                final DescriptorAdapter dai = new DescriptorAdapterImpl ( channel) {
+                final DescriptorAdapter dai = new DescriptorAdapterImpl ( channelEntry) {
                     @Override
                     public void setName ( final String name )
                     {
@@ -522,7 +524,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
 
                         final ChannelId desc = getDescriptor ();
                         StorageManager.executeAfterPersist ( () -> {
-                            channel.setId ( desc );
+                            channelEntry.setId ( desc );
                         } );
                     }
                 };
@@ -736,4 +738,48 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         } );
     }
 
+    @Override
+    public void wipeClean ()
+    {
+        try ( Locked l = lock ( this.writeLock ) )
+        {
+            this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+                wipeChannelService ( model );
+            } );
+            for ( final ChannelProvider provider : this.providerMap.values () )
+            {
+                provider.wipe ();
+            }
+        }
+    }
+
+    private void wipeChannelService ( final ChannelServiceModify model )
+    {
+        model.clear ();
+        StorageManager.executeAfterPersist ( () -> {
+
+            // wipe all names
+
+            for ( final ChannelEntry entry : this.channelMap.values () )
+            {
+                entry.setId ( new ChannelId ( entry.getId ().getId (), null ) );
+            }
+        } );
+    }
+
+    @Override
+    public ChannelStatistics getStatistics ()
+    {
+        final ChannelStatistics cs = new ChannelStatistics ();
+
+        try ( Locked l = lock ( this.readLock ) )
+        {
+            final Collection<ChannelInformation> cis = list ();
+
+            cs.setTotalNumberOfArtifacts ( cis.stream ().mapToLong ( ci -> ci.getState ().getNumberOfArtifacts () ).sum () );
+            cs.setTotalNumberOfBytes ( cis.stream ().mapToLong ( ci -> ci.getState ().getNumberOfBytes () ).sum () );
+        }
+
+        return cs;
+    }
 }

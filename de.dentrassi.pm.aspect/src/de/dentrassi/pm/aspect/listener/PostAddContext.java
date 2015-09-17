@@ -13,8 +13,8 @@ package de.dentrassi.pm.aspect.listener;
 import java.util.Collection;
 import java.util.Map;
 
-import de.dentrassi.pm.common.ArtifactInformation;
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public interface PostAddContext
 {

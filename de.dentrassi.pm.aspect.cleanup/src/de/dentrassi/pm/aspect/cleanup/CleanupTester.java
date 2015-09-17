@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 
-import de.dentrassi.pm.common.DetailedArtifactInformation;
+import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public interface CleanupTester
 {
@@ -25,5 +25,5 @@ public interface CleanupTester
         DELETE;
     }
 
-    public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<DetailedArtifactInformation> artifacts, CleanupConfiguration configuration );
+    public SortedMap<ResultKey, List<ResultEntry>> testCleanup ( final Collection<ArtifactInformation> artifacts, CleanupConfiguration configuration );
 }
