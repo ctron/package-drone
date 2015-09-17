@@ -107,20 +107,6 @@
          unpack="false"/>
 
    <plugin
-         id="de.dentrassi.pm.storage.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="de.dentrassi.pm.storage.service"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="de.dentrassi.pm.storage.web"
          download-size="0"
          install-size="0"
@@ -247,27 +233,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.gemini.dbaccess.mysql"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.gemini.dbaccess.util"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.gemini.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.jdt.core.compiler.batch"
          download-size="0"
          install-size="0"
@@ -374,20 +339,6 @@
 
    <plugin
          id="org.eclipse.persistence.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.persistence.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.persistence.jpa.jpql"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -606,13 +557,6 @@
          unpack="false"/>
 
    <plugin
-         id="de.dentrassi.pm.sec.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="de.dentrassi.pm.sec.service"
          download-size="0"
          install-size="0"
@@ -672,37 +616,10 @@
          unpack="false"/>
 
    <plugin
-         id="de.dentrassi.pm.sec.service.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="de.dentrassi.pm.common.web"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
-   <plugin
-         id="de.dentrassi.pm.setup.web"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="de.dentrassi.pm.storage.service.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="de.dentrassi.pm.core.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="de.dentrassi.osgi.scheduler"
@@ -817,20 +734,6 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
-   <plugin
-         id="de.dentrassi.osgi.job.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="de.dentrassi.osgi.job.service.jpa"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="de.dentrassi.pm.external.maven"
@@ -1182,6 +1085,47 @@
 
    <plugin
          id="de.dentrassi.pm.xml"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.osgi.job.service.apm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.apm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="de.dentrassi.pm.apm.storage"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.core.apm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.sec.service.apm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.dentrassi.pm.storage.channel.apm"
          download-size="0"
          install-size="0"
          version="0.0.0"

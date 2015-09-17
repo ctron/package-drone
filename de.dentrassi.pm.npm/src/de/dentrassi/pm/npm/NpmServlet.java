@@ -96,7 +96,7 @@ public class NpmServlet extends HttpServlet
 
         try
         {
-            service.access ( By.nameOrId ( toks[0] ), ReadableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( toks[0] ), ReadableChannel.class, channel -> {
                 processGet ( request, response, sysService, channel, toks );
             } );
         }

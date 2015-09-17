@@ -51,7 +51,7 @@ public final class DownloadHelper
     {
         try
         {
-            service.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+            service.accessRun ( By.id ( channelId ), ReadableChannel.class, channel -> {
 
                 final ArtifactInformation artifact = channel.getContext ().getArtifacts ().get ( artifactId );
                 if ( artifact == null )

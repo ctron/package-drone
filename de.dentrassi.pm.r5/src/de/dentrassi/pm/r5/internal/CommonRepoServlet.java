@@ -66,7 +66,7 @@ public abstract class CommonRepoServlet extends AbstractChannelServiceServlet
         {
             try
             {
-                getService ( req ).access ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
+                getService ( req ).accessRun ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
                     this.indexHandler.process ( channel, req, resp );
                 } );
             }
@@ -84,7 +84,7 @@ public abstract class CommonRepoServlet extends AbstractChannelServiceServlet
         {
             try
             {
-                getService ( req ).access ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
+                getService ( req ).accessRun ( By.nameOrId ( toks[1] ), ReadableChannel.class, channel -> {
 
                     final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( toks[3] );
                     if ( !artifact.isPresent () )

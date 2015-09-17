@@ -222,12 +222,12 @@ public class TransferServiceImpl implements TransferService
 
             if ( useChannelName && name != null )
             {
-                this.channelService.access ( By.id ( channelId.getId () ), DescriptorAdapter.class, channel -> {
+                this.channelService.accessRun ( By.id ( channelId.getId () ), DescriptorAdapter.class, channel -> {
                     channel.setName ( name );
                 } );
             }
 
-            this.channelService.access ( By.id ( channelId.getId () ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId.getId () ), ModifiableChannel.class, channel -> {
 
                 // set provided meta data
 
@@ -414,7 +414,7 @@ public class TransferServiceImpl implements TransferService
      */
     private void exportChannel ( final ChannelId channelId, final OutputStream stream ) throws IOException
     {
-        this.channelService.access ( By.id ( channelId.getId () ), ReadableChannel.class, channel -> {
+        this.channelService.accessRun ( By.id ( channelId.getId () ), ReadableChannel.class, channel -> {
             final ZipOutputStream zos = new ZipOutputStream ( stream );
 
             initExportFile ( zos );

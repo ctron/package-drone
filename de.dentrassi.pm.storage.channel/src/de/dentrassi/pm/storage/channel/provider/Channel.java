@@ -8,21 +8,21 @@ public interface Channel
 {
     public String getId ();
 
-    public <T> T access ( ChannelOperation<T, AccessContext> operation, IdTransformer idTransformer );
+    public <T> T accessCall ( ChannelOperation<T, AccessContext> operation, IdTransformer idTransformer );
 
-    public <T> T modify ( ChannelOperation<T, ModifyContext> operation, IdTransformer idTransformer );
+    public <T> T modifyCall ( ChannelOperation<T, ModifyContext> operation, IdTransformer idTransformer );
 
-    public default void access ( final ChannelOperationVoid<AccessContext> operation, final IdTransformer idTransformer )
+    public default void accessRun ( final ChannelOperationVoid<AccessContext> operation, final IdTransformer idTransformer )
     {
-        access ( channel -> {
+        accessCall ( channel -> {
             operation.process ( channel );
             return null;
         } , idTransformer );
     }
 
-    public default void modify ( final ChannelOperationVoid<ModifyContext> operation, final IdTransformer idTransformer )
+    public default void modifyRun ( final ChannelOperationVoid<ModifyContext> operation, final IdTransformer idTransformer )
     {
-        modify ( channel -> {
+        modifyCall ( channel -> {
             operation.process ( channel );
             return null;
         } , idTransformer );

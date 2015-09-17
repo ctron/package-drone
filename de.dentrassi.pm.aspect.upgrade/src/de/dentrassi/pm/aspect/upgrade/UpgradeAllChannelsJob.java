@@ -71,7 +71,7 @@ public class UpgradeAllChannelsJob implements JobFactory
             {
                 ctx.setCurrentTaskName ( String.format ( "Processing %s", channelInformation.getNameOrId () ) );
 
-                this.service.access ( By.id ( channelInformation.getId () ), ModifiableChannel.class, channel -> {
+                this.service.accessRun ( By.id ( channelInformation.getId () ), ModifiableChannel.class, channel -> {
                     channel.getContext ().refreshAspects ( null );
                 } );
                 ctx.worked ( 1 );

@@ -97,7 +97,7 @@ public interface ChannelService
      * @return
      * @throws ChannelNotFoundException
      */
-    public <R, T> R access ( By by, Class<T> clazz, ChannelOperation<R, T> operation );
+    public <R, T> R accessCall ( By by, Class<T> clazz, ChannelOperation<R, T> operation );
 
     /**
      * @param by
@@ -105,9 +105,9 @@ public interface ChannelService
      * @param operation
      * @throws ChannelNotFoundException
      */
-    public default <T> void access ( final By by, final Class<T> clazz, final ChannelOperationVoid<T> operation )
+    public default <T> void accessRun ( final By by, final Class<T> clazz, final ChannelOperationVoid<T> operation )
     {
-        access ( by, clazz, channel -> {
+        accessCall ( by, clazz, channel -> {
             operation.process ( channel );
             return null;
         } );
@@ -133,7 +133,7 @@ public interface ChannelService
     {
         try
         {
-            return access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+            return accessCall ( By.id ( channelId ), ReadableChannel.class, channel -> {
 
                 final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );
                 if ( !artifact.isPresent () )

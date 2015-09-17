@@ -119,7 +119,7 @@ public class UploadServlet extends AbstractChannelServiceServlet
 
         try
         {
-            service.access ( By.nameOrId ( channelIdOrName ), ModifiableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelIdOrName ), ModifiableChannel.class, channel -> {
 
                 // do store
 

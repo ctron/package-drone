@@ -49,7 +49,7 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public <T> T access ( final ChannelOperation<T, AccessContext> operation, final IdTransformer idTransformer )
+    public <T> T accessCall ( final ChannelOperation<T, AccessContext> operation, final IdTransformer idTransformer )
     {
         return this.manager.accessCall ( this.storageKey, AccessContext.class, model -> wrapException ( () -> {
             ( (ModifyContextImpl)model ).setIdTransformer ( idTransformer );
@@ -58,7 +58,7 @@ public class ChannelImpl implements Channel
     }
 
     @Override
-    public <T> T modify ( final ChannelOperation<T, ModifyContext> operation, final IdTransformer idTransformer )
+    public <T> T modifyCall ( final ChannelOperation<T, ModifyContext> operation, final IdTransformer idTransformer )
     {
         return this.manager.modifyCall ( this.storageKey, ModifyContext.class, model -> wrapException ( () -> {
             ( (ModifyContextImpl)model ).setIdTransformer ( idTransformer );

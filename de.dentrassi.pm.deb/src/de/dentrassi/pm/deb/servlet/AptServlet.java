@@ -68,7 +68,7 @@ public class AptServlet extends AbstractChannelServiceServlet
 
         final String channelId = toks[0];
 
-        service.access ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
+        service.accessRun ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
 
             if ( channel == null )
             {

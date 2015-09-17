@@ -151,7 +151,7 @@ public class ChannelProviderImpl implements ChannelProvider
         final ChannelImpl channel = new ChannelImpl ( id, this.eventAdmin, key, this.manager, this );
 
         // we always call modify, in order to persist the channel at least once
-        channel.modify ( model -> {
+        channel.modifyRun ( model -> {
             if ( details != null )
             {
                 model.setDetails ( details );

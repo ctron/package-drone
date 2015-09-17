@@ -157,7 +157,7 @@ public class MavenServlet extends AbstractChannelServiceServlet
 
         try
         {
-            service.access ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
 
                 // init holder
 
@@ -265,7 +265,7 @@ public class MavenServlet extends AbstractChannelServiceServlet
 
         try
         {
-            service.access ( By.nameOrId ( channelId ), ModifiableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelId ), ModifiableChannel.class, channel -> {
 
                 if ( isUpload ( toks, artifactName ) )
                 {

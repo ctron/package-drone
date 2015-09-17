@@ -30,7 +30,7 @@ public final class Channels
     {
         try
         {
-            return service.access ( By.id ( channelId ), clazz, operation );
+            return service.accessCall ( By.id ( channelId ), clazz, operation );
         }
         catch ( final ChannelNotFoundException e )
         {

@@ -79,7 +79,7 @@ public class P2Servlet extends AbstractChannelServiceServlet
 
         try
         {
-            service.access ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
 
                 final String channelId = channel.getId ().getId ();
 

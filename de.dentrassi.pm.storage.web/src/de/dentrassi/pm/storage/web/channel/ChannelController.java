@@ -246,7 +246,7 @@ public class ChannelController implements InterfaceExtender
 
                     setChannelName ( channel, data.getName () );
 
-                    this.channelService.access ( By.id ( channel.getId () ), AspectableChannel.class, aspChannel -> {
+                    this.channelService.accessRun ( By.id ( channel.getId () ), AspectableChannel.class, aspChannel -> {
 
                         final LinkTarget target = recipe.setup ( channel.getId (), aspChannel );
 
@@ -278,7 +278,7 @@ public class ChannelController implements InterfaceExtender
 
     protected void setChannelName ( final ChannelId id, final String name )
     {
-        this.channelService.access ( By.id ( id.getId () ), DescriptorAdapter.class, channel -> {
+        this.channelService.accessRun ( By.id ( id.getId () ), DescriptorAdapter.class, channel -> {
             channel.setName ( name );
         } );
     }
@@ -309,7 +309,7 @@ public class ChannelController implements InterfaceExtender
 
         try
         {
-            this.channelService.access ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+            this.channelService.accessRun ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
 
                 final List<ArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getContext ().getArtifacts ().values () );
                 sortedArtifacts.sort ( Comparator.comparing ( ArtifactInformation::getName ) );
@@ -336,7 +336,7 @@ public class ChannelController implements InterfaceExtender
 
         try
         {
-            this.channelService.access ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+            this.channelService.accessRun ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
 
                 final Map<String, List<ArtifactInformation>> tree = new HashMap<> ();
 
@@ -372,7 +372,7 @@ public class ChannelController implements InterfaceExtender
     {
         try
         {
-            return this.channelService.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+            return this.channelService.accessCall ( By.id ( channelId ), ReadableChannel.class, channel -> {
                 final ModelAndView result = new ModelAndView ( "channel/validation" );
 
                 result.put ( "channel", channel.getInformation () );
@@ -397,7 +397,7 @@ public class ChannelController implements InterfaceExtender
 
         try
         {
-            this.channelService.access ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+            this.channelService.accessRun ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
                 result.put ( "channel", channel.getInformation () );
             } );
         }
@@ -491,7 +491,7 @@ public class ChannelController implements InterfaceExtender
 
             final String finalName = name;
 
-            this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 channel.getContext ().createArtifact ( file.getInputStream (), finalName, null );
             } );
 
@@ -518,7 +518,7 @@ public class ChannelController implements InterfaceExtender
 
             final String finalName = name;
 
-            this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 channel.getContext ().createArtifact ( file.getInputStream (), finalName, null );
             } );
         }
@@ -727,7 +727,7 @@ public class ChannelController implements InterfaceExtender
     {
         try
         {
-            this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 channel.lock ();
             } );
         }
@@ -744,7 +744,7 @@ public class ChannelController implements InterfaceExtender
     {
         try
         {
-            this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 channel.unlock ();
             } );
         }
@@ -832,13 +832,13 @@ public class ChannelController implements InterfaceExtender
     {
         if ( !result.hasErrors () )
         {
-            this.channelService.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
                 final ChannelDetails newDesc = new ChannelDetails ();
                 newDesc.setDescription ( data.getDescription () );
                 channel.setDescription ( newDesc );
             } );
 
-            this.channelService.access ( By.id ( channelId ), DescriptorAdapter.class, channel -> {
+            this.channelService.accessRun ( By.id ( channelId ), DescriptorAdapter.class, channel -> {
                 channel.setName ( data.getName () );
             } );
 

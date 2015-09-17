@@ -152,7 +152,7 @@ public class AspectContextImpl
 
                 for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
                 {
-                    doStreamed ( art.getId (), path -> {
+                    doStreamedRun ( art.getId (), path -> {
 
                         // run extractors
 
@@ -268,7 +268,7 @@ public class AspectContextImpl
 
                 for ( final ArtifactInformation art : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
                 {
-                    doStreamed ( art.getId (), path -> {
+                    doStreamedRun ( art.getId (), path -> {
 
                         // run extractors
 
@@ -377,7 +377,7 @@ public class AspectContextImpl
     {
         // run generator
 
-        doStreamed ( artifact.getId (), file -> {
+        doStreamedRun ( artifact.getId (), file -> {
             final String generatorId = artifact.getVirtualizerAspectId ();
             final VirtualizerContextImpl ctx = new VirtualizerContextImpl ( generatorId, file, artifact, this.context, this::internalCreateArtifact, ArtifactType.GENERATED );
 
@@ -506,7 +506,7 @@ public class AspectContextImpl
 
         for ( final ArtifactInformation artifact : this.context.getArtifacts ().values ().toArray ( new ArtifactInformation[this.context.getArtifacts ().size ()] ) )
         {
-            doStreamed ( artifact.getId (), tmp -> {
+            doStreamedRun ( artifact.getId (), tmp -> {
                 virtualize ( artifact, tmp, aspects );
             } );
         }
@@ -712,7 +712,7 @@ public class AspectContextImpl
         }
     }
 
-    private <T> T doStreamed ( final String artifactId, final Function<Path, T> operation )
+    private <T> T doStreamedCall ( final String artifactId, final Function<Path, T> operation )
     {
         try
         {
@@ -748,9 +748,9 @@ public class AspectContextImpl
         }
     }
 
-    private void doStreamed ( final String artifactId, final Consumer<Path> consumer )
+    private void doStreamedRun ( final String artifactId, final Consumer<Path> consumer )
     {
-        doStreamed ( artifactId, path -> {
+        doStreamedCall ( artifactId, path -> {
             consumer.accept ( path );
             return null;
         } );

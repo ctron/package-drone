@@ -140,7 +140,7 @@ public class GeneratorController
 
         final String name = String.format ( "%s-%s.feature", data.getId (), data.getVersion () );
 
-        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+        this.service.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
             channel.getContext ().createGeneratorArtifact ( FeatureGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, providedMetaData );
         } );
 
@@ -217,7 +217,7 @@ public class GeneratorController
 
         final String name = String.format ( "%s.category", data.getId () );
 
-        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+        this.service.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
             channel.getContext ().createGeneratorArtifact ( CategoryGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, providedMetaData );
         } );
 
@@ -250,7 +250,7 @@ public class GeneratorController
 
         final String name = file.getSubmittedFileName ();
 
-        this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+        this.service.accessRun ( By.id ( channelId ), ModifiableChannel.class, channel -> {
             channel.getContext ().createGeneratorArtifact ( CategoryXmlGenerator.ID, new ByteArrayInputStream ( new byte[0] ), name, null );
         } );
 

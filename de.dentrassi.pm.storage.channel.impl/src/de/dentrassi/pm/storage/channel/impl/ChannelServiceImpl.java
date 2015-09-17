@@ -405,7 +405,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
 
     @SuppressWarnings ( "unchecked" )
     @Override
-    public <R, T> R access ( final By by, final Class<T> clazz, final ChannelOperation<R, T> operation )
+    public <R, T> R accessCall ( final By by, final Class<T> clazz, final ChannelOperation<R, T> operation )
     {
         if ( ReadableChannel.class.equals ( clazz ) )
         {
@@ -435,7 +435,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
 
     private static <R> R accessRead ( final ChannelEntry channelEntry, final ChannelOperation<R, ReadableChannel> operation )
     {
-        return channelEntry.getChannel ().access ( ctx -> {
+        return channelEntry.getChannel ().accessCall ( ctx -> {
 
             try ( Disposing<AccessContext> wrappedCtx = Disposing.proxy ( AccessContext.class, ctx );
                   Disposing<ReadableChannel> channel = Disposing.proxy ( ReadableChannel.class, new ReadableChannelAdapter ( channelEntry.getId (), wrappedCtx.getTarget () ) ) )
@@ -447,7 +447,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
 
     private static <T, R> R accessModify ( final ChannelEntry channelEntry, final ChannelOperation<R, ModifiableChannel> operation )
     {
-        return channelEntry.getChannel ().modify ( ctx -> {
+        return channelEntry.getChannel ().modifyCall ( ctx -> {
             try ( Disposing<ModifyContext> wrappedCtx = Disposing.proxy ( ModifyContext.class, ctx );
                   Disposing<ModifiableChannel> channel = Disposing.proxy ( ModifiableChannel.class, new ModifiableChannelAdapter ( channelEntry.getId (), wrappedCtx.getTarget () ) ) )
             {

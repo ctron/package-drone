@@ -42,7 +42,7 @@ public class ChannelImportContext extends AbstractImportContext
     @Override
     protected ArtifactInformation performRootImport ( final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData )
     {
-        return this.service.access ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
+        return this.service.accessCall ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
             return channel.getContext ().createArtifact ( stream, name, providedMetaData );
         } );
     }

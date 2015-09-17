@@ -61,7 +61,7 @@ public class DescriptionController implements InterfaceExtender
     {
         try
         {
-            return this.service.access ( By.id ( channelId ), ReadableChannel.class, channel -> {
+            return this.service.accessCall ( By.id ( channelId ), ReadableChannel.class, channel -> {
                 final Map<String, Object> model = new HashMap<> ( 1 );
                 model.put ( "channel", channel.getInformation () );
                 return new ModelAndView ( "description", model );
@@ -78,7 +78,7 @@ public class DescriptionController implements InterfaceExtender
     {
         try
         {
-            return this.service.access ( By.id ( channelId ), ModifiableChannel.class, channel -> {
+            return this.service.accessCall ( By.id ( channelId ), ModifiableChannel.class, channel -> {
 
                 channel.applyMetaData ( Collections.singletonMap ( KEY_DESCRIPTION, data ) );
 

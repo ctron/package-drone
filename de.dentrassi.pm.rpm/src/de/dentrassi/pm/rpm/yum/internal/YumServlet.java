@@ -93,7 +93,7 @@ public class YumServlet extends AbstractChannelServiceServlet
 
         try
         {
-            getService ( request ).access ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
+            getService ( request ).accessRun ( By.nameOrId ( channelId ), ReadableChannel.class, channel -> {
                 if ( handleChannel ( channel, remPath, request, response ) )
                 {
                     return;

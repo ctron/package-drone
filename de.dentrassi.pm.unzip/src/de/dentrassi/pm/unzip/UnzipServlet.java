@@ -164,7 +164,7 @@ public class UnzipServlet extends AbstractChannelServiceServlet
 
         try
         {
-            getService ( request ).access ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
+            getService ( request ).accessRun ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
 
                 final IOConsumer<MavenVersionedArtifact> consumer = ( artifact ) -> {
                     streamArtifactEntry ( request, response, channel, artifact.getArtifact (), path );
@@ -217,7 +217,7 @@ public class UnzipServlet extends AbstractChannelServiceServlet
 
         try
         {
-            service.access ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
                 List<ArtifactInformation> arts = new ArrayList<> ( channel.getArtifacts () );
 
                 if ( filter != null )
@@ -493,7 +493,7 @@ public class UnzipServlet extends AbstractChannelServiceServlet
 
         try
         {
-            getService ( request ).access ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
+            getService ( request ).accessRun ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
 
                 final List<ArtifactInformation> arts = channel.getArtifacts ().stream ().filter ( ai -> ai.getName ().equals ( name ) ).collect ( toList () );
 
@@ -535,7 +535,7 @@ public class UnzipServlet extends AbstractChannelServiceServlet
 
         try
         {
-            getService ( request ).access ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
+            getService ( request ).accessRun ( By.nameOrId ( channelIdOrName ), ReadableChannel.class, channel -> {
 
                 final String artifactId = path.pop ();
                 final Optional<ChannelArtifactInformation> artifact = channel.getArtifact ( artifactId );

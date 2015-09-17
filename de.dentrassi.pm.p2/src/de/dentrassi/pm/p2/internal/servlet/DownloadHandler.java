@@ -68,7 +68,7 @@ public class DownloadHandler implements Handler
     {
         logger.debug ( "Looking for bundle: {}/{}", this.id, this.version );
 
-        this.service.access ( By.id ( this.channelId ), ReadableChannel.class, channel -> {
+        this.service.accessRun ( By.id ( this.channelId ), ReadableChannel.class, channel -> {
 
             // TODO: speed up search
             for ( final ArtifactInformation a : channel.getContext ().getArtifacts ().values () )

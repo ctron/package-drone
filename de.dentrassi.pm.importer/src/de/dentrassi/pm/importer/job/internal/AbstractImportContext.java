@@ -295,7 +295,7 @@ public abstract class AbstractImportContext implements ImportContext, AutoClosea
                     }
                     else
                     {
-                        art = this.service.access ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
+                        art = this.service.accessCall ( By.id ( this.channelId ), ModifiableChannel.class, channel -> {
                             return channel.getContext ().createArtifact ( parent.getId (), entry.openStream (), entry.getName (), entry.getProvidedMetaData () );
                         } );
                     }
