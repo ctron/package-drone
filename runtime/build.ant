@@ -179,18 +179,12 @@
     <target name="unpack">
         <mkdir dir="unpack/jetty" />
         <mkdir dir="unpack/equinox" />
-        <mkdir dir="unpack/gemini-dbaccess" />
-        <mkdir dir="unpack/gemini-jpa" />
-        <mkdir dir="unpack/eclipselink" />
 
     	<untar compression="gzip" src="download/jetty-distribution.tar.gz" dest="unpack/jetty">
             <cutdirsmapper dirs="1" />
         </untar>
         
     	<unzip src="download/equinox-SDK.zip" dest="unpack/equinox" />
-        <unzip src="download/gemini-dbaccess.zip" dest="unpack/gemini-dbaccess" />
-        <unzip src="download/gemini-jpa.zip" dest="unpack/gemini-jpa" />
-        <unzip src="download/eclipselink-plugins.zip" dest="unpack/eclipselink" />
     	<unzip src="download/aether-bin.zip" dest="unpack/aether" />
     </target>
 
@@ -260,28 +254,6 @@
             	
             </fileset>
 
-            <fileset dir="unpack/gemini-dbaccess/plugins">
-                <include name="osgi.enterprise_*.jar"/>
-            	<include name="org.eclipse.gemini.dbaccess.mysql_*"/>
-            	<include name="org.eclipse.gemini.dbaccess.util_*"/>
-        	</fileset>
-            
-            <fileset dir="unpack/gemini-jpa">
-                <include name="org.eclipse.gemini.jpa_*.jar"/>
-        	</fileset>
-            
-            <fileset dir="unpack/eclipselink">
-
-            	<include name="javax.persistence_2*.jar"/>
-                
-                <include name="org.eclipse.persistence.antlr_*.jar"/>
-                <include name="org.eclipse.persistence.asm_*.jar"/>
-                <include name="org.eclipse.persistence.core_*.jar"/>
-                <include name="org.eclipse.persistence.jpa_*.jar"/>
-                <include name="org.eclipse.persistence.jpa.jpql_*.jar"/>
-
-            </fileset>
-        	
         	<fileset dir="unpack/aether">
         	    <exclude name="**/*-wagon-*.jar"/>
         	    <include name="*/*.jar"/>
