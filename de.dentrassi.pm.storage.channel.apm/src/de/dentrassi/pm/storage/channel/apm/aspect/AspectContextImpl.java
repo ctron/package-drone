@@ -706,6 +706,11 @@ public class AspectContextImpl
 
     private void mergeNamespaceMetaData ( final ChannelAspect aspect, final Map<String, String> md, final Map<MetaKey, String> result )
     {
+        if ( md == null )
+        {
+            return;
+        }
+
         for ( final Map.Entry<String, String> entry : md.entrySet () )
         {
             result.put ( new MetaKey ( aspect.getId (), entry.getKey () ), entry.getValue () );
