@@ -42,7 +42,7 @@ public class RpmExtractor implements Extractor
     private final static Logger logger = LoggerFactory.getLogger ( RpmExtractor.class );
 
     @Override
-    public void extractMetaData ( final Context context, final Map<String, String> metadata ) throws Exception
+    public void extractMetaData ( final Context context, final Map<String, String> metadata )
     {
         final Path path = context.getPath ();
 
@@ -62,6 +62,10 @@ public class RpmExtractor implements Extractor
             metadata.put ( "arch", asString ( in.getPayloadHeader ().getTag ( RpmTag.ARCH ) ) );
 
             metadata.put ( Constants.KEY_INFO.getKey (), info.toJson () );
+        }
+        catch ( final Exception e )
+        {
+            // ignore ... not an RPM file
         }
     }
 
@@ -148,6 +152,7 @@ public class RpmExtractor implements Extractor
                     result.getDirectories ().add ( name );
                 }
             }
+            cpio.close ();
 
             return result;
         }
