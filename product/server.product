@@ -84,7 +84,9 @@
       <plugin id="de.dentrassi.pm.signing" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.signing.pgp" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.signing.pgp.web" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.storage.channel" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.channel.apm" autoStart="true" startLevel="0" />
+      <plugin id="de.dentrassi.pm.storage.channel.impl" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.storage.web.description" autoStart="true" startLevel="0" />
       <plugin id="de.dentrassi.pm.system" autoStart="true" startLevel="0" />
