@@ -1,5 +1,0 @@
-eclipse.preferences.version=1
-entitygen.DEFAULT_PACKAGE=model
-org.eclipse.jpt.core.platform=eclipselink2_5
-org.eclipse.jpt.jpa.core.discoverAnnotatedClasses=false
-org.eclipse.jpt.jpa.core.metamodelSourceFolderName=jpasrc
