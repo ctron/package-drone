@@ -142,8 +142,6 @@
         	<orbitGet bundle="org.apache.httpcomponents.httpclient" version="4.3.6" qualifier="v201411290715" />
         	<orbitGet bundle="org.apache.commons.codec" version="1.6.0" qualifier="v201305230611" />
         	
-        	<orbitGet bundle="org.apache.ant" version="1.9.2" qualifier="v201404171502"/>
-        	
         	<!-- pax web -->
         	
         	<mavenGet group="org/ops4j/pax/web" artifact="pax-web-api" version="4.1.2"/>
