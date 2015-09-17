@@ -1,1 +1,0 @@
-INSERT INTO PROPERTIES ( "KEY", "VALUE" ) VALUES ( 'foo', 'bar' );

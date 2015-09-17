@@ -58,13 +58,6 @@
          unpack="false"/>
 
    <plugin
-         id="com.mysql.jdbc"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="de.dentrassi.pm.aspect.common"
          download-size="0"
          install-size="0"
@@ -114,13 +107,6 @@
 
    <plugin
          id="javax.activation"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="javax.persistence"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -324,27 +310,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.persistence.antlr"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.persistence.asm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.persistence.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.jboss.logging.jboss-logging"
          download-size="0"
          install-size="0"
@@ -388,13 +353,6 @@
 
    <plugin
          id="org.slf4j.jul"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="osgi.enterprise"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -518,13 +476,6 @@
 
    <plugin
          id="de.dentrassi.osgi.converter"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="de.dentrassi.pm.database"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -834,13 +785,6 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
-   <plugin
-         id="org.postgresql.jdbc41"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="de.dentrassi.pm"

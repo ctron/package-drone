@@ -41,8 +41,6 @@ import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.common.web.CommonController;
 import de.dentrassi.pm.common.web.InterfaceExtender;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
-import de.dentrassi.pm.database.Configurator;
-import de.dentrassi.pm.database.DatabaseSetup;
 import de.dentrassi.pm.sec.UserInformation;
 import de.dentrassi.pm.sec.service.LoginException;
 import de.dentrassi.pm.sec.service.SecurityService;
@@ -100,22 +98,6 @@ public class BackupController implements InterfaceExtender
     public void provision ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         provision ( request, response, null );
-    }
-
-    @RequestMapping ( value = "/provisionWithSchema", method = RequestMethod.POST )
-    @Secured ( false )
-    @HttpConstraint ( PERMIT )
-    public void provisionWithSchema ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
-    {
-        provision ( request, response, () -> {
-            try ( Configurator cfg = Configurator.create () )
-            {
-                try ( DatabaseSetup setup = new DatabaseSetup ( cfg.getDatabaseSettings () ) )
-                {
-                    setup.performUpgrade ();
-                }
-            }
-        } );
     }
 
     protected void provision ( final HttpServletRequest request, final HttpServletResponse response, final Runnable afterwards ) throws IOException

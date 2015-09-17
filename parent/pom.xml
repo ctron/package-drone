@@ -116,8 +116,6 @@
 		<module>../de.dentrassi.pm.core.apm</module>
 		<module>../de.dentrassi.pm.core.web</module>
 
-		<module>../de.dentrassi.pm.database</module>
-
 		<module>../de.dentrassi.pm.deb</module>
 		<module>../de.dentrassi.pm.deb.web</module>
 
