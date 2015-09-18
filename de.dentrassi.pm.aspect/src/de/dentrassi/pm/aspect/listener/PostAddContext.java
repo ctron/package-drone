@@ -12,6 +12,7 @@ package de.dentrassi.pm.aspect.listener;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
@@ -22,5 +23,5 @@ public interface PostAddContext
 
     public Map<MetaKey, String> getChannelMetaData ();
 
-    public void deleteArtifact ( String artifactId );
+    public void deleteArtifacts ( Set<String> artifactIds );
 }

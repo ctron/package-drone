@@ -111,11 +111,11 @@
       <plugin id="org.eclipse.jetty.util" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.jetty.webapp" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.jetty.xml" autoStart="true" startLevel="0" />
-      <plugin id="org.ops4j.pax.web.pax-web-api" autoStart="true" startLevel="0" />
-      <plugin id="org.ops4j.pax.web.pax-web-extender-whiteboard" autoStart="true" startLevel="0" />
-      <plugin id="org.ops4j.pax.web.pax-web-jetty" autoStart="true" startLevel="0" />
-      <plugin id="org.ops4j.pax.web.pax-web-runtime" autoStart="true" startLevel="0" />
-      <plugin id="org.ops4j.pax.web.pax-web-spi" autoStart="true" startLevel="0" />
+      <plugin id="org.ops4j.pax.web.pax-web-api" autoStart="true" startLevel="5" />
+      <plugin id="org.ops4j.pax.web.pax-web-extender-whiteboard" autoStart="true" startLevel="5" />
+      <plugin id="org.ops4j.pax.web.pax-web-jetty" autoStart="true" startLevel="5" />
+      <plugin id="org.ops4j.pax.web.pax-web-runtime" autoStart="true" startLevel="5" />
+      <plugin id="org.ops4j.pax.web.pax-web-spi" autoStart="true" startLevel="5" />
       <property name="eclipse.ignoreApp" value="true" />
       <property name="logback.configurationFile" value="platform:/base/logback.xml" />
       <property name="osgi.noShutdown" value="true" />

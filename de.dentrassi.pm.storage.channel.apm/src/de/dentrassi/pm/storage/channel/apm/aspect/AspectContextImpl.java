@@ -46,6 +46,7 @@ import de.dentrassi.pm.aspect.ChannelAspect;
 import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.aspect.aggregate.AggregationContext;
 import de.dentrassi.pm.aspect.extract.Extractor;
+import de.dentrassi.pm.aspect.listener.PostAddContext;
 import de.dentrassi.pm.common.ChannelAspectInformation;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.common.Severity;
@@ -74,6 +75,8 @@ public class AspectContextImpl
 
     private final Guard aggregation;
 
+    private final Guard postAdd;
+
     private final RegenerationTracker tracker;
 
     public AspectContextImpl ( final AspectableContext context, final ChannelAspectProcessor processor )
@@ -83,12 +86,57 @@ public class AspectContextImpl
         this.model = context.getAspectModel ();
 
         this.aggregation = new Guard ( this::runAggregators );
+        this.postAdd = new Guard ( this::runPostAdd );
         this.tracker = new RegenerationTracker ( this::runRegeneration );
     }
 
     public SortedMap<String, String> getAspectStates ()
     {
         return this.model.getAspects ();
+    }
+
+    protected void runPostAdd ()
+    {
+        logger.debug ( "Running post add" );
+        Profile.run ( this, "runPostAdd", () -> {
+
+            this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelListener, ( aspect, listener ) -> {
+
+                logger.trace ( "\tRunning listener: {}", aspect.getId () );
+
+                final PostAddContext ctx = new PostAddContext () {
+
+                    @Override
+                    public Collection<ArtifactInformation> getChannelArtifacts ()
+                    {
+                        return AspectContextImpl.this.context.getArtifacts ().values ();
+                    }
+
+                    @Override
+                    public Map<MetaKey, String> getChannelMetaData ()
+                    {
+                        return AspectContextImpl.this.context.getChannelProvidedMetaData ();
+                    }
+
+                    @Override
+                    public void deleteArtifacts ( final Set<String> artifactIds )
+                    {
+                        AspectContextImpl.this.deleteArtifacts ( artifactIds );
+                    }
+                };
+
+                try
+                {
+                    listener.artifactAdded ( ctx );
+                }
+                catch ( final Exception e )
+                {
+                    throw new RuntimeException ( "Failed to run post add listener", e );
+                }
+
+            } );
+
+        } );
     }
 
     protected void runAggregators ()
@@ -299,11 +347,16 @@ public class AspectContextImpl
     {
         return this.aggregation.guarded ( () -> {
 
-            return this.tracker.run ( () -> {
+            return this.postAdd.guarded ( () -> {
 
-                return internalCreateArtifact ( parentId, stream, name, providedMetaData, ArtifactType.STORED, null );
+                return this.tracker.run ( () -> {
 
-                // -> flush regeneration
+                    return internalCreateArtifact ( parentId, stream, name, providedMetaData, ArtifactType.STORED, null );
+
+                    // -> flush regeneration
+                } );
+
+                // -> run post add
             } );
 
             // --> aggregators run after guard
@@ -314,22 +367,25 @@ public class AspectContextImpl
     {
         return this.aggregation.guarded ( () -> {
 
-            return this.tracker.run ( () -> {
+            return this.postAdd.guarded ( () -> {
 
-                final ArtifactInformation result = internalCreateArtifact ( null, stream, name, providedMetaData, ArtifactType.GENERATOR, generatorId );
+                return this.tracker.run ( () -> {
 
-                // run generator
+                    final ArtifactInformation result = internalCreateArtifact ( null, stream, name, providedMetaData, ArtifactType.GENERATOR, generatorId );
 
-                generate ( result );
+                    // run generator
 
-                // --> flush regeneration
+                    generate ( result );
 
-                return result;
+                    return result;
 
+                    // --> flush regeneration
+                } );
+
+                // -> run post add
             } );
 
             // --> aggregators run after guard
-
         } );
     }
 

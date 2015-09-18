@@ -17,8 +17,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +59,10 @@ public class CleanupListener implements ChannelListener
 
         final SortedMap<ResultKey, List<ResultEntry>> result = process ( cfg, artifacts );
 
-        for ( final List<ResultEntry> list : result.values () )
-        {
-            for ( final ResultEntry entry : list )
-            {
-                if ( entry.getAction () == Action.DELETE )
-                {
-                    final String id = entry.getArtifact ().getId ();
-                    logger.debug ( "Deleting: {}", id );
-                    context.deleteArtifact ( id );
-                }
-            }
-        }
+        final Set<String> deleteSet = result.values ().stream ().flatMap ( list -> list.stream () ).filter ( entry -> entry.getAction () == Action.DELETE ).map ( entry -> entry.getArtifact ().getId () ).collect ( Collectors.toSet () );
+
+        logger.debug ( "Deleting: {}", deleteSet );
+        context.deleteArtifacts ( deleteSet );
     }
 
     static SortedMap<ResultKey, List<ResultEntry>> process ( final CleanupConfiguration configuration, final Map<List<String>, LinkedList<ArtifactInformation>> aggregation )
