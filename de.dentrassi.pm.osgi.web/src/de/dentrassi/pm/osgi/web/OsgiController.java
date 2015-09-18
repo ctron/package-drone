@@ -32,8 +32,8 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.osgi.bundle.BundleInformation;
 import de.dentrassi.pm.osgi.feature.FeatureInformation;
-import de.dentrassi.pm.storage.Channel;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.web.breadcrumbs.Breadcrumbs;
@@ -55,14 +55,14 @@ public class OsgiController implements InterfaceExtender
     @Override
     public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
-            return getChannelViews ( (Channel)object );
+            return getChannelViews ( (ChannelInformation)object );
         }
         return null;
     }
 
-    private List<MenuEntry> getChannelViews ( final Channel channel )
+    private List<MenuEntry> getChannelViews ( final ChannelInformation channel )
     {
         if ( !channel.hasAspect ( "osgi" ) )
         {

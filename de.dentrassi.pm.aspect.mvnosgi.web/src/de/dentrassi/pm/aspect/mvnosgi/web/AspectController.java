@@ -37,7 +37,7 @@ import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
@@ -110,12 +110,12 @@ public class AspectController implements InterfaceExtender
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
-        if ( ! ( object instanceof Channel ) )
+        if ( ! ( object instanceof ChannelInformation ) )
         {
             return null;
         }
 
-        final Channel channel = (Channel)object;
+        final ChannelInformation channel = (ChannelInformation)object;
         if ( !channel.hasAspect ( "mvnosgi" ) )
         {
             return null;
