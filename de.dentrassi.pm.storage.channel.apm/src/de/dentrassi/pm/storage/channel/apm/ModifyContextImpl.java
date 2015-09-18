@@ -423,16 +423,24 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         this.model.removeArtifact ( id );
         final ArtifactInformation ai = this.modArtifacts.remove ( id );
 
+        if ( ai == null )
+        {
+            return result;
+        }
+
         // remove children as well
 
-        for ( final String childId : ai.getChildIds () )
+        if ( ai.getChildIds () != null )
         {
-            internalDeleteArtifact ( childId );
+            for ( final String childId : ai.getChildIds () )
+            {
+                internalDeleteArtifact ( childId );
+            }
         }
 
         // remove from parent's child list
 
-        if ( ai != null && ai.getParentId () != null )
+        if ( ai.getParentId () != null )
         {
             final ArtifactModel parent = this.model.getArtifacts ().get ( ai.getParentId () );
             if ( parent != null )
@@ -574,6 +582,11 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         // clear meta data cache
 
         this.metaDataCache = null;
+
+        // clear validation messages
+
+        this.model.getValidationMessages ().clear ();
+        this.state.setValidationMessages ( Collections.emptyList () );
 
         // refresh number of artifacts
 
