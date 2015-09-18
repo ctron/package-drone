@@ -48,7 +48,7 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.Secured;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.signing.SigningService;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ModifiableChannel;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
@@ -73,10 +73,10 @@ public class ConfigController implements InterfaceExtender
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
             final List<MenuEntry> result = new LinkedList<> ();
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
 
             if ( channel.hasAspect ( AptChannelAspectFactory.ID ) )
             {
@@ -95,11 +95,11 @@ public class ConfigController implements InterfaceExtender
     @Override
     public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
             final List<MenuEntry> result = new LinkedList<> ();
 
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
 
             if ( channel.hasAspect ( AptChannelAspectFactory.ID ) )
             {
@@ -160,7 +160,7 @@ public class ConfigController implements InterfaceExtender
 
             final Map<String, Object> model = new HashMap<> ();
 
-            model.put ( "channel", channel );
+            model.put ( "channel", channel.getInformation () );
             model.put ( "signingServices", getSigningServices () );
 
             final ChannelConfiguration dist = new ChannelConfiguration ();
