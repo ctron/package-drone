@@ -10,6 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.maven.web;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +30,7 @@ import de.dentrassi.pm.common.web.Modifier;
 import de.dentrassi.pm.common.web.menu.MenuEntry;
 import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
-import de.dentrassi.pm.storage.Channel;
+import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.web.utils.Channels;
@@ -58,11 +59,11 @@ public class MavenController implements InterfaceExtender
     @Override
     public List<MenuEntry> getActions ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
             final List<MenuEntry> result = new LinkedList<> ();
 
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
             if ( channel.hasAspect ( "maven.repo" ) )
             {
                 result.add ( new MenuEntry ( "Maven Repository", 20_000, new LinkTarget ( "/maven/" + channel.getId () ), Modifier.LINK, null ) );
@@ -77,11 +78,11 @@ public class MavenController implements InterfaceExtender
     @Override
     public List<MenuEntry> getViews ( final HttpServletRequest request, final Object object )
     {
-        if ( object instanceof Channel )
+        if ( object instanceof ChannelInformation )
         {
             final List<MenuEntry> result = new LinkedList<> ();
 
-            final Channel channel = (Channel)object;
+            final ChannelInformation channel = (ChannelInformation)object;
             final Map<String, String> model = new HashMap<> ( 1 );
             model.put ( "channelId", channel.getId () );
             result.add ( new MenuEntry ( "Help", Integer.MAX_VALUE, "Maven", 2_000, LinkTarget.createFromController ( MavenController.class, "help" ).expand ( model ), Modifier.LINK, "info-sign" ) );
@@ -101,6 +102,7 @@ public class MavenController implements InterfaceExtender
 
             model.put ( "mavenRepo", channel.hasAspect ( "maven.repo" ) );
             model.put ( "channel", channel.getInformation () );
+            model.put ( "deployGroups", this.service.getChannelDeployGroups ( channelId ).orElse ( Collections.emptyList () ) );
             model.put ( "sitePrefix", this.sitePrefixService.getSitePrefix () );
 
             return new ModelAndView ( "helpMaven", model );

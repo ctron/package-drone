@@ -29,7 +29,7 @@ pageContext.setAttribute ( "manager", request.isUserInRole ( "MANAGER" ) );
                 <p>Pushing artifacts to this channel using Maven.</p>
                 
                 <c:choose>
-                    <c:when test="${empty channel.deployGroups }">
+                    <c:when test="${empty deployGroups }">
                         <div class="alert alert-info">
                             <strong>Not configured!</strong> Channel is not configured for receiving artifacts.
                             <c:if test="${manager}">
@@ -87,7 +87,7 @@ Deploy keys are assigned to groups and groups get assigned to channels, for easi
 	The following deploy keys are configured for this channel:
 	</p>
 	<ul>
-	<c:forEach var="dg" items="${channel.deployGroups }">
+	<c:forEach var="dg" items="${deployGroups }">
 	    <c:forEach var="dk" items="${dg.keys }">
 	        <li><code>${fn:escapeXml(dk.key) }</code></li>
 	    </c:forEach>
