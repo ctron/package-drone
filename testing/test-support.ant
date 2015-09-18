@@ -28,93 +28,14 @@
 	<!-- ================================= 
           target: before
          ================================= -->
-    <target name="before" depends="before.mysql,before.postgres">
-    </target>
-	
-    <!-- ================================= 
-          target: before.mysql
-         ================================= -->
-    <target name="before.mysql" unless="use.postgres">
-    	<echo message="Create database: ${mysql.test.database}"/>
-        <exec executable="mysqladmin" failifexecutionfails="true" failonerror="true">
-            <arg value="-u${mysql.admin.user}"/>
-            <arg value="-p${mysql.admin.password}"/>
-            <arg value="create"/>
-            <arg value="${mysql.test.database}"/>
-        </exec>
-    	<echo message="Create user: ${mysql.test.user}"/>
-        <exec executable="mysql" failifexecutionfails="true" failonerror="true" inputstring="CREATE USER '${mysql.test.user}'@'localhost' IDENTIFIED BY '${mysql.test.password}'; GRANT ALL ON ${mysql.test.database}.* TO '${mysql.test.user}'@'localhost';">
-            <arg value="-u${mysql.admin.user}"/>
-            <arg value="-p${mysql.admin.password}"/>
-        </exec>
-    </target>
-	
-    <!-- ================================= 
-          target: before.postgres
-         ================================= -->
-    <target name="before.postgres" if="use.postgres">
-        <echo message="Create user: ${mysql.test.user}"/>
-        <exec executable="psql" failifexecutionfails="true" failonerror="true">
-            <env key="PGPASSWORD" value="${postgres.admin.password}"/>
-            <arg value="-hlocalhost"/>
-            <arg value="-U${postgres.admin.user}"/>
-            <arg value="-w"/>
-            <arg value="-c"/>
-            <arg value="CREATE USER ${mysql.test.user} WITH PASSWORD '${mysql.test.password}'"/>
-        </exec>
-        <echo message="Create database: ${mysql.test.database}"/>
-        <exec executable="createdb" failifexecutionfails="true" failonerror="true">
-        	<env key="PGPASSWORD" value="${postgres.admin.password}"/>
-            <arg value="-hlocalhost"/>
-            <arg value="-U${postgres.admin.user}"/>
-        	<arg value="-w"/>
-        	<arg value="-O${mysql.test.user}"/>
-            <arg value="${mysql.test.database}"/>
-        </exec>
-    </target>
+    <target name="before" depends="">
+    	<delete dir="${drone.storage.base}" />
+	</target>
 	
     <!-- ================================= 
          target: after
          ================================= -->
-    <target name="after" depends="after.mysql,after.postgres">
+    <target name="after" depends="">
     </target>
 	
-    <!-- ================================= 
-          target: after.mysql
-         ================================= -->
-    <target name="after.mysql" unless="use.postgres">
-        <exec executable="mysqladmin">
-            <arg value="-u${mysql.admin.user}"/>
-            <arg value="-p${mysql.admin.password}"/>
-            <arg value="-f"/> <!-- force -->
-            <arg value="drop"/>
-            <arg value="${mysql.test.database}"/>
-       </exec>
-        <exec executable="mysql" inputstring="DROP USER '${mysql.test.user}'@'localhost';">
-            <arg value="-u${mysql.admin.user}"/>
-            <arg value="-p${mysql.admin.password}"/>
-        </exec>
-    </target>
-	
-    <!-- ================================= 
-          target: after.postgres
-         ================================= -->
-    <target name="after.postgres" if="use.postgres">
-        <exec executable="dropdb">
-        	<env key="PGPASSWORD" value="${postgres.admin.password}"/>
-            <arg value="-hlocalhost"/>
-            <arg value="-U${postgres.admin.user}"/>
-        	<arg value="-w"/>
-            <arg value="${mysql.test.database}"/>
-       </exec>
-       <exec executable="psql">
-        	<env key="PGPASSWORD" value="${postgres.admin.password}"/>
-        	<arg value="-hlocalhost"/>
-            <arg value="-U${postgres.admin.user}"/>
-            <arg value="-w"/>
-        	<arg value="-c"/>
-    	    <arg value="DROP USER ${mysql.test.user}"/>
-        </exec>
-    </target>
-
 </project>

@@ -47,6 +47,7 @@ public class UploadTest extends AbstractServerTest
         testUrl ( "/channel/" + channelId + "/help.maven" );
     }
 
+    @Override
     protected void testUrl ( final String suffix ) throws Exception
     {
         final URL url = new URL ( resolve ( suffix ) );
@@ -91,32 +92,6 @@ public class UploadTest extends AbstractServerTest
 
         final List<String> arts = findArtifacts ();
         Assert.assertEquals ( 1, arts.size () );
-
-        final File file = makeStoreFile ( arts.get ( 0 ) );
-
-        System.out.println ( "Looking for: " + file );
-
-        Assert.assertTrue ( file.exists () );
-        Assert.assertTrue ( file.isFile () );
-        Assert.assertTrue ( file.canRead () );
-        Assert.assertEquals ( input.length (), file.length () );
-    }
-
-    private final int LEVEL = 3;
-
-    private File makeStoreFile ( final String id )
-    {
-        final StringBuilder sb = new StringBuilder ();
-
-        File file = new File ( getStoreLocation (), "data" );
-
-        for ( int i = 0; i < this.LEVEL; i++ )
-        {
-            sb.append ( id.charAt ( i ) );
-            file = new File ( file, sb.toString () );
-        }
-
-        return new File ( file, id );
     }
 
     protected List<String> getChannels ()

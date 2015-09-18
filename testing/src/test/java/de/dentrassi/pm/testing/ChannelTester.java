@@ -208,6 +208,7 @@ public class ChannelTester
 
     protected void get ( final String url )
     {
+        System.out.println ( "Getting: " + url );
         this.context.getResolved ( url );
     }
 

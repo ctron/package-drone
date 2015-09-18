@@ -10,12 +10,15 @@
  *******************************************************************************/
 package de.dentrassi.pm.testing;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -32,10 +35,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 @RunWith ( Suite.class )
 @SuiteClasses ( { //
-        SetupTest.class, //
-        MailTest.class, //
-        FileStorageTest.class, //
         UserTest.class, //
+        MailTest.class, //
         UploadTest.class, //
         BasicTest.class, //
         DefaultTest.class, //
@@ -231,6 +232,26 @@ public class TestSuite
         }
 
         System.out.println ( "done!" );
+    }
+
+    public static String loadAdminToken ()
+    {
+        final Properties p = new Properties ();
+        try ( InputStream in = new FileInputStream ( System.getProperty ( "user.home" ) + "/.drone-admin-token" ) )
+        {
+            p.load ( in );
+        }
+        catch ( final IOException e )
+        {
+            throw new RuntimeException ( e );
+        }
+
+        final String result = p.getProperty ( "password" );
+        if ( result == null )
+        {
+            throw new IllegalStateException ( "Unable to find admin token" );
+        }
+        return result;
     }
 
 }

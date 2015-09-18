@@ -72,12 +72,6 @@ public class BasicTest extends AbstractServerTest
     }
 
     @Test
-    public void testSetup () throws Exception
-    {
-        testNotAuth ( "/setup" );
-    }
-
-    @Test
     public void testConfigCoreList () throws Exception
     {
         testNotAuth ( "/config/core/list" );

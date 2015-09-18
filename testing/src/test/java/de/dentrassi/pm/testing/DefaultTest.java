@@ -29,12 +29,6 @@ public class DefaultTest extends AbstractServerTest
     }
 
     @Test
-    public void testConfig ()
-    {
-        simpleTest ( "/config" );
-    }
-
-    @Test
     public void testMailConfig ()
     {
         simpleTest ( "/default.mail/config" );

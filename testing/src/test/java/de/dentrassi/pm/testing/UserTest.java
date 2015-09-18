@@ -25,6 +25,22 @@ public class UserTest extends AbstractServerTest
     private static final String TEST_USER_PASSWORD = "123456";
 
     @Test
+    public void testLogin ()
+    {
+        // Sign in first
+
+        final String adminToken = TestSuite.loadAdminToken ();
+
+        driver.get ( resolve ( "/login" ) );
+        Assert.assertEquals ( resolve ( "/login" ), driver.getCurrentUrl () );
+
+        driver.findElementById ( "email" ).sendKeys ( "admin" );
+        driver.findElementById ( "password" ).sendKeys ( adminToken );
+
+        driver.findElementById ( "command" ).submit ();
+    }
+
+    @Test
     public void testConfig ()
     {
         driver.get ( resolve ( "/user" ) );
