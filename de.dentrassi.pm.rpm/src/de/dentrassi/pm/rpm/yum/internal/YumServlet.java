@@ -120,7 +120,7 @@ public class YumServlet extends AbstractChannelServiceServlet
                 return true;
             }
 
-            request.setAttribute ( "channel", channel );
+            request.setAttribute ( "channel", channel.getInformation () );
             viewJsp ( request, response, "channel.jsp" );
             return true;
         }
@@ -152,7 +152,7 @@ public class YumServlet extends AbstractChannelServiceServlet
                 return true;
             }
 
-            request.setAttribute ( "channel", channel );
+            request.setAttribute ( "channel", channel.getInformation () );
 
             final List<CacheEntryInformation> files = channel.getCacheEntries ().values ().stream ().filter ( ce -> ce.getKey ().getNamespace ().equals ( Constants.YUM_ASPECT_ID ) && ce.getName ().startsWith ( "repodata/" ) ).collect ( Collectors.toList () );
             request.setAttribute ( "entries", files );
