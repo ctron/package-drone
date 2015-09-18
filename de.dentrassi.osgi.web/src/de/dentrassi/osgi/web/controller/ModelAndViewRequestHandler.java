@@ -110,16 +110,18 @@ public class ModelAndViewRequestHandler implements RequestHandler
 
         final Bundle bundle = FrameworkUtil.getBundle ( resourceClazz );
 
-        final String resolvedView = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
-
         final StringBuilder pathBuilder = new StringBuilder ( "/bundle/" );
         pathBuilder.append ( bundle.getBundleId () );
-        if ( !resolvedView.startsWith ( "/" ) )
+
+        final String fullViewName = String.format ( viewResolver.value (), this.modelAndView.getViewName () );
+
+        if ( !fullViewName.startsWith ( "/" ) )
         {
             pathBuilder.append ( '/' );
         }
-        pathBuilder.append ( resolvedView );
-        final String path = pathBuilder.toString ();
+        pathBuilder.append ( fullViewName );
+
+        final String path = normalize ( pathBuilder.toString () );
 
         logger.debug ( "Render: {}", path );
 
@@ -129,6 +131,34 @@ public class ModelAndViewRequestHandler implements RequestHandler
         {
             render ( request, response, path );
         }
+    }
+
+    private static String normalize ( final String string )
+    {
+        final int len = string.length ();
+
+        final StringBuilder sb = new StringBuilder ( len );
+
+        boolean slash = false;
+        for ( int i = 0; i < len; i++ )
+        {
+            final char c = string.charAt ( i );
+            if ( c == '/' )
+            {
+                if ( !slash )
+                {
+                    slash = true;
+                    sb.append ( c );
+                }
+            }
+            else
+            {
+                sb.append ( c );
+                slash = false;
+            }
+        }
+
+        return sb.toString ();
     }
 
     private void render ( final HttpServletRequest request, final HttpServletResponse response, final String path ) throws ServletException, IOException

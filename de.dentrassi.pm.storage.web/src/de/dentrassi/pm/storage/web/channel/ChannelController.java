@@ -470,7 +470,7 @@ public class ChannelController implements InterfaceExtender
     @RequestMapping ( value = "/channel/{channelId}/add", method = RequestMethod.GET )
     public ModelAndView add ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final ModelAndView mav = new ModelAndView ( "channel/add" );
+        final ModelAndView mav = new ModelAndView ( "/channel/add" );
 
         mav.put ( "generators", this.generators.getInformations ().values () );
         mav.put ( "channelId", channelId );
