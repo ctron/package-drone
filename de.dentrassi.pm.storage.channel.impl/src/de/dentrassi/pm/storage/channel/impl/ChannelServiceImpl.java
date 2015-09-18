@@ -30,6 +30,7 @@ import com.google.common.collect.Multimap;
 import de.dentrassi.osgi.utils.Locks.Locked;
 import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.apm.StorageRegistration;
+import de.dentrassi.pm.aspect.ChannelAspectProcessor;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.AspectableChannel;
 import de.dentrassi.pm.storage.channel.ChannelDetails;
@@ -149,6 +150,8 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
      */
     private final Multimap<String, DeployGroup> deployKeysMap = HashMultimap.create (); // FIXME: load from storage
 
+    private ChannelAspectProcessor aspectProcessor;
+
     public ChannelServiceImpl ()
     {
         this.context = FrameworkUtil.getBundle ( ChannelServiceImpl.class ).getBundleContext ();
@@ -210,6 +213,8 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
 
     public void start ()
     {
+        this.aspectProcessor = new ChannelAspectProcessor ( FrameworkUtil.getBundle ( ChannelService.class ).getBundleContext () );
+
         this.handle = this.manager.registerModel ( 1_000, KEY_STORAGE, new ChannelServiceModelProvider () );
 
         this.manager.accessRun ( KEY_STORAGE, ChannelServiceAccess.class, ( model ) -> updateDeployGroupCache ( model ) );
@@ -231,6 +236,12 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         {
             this.handle.unregister ();
             this.handle = null;
+        }
+
+        if ( this.aspectProcessor != null )
+        {
+            this.aspectProcessor.close ();
+            this.aspectProcessor = null;
         }
     }
 
@@ -445,13 +456,13 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
         } , localId -> makeMappedId ( channelEntry.getProvider ().getId (), localId ) );
     }
 
-    private static <T, R> R accessModify ( final ChannelEntry channelEntry, final ChannelOperation<R, ModifiableChannel> operation )
+    private <T, R> R accessModify ( final ChannelEntry channelEntry, final ChannelOperation<R, ModifiableChannel> operation )
     {
         return channelEntry.getChannel ().modifyCall ( ctx -> {
             try ( Disposing<ModifyContext> wrappedCtx = Disposing.proxy ( ModifyContext.class, ctx );
-                  Disposing<ModifiableChannel> channel = Disposing.proxy ( ModifiableChannel.class, new ModifiableChannelAdapter ( channelEntry.getId (), wrappedCtx.getTarget () ) ) )
+                  Disposing<ModifiableChannel> channel = Disposing.proxy ( ModifiableChannel.class, new ModifiableChannelAdapter ( channelEntry.getId (), wrappedCtx.getTarget (), this.aspectProcessor ) ) )
             {
-                return operation.process ( ModifiableChannel.class.cast ( new ModifiableChannelAdapter ( channelEntry.getId (), ctx ) ) );
+                return operation.process ( channel.getTarget () );
             }
         } , localId -> makeMappedId ( channelEntry.getProvider ().getId (), localId ) );
     }

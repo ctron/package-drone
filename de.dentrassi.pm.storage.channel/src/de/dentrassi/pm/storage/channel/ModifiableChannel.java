@@ -33,13 +33,6 @@ public interface ModifiableChannel extends ReadableChannel, AspectableChannel
     }
 
     @Override
-    public default void addAspects ( final boolean withDependencies, final String... aspectIds )
-    {
-        // FIXME: with dependencies
-        getContext ().addAspects ( new HashSet<> ( Arrays.asList ( aspectIds ) ) );
-    }
-
-    @Override
     public default void removeAspects ( final String... aspectIds )
     {
         getContext ().removeAspects ( new HashSet<> ( Arrays.asList ( aspectIds ) ) );
