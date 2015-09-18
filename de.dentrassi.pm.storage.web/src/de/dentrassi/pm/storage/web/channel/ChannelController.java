@@ -613,7 +613,7 @@ public class ChannelController implements InterfaceExtender
             final String exampleKey;
             if ( request.isUserInRole ( "MANAGER" ) )
             {
-                exampleKey = this.channelService.getChannelDeployKeys ( channel.getId ().getId () ).orElse ( Collections.emptyList () ).stream ().map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
+                exampleKey = this.channelService.getChannelDeployKeys ( By.id ( channel.getId ().getId () ) ).orElse ( Collections.emptyList () ).stream ().map ( DeployKey::getKey ).findFirst ().orElse ( DEFAULT_EXAMPLE_KEY );
             }
             else
             {

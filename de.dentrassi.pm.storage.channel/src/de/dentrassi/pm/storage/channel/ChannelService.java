@@ -127,17 +127,17 @@ public interface ChannelService
 
     public void deleteMapping ( String id, String name );
 
-    public default Optional<Collection<DeployKey>> getChannelDeployKeys ( final String channelId )
+    public default Optional<Collection<DeployKey>> getChannelDeployKeys ( final By by )
     {
-        return getChannelDeployGroups ( channelId ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).collect ( toList () ) );
+        return getChannelDeployGroups ( by ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).collect ( toList () ) );
     }
 
-    public default Optional<Set<String>> getChannelDeployKeyStrings ( final String channelId )
+    public default Optional<Set<String>> getChannelDeployKeyStrings ( final By by )
     {
-        return getChannelDeployGroups ( channelId ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).map ( DeployKey::getKey ).collect ( toSet () ) );
+        return getChannelDeployGroups ( by ).map ( groups -> groups.stream ().flatMap ( group -> group.getKeys ().stream () ).map ( DeployKey::getKey ).collect ( toSet () ) );
     }
 
-    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( String channelId );
+    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( By by );
 
     public default boolean streamArtifact ( final String channelId, final String artifactId, final ArtifactReceiver receiver )
     {

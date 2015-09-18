@@ -252,19 +252,19 @@ public class MavenServlet extends AbstractChannelServiceServlet
     private void processPut ( final HttpServletRequest request, final HttpServletResponse response, final ChannelService service ) throws Exception
     {
         final String[] toks = request.getPathInfo ().split ( "/+" );
-        final String channelId = toks[1];
+        final String channelNameOrId = toks[1];
         final String artifactName = toks[toks.length - 1];
 
-        logger.debug ( "Channel: {}, Artifact: {}", channelId, artifactName );
+        logger.debug ( "Channel: {}, Artifact: {}", channelNameOrId, artifactName );
 
-        if ( !authenticate ( channelId, request, response ) )
+        if ( !authenticate ( By.nameOrId ( channelNameOrId ), request, response ) )
         {
             return;
         }
 
         try
         {
-            service.accessRun ( By.nameOrId ( channelId ), ModifiableChannel.class, channel -> {
+            service.accessRun ( By.nameOrId ( channelNameOrId ), ModifiableChannel.class, channel -> {
 
                 if ( isUpload ( toks, artifactName ) )
                 {
@@ -289,7 +289,7 @@ public class MavenServlet extends AbstractChannelServiceServlet
         catch ( final ChannelNotFoundException e )
         {
             response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
-            response.getWriter ().format ( "Channel %s not found", channelId );
+            response.getWriter ().format ( "Channel %s not found", channelNameOrId );
             return;
         }
 

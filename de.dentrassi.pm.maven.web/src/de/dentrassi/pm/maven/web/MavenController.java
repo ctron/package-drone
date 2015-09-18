@@ -32,6 +32,7 @@ import de.dentrassi.pm.sec.web.controller.HttpContraintControllerInterceptor;
 import de.dentrassi.pm.sec.web.controller.SecuredControllerInterceptor;
 import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
 import de.dentrassi.pm.storage.channel.ReadableChannel;
 import de.dentrassi.pm.storage.web.utils.Channels;
 import de.dentrassi.pm.system.SitePrefixService;
@@ -102,7 +103,7 @@ public class MavenController implements InterfaceExtender
 
             model.put ( "mavenRepo", channel.hasAspect ( "maven.repo" ) );
             model.put ( "channel", channel.getInformation () );
-            model.put ( "deployGroups", this.service.getChannelDeployGroups ( channelId ).orElse ( Collections.emptyList () ) );
+            model.put ( "deployGroups", this.service.getChannelDeployGroups ( By.id ( channelId ) ).orElse ( Collections.emptyList () ) );
             model.put ( "sitePrefix", this.sitePrefixService.getSitePrefix () );
 
             return new ModelAndView ( "helpMaven", model );

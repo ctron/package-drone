@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.util.BasicAuthentication;
 import de.dentrassi.pm.storage.channel.ChannelService;
+import de.dentrassi.pm.storage.channel.ChannelService.By;
 
 /**
  * This is an abstract implementation for implementing servlets which require
@@ -107,8 +108,8 @@ public abstract class AbstractChannelServiceServlet extends HttpServlet
      * is sent back and the {@link HttpServletResponse} will be committed.
      * </p>
      *
-     * @param channelId
-     *            the id of the channel to act on
+     * @param by
+     *            the channel locator
      * @param request
      *            the request
      * @param response
@@ -118,14 +119,14 @@ public abstract class AbstractChannelServiceServlet extends HttpServlet
      * @throws IOException
      *             in case on a IO error
      */
-    protected boolean authenticate ( final String channelId, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    protected boolean authenticate ( final By by, final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        if ( isAuthenticated ( channelId, request ) )
+        if ( isAuthenticated ( by, request ) )
         {
             return true;
         }
 
-        BasicAuthentication.request ( response, "channel-" + channelId, "Please authenticate" );
+        BasicAuthentication.request ( response, "channel", "Please authenticate" );
 
         return false;
     }
@@ -134,14 +135,14 @@ public abstract class AbstractChannelServiceServlet extends HttpServlet
      * Simply test if the request is authenticated against the channels deploy
      * keys
      *
-     * @param channelId
-     *            the id of the channel to act on
+     * @param by
+     *            the channel locator
      * @param request
      *            the request
      * @return <code>true</code> if the request could be authenticated against
      *         the channels deploy keys, <code>false</code> otherwise
      */
-    protected boolean isAuthenticated ( final String channelId, final HttpServletRequest request )
+    protected boolean isAuthenticated ( final By by, final HttpServletRequest request )
     {
         final String[] authToks = parseAuthorization ( request );
 
@@ -166,7 +167,7 @@ public abstract class AbstractChannelServiceServlet extends HttpServlet
             return false;
         }
 
-        return service.getChannelDeployKeyStrings ( channelId ).orElse ( Collections.emptySet () ).contains ( deployKey );
+        return service.getChannelDeployKeyStrings ( by ).orElse ( Collections.emptySet () ).contains ( deployKey );
     }
 
 }

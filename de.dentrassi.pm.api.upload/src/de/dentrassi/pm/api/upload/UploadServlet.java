@@ -13,7 +13,6 @@ package de.dentrassi.pm.api.upload;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ import org.eclipse.scada.utils.ExceptionHelper;
 
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
-import de.dentrassi.pm.storage.channel.ChannelInformation;
 import de.dentrassi.pm.storage.channel.ChannelNotFoundException;
 import de.dentrassi.pm.storage.channel.ChannelService;
 import de.dentrassi.pm.storage.channel.ChannelService.By;
@@ -105,14 +103,7 @@ public class UploadServlet extends AbstractChannelServiceServlet
 
         final ChannelService service = getService ( req );
 
-        final Optional<ChannelInformation> info = service.getState ( By.nameOrId ( channelIdOrName ) );
-        if ( !info.isPresent () )
-        {
-            sendResponse ( resp, HttpServletResponse.SC_NOT_FOUND, String.format ( "Unable to find channel: %s", channelIdOrName ) );
-            return;
-        }
-
-        if ( !authenticate ( info.get ().getId (), req, resp ) )
+        if ( !authenticate ( By.nameOrId ( channelIdOrName ), req, resp ) )
         {
             return;
         }

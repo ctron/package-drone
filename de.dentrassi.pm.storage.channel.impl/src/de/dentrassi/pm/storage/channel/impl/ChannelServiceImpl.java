@@ -158,7 +158,7 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     /**
      * Map channel ids to deploy groups, cache
      */
-    private final Multimap<String, DeployGroup> deployKeysMap = HashMultimap.create (); // FIXME: load from storage
+    private final Multimap<String, DeployGroup> deployKeysMap = HashMultimap.create ();
 
     private ChannelAspectProcessor aspectProcessor;
 
@@ -521,11 +521,18 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     }
 
     @Override
-    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( final String channelId )
+    public Optional<Collection<DeployGroup>> getChannelDeployGroups ( final By by )
     {
         try ( Locked l = lock ( this.readLock ) )
         {
-            return Optional.ofNullable ( this.deployKeysMap.get ( channelId ) ).map ( Collections::unmodifiableCollection );
+            final Optional<ChannelEntry> channelEntry = find ( by );
+
+            if ( !channelEntry.isPresent () )
+            {
+                return Optional.empty ();
+            }
+
+            return Optional.ofNullable ( this.deployKeysMap.get ( channelEntry.get ().getId ().getId () ) ).map ( Collections::unmodifiableCollection );
         }
     }
 
@@ -703,20 +710,29 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     @Override
     public void deleteGroup ( final String groupId )
     {
-        this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
-            model.deleteGroup ( groupId );
-            StorageManager.executeAfterPersist ( () -> {
-                updateDeployGroupCache ( model );
+        try ( final Locked l = lock ( this.writeLock ) )
+        {
+            this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+                model.deleteGroup ( groupId );
+                StorageManager.executeAfterPersist ( () -> {
+                    updateDeployGroupCache ( model );
+                } );
             } );
-        } );
+        }
     }
 
     @Override
     public void updateGroup ( final String groupId, final String name )
     {
-        this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
-            model.updateGroup ( groupId, name );
-        } );
+        try ( final Locked l = lock ( this.writeLock ) )
+        {
+            this.manager.modifyRun ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+                model.updateGroup ( groupId, name );
+                StorageManager.executeAfterPersist ( () -> {
+                    updateDeployGroupCache ( model );
+                } );
+            } );
+        }
     }
 
     @Override
@@ -731,6 +747,9 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     public DeployKey createDeployKey ( final String groupId, final String name )
     {
         return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            StorageManager.executeAfterPersist ( () -> {
+                updateDeployGroupCache ( model );
+            } );
             return model.createKey ( groupId, name );
         } );
     }
@@ -739,6 +758,9 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     public DeployKey deleteDeployKey ( final String keyId )
     {
         return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            StorageManager.executeAfterPersist ( () -> {
+                updateDeployGroupCache ( model );
+            } );
             return model.deleteKey ( keyId );
         } );
     }
@@ -755,6 +777,9 @@ public class ChannelServiceImpl implements ChannelService, DeployAuthService
     public DeployKey updateDeployKey ( final String keyId, final String name )
     {
         return this.manager.modifyCall ( KEY_STORAGE, ChannelServiceModify.class, model -> {
+            StorageManager.executeAfterPersist ( () -> {
+                updateDeployGroupCache ( model );
+            } );
             return model.updateKey ( keyId, name );
         } );
     }
