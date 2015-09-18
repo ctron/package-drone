@@ -73,7 +73,6 @@ public class NodeAdapter implements JsonSerializer<Node>, JsonDeserializer<Node>
                 return ctx.deserialize ( val, ArtifactNode.class );
         }
 
-        // TODO Auto-generated method stub
         return null;
     }
 

@@ -46,9 +46,6 @@ import de.dentrassi.pm.storage.channel.ArtifactInformation;
 import de.dentrassi.pm.storage.channel.ValidationMessage;
 import de.dentrassi.pm.storage.channel.apm.internal.Activator;
 
-/*
- * FIXME: combine call groups with doStreamed
- */
 public class AspectContextImpl
 {
     private final static Logger logger = LoggerFactory.getLogger ( AspectContextImpl.class );
