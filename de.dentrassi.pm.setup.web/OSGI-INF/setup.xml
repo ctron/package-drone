@@ -4,5 +4,5 @@
    <service>
       <provide interface="de.dentrassi.pm.setup.web.SetupController"/>
    </service>
-   <reference bind="setService" cardinality="0..1" interface="de.dentrassi.pm.storage.service.StorageService" name="StorageService" policy="dynamic" unbind="unsetService"/>
+   <reference bind="setService" cardinality="0..1" interface="de.dentrassi.pm.apm.StorageManager" name="StorageManager" policy="dynamic" unbind="unsetService"/>
 </scr:component>

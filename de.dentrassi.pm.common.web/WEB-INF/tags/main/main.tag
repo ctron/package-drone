@@ -16,17 +16,14 @@
 <%@attribute name="head" fragment="true"%>
 <%@attribute name="body" fragment="true"%>
 
-
-<!DOCTYPE html>
-<html>
-
 <%
 Principal p = request.getUserPrincipal ();
 if ( p instanceof UserInformationPrincipal )
 {
     jspContext.setAttribute ( "principal", ((UserInformationPrincipal)p).getUserInformation() ); 
 }
-%>
+%><!DOCTYPE html>
+<html>
 
 <c:set var="bootstrap" value="${pageContext.request.contextPath}/resources/bootstrap/3.3.2"/>
 <c:set var="jquery" value="${pageContext.request.contextPath}/resources/jquery"/>

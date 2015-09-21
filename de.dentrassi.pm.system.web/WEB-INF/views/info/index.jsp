@@ -16,6 +16,35 @@
 
     <div class="row">
     
+    
+        <div class="col-sm-6">
+            <h3 class="details-heading">Storage</h3>
+            
+            <c:if test="${empty storageName }">
+                <div class="well">Storage manager not configured.</div>
+            </c:if>
+            
+            <c:if test="${not empty storageName }">
+            
+            <dl class="dl-horizontal details">
+                <dt>Free</dt>
+                <dd><web:bytes amount="${storageFree }"/></dd>
+                <dt>Total</dt>
+                <dd><web:bytes amount="${storageTotal }"/></dd>
+                <dt>Partition</dt>
+                <dd>${fn:escapeXml(storageName) }</dd>
+            </dl>
+            
+            <div class="progress">
+              <fmt:formatNumber var="percent" type="number" maxFractionDigits="1" minFractionDigits="1" value="${(storageUsed / storageTotal) * 100.0}" />
+              <div class="progress-bar" role="progressbar" aria-valuenow="${percent }" aria-valuemin="0" aria-valuemax="100" style="min-width: 4em; width: ${percent}%;">
+                 ${fn:escapeXml(percent) }%
+              </div>
+            </div>
+            
+            </c:if>
+        </div>
+        
         <div class="col-sm-6">
             <h3 class="details-heading">Memory</h3>
             

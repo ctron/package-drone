@@ -11,6 +11,7 @@ Require-Bundle: de.dentrassi.osgi.web;bundle-version="1.0.0",
  org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec;bundle-version="1.1.2",
  de.dentrassi.pm.common.web;bundle-version="1.0.0"
 Import-Package: com.google.common.io;version="18.0.0",
+ de.dentrassi.pm.apm;version="1.0.0",
  de.dentrassi.pm.common.web;version="1.0.0",
  de.dentrassi.pm.common.web.menu;version="1.0.0",
  de.dentrassi.pm.sec;version="1.0.0",

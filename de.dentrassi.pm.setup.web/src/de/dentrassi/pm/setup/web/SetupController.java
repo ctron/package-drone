@@ -19,18 +19,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
 import de.dentrassi.osgi.web.ModelAndView;
 import de.dentrassi.osgi.web.RequestMapping;
 import de.dentrassi.osgi.web.ViewResolver;
-import de.dentrassi.pm.database.Configurator;
-import de.dentrassi.pm.database.DatabaseConnectionData;
-import de.dentrassi.pm.database.DatabaseSetup;
-import de.dentrassi.pm.storage.service.StorageService;
+import de.dentrassi.pm.apm.StorageManager;
 import de.dentrassi.pm.todo.BasicTask;
 import de.dentrassi.pm.todo.Task;
 import de.dentrassi.pm.todo.Task.State;
@@ -40,43 +35,20 @@ import de.dentrassi.pm.todo.Task.State;
 @RequestMapping ( "/setup" )
 public class SetupController
 {
-    private final static Logger logger = LoggerFactory.getLogger ( SetupController.class );
+    private StorageManager manager;
 
-    private static final String URL_SERVICE_NOT_PRESENT = "https://github.com/ctron/package-drone/wiki/Service-not-present";
-
-    private StorageService service;
-
-    public void setService ( final StorageService service )
+    public void setService ( final StorageManager manager )
     {
-        this.service = service;
+        this.manager = manager;
     }
 
-    public void unsetService ( final StorageService service )
+    public void unsetService ( final StorageManager manager )
     {
-        this.service = null;
+        this.manager = null;
     }
 
     private List<Task> getTasks ( final HttpServletRequest request )
     {
-        boolean needUpgrade = false;
-        boolean configured = false;
-
-        try ( Configurator cfg = Configurator.create () )
-        {
-            final DatabaseConnectionData settings = cfg.getDatabaseSettings ();
-            if ( settings != null )
-            {
-                try ( DatabaseSetup db = new DatabaseSetup ( settings ) )
-                {
-                    needUpgrade = db.isNeedUpgrade ();
-                    configured = db.isConfigured ();
-                }
-            }
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to load tasks", e );
-        }
 
         final List<Task> result = new LinkedList<> ();
 
@@ -84,7 +56,7 @@ public class SetupController
 
         final boolean loggedIn = request.getUserPrincipal () != null;
         {
-            final BasicTask task = new BasicTask ( "Sign is as admin user", idx++, "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application. <br/><br/> Alternatively the token is written to the file <code>${user.home}/.drone-admin-token</code>.", new LinkTarget ( "/login" ) );
+            final BasicTask task = new BasicTask ( "Sign in as admin user", idx++, "Sign in with the default admin user. Unless you changed the setup the default name is <code>admin</code> and the password/token is printed out on the console of the server application. <br/><br/> Alternatively the token is written to the file <code>${user.home}/.drone-admin-token</code>.", new LinkTarget ( "/login" ) );
             if ( loggedIn )
             {
                 task.setState ( State.DONE );
@@ -93,26 +65,8 @@ public class SetupController
         }
 
         {
-            final BasicTask task = new BasicTask ( "Configure the database connection", idx++, "Head over to the <q>Database configuration</q> section and enter your database settings. Be sure you have a database instance set up.", loggedIn ? new LinkTarget ( "/config" ) : null );
-            if ( configured && this.service != null )
-            {
-                task.setState ( State.DONE );
-            }
-            result.add ( task );
-        }
-
-        {
-            if ( configured && this.service == null )
-            {
-                final BasicTask task = new BasicTask ( "Service not present", idx++, "The database link is configured but the persistence unit/service is not fire up. <a class=\"list-group-item-link\" href=\"" + URL_SERVICE_NOT_PRESENT + "\" target=\"_blank\">See the wiki</a> for more information.", new LinkTarget ( URL_SERVICE_NOT_PRESENT ) );
-                task.setState ( State.FAILED );
-                result.add ( task );
-            }
-        }
-
-        {
-            final BasicTask task = new BasicTask ( "Install or update the database schema", idx++, "After the database connection is set up correctly, it may be necessary to install or upgrade the database schema. In this case a button will appear on the right side of the database connection form. <strong>Press it</strong>!", loggedIn ? new LinkTarget ( "/config" ) : null );
-            if ( !needUpgrade && configured )
+            final BasicTask task = new BasicTask ( "Configure the storage location", idx++, "Head over to the <q>Storage configuration</q> section and selection the location where Package Drone should store data.", loggedIn ? new LinkTarget ( "/config" ) : null );
+            if ( this.manager != null )
             {
                 task.setState ( State.DONE );
             }
