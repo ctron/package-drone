@@ -12,11 +12,22 @@ if [ -n "$JAVA_HOME" ]; then
 fi
 
 echo "Using Java: $JAVA"
-echo "   Options: $JAVA_OPTS"
+echo "   Provided Options: $JAVA_OPTS"
+
+if [ -n "$DRONE_STORAGE_BASE" ]; then
+    echo "   Storage Base: $DRONE_STORAGE_BASE"
+    JAVA_OPTS="$JAVA_OPTS -Ddrone.storage.base=\"$DRONE_STORAGE_BASE\""
+fi
 
 if [ -n "$PIDFILE" ]; then
     echo $$ > "$PIDFILE"
     echo "   PID File: $PIDFILE"
 fi
 
-exec "$JAVA" $JAVA_OPTS -Dosgi.requiredJavaVersion=1.8 -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar -console -consoleLog "$@"
+eval exec "$JAVA" \
+    $JAVA_OPTS \
+    -Dosgi.requiredJavaVersion=1.8 \
+    -jar "$DIR"/plugins/org.eclipse.equinox.launcher_*.jar \
+    -console \
+    -consoleLog \
+    "$@"
