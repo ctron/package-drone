@@ -11,7 +11,6 @@
 package de.dentrassi.pm.storage.channel.apm;
 
 import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,6 +33,7 @@ import com.google.gson.LongSerializationPolicy;
 
 import de.dentrassi.pm.apm.AbstractSimpleStorageModelProvider;
 import de.dentrassi.pm.apm.StorageContext;
+import de.dentrassi.pm.apm.util.ReplaceOnCloseWriter;
 import de.dentrassi.pm.common.MetaKey;
 import de.dentrassi.pm.storage.channel.apm.internal.Finally;
 import de.dentrassi.pm.storage.channel.apm.store.BlobStore;
@@ -159,10 +159,12 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
 
             // write model
 
-            try ( Writer writer = Files.newBufferedWriter ( path, StandardCharsets.UTF_8 ) )
+            try ( final ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path, StandardCharsets.UTF_8 ) )
             {
                 final Gson gson = createGson ();
                 gson.toJson ( writeModel.getModel (), writer );
+
+                writer.commit ();
             }
 
             // commit cache store

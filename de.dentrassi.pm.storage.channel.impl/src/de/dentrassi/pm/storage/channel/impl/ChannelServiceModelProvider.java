@@ -10,9 +10,7 @@
  *******************************************************************************/
 package de.dentrassi.pm.storage.channel.impl;
 
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -23,6 +21,7 @@ import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.apm.AbstractSimpleStorageModelProvider;
 import de.dentrassi.pm.apm.StorageContext;
+import de.dentrassi.pm.apm.util.ReplaceOnCloseWriter;
 import de.dentrassi.pm.storage.channel.deploy.DeployGroup;
 
 public class ChannelServiceModelProvider extends AbstractSimpleStorageModelProvider<ChannelServiceAccess, ChannelServiceModify>
@@ -62,11 +61,11 @@ public class ChannelServiceModelProvider extends AbstractSimpleStorageModelProvi
     @Override
     protected void persistWriteModel ( final StorageContext context, final ChannelServiceModify writeModel ) throws Exception
     {
-        try ( final ReplaceOnCommitOutputStream roc = new ReplaceOnCommitOutputStream ( makePath ( context ) );
-              final Writer writer = new OutputStreamWriter ( roc, StandardCharsets.UTF_8 ); )
+        try ( final ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( makePath ( context ), StandardCharsets.UTF_8 ) )
         {
             createGson ().toJson ( writeModel.getModel (), writer );
-            roc.commit ();
+
+            writer.commit ();
         }
     }
 

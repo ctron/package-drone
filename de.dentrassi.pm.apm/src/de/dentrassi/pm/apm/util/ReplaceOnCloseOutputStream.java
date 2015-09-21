@@ -8,15 +8,35 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.storage.channel.impl;
+package de.dentrassi.pm.apm.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.function.Function;
 
-public class ReplaceOnCommitOutputStream extends OutputStream
+/**
+ * An OutputStream which replaces the specified file when closing the stream
+ * <p>
+ * The basic idea of this OutputStream is that when the stream is being fully
+ * written and closed, the backing file will simply be swapped out. This should
+ * ensure that only a completely written file will be able to replace the
+ * original file.
+ * </p>
+ * <p>
+ * The {@link #commit()} method needs to be called before calling close,
+ * otherwise the file will not be overwritten with the new content, but the new
+ * content will be discarded.
+ * </p>
+ * <p>
+ * This implementation redirects all output to a file beside the original file
+ * and atomically replaces the target file in the {@link #close()} method if the
+ * {@link #commit()} method was called at least once before.
+ * </p>
+ */
+public class ReplaceOnCloseOutputStream extends OutputStream
 {
     private final OutputStream out;
 
@@ -28,11 +48,31 @@ public class ReplaceOnCommitOutputStream extends OutputStream
 
     private boolean closed;
 
-    public ReplaceOnCommitOutputStream ( final Path targetName ) throws IOException
+    public ReplaceOnCloseOutputStream ( final Path path ) throws IOException
     {
-        this.targetName = targetName;
-        this.tmp = Files.createTempFile ( targetName.getParent (), targetName.getName ( targetName.getNameCount () - 1 ).toString (), ".swp" );
-        this.out = Files.newOutputStream ( this.tmp );
+        this ( path, null );
+    }
+
+    public ReplaceOnCloseOutputStream ( final Path path, final Function<OutputStream, OutputStream> streamCustomizer ) throws IOException
+    {
+        this.targetName = path;
+
+        // select target file name "original.dat.swp"
+
+        this.tmp = path.resolveSibling ( path.getName ( path.getNameCount () - 1 ).toString () + ".swp" );
+
+        // delete temp file ... ensure we can start fresh
+
+        Files.deleteIfExists ( this.tmp );
+
+        if ( streamCustomizer != null )
+        {
+            this.out = streamCustomizer.apply ( Files.newOutputStream ( this.tmp ) );
+        }
+        else
+        {
+            this.out = Files.newOutputStream ( this.tmp );
+        }
     }
 
     @Override
@@ -84,8 +124,7 @@ public class ReplaceOnCommitOutputStream extends OutputStream
             {
                 if ( this.commited )
                 {
-                    Files.deleteIfExists ( this.targetName );
-                    Files.move ( this.tmp, this.targetName, StandardCopyOption.ATOMIC_MOVE );
+                    Files.move ( this.tmp, this.targetName, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING );
                 }
             }
             finally

@@ -11,7 +11,6 @@
 package de.dentrassi.pm.sec.service.apm.model;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -25,6 +24,7 @@ import com.google.gson.GsonBuilder;
 
 import de.dentrassi.pm.apm.AbstractSimpleStorageModelProvider;
 import de.dentrassi.pm.apm.StorageContext;
+import de.dentrassi.pm.apm.util.ReplaceOnCloseWriter;
 
 public class UserStorageModelProvider extends AbstractSimpleStorageModelProvider<UserModel, UserWriteModel>
 {
@@ -69,9 +69,11 @@ public class UserStorageModelProvider extends AbstractSimpleStorageModelProvider
         final Path path = makePath ( context );
         logger.debug ( "Persisting model: {}", path.toAbsolutePath () );
 
-        try ( BufferedWriter writer = Files.newBufferedWriter ( path ) )
+        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path ) )
         {
             createGson ().toJson ( writeModel.asCollection (), writer );
+
+            writer.commit ();
         }
     }
 

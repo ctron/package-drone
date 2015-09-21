@@ -11,7 +11,6 @@
 package de.dentrassi.pm.core.apm;
 
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -21,6 +20,7 @@ import java.util.Properties;
 
 import de.dentrassi.pm.apm.AbstractSimpleStorageModelProvider;
 import de.dentrassi.pm.apm.StorageContext;
+import de.dentrassi.pm.apm.util.ReplaceOnCloseWriter;
 import de.dentrassi.pm.common.MetaKey;
 
 public class CoreStorageModelProvider extends AbstractSimpleStorageModelProvider<CoreServiceViewModel, CoreServiceModel>
@@ -45,7 +45,7 @@ public class CoreStorageModelProvider extends AbstractSimpleStorageModelProvider
     @Override
     protected void persistWriteModel ( final StorageContext context, final CoreServiceModel writeModel ) throws Exception
     {
-        try ( Writer writer = Files.newBufferedWriter ( makePath ( context ) ) )
+        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( makePath ( context ) ) )
         {
             final Properties p = new Properties ();
             for ( final Map.Entry<MetaKey, String> entry : writeModel.getProperties ().entrySet () )
@@ -59,6 +59,8 @@ public class CoreStorageModelProvider extends AbstractSimpleStorageModelProvider
                 p.put ( entry.getKey ().toString (), entry.getValue () );
             }
             p.store ( writer, null );
+
+            writer.commit ();
         }
     }
 
