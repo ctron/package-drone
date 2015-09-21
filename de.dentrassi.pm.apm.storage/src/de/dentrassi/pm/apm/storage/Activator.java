@@ -16,6 +16,7 @@ import java.util.Hashtable;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
@@ -60,7 +61,8 @@ public class Activator implements BundleActivator
 
         this.adapter = new StorageManagerAdapter ( this.context );
 
-        final Dictionary<String, ?> properties = new Hashtable<> ();
+        final Dictionary<String, Object> properties = new Hashtable<> ();
+        properties.put ( Constants.SERVICE_PID, "drone.storage.manager" );
         this.adapterHandle = this.context.registerService ( ManagedService.class, this.adapter, properties );
     }
 

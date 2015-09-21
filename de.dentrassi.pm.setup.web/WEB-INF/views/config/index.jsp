@@ -32,10 +32,10 @@
 		
 		<c:if test="${empty sysProp }">
         
-			<form:form action="" method="POST"  cssClass="form-horizontal">
+			<form:form action="" method="POST" cssClass="form-horizontal">
 			
-			    <h:formEntry label="Base Path"  command="command" path="basePath">
-			        <form:input path="url" cssClass="form-control"/>
+			    <h:formEntry label="Base Path" command="command" path="basePath">
+			        <form:input path="basePath" cssClass="form-control"/>
 			        
 			        <span class="help-block">
 			        Enter a path on the server where the Package Drone instance should store all its data.
@@ -59,6 +59,9 @@
 		</div>
 		
 		<div class="col-sm-4">
+		
+            <c:if test="${not empty sysProp or  not empty command.basePath }">
+		
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Overview</h3>
@@ -86,6 +89,9 @@
                         </div> <%-- progress --%>
                 </div>
             </div>
+            
+            </c:if>
+            
         </div> <%-- col --%>
 	
 	</div> <%-- row --%>

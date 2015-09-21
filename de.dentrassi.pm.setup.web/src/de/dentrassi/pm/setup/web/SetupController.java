@@ -49,7 +49,6 @@ public class SetupController
 
     private List<Task> getTasks ( final HttpServletRequest request )
     {
-
         final List<Task> result = new LinkedList<> ();
 
         int idx = 1;

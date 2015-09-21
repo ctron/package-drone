@@ -43,15 +43,21 @@ public class StorageManagerAdapter implements ManagedService
     @Override
     public void updated ( final Dictionary<String, ?> properties ) throws ConfigurationException
     {
+        logger.warn ( "Updated - properties: {}", properties );
+
         try
         {
-            final String base = (String)properties.get ( "basePath" );
-            if ( base == null )
+            unregister ();
+            if ( properties != null )
             {
-                throw new ConfigurationException ( "basePath", "base path is not set" );
+                final String base = (String)properties.get ( "basePath" );
+                if ( base == null )
+                {
+                    throw new ConfigurationException ( "basePath", "base path is not set" );
+                }
+                final Path basePath = Paths.get ( base );
+                register ( new StorageManager ( basePath ) );
             }
-            final Path basePath = Paths.get ( base );
-            register ( new StorageManager ( basePath ) );
         }
         catch ( final ConfigurationException e )
         {
@@ -73,6 +79,11 @@ public class StorageManagerAdapter implements ManagedService
     }
 
     public void dispose ()
+    {
+        unregister ();
+    }
+
+    private void unregister ()
     {
         if ( this.handle != null )
         {

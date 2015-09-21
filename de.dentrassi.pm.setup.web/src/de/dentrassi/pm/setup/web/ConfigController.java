@@ -10,12 +10,15 @@
  *******************************************************************************/
 package de.dentrassi.pm.setup.web;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +27,10 @@ import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.eclipse.scada.utils.ExceptionHelper;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 import de.dentrassi.osgi.web.Controller;
 import de.dentrassi.osgi.web.LinkTarget;
@@ -56,7 +62,16 @@ public class ConfigController implements InterfaceExtender
 {
     private static final String SYSPROP_STORAGE_BASE = "drone.storage.base";
 
+    private static final String PID_STORAGE_MANAGER = "drone.storage.manager";
+
     private final static Method METHOD_MAIN = LinkTarget.getControllerMethod ( ConfigController.class, "config" );
+
+    private ConfigurationAdmin configurationAdmin;
+
+    public void setConfigurationAdmin ( final ConfigurationAdmin configAdmin )
+    {
+        this.configurationAdmin = configAdmin;
+    }
 
     @Override
     public List<MenuEntry> getMainMenuEntries ( final HttpServletRequest request )
@@ -99,6 +114,20 @@ public class ConfigController implements InterfaceExtender
         final Map<String, Object> model = new HashMap<> ();
 
         final StorageConfiguration command = new StorageConfiguration ();
+
+        try
+        {
+            final Configuration cfg = this.configurationAdmin.getConfiguration ( PID_STORAGE_MANAGER, null );
+            if ( cfg != null && cfg.getProperties () != null )
+            {
+                command.setBasePath ( (String)cfg.getProperties ().get ( "basePath" ) );
+            }
+        }
+        catch ( final Exception e )
+        {
+            // ignore
+        }
+
         model.put ( "command", command );
         fillData ( model );
 
@@ -115,16 +144,23 @@ public class ConfigController implements InterfaceExtender
 
         if ( !result.hasErrors () )
         {
-            // FIXME: apply
-
-            // now wait until the configuration was performed in the background
-
             try
             {
-                Activator.getTracker ().waitForService ( 5000 );
+                if ( applyConfiguration ( data.getBasePath () ) )
+                {
+                    // now wait until the configuration was performed in the background
+                    try
+                    {
+                        Activator.getTracker ().waitForService ( 5000 );
+                    }
+                    catch ( final InterruptedException e )
+                    {
+                    }
+                }
             }
-            catch ( final InterruptedException e )
+            catch ( final IOException e )
             {
+                model.put ( "error", ExceptionHelper.getMessage ( e ) );
             }
         }
 
@@ -137,6 +173,23 @@ public class ConfigController implements InterfaceExtender
         else
         {
             return new ModelAndView ( "redirect:/setup" );
+        }
+    }
+
+    private boolean applyConfiguration ( final String basePath ) throws IOException
+    {
+        final Configuration cfg = this.configurationAdmin.getConfiguration ( PID_STORAGE_MANAGER, null );
+        if ( basePath == null || basePath.isEmpty () )
+        {
+            cfg.update ( new Hashtable<> () );
+            return false;
+        }
+        else
+        {
+            final Dictionary<String, Object> data = new Hashtable<> ();
+            data.put ( "basePath", basePath );
+            cfg.update ( data );
+            return true;
         }
     }
 

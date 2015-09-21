@@ -14,9 +14,9 @@ public class StorageConfiguration
 {
     private String basePath;
 
-    public void setBasePath ( final String baseLocation )
+    public void setBasePath ( final String basePath )
     {
-        this.basePath = baseLocation;
+        this.basePath = basePath;
     }
 
     public String getBasePath ()

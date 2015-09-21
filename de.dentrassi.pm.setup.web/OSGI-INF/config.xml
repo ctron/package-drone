@@ -5,4 +5,5 @@
       <provide interface="de.dentrassi.pm.setup.web.ConfigController"/>
       <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
    </service>
+   <reference bind="setConfigurationAdmin" cardinality="1..1" interface="org.osgi.service.cm.ConfigurationAdmin" name="ConfigurationAdmin" policy="static"/>
 </scr:component>
