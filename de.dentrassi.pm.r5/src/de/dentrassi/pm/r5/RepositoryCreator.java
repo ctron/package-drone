@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
+ *     Julius Fingerle - fix a few repository generations issues
  *******************************************************************************/
 package de.dentrassi.pm.r5;
 
@@ -229,7 +230,7 @@ public class RepositoryCreator
 
             reqs.put ( "filter", filter );
 
-            if( br.isOptional() )
+            if ( br.isOptional () )
             {
                 reqs.put ( "resolution", "optional" );
             }
@@ -250,9 +251,10 @@ public class RepositoryCreator
 
             addIndexCapability ( writer, "osgi.wiring.package", caps );
 
-            // Add a 'osgi.contract' capability if this bundle is a framework package 
-            if ( FRAMEWORK_PACKAGE.equals ( pe.getName() ) ) {
-                Version specVersion = mapFrameworkPackageVersion ( pe.getVersion () );
+            // Add a 'osgi.contract' capability if this bundle is a framework package
+            if ( FRAMEWORK_PACKAGE.equals ( pe.getName () ) )
+            {
+                final Version specVersion = mapFrameworkPackageVersion ( pe.getVersion () );
                 if ( specVersion != null )
                 {
                     final Map<String, Object> frameworkCaps = new HashMap<> ();
@@ -273,9 +275,10 @@ public class RepositoryCreator
             );
 
             reqs.put ( "filter", filter );
-            
-            if(pi.isOptional()) {
-            	reqs.put ( "resolution", "optional");
+
+            if ( pi.isOptional () )
+            {
+                reqs.put ( "resolution", "optional" );
             }
 
             addIndexRequirement ( writer, "osgi.wiring.package", reqs );
@@ -578,38 +581,41 @@ public class RepositoryCreator
 
     private static Version mapFrameworkPackageVersion ( final Version pv )
     {
-        if (pv.getMajor() != 1)
+        if ( pv.getMajor () != 1 )
+        {
             return null;
+        }
 
         Version version;
-        switch (pv.getMinor()) {
-        case 7:
-            version = new Version(5, 0, 0);
-            break;
-        case 6:
-            version = new Version(4, 3, 0);
-            break;
-        case 5:
-            version = new Version(4, 2, 0);
-            break;
-        case 4:
-            version = new Version(4, 1, 0);
-            break;
-        case 3:
-            version = new Version(4, 0, 0);
-            break;
-        case 2:
-            version = new Version(3, 0, 0);
-            break;
-        case 1:
-            version = new Version(2, 0, 0);
-            break;
-        case 0:
-            version = new Version(1, 0, 0);
-            break;
-        default:
-            version = null;
-            break;
+        switch ( pv.getMinor () )
+        {
+            case 7:
+                version = new Version ( 5, 0, 0 );
+                break;
+            case 6:
+                version = new Version ( 4, 3, 0 );
+                break;
+            case 5:
+                version = new Version ( 4, 2, 0 );
+                break;
+            case 4:
+                version = new Version ( 4, 1, 0 );
+                break;
+            case 3:
+                version = new Version ( 4, 0, 0 );
+                break;
+            case 2:
+                version = new Version ( 3, 0, 0 );
+                break;
+            case 1:
+                version = new Version ( 2, 0, 0 );
+                break;
+            case 0:
+                version = new Version ( 1, 0, 0 );
+                break;
+            default:
+                version = null;
+                break;
         }
 
         return version;

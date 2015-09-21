@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 IBH SYSTEMS GmbH.
+ * Copyright (c) 2014 IBH SYSTEMS GmbH and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
+ *     Julius Fingerle - fix a few repository generations issues
  *******************************************************************************/
 package de.dentrassi.osgi.utils;
 
@@ -112,7 +113,7 @@ public class Filters
         @Override
         public String toString ()
         {
-            return "(!" + this.child.toString() + ")";
+            return "(!" + this.child.toString () + ")";
         }
 
     }
