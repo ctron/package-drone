@@ -21,12 +21,6 @@ public class ReplaceOnCloseWriter extends OutputStreamWriter
     private final ReplaceOnCloseOutputStream out;
 
     @SuppressWarnings ( "resource" )
-    public ReplaceOnCloseWriter ( final Path path ) throws IOException
-    {
-        this ( new ReplaceOnCloseOutputStream ( path ) );
-    }
-
-    @SuppressWarnings ( "resource" )
     public ReplaceOnCloseWriter ( final Path path, final Charset cs ) throws IOException
     {
         this ( new ReplaceOnCloseOutputStream ( path ), cs );

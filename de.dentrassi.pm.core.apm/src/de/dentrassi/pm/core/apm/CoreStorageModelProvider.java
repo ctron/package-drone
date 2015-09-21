@@ -11,6 +11,7 @@
 package de.dentrassi.pm.core.apm;
 
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -45,7 +46,7 @@ public class CoreStorageModelProvider extends AbstractSimpleStorageModelProvider
     @Override
     protected void persistWriteModel ( final StorageContext context, final CoreServiceModel writeModel ) throws Exception
     {
-        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( makePath ( context ) ) )
+        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( makePath ( context ), StandardCharsets.UTF_8 ) )
         {
             final Properties p = new Properties ();
             for ( final Map.Entry<MetaKey, String> entry : writeModel.getProperties ().entrySet () )

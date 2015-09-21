@@ -11,6 +11,7 @@
 package de.dentrassi.pm.sec.service.apm.model;
 
 import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -69,7 +70,7 @@ public class UserStorageModelProvider extends AbstractSimpleStorageModelProvider
         final Path path = makePath ( context );
         logger.debug ( "Persisting model: {}", path.toAbsolutePath () );
 
-        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path ) )
+        try ( ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path, StandardCharsets.UTF_8 ) )
         {
             createGson ().toJson ( writeModel.asCollection (), writer );
 
