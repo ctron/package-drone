@@ -79,7 +79,7 @@ public class BackupController implements InterfaceExtender
     @RequestMapping
     public ModelAndView main ()
     {
-        final Map<String, Object> model = new HashMap<> ();
+        final Map<String, Object> model = new HashMap<> ( 1 );
         return new ModelAndView ( "index", model );
     }
 
@@ -97,10 +97,10 @@ public class BackupController implements InterfaceExtender
     @HttpConstraint ( PERMIT )
     public void provision ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
-        provision ( request, response, null );
+        internalProvision ( request, response );
     }
 
-    protected void provision ( final HttpServletRequest request, final HttpServletResponse response, final Runnable afterwards ) throws IOException
+    protected void internalProvision ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
     {
         final String[] authToks = BasicAuthentication.parseAuthorization ( request );
         if ( authToks == null )
@@ -130,11 +130,6 @@ public class BackupController implements InterfaceExtender
             this.service.provisionConfiguration ( request.getInputStream () );
 
             waitForService ();
-
-            if ( afterwards != null )
-            {
-                afterwards.run ();
-            }
 
             quickResponse ( response, HttpServletResponse.SC_OK, "OK" );
         }

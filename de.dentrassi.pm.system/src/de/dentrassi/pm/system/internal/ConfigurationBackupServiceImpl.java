@@ -43,7 +43,6 @@ import de.dentrassi.pm.system.ConfigurationBackupService;
 
 public class ConfigurationBackupServiceImpl implements ConfigurationBackupService
 {
-
     private final static Logger logger = LoggerFactory.getLogger ( ConfigurationBackupServiceImpl.class );
 
     private static final String BACKUP_VERSION = "1";
