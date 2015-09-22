@@ -18,6 +18,10 @@
 	
 		<div class="col-sm-8">
 		
+		<c:if test="${not empty error }">
+            <div class="alert alert-danger" role="alert"><strong>Error!</strong> ${fn:escapeXml(error) }</div>
+		</c:if>
+		
 		<c:if test="${not empty sysProp }">
 		
 		  <div class="panel panel-info">
