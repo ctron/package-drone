@@ -943,7 +943,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void exportChannel ( final String channelId, final OutputStream stream ) throws IOException
     {
-        doWithTransferHandlerVoid ( ( handler ) -> handler.exportChannel ( channelId, stream ) );
+        this.lockManager.run ( () -> {
+            doWithTransferHandlerVoid ( ( handler ) -> handler.exportChannel ( channelId, stream ) );
+        } );
     }
 
     @Override
@@ -966,7 +968,9 @@ public class StorageServiceImpl extends AbstractJpaServiceImpl implements Storag
     @Override
     public void exportAll ( final OutputStream stream ) throws IOException
     {
-        doWithTransferHandlerVoid ( ( handler ) -> handler.exportAll ( stream ) );
+        this.lockManager.run ( () -> {
+            doWithTransferHandlerVoid ( ( handler ) -> handler.exportAll ( stream ) );
+        } );
     }
 
     @Override
