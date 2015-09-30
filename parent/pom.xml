@@ -197,6 +197,7 @@
 		<module>../de.dentrassi.pm.root.feature</module>
 
 		<module>../de.dentrassi.pm.web.analytics</module>
+		<module>../de.dentrassi.pm.web.googlebot</module>
 
 		<module>../de.dentrassi.rpm</module>
 		<module>../de.dentrassi.rpm.tests</module>
