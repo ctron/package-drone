@@ -12,20 +12,6 @@
     </prerequisites>
 
 	<properties>
-		<!-- Put these in ~.m2/settings.xml -->
-
-		<!-- <mysql.admin.user>user</mysql.admin.user> -->
-		<!-- <mysql.admin.password>password</mysql.admin.password> -->
-
-		<!-- <mysql.test.database>database</mysql.test.database> -->
-		<!-- <mysql.test.user>user</mysql.test.user> -->
-		<!-- <mysql.test.password>password</mysql.test.password> -->
-
-		<!-- <use.postgres>define or nor</use.postgres> -->
-
-		<!-- <postgres.admin.user>user</postgres.admin.user> -->
-		<!-- <postgres.admin.password>user</postgres.admin.password> -->
-		
 		<aetherVersion>1.0.2.v20150114</aetherVersion>
 	</properties>
 
@@ -62,9 +48,6 @@
 				<configuration>
 					<!-- sadly there is no way to just pass all maven properties -->
 					<systemPropertyVariables>
-						<mysql.test.user>${mysql.test.user}</mysql.test.user>
-						<mysql.test.password>${mysql.test.password}</mysql.test.password>
-						<mysql.test.database>${mysql.test.database}</mysql.test.database>
 						<sauce.username>${sauce.username}</sauce.username>
 						<sauce.accessKey>${sauce.accessKey}</sauce.accessKey>
 						<use.postgres>${use.postgres}</use.postgres>
@@ -103,7 +86,7 @@
 						<configuration>
 							<target>
 								<copy tofile="${project.build.directory}/package-drone-server.zip">
-									<fileset dir="${basedir}/../product/target">
+									<fileset dir="${basedir}/../../product/target">
 										<include name="package-drone-server-*.zip" />
 									</fileset>
 								</copy>
