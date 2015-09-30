@@ -81,20 +81,31 @@ public class MavenHandler
                 response.sendRedirect ( request.getRequestURI () + "/" );
                 return;
             }
+
+            response.setStatus ( HttpServletResponse.SC_OK );
             renderDir ( response, (DirectoryNode)node, path );
         }
         else if ( node instanceof ContentNode )
         {
             final ContentNode dataNode = (ContentNode)node;
-            response.getOutputStream ().write ( dataNode.getData () );
+
+            response.setStatus ( HttpServletResponse.SC_OK );
             response.setContentType ( dataNode.getMimeType () );
+            response.setContentLength ( dataNode.getData ().length );
+            response.getOutputStream ().write ( dataNode.getData () );
         }
         else if ( node instanceof ArtifactNode )
         {
+            response.setStatus ( HttpServletResponse.SC_OK );
+
             download ( response, (ArtifactNode)node );
         }
-
-        response.setStatus ( HttpServletResponse.SC_OK );
+        else
+        {
+            response.setStatus ( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            response.setContentType ( "text/plain" );
+            response.getWriter ().format ( "Unknown node type: %s", node == null ? "null" : node.getClass ().getName () );
+        }
     }
 
     private void download ( final HttpServletResponse response, final ArtifactNode node ) throws IOException
@@ -156,6 +167,8 @@ public class MavenHandler
 
     private void renderDir ( final HttpServletResponse response, final DirectoryNode dir, final String path ) throws IOException
     {
+        response.setContentType ( "text/html; charset=utf-8" );
+
         @SuppressWarnings ( "resource" )
         final PrintWriter w = response.getWriter ();
 
