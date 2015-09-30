@@ -163,9 +163,7 @@
 		<module>../de.dentrassi.pm.sec.web</module>
 		<module>../de.dentrassi.pm.sec.web.ui</module>
 
-        <!-- 
 		<module>../de.dentrassi.pm.setup.web</module>
-		-->
 
 		<module>../de.dentrassi.pm.signing</module>
 		<module>../de.dentrassi.pm.signing.pgp</module>
