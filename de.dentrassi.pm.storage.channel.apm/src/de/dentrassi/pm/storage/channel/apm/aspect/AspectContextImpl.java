@@ -209,14 +209,12 @@ public class AspectContextImpl
                 {
                     doStreamedRun ( art.getId (), path -> {
 
-                        // run extractors
+                        // run added extractors
 
-                        extractFor ( aspectIds, art, path );
+                        final ArtifactInformation updatedArt = extractFor ( aspectIds, art, path );
 
                         // re-create all virtual
-
-                        virtualize ( art, path, this.model.getAspectIds () );
-
+                        virtualize ( updatedArt, path, this.model.getAspectIds () );
                     } );
                 }
 
@@ -327,11 +325,11 @@ public class AspectContextImpl
 
                         // run extractors
 
-                        extractFor ( aspectIds, art, path );
+                        final ArtifactInformation updatedArt = extractFor ( aspectIds, art, path );
 
                         // re-create all virtual
 
-                        virtualize ( art, path, this.model.getAspectIds () );
+                        virtualize ( updatedArt, path, this.model.getAspectIds () );
 
                     } );
                 }
@@ -685,7 +683,7 @@ public class AspectContextImpl
         }
     }
 
-    private void extractFor ( final Set<String> aspectIds, final ArtifactInformation art, final Path path )
+    private ArtifactInformation extractFor ( final Set<String> aspectIds, final ArtifactInformation art, final Path path )
     {
         final ExtractionResult result = extractMetaData ( art, path, aspectIds );
 
@@ -710,7 +708,7 @@ public class AspectContextImpl
         messages.addAll ( result.messages );
 
         this.context.setExtractedMetaData ( art.getId (), newMetaData );
-        this.context.setValidationMessages ( art.getId (), messages );
+        return this.context.setValidationMessages ( art.getId (), messages );
     }
 
     private class ExtractionResult
