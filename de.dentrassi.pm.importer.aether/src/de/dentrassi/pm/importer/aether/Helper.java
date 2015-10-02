@@ -10,7 +10,13 @@
  *******************************************************************************/
 package de.dentrassi.pm.importer.aether;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy.Type;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.ConfigurationProperties;
@@ -21,6 +27,7 @@ import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.impl.DefaultServiceLocator.ErrorHandler;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
@@ -33,6 +40,7 @@ import de.dentrassi.pm.VersionInformation;
 
 public class Helper
 {
+    private final static Logger logger = LoggerFactory.getLogger ( Helper.class );
 
     public static RepositorySystem newRepositorySystem ()
     {
@@ -79,6 +87,46 @@ public class Helper
 
     public static RemoteRepository newRemoteRepository ( final String id, final String url )
     {
-        return new RemoteRepository.Builder ( id, "default", url ).build ();
+        final RemoteRepository.Builder builder = new RemoteRepository.Builder ( id, "default", url );
+
+        builder.setProxy ( getProxy ( url ) );
+
+        return builder.build ();
+    }
+
+    private static Proxy getProxy ( final String url )
+    {
+        final ProxySelector ps = ProxySelector.getDefault ();
+        if ( ps == null )
+        {
+            logger.debug ( "No proxy selector found" );
+            return null;
+        }
+
+        final List<java.net.Proxy> proxies = ps.select ( URI.create ( url ) );
+        for ( final java.net.Proxy proxy : proxies )
+        {
+            if ( proxy.type () != Type.HTTP )
+            {
+                logger.debug ( "Unsupported proxy type: {}", proxy.type () );
+                continue;
+            }
+
+            final SocketAddress addr = proxy.address ();
+            logger.debug ( "Proxy address: {}", addr );
+
+            if ( ! ( addr instanceof InetSocketAddress ) )
+            {
+                logger.debug ( "Unsupported proxy address type: {}", addr.getClass () );
+                continue;
+            }
+
+            final InetSocketAddress inetAddr = (InetSocketAddress)addr;
+
+            return new Proxy ( Proxy.TYPE_HTTP, inetAddr.getHostString (), inetAddr.getPort () );
+        }
+
+        logger.debug ( "No proxy found" );
+        return null;
     }
 }
