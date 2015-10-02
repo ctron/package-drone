@@ -241,7 +241,10 @@ public class TransferServiceImpl implements TransferService
 
                 // set provided meta data
 
-                channel.applyMetaData ( properties );
+                if ( properties != null && !properties.isEmpty () )
+                {
+                    channel.applyMetaData ( properties );
+                }
 
                 // process artifacts
 
@@ -249,7 +252,10 @@ public class TransferServiceImpl implements TransferService
 
                 // finally enable the aspects
 
-                channel.getContext ().addAspects ( aspects );
+                if ( aspects != null && !aspects.isEmpty () )
+                {
+                    channel.getContext ().addAspects ( aspects );
+                }
 
             } );
 
