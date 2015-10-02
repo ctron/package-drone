@@ -208,7 +208,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
             if ( value == null )
             {
-                this.model.getProvidedMetaData ().remove ( value );
+                this.model.getProvidedMetaData ().remove ( key );
             }
             else
             {
