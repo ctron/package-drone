@@ -52,6 +52,7 @@ What it currently can do
 * Extract POM files embedded in JARs and build a Maven repository from it
 * Allow scraping of Maven repository channels
 * Extract meta data from ".rpm" files and create a YUM repository index
+* Provide OBR repositories
 
 How to contribute
 ----------------
@@ -66,7 +67,6 @@ A lot of things. If there is time it will be implemented. Or you can help by con
 
 Hopefully some time Package Drone can:
 
-* Provide access to bundles by an OBR layout (it can do R5)
 * Run on Windows - it is known not to work
 * Run on Mac OS X - it is completely untested
 
