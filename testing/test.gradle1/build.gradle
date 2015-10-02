@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'osgi'
 apply plugin: 'maven-publish'
 
-version = '1.0.0'
+version = '1.0.0-SNAPSHOT'
 group = 'de.dentrassi.pm'
 
 jar {
@@ -13,9 +13,19 @@ jar {
     }
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
 publishing {
     publications {
-        mavenJava(MavenPublication) { from components.java }
+        mavenJava(MavenPublication) {
+            from components.java
+            
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
     }
     repositories { 
         maven {
