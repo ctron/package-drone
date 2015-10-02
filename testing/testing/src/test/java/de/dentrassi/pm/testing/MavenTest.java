@@ -66,5 +66,7 @@ public class MavenTest extends AbstractServerTest
         system.deploy ( session, deployRequest );
 
         testUrl ( String.format ( "/maven/%s", ct.getId () ) ); // index page
+
+        // FIXME: check more data
     }
 }
