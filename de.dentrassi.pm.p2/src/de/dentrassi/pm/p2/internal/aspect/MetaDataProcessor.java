@@ -39,9 +39,9 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
 
     private final XPathExpression unitExpression;
 
-    public MetaDataProcessor ( final String title, final boolean compressed, final DocumentCache cache, final DocumentBuilder documentBuilder, final XPathFactory pathFactory )
+    public MetaDataProcessor ( final String title, final boolean compressed, final DocumentCache cache, final DocumentBuilder documentBuilder, final XPathFactory pathFactory, final Map<String, String> additionalProperties )
     {
-        super ( title, "content", compressed, cache );
+        super ( title, "content", compressed, cache, additionalProperties );
 
         this.doc = documentBuilder.newDocument ();
 

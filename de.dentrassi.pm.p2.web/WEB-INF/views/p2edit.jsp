@@ -20,6 +20,10 @@
         <form:input path="title" cssClass="form-control" placeholder="Optional title for the repository" required="false"/>
     </h:formEntry>
     
+    <h:formEntry label="Mirrors URL" path="mirrorsUrl" command="command">
+        <form:input path="mirrorsUrl" cssClass="form-control" placeholder="Optional URL to a P2 mirrors list"/>
+    </h:formEntry>
+    
     <h:formButtons>
         <button type="submit" class="btn btn-primary">Update</button>
         <button type="reset" class="btn btn-default">Reset</button>

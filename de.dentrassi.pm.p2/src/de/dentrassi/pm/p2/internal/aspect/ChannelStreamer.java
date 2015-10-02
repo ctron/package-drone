@@ -26,6 +26,10 @@ import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChannelStreamer
 {
+    private static final MetaKey KEY_REPO_TITLE = new MetaKey ( "p2.repo", "title" );
+
+    private static final MetaKey KEY_MIRRORS_URL = new MetaKey ( "p2.repo", "mirrorsUrl" );
+
     public static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
 
     private final LinkedList<Processor> processors;
@@ -40,6 +44,14 @@ public class ChannelStreamer
     {
         final String title = makeTitle ( channelId, channelMetaData );
 
+        final Map<String, String> additionalProperties = new HashMap<> ();
+
+        final String mirrorsUrl = channelMetaData.get ( KEY_MIRRORS_URL );
+        if ( mirrorsUrl != null )
+        {
+            additionalProperties.put ( "p2.mirrorsURL", mirrorsUrl );
+        }
+
         this.processors = new LinkedList<> ();
 
         try
@@ -53,14 +65,14 @@ public class ChannelStreamer
 
             if ( writeCompressed )
             {
-                this.processors.add ( new MetaDataProcessor ( title, true, cache, documentBuilder, pathFactory ) );
-                this.processors.add ( new ArtifactsProcessor ( title, true, cache, pathFactory ) );
+                this.processors.add ( new MetaDataProcessor ( title, true, cache, documentBuilder, pathFactory, additionalProperties ) );
+                this.processors.add ( new ArtifactsProcessor ( title, true, cache, pathFactory, additionalProperties ) );
             }
 
             if ( writePlain )
             {
-                this.processors.add ( new MetaDataProcessor ( title, false, cache, documentBuilder, pathFactory ) );
-                this.processors.add ( new ArtifactsProcessor ( title, false, cache, pathFactory ) );
+                this.processors.add ( new MetaDataProcessor ( title, false, cache, documentBuilder, pathFactory, additionalProperties ) );
+                this.processors.add ( new ArtifactsProcessor ( title, false, cache, pathFactory, additionalProperties ) );
             }
 
         }
@@ -73,7 +85,7 @@ public class ChannelStreamer
 
     public static String makeTitle ( final String id, final Map<MetaKey, String> channelMetaData )
     {
-        final String title = channelMetaData.get ( new MetaKey ( "p2.repo", "title" ) );
+        final String title = channelMetaData.get ( KEY_REPO_TITLE );
         if ( title != null && !title.isEmpty () )
         {
             return title;

@@ -18,6 +18,9 @@ public class P2ChannelInformation
     @MetaKeyBinding ( namespace = P2RepositoryAspect.ID, key = "title" )
     private String title;
 
+    @MetaKeyBinding ( namespace = P2RepositoryAspect.ID, key = "mirrorsUrl" )
+    private String mirrorsUrl;
+
     public void setTitle ( final String title )
     {
         this.title = title;
@@ -26,5 +29,15 @@ public class P2ChannelInformation
     public String getTitle ()
     {
         return this.title;
+    }
+
+    public void setMirrorsUrl ( final String mirrorsUrl )
+    {
+        this.mirrorsUrl = mirrorsUrl;
+    }
+
+    public String getMirrorsUrl ()
+    {
+        return this.mirrorsUrl;
     }
 }

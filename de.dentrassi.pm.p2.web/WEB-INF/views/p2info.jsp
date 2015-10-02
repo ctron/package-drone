@@ -13,12 +13,25 @@
 
 <h:nav menu="${menuManager.getViews(channel) }"/>
 
-<table class="table table-properties">
+<div class="container-fluid">
 
-<tr>
-    <th>Repository Title<th><td>${fn:escapeXml(channelInfo.title)}</td>
-</tr>
+    <div class="row">
 
-</table>
+        <div class="col-xs-12">
 
+			<h3 class="details-heading">Core Attributes</h3>
+			             
+			<dl class="dl-horizontal details">
+			    <dt>Title</dt>
+			    <dd>${fn:escapeXml(channelInfo.title)}</dd>
+			    
+			    <dt>Mirrors URL</dt>
+			    <dd><c:if test="${not empty channelInfo.mirrorsUrl }"><a href="${fn:escapeXml(channelInfo.mirrorsUrl) }" target="_blank">${fn:escapeXml(channelInfo.mirrorsUrl) }</a></c:if></dd>
+	        </dl>
+        </div>
+   
+   </div>
+   
+</div>
+        
 </h:main>

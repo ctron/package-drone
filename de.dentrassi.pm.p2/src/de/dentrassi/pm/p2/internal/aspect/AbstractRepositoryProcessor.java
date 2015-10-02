@@ -38,13 +38,15 @@ public abstract class AbstractRepositoryProcessor extends AbstractDocumentProces
 
     private final String basename;
 
-    public AbstractRepositoryProcessor ( final String title, final String basename, final boolean compressed, final DocumentCache cache )
+    public AbstractRepositoryProcessor ( final String title, final String basename, final boolean compressed, final DocumentCache cache, final Map<String, String> additionalProperties )
     {
         super ( cache );
 
         this.title = title;
         this.compressed = compressed;
         this.basename = basename;
+
+        this.properties.putAll ( additionalProperties );
 
         this.properties.put ( "p2.timestamp", "" + System.currentTimeMillis () );
 

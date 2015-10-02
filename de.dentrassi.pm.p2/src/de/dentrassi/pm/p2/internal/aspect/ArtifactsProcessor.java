@@ -41,9 +41,9 @@ public class ArtifactsProcessor extends AbstractRepositoryProcessor
 
     private final XPathExpression artifactsExpression;
 
-    public ArtifactsProcessor ( final String title, final boolean compressed, final DocumentCache cache, final XPathFactory pathFactory )
+    public ArtifactsProcessor ( final String title, final boolean compressed, final DocumentCache cache, final XPathFactory pathFactory, final Map<String, String> additionalProperties )
     {
-        super ( title, "artifacts", compressed, cache );
+        super ( title, "artifacts", compressed, cache, additionalProperties );
 
         this.doc = initRepository ( "artifactRepository", "org.eclipse.equinox.p2.artifact.repository.simpleRepository" );
         final Element root = this.doc.getDocumentElement ();
