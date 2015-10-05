@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package de.dentrassi.pm.p2.web;
+package de.dentrassi.pm.p2;
 
 import de.dentrassi.pm.common.MetaKeyBinding;
 import de.dentrassi.pm.p2.aspect.P2RepositoryAspect;
@@ -20,6 +20,9 @@ public class P2ChannelInformation
 
     @MetaKeyBinding ( namespace = P2RepositoryAspect.ID, key = "mirrorsUrl" )
     private String mirrorsUrl;
+
+    @MetaKeyBinding ( namespace = P2RepositoryAspect.ID, key = "statisticsUrl" )
+    private String statisticsUrl;
 
     public void setTitle ( final String title )
     {
@@ -39,5 +42,15 @@ public class P2ChannelInformation
     public String getMirrorsUrl ()
     {
         return this.mirrorsUrl;
+    }
+
+    public void setStatisticsUrl ( final String statisticsUrl )
+    {
+        this.statisticsUrl = statisticsUrl;
+    }
+
+    public String getStatisticsUrl ()
+    {
+        return this.statisticsUrl;
     }
 }

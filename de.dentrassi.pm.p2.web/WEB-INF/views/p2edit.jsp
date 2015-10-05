@@ -24,6 +24,14 @@
         <form:input path="mirrorsUrl" cssClass="form-control" placeholder="Optional URL to a P2 mirrors list"/>
     </h:formEntry>
     
+    <h:formEntry label="Statistics URL" path="statisticsUrl" command="command">
+        <form:input path="statisticsUrl" cssClass="form-control" placeholder="Optional URL to a P2 statistics collector"/>
+        <span class="help-block">
+        Also see <a href="https://wiki.eclipse.org/Equinox_p2_download_stats" target="_blank">Equinox p2 download stats</a> for more
+        informations about P2 download statistics.
+        </span>
+    </h:formEntry>
+    
     <h:formButtons>
         <button type="submit" class="btn btn-primary">Update</button>
         <button type="reset" class="btn btn-default">Reset</button>

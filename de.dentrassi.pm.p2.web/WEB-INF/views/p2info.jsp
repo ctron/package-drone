@@ -27,6 +27,9 @@
 			    
 			    <dt>Mirrors URL</dt>
 			    <dd><c:if test="${not empty channelInfo.mirrorsUrl }"><a href="${fn:escapeXml(channelInfo.mirrorsUrl) }" target="_blank">${fn:escapeXml(channelInfo.mirrorsUrl) }</a></c:if></dd>
+			    
+		        <dt>Statistics URL</dt>
+                <dd><c:if test="${not empty channelInfo.statisticsUrl }"><a href="${fn:escapeXml(channelInfo.mirrorsUrl) }" target="_blank">${fn:escapeXml(channelInfo.statisticsUrl) }</a></c:if></dd>
 	        </dl>
         </div>
    

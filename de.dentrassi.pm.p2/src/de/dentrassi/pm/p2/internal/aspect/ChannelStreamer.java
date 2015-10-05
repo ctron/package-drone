@@ -21,14 +21,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPathFactory;
 
 import de.dentrassi.pm.common.MetaKey;
+import de.dentrassi.pm.common.MetaKeys;
 import de.dentrassi.pm.common.XmlHelper;
+import de.dentrassi.pm.p2.P2ChannelInformation;
 import de.dentrassi.pm.storage.channel.ArtifactInformation;
 
 public class ChannelStreamer
 {
     private static final MetaKey KEY_REPO_TITLE = new MetaKey ( "p2.repo", "title" );
-
-    private static final MetaKey KEY_MIRRORS_URL = new MetaKey ( "p2.repo", "mirrorsUrl" );
 
     public static final MetaKey MK_FRAGMENT_TYPE = new MetaKey ( "p2.repo", "fragment-type" );
 
@@ -46,10 +46,24 @@ public class ChannelStreamer
 
         final Map<String, String> additionalProperties = new HashMap<> ();
 
-        final String mirrorsUrl = channelMetaData.get ( KEY_MIRRORS_URL );
-        if ( mirrorsUrl != null )
+        final P2ChannelInformation p2ChannelInformation = new P2ChannelInformation ();
+        try
         {
-            additionalProperties.put ( "p2.mirrorsURL", mirrorsUrl );
+            MetaKeys.bind ( p2ChannelInformation, channelMetaData );
+        }
+        catch ( final Exception e1 )
+        {
+            // run with defaults
+        }
+
+        if ( p2ChannelInformation.getMirrorsUrl () != null )
+        {
+            additionalProperties.put ( "p2.mirrorsURL", p2ChannelInformation.getMirrorsUrl () );
+        }
+        if ( p2ChannelInformation.getStatisticsUrl () != null )
+        {
+            // yes, the property is URI compared to the previous URL
+            additionalProperties.put ( "p2.statsURI", p2ChannelInformation.getStatisticsUrl () );
         }
 
         this.processors = new LinkedList<> ();
