@@ -4,5 +4,5 @@
    <service>
       <provide interface="javax.servlet.Filter"/>
    </service>
-   <properties entry="OSGI-INF/filter.propreties"/>
+   <properties entry="OSGI-INF/filter.properties"/>
 </scr:component>

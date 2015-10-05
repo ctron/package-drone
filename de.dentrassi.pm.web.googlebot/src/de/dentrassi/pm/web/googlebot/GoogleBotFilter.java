@@ -26,7 +26,7 @@ public class GoogleBotFilter implements Filter
 {
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
-    private static final CharSequence GOOGLE_BOT_FRAGMENT = System.getProperty ( "drone.web.googlebot.fragment", "googlebot" );
+    private static final String GOOGLE_BOT_FRAGMENT = System.getProperty ( "drone.web.googlebot.fragment", "googlebot" );
 
     @Override
     public void init ( final FilterConfig config ) throws ServletException
