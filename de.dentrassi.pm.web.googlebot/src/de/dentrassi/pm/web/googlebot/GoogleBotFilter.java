@@ -26,7 +26,7 @@ public class GoogleBotFilter implements Filter
 {
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
-    private static final String GOOGLE_BOT_FRAGMENT = System.getProperty ( "drone.web.googlebot.fragment", "googlebot" );
+    private static final String GOOGLE_BOT_FRAGMENT = System.getProperty ( "drone.web.googlebot.fragment", "googlebot" ).toLowerCase ();
 
     @Override
     public void init ( final FilterConfig config ) throws ServletException
@@ -41,9 +41,9 @@ public class GoogleBotFilter implements Filter
     @Override
     public void doFilter ( final ServletRequest request, final ServletResponse response, final FilterChain chain ) throws IOException, ServletException
     {
-        if ( isGoogleBot ( request ) )
+        if ( isGoogleBot ( request ) && response instanceof HttpServletResponse )
         {
-            chain.doFilter ( request, new GoogleBotWrapper ( (HttpServletResponse)request ) );
+            chain.doFilter ( request, new GoogleBotWrapper ( (HttpServletResponse)response ) );
         }
         else
         {
@@ -66,7 +66,7 @@ public class GoogleBotFilter implements Filter
                     continue;
                 }
 
-                if ( header.contains ( GOOGLE_BOT_FRAGMENT ) )
+                if ( header.toLowerCase ().contains ( GOOGLE_BOT_FRAGMENT ) )
                 {
                     return true;
                 }
