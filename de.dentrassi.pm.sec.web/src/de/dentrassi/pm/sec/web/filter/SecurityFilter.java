@@ -84,9 +84,9 @@ public class SecurityFilter implements Filter
 
     protected void processFilter ( final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain ) throws IOException, ServletException
     {
-        final HttpSession session = request.getSession ();
-
         logger.trace ( "Processing request: {}", request );
+
+        final HttpSession session = request.getSession ( false );
 
         if ( session != null )
         {
