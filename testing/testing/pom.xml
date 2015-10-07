@@ -2,9 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.dentrassi.package.drone</groupId>
+	<groupId>org.eclipse.packagedrone</groupId>
 	<artifactId>testing</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
+	
 	<name>Automated tests for Package Drone</name>
 
     <prerequisites>
@@ -86,7 +87,7 @@
 						<configuration>
 							<target>
 								<copy tofile="${project.build.directory}/package-drone-server.zip">
-									<fileset dir="${basedir}/../../product/target">
+									<fileset dir="${basedir}/../../products/org.eclipse.packagedrone.server/target">
 										<include name="package-drone-server-*.zip" />
 									</fileset>
 								</copy>

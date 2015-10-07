@@ -240,8 +240,10 @@
             	
                 <include name="org.slf4j.api_*.jar" />
             	
+            	<!-- using patched version
             	<include name="org.eclipse.equinox.jsp.jasper_*.jar" />
                 <include name="org.eclipse.equinox.jsp.jasper.source_*.jar" />
+                -->
             	
             	<!-- for testing -->
             	

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.storage.channel.transfer.impl">
-   <implementation class="de.dentrassi.pm.storage.channel.transfer.impl.TransferServiceImpl"/>
-   <service>
-      <provide interface="de.dentrassi.pm.storage.channel.transfer.TransferService"/>
-   </service>
-   <reference bind="setChannelService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.ChannelService" name="ChannelService" policy="static"/>
-   <reference bind="setXmlToolsFactory" cardinality="1..1" interface="de.dentrassi.osgi.xml.XmlToolsFactory" name="XmlToolsFactory" policy="static"/>
-</scr:component>

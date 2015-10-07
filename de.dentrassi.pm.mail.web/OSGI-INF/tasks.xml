@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" name="de.dentrassi.pm.mail.web.task">
-   <implementation class="de.dentrassi.pm.mail.web.MailServiceTaskProvider"/>
-   <service>
-      <provide interface="de.dentrassi.pm.todo.TaskProvider"/>
-   </service>
-   <reference bind="setService" cardinality="0..1" interface="de.dentrassi.pm.mail.service.MailService" name="MailService" policy="dynamic" unbind="unsetService"/>
-</scr:component>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.importer.http.controller">
-   <implementation class="de.dentrassi.pm.importer.http.web.ConfigurationController"/>
-   <service>
-      <provide interface="de.dentrassi.pm.importer.http.web.ConfigurationController"/>
-   </service>
-   <reference bind="setJobManager" cardinality="1..1" interface="de.dentrassi.osgi.job.JobManager" name="JobManager" policy="static"/>
-</scr:component>

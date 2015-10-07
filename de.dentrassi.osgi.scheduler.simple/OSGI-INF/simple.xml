@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" immediate="true" name="de.dentrassi.osgi.scheduler.simple">
-   <implementation class="de.dentrassi.osgi.scheduler.simple.internal.SimpleScheduler"/>
-   <service>
-      <provide interface="de.dentrassi.osgi.scheduler.simple.Scheduler"/>
-   </service>
-</scr:component>

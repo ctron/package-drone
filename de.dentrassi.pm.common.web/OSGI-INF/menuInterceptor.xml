@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="de.dentrassi.pm.storage.web.MenuInterceptor">
-   <implementation class="de.dentrassi.pm.common.web.internal.menu.MenuInterceptor"/>
-   <service>
-      <provide interface="de.dentrassi.osgi.web.interceptor.Interceptor"/>
-   </service>
-</scr:component>

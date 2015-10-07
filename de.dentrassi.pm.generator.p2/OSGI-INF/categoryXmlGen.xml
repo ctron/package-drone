@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<component xmlns="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.generator.p2.category.xml">
-   <implementation class="de.dentrassi.pm.generator.p2.xml.CategoryXmlGenerator"/>
-   <properties entry="OSGI-INF/categoryXmlGen.properties"/>
-   <service>
-      <provide interface="de.dentrassi.pm.generator.ArtifactGenerator"/>
-   </service>
-</component>

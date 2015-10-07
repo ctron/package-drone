@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.r5.repoAspect">
-   <implementation class="de.dentrassi.pm.r5.R5RepositoryAspectFactory"/>
-   <service>
-      <provide interface="de.dentrassi.pm.aspect.ChannelAspectFactory"/>
-   </service>
-   <properties entry="OSGI-INF/r5repo.properties"/>
-   <reference bind="setXmlFactory" cardinality="1..1" interface="de.dentrassi.osgi.xml.XmlToolsFactory" name="XmlToolsFactory" policy="static"/>
-</scr:component>

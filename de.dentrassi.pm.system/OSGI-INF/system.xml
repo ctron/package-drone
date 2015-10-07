@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.system.service">
-   <implementation class="de.dentrassi.pm.system.internal.SystemServiceImpl"/>
-   <service>
-      <provide interface="de.dentrassi.pm.system.SystemService"/>
-   </service>
-   <reference bind="setServer" cardinality="0..1" interface="org.eclipse.jetty.server.Server" name="Server" policy="dynamic" unbind="unsetServer"/>
-</scr:component>

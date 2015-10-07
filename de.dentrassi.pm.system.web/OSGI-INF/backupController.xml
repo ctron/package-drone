@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.system.web.backup">
-   <implementation class="de.dentrassi.pm.system.web.BackupController"/>
-   <service>
-      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
-   </service>
-   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.system.ConfigurationBackupService" name="ConfigurationBackupService" policy="static"/>
-   <reference bind="setSecurityService" cardinality="1..1" interface="de.dentrassi.pm.sec.service.SecurityService" name="SecurityService" policy="static"/>
-</scr:component>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.mail.web.config">
-   <implementation class="de.dentrassi.pm.mail.web.ConfigController"/>
-   <service>
-      <provide interface="de.dentrassi.pm.common.web.InterfaceExtender"/>
-   </service>
-   <reference bind="setAdmin" cardinality="1..1" interface="org.osgi.service.cm.ConfigurationAdmin" name="ConfigurationAdmin" policy="static"/>
-   <reference bind="setMailService" cardinality="0..1" interface="de.dentrassi.pm.mail.service.java.DefaultMailService" name="DefaultMailService" policy="dynamic" unbind="unsetMailService"/>
-</scr:component>

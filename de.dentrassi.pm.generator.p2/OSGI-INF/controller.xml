@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="de.dentrassi.pm.generator.p2.controller">
-   <implementation class="de.dentrassi.pm.generator.p2.GeneratorController"/>
-   <service>
-      <provide interface="de.dentrassi.pm.generator.p2.GeneratorController"/>
-   </service>
-   <reference bind="setService" cardinality="1..1" interface="de.dentrassi.pm.storage.channel.ChannelService" name="StorageService" policy="static"/>
-</scr:component>

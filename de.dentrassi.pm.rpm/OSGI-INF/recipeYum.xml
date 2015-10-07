@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.dentrassi.pm.rpm.recipe.yum">
-   <implementation class="de.dentrassi.pm.rpm.yum.internal.YumRecipe"/>
-   <service>
-      <provide interface="de.dentrassi.pm.aspect.recipe.Recipe"/>
-   </service>
-   <properties entry="OSGI-INF/recipeYum.properties"/>
-</scr:component>
