@@ -20,7 +20,6 @@ Export-Package: de.dentrassi.pm.common;version="1.0.0";
    javax.xml.transform,
    javax.xml.xpath",
  de.dentrassi.pm.common.event;version="1.0.0",
- de.dentrassi.pm.common.lm;version="1.0.0",
  de.dentrassi.pm.common.servlet;version="1.0.0";uses:="javax.servlet.http",
  de.dentrassi.pm.common.utils;version="1.0.0"
 Bundle-Activator: de.dentrassi.pm.common.internal.Activator
