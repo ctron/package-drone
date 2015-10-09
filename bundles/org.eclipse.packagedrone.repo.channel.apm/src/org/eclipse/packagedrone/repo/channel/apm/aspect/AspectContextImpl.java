@@ -525,7 +525,7 @@ public class AspectContextImpl
     {
         logger.debug ( "fireArtifactEvent - artifact: {}, event: {}", modifiedArtifact, event );
 
-        for ( final ArtifactInformation artifact : this.context.getArtifacts ().values () )
+        for ( final ArtifactInformation artifact : this.context.getGeneratorArtifacts ().values () )
         {
             logger.trace ( "\tTest artifact: {}", artifact );
 

@@ -34,16 +34,16 @@ import org.eclipse.packagedrone.repo.channel.CacheEntry;
 import org.eclipse.packagedrone.repo.channel.CacheEntryInformation;
 import org.eclipse.packagedrone.repo.channel.ChannelDetails;
 import org.eclipse.packagedrone.repo.channel.ChannelState;
+import org.eclipse.packagedrone.repo.channel.ChannelState.Builder;
 import org.eclipse.packagedrone.repo.channel.IdTransformer;
 import org.eclipse.packagedrone.repo.channel.ValidationMessage;
-import org.eclipse.packagedrone.repo.channel.ChannelState.Builder;
 import org.eclipse.packagedrone.repo.channel.apm.aspect.AspectContextImpl;
 import org.eclipse.packagedrone.repo.channel.apm.aspect.AspectMapModel;
 import org.eclipse.packagedrone.repo.channel.apm.aspect.AspectableContext;
 import org.eclipse.packagedrone.repo.channel.apm.internal.Activator;
 import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore;
-import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore.Transaction;
+import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.provider.ModifyContext;
 import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.storage.apm.StorageManager;
@@ -53,6 +53,8 @@ import org.osgi.service.event.EventAdmin;
 
 public class ModifyContextImpl implements ModifyContext, AspectableContext
 {
+    private static final String FACET_GENERATOR = "generator";
+
     private final String localChannelId;
 
     private final EventAdmin eventAdmin;
@@ -66,6 +68,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     private final Map<String, ArtifactInformation> artifacts;
 
     private final Map<String, ArtifactInformation> modArtifacts;
+
+    private final Map<String, ArtifactInformation> generatorArtifacts;
+
+    private final Map<String, ArtifactInformation> modGeneratorArtifacts;
 
     private final Map<MetaKey, CacheEntryInformation> cacheEntries;
 
@@ -94,12 +100,18 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         this.model = new ChannelModel ( other );
 
         this.modArtifacts = new HashMap<> ( other.getArtifacts ().size () );
+        this.modGeneratorArtifacts = new HashMap<> ();
         for ( final Map.Entry<String, ArtifactModel> am : other.getArtifacts ().entrySet () )
         {
             final ArtifactInformation art = ArtifactModel.toInformation ( am );
+            if ( art.is ( FACET_GENERATOR ) )
+            {
+                this.modGeneratorArtifacts.put ( art.getId (), art );
+            }
             this.modArtifacts.put ( art.getId (), art );
         }
         this.artifacts = Collections.unmodifiableMap ( this.modArtifacts );
+        this.generatorArtifacts = Collections.unmodifiableMap ( this.modGeneratorArtifacts );
 
         this.state = new ChannelState.Builder ();
         this.state.setDescription ( other.getDescription () );
@@ -174,6 +186,12 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public Map<String, ArtifactInformation> getArtifacts ()
     {
         return this.artifacts;
+    }
+
+    @Override
+    public Map<String, ArtifactInformation> getGeneratorArtifacts ()
+    {
+        return this.generatorArtifacts;
     }
 
     @Override
@@ -258,7 +276,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         updateArtifact ( artifactId, artifact );
 
-        if ( artifact.getFacets ().contains ( "generator" ) )
+        if ( artifact.getFacets ().contains ( FACET_GENERATOR ) )
         {
             this.aspectContext.regenerate ( artifactId );
         }
@@ -386,6 +404,11 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
             this.model.addArtifact ( ai );
             this.modArtifacts.put ( ai.getId (), ai );
 
+            if ( ai.is ( FACET_GENERATOR ) )
+            {
+                this.modGeneratorArtifacts.put ( ai.getId (), ai );
+            }
+
             if ( parent != null )
             {
                 // add as child
@@ -447,6 +470,13 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 parent.getChildIds ().remove ( id );
                 updateArtifact ( ai.getParentId (), parent );
             }
+        }
+
+        // remove from generators
+
+        if ( ai.is ( FACET_GENERATOR ) )
+        {
+            this.modGeneratorArtifacts.remove ( id );
         }
 
         // refresh number of artifacts
@@ -563,6 +593,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
                 throw new RuntimeException ( "Failed to delete artifact: " + art, e );
             }
         }
+
+        // clear generators
+
+        this.modGeneratorArtifacts.clear ();
 
         // clear cache entries
 

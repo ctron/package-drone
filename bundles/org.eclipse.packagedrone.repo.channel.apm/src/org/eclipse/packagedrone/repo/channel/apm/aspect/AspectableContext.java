@@ -46,6 +46,8 @@ public interface AspectableContext
 
     public Map<String, ArtifactInformation> getArtifacts ();
 
+    public Map<String, ArtifactInformation> getGeneratorArtifacts ();
+
     public Map<MetaKey, String> getChannelProvidedMetaData ();
 
     public void createCacheEntry ( MetaKey metaKey, String name, String mimeType, IOConsumer<OutputStream> creator ) throws IOException;
