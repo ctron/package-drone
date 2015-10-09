@@ -11,6 +11,7 @@
 package org.eclipse.packagedrone.repo.adapter.p2.internal.aspect;
 
 import static org.eclipse.packagedrone.repo.XmlHelper.getElementValue;
+import static org.eclipse.packagedrone.repo.XmlHelper.iter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,7 +26,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.eclipse.packagedrone.repo.XmlHelper;
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +47,6 @@ public class ChecksumValidatorProcessor extends AbstractDocumentProcessor
 
     private final Multimap<String, String> checksumArtifacts = HashMultimap.create ();
 
-    private final XPathExpression artifactExpression;
-
     private final XPathExpression md5Expression;
 
     public ChecksumValidatorProcessor ( final DocumentCache cache, final XPathFactory pathFactory ) throws XPathExpressionException
@@ -56,7 +54,6 @@ public class ChecksumValidatorProcessor extends AbstractDocumentProcessor
         super ( cache );
 
         final XPath path = pathFactory.newXPath ();
-        this.artifactExpression = path.compile ( "//artifact" );
         this.md5Expression = path.compile ( "./properties/property[@name='download.md5']/@value" );
     }
 
@@ -76,7 +73,7 @@ public class ChecksumValidatorProcessor extends AbstractDocumentProcessor
     private void processP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer, final Map<String, Object> context ) throws Exception
     {
         this.cache.stream ( artifact, streamer, ( info, doc ) -> {
-            for ( final Node node : XmlHelper.iter ( XmlHelper.executePath ( doc, this.artifactExpression ) ) )
+            for ( final Node node : iter ( doc.getElementsByTagName ( "artifact" ) ) )
             {
                 if ( ! ( node instanceof Element ) )
                 {

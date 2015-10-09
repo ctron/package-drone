@@ -11,7 +11,6 @@
 package org.eclipse.packagedrone.repo.adapter.p2.internal.aspect;
 
 import static org.eclipse.packagedrone.repo.XmlHelper.addElement;
-import static org.eclipse.packagedrone.repo.XmlHelper.executePath;
 import static org.eclipse.packagedrone.repo.XmlHelper.fixSize;
 import static org.eclipse.packagedrone.repo.XmlHelper.iter;
 
@@ -20,8 +19,6 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
@@ -35,8 +32,6 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
     private final Element units;
 
     private final Document doc;
-
-    private final XPathExpression unitExpression;
 
     public MetaDataProcessor ( final String title, final boolean compressed, final DocumentCache cache, final DocumentBuilder documentBuilder, final XPathFactory pathFactory, final Map<String, String> additionalProperties )
     {
@@ -56,15 +51,6 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
         addProperties ( root );
 
         this.units = addElement ( root, "units" );
-
-        try
-        {
-            this.unitExpression = pathFactory.newXPath ().compile ( "//unit" );
-        }
-        catch ( final XPathExpressionException e )
-        {
-            throw new RuntimeException ( e );
-        }
     }
 
     @Override
@@ -83,7 +69,7 @@ public class MetaDataProcessor extends AbstractRepositoryProcessor
     private void attachP2Artifact ( final ArtifactInformation artifact, final ArtifactStreamer streamer ) throws Exception
     {
         this.cache.stream ( artifact, streamer, ( info, doc ) -> {
-            for ( final Node node : iter ( executePath ( doc, this.unitExpression ) ) )
+            for ( final Node node : iter ( doc.getElementsByTagName ( "unit" ) ) )
             {
                 final Node nn = this.units.getOwnerDocument ().adoptNode ( node.cloneNode ( true ) );
                 this.units.appendChild ( nn );

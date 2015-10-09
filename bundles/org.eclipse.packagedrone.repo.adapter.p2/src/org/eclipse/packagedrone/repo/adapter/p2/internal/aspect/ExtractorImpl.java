@@ -13,20 +13,28 @@ package org.eclipse.packagedrone.repo.adapter.p2.internal.aspect;
 import static org.eclipse.packagedrone.repo.FileTypes.isXml;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.eclipse.packagedrone.repo.XmlHelper;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
+
 import org.eclipse.packagedrone.repo.aspect.Constants;
 import org.eclipse.packagedrone.repo.aspect.extract.Extractor;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.eclipse.packagedrone.utils.xml.XmlToolsFactory;
 
 public class ExtractorImpl implements Extractor
 {
-    private final XmlHelper xml = new XmlHelper ();
+    private final XmlToolsFactory xml;
+
+    public ExtractorImpl ( final XmlToolsFactory xmlToolsFactory )
+    {
+        this.xml = xmlToolsFactory;
+    }
 
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
@@ -36,13 +44,15 @@ public class ExtractorImpl implements Extractor
             return;
         }
 
-        if ( isArtifacts ( context.getPath () ) )
+        final String rootNodeName = getRootNodeName ( context.getPath () );
+
+        if ( "artifacts".equals ( rootNodeName ) )
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "artifacts" );
             metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Artifact Information" );
         }
-        else if ( isMetaData ( context.getPath () ) )
+        else if ( "units".equals ( rootNodeName ) )
         {
             metadata.put ( "fragment", "true" );
             metadata.put ( "fragment-type", "metadata" );
@@ -50,46 +60,24 @@ public class ExtractorImpl implements Extractor
         }
     }
 
-    private boolean isArtifacts ( final Path file )
+    private String getRootNodeName ( final Path file ) throws Exception
     {
-        try
+        final XMLInputFactory xin = this.xml.newXMLInputFactory ();
+
+        try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( file ) ) )
         {
-            try ( InputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
+            final XMLStreamReader reader = xin.createXMLStreamReader ( in );
+            while ( reader.hasNext () )
             {
-                final Document doc = this.xml.parse ( in );
-                final Element root = doc.getDocumentElement ();
-                if ( root.getNodeName ().equals ( "artifacts" ) )
+                if ( reader.nextTag () != XMLStreamConstants.START_ELEMENT )
                 {
-                    return true;
+                    return null;
                 }
+                final QName name = reader.getName ();
+                return name.getLocalPart ();
             }
         }
-        catch ( final Exception e )
-        {
-        }
-
-        return false;
-    }
-
-    private boolean isMetaData ( final Path file ) throws Exception
-    {
-        try
-        {
-            try ( InputStream in = new BufferedInputStream ( new FileInputStream ( file.toFile () ) ) )
-            {
-                final Document doc = this.xml.parse ( in );
-                final Element root = doc.getDocumentElement ();
-                if ( root.getNodeName ().equals ( "units" ) )
-                {
-                    return true;
-                }
-            }
-        }
-        catch ( final Exception e )
-        {
-        }
-
-        return false;
+        return null;
     }
 
 }
