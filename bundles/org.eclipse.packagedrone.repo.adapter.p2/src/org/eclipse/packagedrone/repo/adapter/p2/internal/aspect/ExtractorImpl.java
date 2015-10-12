@@ -10,25 +10,31 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.adapter.p2.internal.aspect;
 
-import static org.eclipse.packagedrone.repo.FileTypes.isXml;
-
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.stream.StreamResult;
 
+import org.eclipse.packagedrone.repo.XmlHelper;
+import org.eclipse.packagedrone.repo.adapter.p2.aspect.P2RepoConstants;
 import org.eclipse.packagedrone.repo.aspect.Constants;
 import org.eclipse.packagedrone.repo.aspect.extract.Extractor;
 import org.eclipse.packagedrone.utils.xml.XmlToolsFactory;
+import org.eclipse.scada.utils.str.StringHelper;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class ExtractorImpl implements Extractor
 {
+    static final String DELIM = ";";
+
     private final XmlToolsFactory xml;
 
     public ExtractorImpl ( final XmlToolsFactory xmlToolsFactory )
@@ -39,45 +45,104 @@ public class ExtractorImpl implements Extractor
     @Override
     public void extractMetaData ( final Extractor.Context context, final Map<String, String> metadata ) throws Exception
     {
-        if ( !isXml ( context.getPath () ) )
-        {
-            return;
-        }
+        final DocumentBuilder db = this.xml.newDocumentBuilder ();
 
-        final String rootNodeName = getRootNodeName ( context.getPath () );
-
-        if ( "artifacts".equals ( rootNodeName ) )
+        try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( context.getPath () ) ) )
         {
-            metadata.put ( "fragment", "true" );
-            metadata.put ( "fragment-type", "artifacts" );
-            metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Artifact Information" );
+            db.setErrorHandler ( null );
+            // use a stream, to prevent possible redirects to the file system
+            final Document doc = db.parse ( in );
+            if ( "artifacts".equals ( doc.getDocumentElement ().getTagName () ) )
+            {
+                processArtifacts ( context, metadata, doc );
+            }
+            else if ( "units".equals ( doc.getDocumentElement ().getTagName () ) )
+            {
+                processMetadata ( context, metadata, doc );
+            }
         }
-        else if ( "units".equals ( rootNodeName ) )
+        catch ( final Exception e )
         {
-            metadata.put ( "fragment", "true" );
-            metadata.put ( "fragment-type", "metadata" );
-            metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Meta Data Fragment" );
+            // ignore
         }
     }
 
-    private String getRootNodeName ( final Path file ) throws Exception
+    private void processArtifacts ( final Context context, final Map<String, String> metadata, final Document doc ) throws Exception
     {
-        final XMLInputFactory xin = this.xml.newXMLInputFactory ();
+        metadata.put ( "fragment", "true" );
+        metadata.put ( P2RepoConstants.KEY_FRAGMENT_TYPE.getKey (), "artifacts" );
+        metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Artifact Information" );
 
-        try ( InputStream in = new BufferedInputStream ( Files.newInputStream ( file ) ) )
+        int count = 0;
+
+        final List<String> keys = new LinkedList<> ();
+        final List<String> sums = new LinkedList<> ();
+
+        try ( StringWriter sw = new StringWriter () )
         {
-            final XMLStreamReader reader = xin.createXMLStreamReader ( in );
-            while ( reader.hasNext () )
+            for ( final Element ele : XmlHelper.iterElement ( doc.getDocumentElement (), "artifact" ) )
             {
-                if ( reader.nextTag () != XMLStreamConstants.START_ELEMENT )
+                if ( count > 0 )
                 {
-                    return null;
+                    sw.append ( DELIM );
                 }
-                final QName name = reader.getName ();
-                return name.getLocalPart ();
+                count++;
+                XmlHelper.write ( this.xml.newTransformerFactory (), ele, new StreamResult ( sw ), t -> {
+                    t.setOutputProperty ( OutputKeys.OMIT_XML_DECLARATION, "yes" );
+                } );
+                keys.add ( makeKey ( ele ) );
+
+                String md5 = "";
+                for ( final Element props : XmlHelper.iterElement ( ele, "properties" ) )
+                {
+                    for ( final Element p : XmlHelper.iterElement ( props, "property" ) )
+                    {
+                        if ( "download.md5".equals ( p.getAttribute ( "name" ) ) )
+                        {
+                            md5 = p.getAttribute ( "value" );
+                        }
+                    }
+                }
+                sums.add ( md5 );
             }
+
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_DATA.getKey (), sw.toString () );
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_KEYS.getKey (), StringHelper.join ( keys, DELIM ) );
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_MD5.getKey (), StringHelper.join ( sums, DELIM ) );
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_COUNT.getKey (), "" + count );
         }
-        return null;
+    }
+
+    private void processMetadata ( final Context context, final Map<String, String> metadata, final Document doc ) throws Exception
+    {
+        metadata.put ( "fragment", "true" );
+        metadata.put ( P2RepoConstants.KEY_FRAGMENT_TYPE.getKey (), "metadata" );
+        metadata.put ( Constants.KEY_ARTIFACT_LABEL, "P2 Meta Data Fragment" );
+
+        int count = 0;
+
+        try ( StringWriter sw = new StringWriter () )
+        {
+            for ( final Element ele : XmlHelper.iterElement ( doc.getDocumentElement (), "unit" ) )
+            {
+                count++;
+                XmlHelper.write ( this.xml.newTransformerFactory (), ele, new StreamResult ( sw ), t -> {
+                    t.setOutputProperty ( OutputKeys.OMIT_XML_DECLARATION, "yes" );
+                } );
+            }
+
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_DATA.getKey (), sw.toString () );
+            metadata.put ( P2RepoConstants.KEY_FRAGMENT_COUNT.getKey (), "" + count );
+        }
+    }
+
+    public static String makeKey ( final Element ele )
+    {
+        final String classifier = ele.getAttribute ( "classifier" );
+        final String id = ele.getAttribute ( "id" );
+        final String version = ele.getAttribute ( "version" );
+
+        return String.format ( "%s::%s::%s", classifier, id, version );
     }
 
 }
