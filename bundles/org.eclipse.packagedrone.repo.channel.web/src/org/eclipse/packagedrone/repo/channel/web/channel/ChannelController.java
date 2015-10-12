@@ -11,6 +11,8 @@
 package org.eclipse.packagedrone.repo.channel.web.channel;
 
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.io.IOException;
@@ -52,12 +54,12 @@ import org.eclipse.packagedrone.repo.channel.ChannelId;
 import org.eclipse.packagedrone.repo.channel.ChannelInformation;
 import org.eclipse.packagedrone.repo.channel.ChannelNotFoundException;
 import org.eclipse.packagedrone.repo.channel.ChannelService;
+import org.eclipse.packagedrone.repo.channel.ChannelService.By;
+import org.eclipse.packagedrone.repo.channel.ChannelService.ChannelOperation;
 import org.eclipse.packagedrone.repo.channel.DeployKeysChannelAdapter;
 import org.eclipse.packagedrone.repo.channel.DescriptorAdapter;
 import org.eclipse.packagedrone.repo.channel.ModifiableChannel;
 import org.eclipse.packagedrone.repo.channel.ReadableChannel;
-import org.eclipse.packagedrone.repo.channel.ChannelService.By;
-import org.eclipse.packagedrone.repo.channel.ChannelService.ChannelOperation;
 import org.eclipse.packagedrone.repo.channel.deploy.DeployAuthService;
 import org.eclipse.packagedrone.repo.channel.deploy.DeployGroup;
 import org.eclipse.packagedrone.repo.channel.deploy.DeployKey;
@@ -69,6 +71,9 @@ import org.eclipse.packagedrone.repo.channel.web.internal.Activator;
 import org.eclipse.packagedrone.repo.channel.web.utils.Channels;
 import org.eclipse.packagedrone.repo.generator.GeneratorProcessor;
 import org.eclipse.packagedrone.repo.manage.system.SitePrefixService;
+import org.eclipse.packagedrone.repo.web.sitemap.ChangeFrequency;
+import org.eclipse.packagedrone.repo.web.sitemap.SitemapContext;
+import org.eclipse.packagedrone.repo.web.sitemap.SitemapExtender;
 import org.eclipse.packagedrone.sec.web.controller.HttpContraintControllerInterceptor;
 import org.eclipse.packagedrone.sec.web.controller.Secured;
 import org.eclipse.packagedrone.sec.web.controller.SecuredControllerInterceptor;
@@ -106,7 +111,7 @@ import com.google.gson.GsonBuilder;
 @HttpConstraint ( rolesAllowed = "MANAGER" )
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 @ControllerInterceptor ( ProfilerControllerInterceptor.class )
-public class ChannelController implements InterfaceExtender
+public class ChannelController implements InterfaceExtender, SitemapExtender
 {
 
     private static final String DEFAULT_EXAMPLE_KEY = "xxxxx";
@@ -1074,6 +1079,22 @@ public class ChannelController implements InterfaceExtender
 
             return new ModelAndView ( "redirect:/channel/" + UrlEscapers.urlPathSegmentEscaper ().escape ( channelId ) + "/view" );
         } );
+    }
+
+    @Override
+    public void extend ( final SitemapContext context )
+    {
+        context.addLocation ( "/channel", empty (), of ( ChangeFrequency.DAILY ), empty () );
+
+        for ( final ChannelInformation ci : this.channelService.list () )
+        {
+            final String id = urlPathSegmentEscaper ().escape ( ci.getId () );
+
+            context.addLocation ( String.format ( "/channel/%s/view", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/viewPlain", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/details", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/validation", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
+        }
     }
 
 }
