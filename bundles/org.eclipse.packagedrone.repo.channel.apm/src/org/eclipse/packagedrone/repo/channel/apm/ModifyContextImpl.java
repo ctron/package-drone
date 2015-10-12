@@ -19,8 +19,10 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -638,6 +640,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     @Override
     public void removeAspects ( final Set<String> aspectIds )
     {
+        Objects.requireNonNull ( aspectIds, "'aspectIds' must not be null" );
+
         testLocked ();
 
         this.aspectContext.removeAspects ( aspectIds );
@@ -646,9 +650,14 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     }
 
     @Override
-    public void refreshAspects ( final Set<String> aspectIds )
+    public void refreshAspects ( Set<String> aspectIds )
     {
         testLocked ();
+
+        if ( aspectIds == null )
+        {
+            aspectIds = new HashSet<> ( this.model.getAspects ().getAspectIds () );
+        }
 
         this.aspectContext.refreshAspects ( aspectIds );
 
