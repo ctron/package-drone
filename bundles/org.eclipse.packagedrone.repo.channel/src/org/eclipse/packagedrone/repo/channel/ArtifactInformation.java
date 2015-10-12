@@ -65,7 +65,15 @@ public class ArtifactInformation implements Comparable<ArtifactInformation>, Val
         this.id = id;
 
         this.parentId = parentId;
-        this.childIds = childIds != null ? unmodifiableSet ( new CopyOnWriteArraySet<> ( childIds ) ) : Collections.emptySet ();
+
+        if ( childIds != null )
+        {
+            this.childIds = unmodifiableSet ( new CopyOnWriteArraySet<> ( childIds ) );
+        }
+        else
+        {
+            this.childIds = Collections.emptySet ();
+        }
 
         this.name = name;
         this.size = size;

@@ -22,12 +22,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.packagedrone.repo.MetaKey;
 import org.eclipse.packagedrone.repo.channel.apm.internal.Finally;
 import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore;
-import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore.Transaction;
+import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.provider.AccessContext;
 import org.eclipse.packagedrone.storage.apm.AbstractSimpleStorageModelProvider;
 import org.eclipse.packagedrone.storage.apm.StorageContext;
 import org.eclipse.packagedrone.storage.apm.util.ReplaceOnCloseWriter;
+import org.eclipse.packagedrone.utils.profiler.Profile;
+import org.eclipse.packagedrone.utils.profiler.Profile.Handle;
 import org.osgi.service.event.EventAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +106,6 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         final GsonBuilder builder = new GsonBuilder ();
 
         builder.setPrettyPrinting ();
-        builder.serializeNulls ();
         builder.setLongSerializationPolicy ( LongSerializationPolicy.STRING );
         builder.setDateFormat ( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
         builder.registerTypeAdapter ( MetaKey.class, new JsonDeserializer<MetaKey> () {
@@ -122,66 +123,75 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     @Override
     protected void persistWriteModel ( final StorageContext context, final ModifyContextImpl writeModel ) throws Exception
     {
-        final AtomicReference<Transaction> t = new AtomicReference<> ( writeModel.claimTransaction () );
-        final AtomicReference<CacheStore.Transaction> ct = new AtomicReference<> ( writeModel.claimCacheTransaction () );
-
-        final Finally f = new Finally ();
-
-        f.add ( () -> {
-            final Transaction v = t.get ();
-            if ( v != null )
-            {
-                v.rollback ();
-            }
-        } );
-
-        f.add ( () -> {
-            final CacheStore.Transaction v = ct.get ();
-            if ( v != null )
-            {
-                v.rollback ();
-            }
-        } );
-
-        try
+        try ( Handle h1 = Profile.start ( this, "persistWriteModel" ) )
         {
-            final Path path = makeStatePath ( context, this.channelId );
-            Files.createDirectories ( path.getParent () );
+            final AtomicReference<Transaction> t = new AtomicReference<> ( writeModel.claimTransaction () );
+            final AtomicReference<CacheStore.Transaction> ct = new AtomicReference<> ( writeModel.claimCacheTransaction () );
 
-            // commit blob store
+            final Finally f = new Finally ();
 
-            if ( t.get () != null )
+            f.add ( () -> {
+                final Transaction v = t.get ();
+                if ( v != null )
+                {
+                    v.rollback ();
+                }
+            } );
+
+            f.add ( () -> {
+                final CacheStore.Transaction v = ct.get ();
+                if ( v != null )
+                {
+                    v.rollback ();
+                }
+            } );
+
+            try
             {
-                t.get ().commit ();
-                t.set ( null );
+                final Path path = makeStatePath ( context, this.channelId );
+                Files.createDirectories ( path.getParent () );
+
+                // commit blob store
+
+                if ( t.get () != null )
+                {
+                    t.get ().commit ();
+                    t.set ( null );
+                }
+
+                // write model
+
+                try ( Handle h2 = Profile.start ( this, "persistWriteModel#write" ) )
+                {
+                    try ( final ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path, StandardCharsets.UTF_8 ) )
+                    {
+                        final Gson gson = createGson ();
+                        gson.toJson ( writeModel.getModel (), writer );
+
+                        writer.commit ();
+                    }
+                }
+
+                // commit cache store
+
+                if ( ct.get () != null )
+                {
+                    ct.get ().commit ();
+                    ct.set ( null );
+                }
             }
-
-            // write model
-
-            try ( final ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path, StandardCharsets.UTF_8 ) )
+            catch ( final Exception e )
             {
-                final Gson gson = createGson ();
-                gson.toJson ( writeModel.getModel (), writer );
-
-                writer.commit ();
+                logger.warn ( "Failed to persist model", e );
+                throw e;
             }
-
-            // commit cache store
-
-            if ( ct.get () != null )
+            finally
             {
-                ct.get ().commit ();
-                ct.set ( null );
+                try ( Handle h2 = Profile.start ( this, "persistWriteModel#finally" ) )
+                {
+                    f.runAll ();
+                }
             }
-        }
-        catch ( final Exception e )
-        {
-            logger.warn ( "Failed to persist model", e );
-            throw e;
-        }
-        finally
-        {
-            f.runAll ();
         }
     }
 
