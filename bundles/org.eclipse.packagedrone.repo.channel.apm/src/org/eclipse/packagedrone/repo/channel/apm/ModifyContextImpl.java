@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.channel.apm;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -121,6 +123,12 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         this.state.setNumberOfBytes ( this.modArtifacts.values ().stream ().mapToLong ( ArtifactInformation::getSize ).sum () );
         this.state.setValidationMessages ( other.getValidationMessages ().stream ().map ( ValidationMessageModel::toMessage ).collect ( Collectors.toList () ) );
 
+        {
+            final Instant creation = ofNullable ( other.getCreationTimestamp () ).map ( Date::toInstant ).orElseGet ( Instant::now );
+            this.state.setCreationTimestamp ( creation );
+            this.state.setModificationTimestamp ( ofNullable ( other.getModificationTimestamp () ).map ( Date::toInstant ).orElse ( creation ) );
+        }
+
         this.modCacheEntries = new HashMap<> ( other.getCacheEntries ().size () );
         for ( final Map.Entry<MetaKey, CacheEntryModel> cm : other.getCacheEntries ().entrySet () )
         {
@@ -201,6 +209,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         this.state.setDescription ( details.getDescription () );
         this.model.setDescription ( details.getDescription () );
+        markModified ();
     }
 
     @Override
@@ -238,6 +247,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         // clear cache
 
         this.metaDataCache = null;
+
+        // mark modified
+
+        markModified ();
 
         // re-aggregate
 
@@ -278,12 +291,18 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         updateArtifact ( artifactId, artifact );
 
+        // mark modified
+
+        markModified ();
+
+        // regenerate generators
+
         if ( artifact.getFacets ().contains ( FACET_GENERATOR ) )
         {
             this.aspectContext.regenerate ( artifactId );
         }
 
-        // TODO: update generic artifacts
+        // TODO: new behavior - regenerate normal artifacts since this might have changed virtual artifacts
     }
 
     private void testLocked ()
@@ -351,6 +370,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         testLocked ();
 
+        markModified ();
+
         if ( parentId != null )
         {
             final ArtifactInformation parent = this.modArtifacts.get ( parentId );
@@ -371,6 +392,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         testLocked ();
 
+        markModified ();
+
         return Exceptions.wrapException ( () -> this.aspectContext.createGeneratorArtifact ( generatorId, source, name, providedMetaData ) );
     }
 
@@ -378,6 +401,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public ArtifactInformation createPlainArtifact ( final String parentId, final InputStream source, final String name, final Map<MetaKey, String> providedMetaData, final Set<String> facets, final String virtualizerAspectId )
     {
         ensureTransaction ();
+
+        markModified ();
 
         final String id = UUID.randomUUID ().toString ();
 
@@ -433,6 +458,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
     private ArtifactInformation updateArtifact ( final String id, final ArtifactModel artifact )
     {
+        markModified ();
+
         final ArtifactInformation result = ArtifactModel.toInformation ( id, artifact );
         this.modArtifacts.put ( id, result );
         return result;
@@ -492,6 +519,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     @Override
     public ArtifactInformation deletePlainArtifact ( final String id )
     {
+        markModified ();
+
         try
         {
             final ArtifactInformation artifact = this.modArtifacts.get ( id );
@@ -515,6 +544,9 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public boolean deleteArtifact ( final String id )
     {
         testLocked ();
+
+        markModified ();
+
         ensureTransaction ();
 
         final ArtifactInformation artifact = this.modArtifacts.get ( id );
@@ -580,6 +612,9 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public void clear ()
     {
         testLocked ();
+
+        markModified ();
+
         ensureTransaction ();
         ensureCacheTransaction ();
 
@@ -634,6 +669,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         testLocked ();
 
+        markModified ();
+
         this.aspectContext.addAspects ( aspectIds );
     }
 
@@ -644,6 +681,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         testLocked ();
 
+        markModified ();
+
         this.aspectContext.removeAspects ( aspectIds );
 
         postAspectEvents ( aspectIds, "remove" );
@@ -653,6 +692,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     public void refreshAspects ( Set<String> aspectIds )
     {
         testLocked ();
+
+        markModified ();
 
         if ( aspectIds == null )
         {
@@ -683,6 +724,10 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         modification.accept ( art );
 
+        // mark modified
+
+        markModified ();
+
         // update from the model
 
         return updateArtifact ( artifactId, art );
@@ -711,6 +756,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         this.model.setExtractedMetaData ( new HashMap<> ( metaData ) );
         this.metaDataCache = null;
+        markModified ();
     }
 
     @Override
@@ -718,6 +764,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     {
         this.model.setValidationMessages ( messages.stream ().map ( ValidationMessageModel::fromMessage ).collect ( toList () ) );
         this.state.setValidationMessages ( messages );
+        markModified ();
     }
 
     @Override
@@ -732,6 +779,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         testLocked ();
 
         this.aspectContext.regenerate ( artifactId );
+        markModified ();
     }
 
     @Override
@@ -762,6 +810,8 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
         final CacheEntryInformation entry = new CacheEntryInformation ( key, name, size, mimeType, Instant.now () );
         this.modCacheEntries.put ( key, entry );
         this.model.getCacheEntries ().put ( key, CacheEntryModel.fromInformation ( entry ) );
+
+        markModified ();
     }
 
     @Override
@@ -794,5 +844,12 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
     private static String makeSafeTopic ( final String aspectId )
     {
         return aspectId.replaceAll ( "[^a-zA-Z0-9_\\-]", "_" );
+    }
+
+    private void markModified ()
+    {
+        final Instant now = Instant.now ();
+        this.model.setModificationTimestamp ( java.util.Date.from ( now ) );
+        this.state.setModificationTimestamp ( now );
     }
 }

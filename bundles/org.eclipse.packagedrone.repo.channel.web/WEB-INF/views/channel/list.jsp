@@ -6,11 +6,13 @@
 
 <%@ page import="org.eclipse.packagedrone.repo.channel.web.Tags"%>
     
-<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://eclipse.org/packagedrone/repo/channel" prefix="storage" %>
 <%@ taglib uri="http://eclipse.org/package-drone/web" prefix="web" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
 <%
 pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
@@ -30,6 +32,7 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
     	<th>Description</th>
     	<th>#</th>
     	<th>Size</th>
+    	<th>Modified</th>
     	<th>ID</th>
 	</tr>
 </thead>
@@ -42,6 +45,7 @@ pageContext.setAttribute ( "TAG", Tags.ACTION_TAG_CHANNELS );
 		    <td class="channel-description">${fn:escapeXml(channel.state.description) }</td>
 		    <td class="channel-count">${channel.state.numberOfArtifacts }</td>
 		    <td class="channel-size"><web:bytes amount="${channel.state.numberOfBytes }"/></td>
+		    <td class="channel-modified"><fmt:formatDate value="${ web:toDate(channel.state.modificationTimestamp) }" type="both" /></td>
 		    <td class="channel-id"><a href="<c:url value="/channel/${channel.id }/view"/>">${channel.id }</a></td>
 		</tr>
 	</c:forEach>

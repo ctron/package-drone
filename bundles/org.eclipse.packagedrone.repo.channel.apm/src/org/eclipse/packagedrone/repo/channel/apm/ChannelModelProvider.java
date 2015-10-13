@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.packagedrone.repo.MetaKey;
@@ -214,7 +215,12 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         catch ( final NoSuchFileException e )
         {
             // create a new model
-            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, new ChannelModel () );
+
+            final ChannelModel model = new ChannelModel ();
+
+            model.setCreationTimestamp ( new Date () );
+
+            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, model );
         }
     }
 

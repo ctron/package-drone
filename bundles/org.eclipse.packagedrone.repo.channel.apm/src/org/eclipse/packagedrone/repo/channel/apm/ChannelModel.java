@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,10 @@ public class ChannelModel
     private final AspectMapModel aspects;
 
     private List<ValidationMessageModel> validationMessages;
+
+    private Date creationTimestamp;
+
+    private Date modificationTimestamp;
 
     public ChannelModel ()
     {
@@ -143,6 +148,26 @@ public class ChannelModel
     public List<ValidationMessageModel> getValidationMessages ()
     {
         return this.validationMessages;
+    }
+
+    public void setCreationTimestamp ( final Date creationTimestamp )
+    {
+        this.creationTimestamp = creationTimestamp;
+    }
+
+    public Date getCreationTimestamp ()
+    {
+        return this.creationTimestamp;
+    }
+
+    public void setModificationTimestamp ( final Date modificationTimestamp )
+    {
+        this.modificationTimestamp = modificationTimestamp;
+    }
+
+    public Date getModificationTimestamp ()
+    {
+        return this.modificationTimestamp;
     }
 
 }
