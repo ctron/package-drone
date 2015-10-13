@@ -114,4 +114,10 @@
         <function-class>org.eclipse.packagedrone.web.tags.Functions</function-class>
         <function-signature>java.lang.String encode(java.lang.String)</function-signature>
     </function>
+    
+    <function>
+        <name>toDate</name>
+        <function-class>org.eclipse.packagedrone.web.tags.Functions</function-class>
+        <function-signature>java.util.Date toDate(java.time.Instant)</function-signature>
+    </function>
 </taglib>
