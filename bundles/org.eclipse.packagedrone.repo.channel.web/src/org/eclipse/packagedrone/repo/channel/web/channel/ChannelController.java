@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1089,11 +1090,12 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
         for ( final ChannelInformation ci : this.channelService.list () )
         {
             final String id = urlPathSegmentEscaper ().escape ( ci.getId () );
+            final Optional<Instant> lastMod = Optional.ofNullable ( ci.getState ().getModificationTimestamp () );
 
-            context.addLocation ( String.format ( "/channel/%s/view", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/viewPlain", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/details", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/validation", id ), empty (), of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/view", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/viewPlain", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/details", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+            context.addLocation ( String.format ( "/channel/%s/validation", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
         }
     }
 
