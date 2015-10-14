@@ -17,13 +17,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
 
 import org.eclipse.packagedrone.repo.manage.system.SitePrefixService;
 import org.eclipse.packagedrone.utils.xml.XmlToolsFactory;
 
 public class SitemapServlet extends HttpServlet
 {
+    private static final String SITEMAP_XML = "/sitemap.xml";
+
     private static final long serialVersionUID = 1L;
 
     private XmlToolsFactory xml;
@@ -46,7 +47,8 @@ public class SitemapServlet extends HttpServlet
     public void init () throws ServletException
     {
         super.init ();
-        this.generator = new SitemapGenerator ( this.prefixService::getSitePrefix );
+        final XMLOutputFactory xof = this.xml.newXMLOutputFactory ();
+        this.generator = new SitemapGenerator ( this.prefixService::getSitePrefix, xof );
     }
 
     @Override
@@ -59,17 +61,37 @@ public class SitemapServlet extends HttpServlet
     @Override
     protected void doGet ( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        final XMLOutputFactory xof = this.xml.newXMLOutputFactory ();
+        final String path = req.getRequestURI ();
 
+        if ( SITEMAP_XML.equals ( path ) )
+        {
+            processMain ( resp );
+        }
+        else if ( path.length () > SITEMAP_XML.length () + 1 /* cut off leading slash */ )
+        {
+            final String subPath = path.substring ( SITEMAP_XML.length () + 1 );
+            processSub ( subPath, resp );
+        }
+        else
+        {
+            handleNotFound ( req, resp );
+        }
+    }
+
+    private void processSub ( final String localPath, final HttpServletResponse response )
+    {
+    }
+
+    private void handleNotFound ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
+    {
+        response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
+        response.setContentType ( "text/plain" );
+        response.getWriter ().format ( "Resource '%s' could not be found", request.getRequestURI () );
+    }
+
+    private void processMain ( final HttpServletResponse resp ) throws IOException
+    {
         resp.setContentType ( "text/xml" );
-
-        try
-        {
-            this.generator.write ( xof.createXMLStreamWriter ( resp.getWriter () ) );
-        }
-        catch ( final XMLStreamException e )
-        {
-            throw new ServletException ( e );
-        }
+        this.generator.write ( resp.getWriter () );
     }
 }
