@@ -23,7 +23,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-public class SitemapIndexWriter implements AutoCloseable
+public class SitemapIndexWriter implements SitemapIndexContext, AutoCloseable
 {
 
     private static final String NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
@@ -91,6 +91,7 @@ public class SitemapIndexWriter implements AutoCloseable
         }
     }
 
+    @Override
     public void addLocation ( String localUrl, final Optional<Instant> lastModification )
     {
         if ( !localUrl.startsWith ( "/" ) )

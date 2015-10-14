@@ -16,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLOutputFactory;
 
 import org.eclipse.packagedrone.repo.manage.system.SitePrefixService;
 import org.eclipse.packagedrone.utils.xml.XmlToolsFactory;
@@ -31,7 +30,7 @@ public class SitemapServlet extends HttpServlet
 
     private SitePrefixService prefixService;
 
-    private SitemapGenerator generator;
+    private SitemapProcessor processor;
 
     public void setXml ( final XmlToolsFactory xml )
     {
@@ -47,15 +46,14 @@ public class SitemapServlet extends HttpServlet
     public void init () throws ServletException
     {
         super.init ();
-        final XMLOutputFactory xof = this.xml.newXMLOutputFactory ();
-        this.generator = new SitemapGenerator ( this.prefixService::getSitePrefix, xof );
+        this.processor = new SitemapProcessor ( this.prefixService::getSitePrefix, SITEMAP_XML, this.xml.newXMLOutputFactory () );
     }
 
     @Override
     public void destroy ()
     {
         super.destroy ();
-        this.generator.dispose ();
+        this.processor.dispose ();
     }
 
     @Override
@@ -63,23 +61,25 @@ public class SitemapServlet extends HttpServlet
     {
         final String path = req.getRequestURI ();
 
-        if ( SITEMAP_XML.equals ( path ) )
-        {
-            processMain ( resp );
-        }
-        else if ( path.length () > SITEMAP_XML.length () + 1 /* cut off leading slash */ )
-        {
-            final String subPath = path.substring ( SITEMAP_XML.length () + 1 );
-            processSub ( subPath, resp );
-        }
-        else
+        if ( path == null || !path.startsWith ( SITEMAP_XML ) )
         {
             handleNotFound ( req, resp );
         }
-    }
+        else
+        {
+            String subPath = path.substring ( SITEMAP_XML.length () );
 
-    private void processSub ( final String localPath, final HttpServletResponse response )
-    {
+            if ( subPath.startsWith ( "/" ) )
+            {
+                // cut off leading slash
+                subPath = subPath.substring ( 1 );
+            }
+
+            if ( !this.processor.process ( resp, subPath ) )
+            {
+                handleNotFound ( req, resp );
+            }
+        }
     }
 
     private void handleNotFound ( final HttpServletRequest request, final HttpServletResponse response ) throws IOException
@@ -87,11 +87,5 @@ public class SitemapServlet extends HttpServlet
         response.setStatus ( HttpServletResponse.SC_NOT_FOUND );
         response.setContentType ( "text/plain" );
         response.getWriter ().format ( "Resource '%s' could not be found", request.getRequestURI () );
-    }
-
-    private void processMain ( final HttpServletResponse resp ) throws IOException
-    {
-        resp.setContentType ( "text/xml" );
-        this.generator.write ( resp.getWriter () );
     }
 }
