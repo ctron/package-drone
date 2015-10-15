@@ -24,6 +24,12 @@ public class BasicTest extends AbstractServerTest
     }
 
     @Test
+    public void testSitemap () throws Exception
+    {
+        testUrl ( "/sitemap.xml" );
+    }
+
+    @Test
     public void testP2 () throws Exception
     {
         testUrl ( "/p2" );
