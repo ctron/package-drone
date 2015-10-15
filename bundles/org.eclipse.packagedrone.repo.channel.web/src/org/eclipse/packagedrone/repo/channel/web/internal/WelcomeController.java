@@ -14,7 +14,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 import org.eclipse.packagedrone.repo.web.sitemap.ChangeFrequency;
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapContext;
+import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapExtender;
 import org.eclipse.packagedrone.web.Controller;
 import org.eclipse.packagedrone.web.ModelAndView;
@@ -33,7 +33,7 @@ public class WelcomeController implements SitemapExtender
     }
 
     @Override
-    public void extend ( final SitemapContext context )
+    public void extend ( final UrlSetContext context )
     {
         context.addLocation ( "/", empty (), of ( ChangeFrequency.MONTHLY ), of ( 0.1 ) );
     }

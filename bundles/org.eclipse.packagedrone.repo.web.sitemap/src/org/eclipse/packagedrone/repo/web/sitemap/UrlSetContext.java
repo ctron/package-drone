@@ -15,7 +15,7 @@ import static java.util.Optional.empty;
 import java.time.Instant;
 import java.util.Optional;
 
-public interface SitemapContext
+public interface UrlSetContext
 {
     public default void addLocation ( final String localUrl )
     {

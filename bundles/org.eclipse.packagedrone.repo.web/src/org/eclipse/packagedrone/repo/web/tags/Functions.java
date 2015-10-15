@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.channel.web.tags;
+package org.eclipse.packagedrone.repo.web.tags;
 
 import java.util.ArrayList;
 import java.util.Collection;

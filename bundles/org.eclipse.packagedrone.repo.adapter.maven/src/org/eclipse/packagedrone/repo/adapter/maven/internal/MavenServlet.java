@@ -29,7 +29,7 @@ import org.eclipse.packagedrone.repo.channel.ModifiableChannel;
 import org.eclipse.packagedrone.repo.channel.ReadableChannel;
 import org.eclipse.packagedrone.repo.channel.ChannelService.By;
 import org.eclipse.packagedrone.repo.channel.servlet.AbstractChannelServiceServlet;
-import org.eclipse.packagedrone.repo.channel.web.utils.ChannelCacheHandler;
+import org.eclipse.packagedrone.repo.web.utils.ChannelCacheHandler;
 import org.eclipse.packagedrone.utils.profiler.Profile;
 import org.eclipse.packagedrone.utils.profiler.Profile.Handle;
 import org.eclipse.scada.utils.lang.Holder;

@@ -12,5 +12,5 @@ package org.eclipse.packagedrone.repo.web.sitemap;
 
 public interface SitemapExtender
 {
-    public void extend ( SitemapContext context );
+    public void extend ( UrlSetContext context );
 }

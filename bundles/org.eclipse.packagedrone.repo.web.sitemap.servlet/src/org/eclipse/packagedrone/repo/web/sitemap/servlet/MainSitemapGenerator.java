@@ -8,16 +8,17 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.web.sitemap.internal;
+package org.eclipse.packagedrone.repo.web.sitemap.servlet;
 
 import java.time.Instant;
 import java.util.Optional;
 
 import org.eclipse.packagedrone.repo.web.sitemap.ChangeFrequency;
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapContext;
+import org.eclipse.packagedrone.repo.web.sitemap.SitemapContextCreator;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapExtender;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapGenerator;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapIndexContext;
+import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
 import org.eclipse.scada.utils.lang.Holder;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -38,25 +39,25 @@ public class MainSitemapGenerator implements SitemapGenerator
     }
 
     @Override
-    public void gather ( final SitemapIndexContext context )
+    public void gatherRoots ( final SitemapIndexContext context )
     {
         context.addLocation ( "main", findLastMod () );
     }
 
     @Override
-    public boolean render ( final String path, final SitemapContext context )
+    public void render ( final String path, final SitemapContextCreator contextCreator )
     {
         if ( !path.equals ( "main" ) )
         {
-            return false;
+            return;
         }
+
+        final UrlSetContext context = contextCreator.createUrlSet ();
 
         for ( final SitemapExtender extender : this.tracker.getTracked ().values () )
         {
             extender.extend ( context );
         }
-
-        return true;
     }
 
     protected Optional<Instant> findLastMod ()
@@ -65,7 +66,7 @@ public class MainSitemapGenerator implements SitemapGenerator
 
         for ( final SitemapExtender extender : this.tracker.getTracked ().values () )
         {
-            extender.extend ( new SitemapContext () {
+            extender.extend ( new UrlSetContext () {
 
                 @Override
                 public void addLocation ( final String localUrl, final Optional<Instant> lastModification, final Optional<ChangeFrequency> changeFrequency, final Optional<Double> priority )

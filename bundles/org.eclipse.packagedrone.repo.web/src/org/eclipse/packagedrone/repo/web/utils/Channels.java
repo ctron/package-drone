@@ -1,4 +1,4 @@
-package org.eclipse.packagedrone.repo.channel.web.utils;
+package org.eclipse.packagedrone.repo.web.utils;
 
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
 

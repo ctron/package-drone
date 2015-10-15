@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="org.eclipse.packagedrone.repo.web.sitemap.servlet">
-   <implementation class="org.eclipse.packagedrone.repo.web.sitemap.internal.SitemapServlet"/>
+   <implementation class="org.eclipse.packagedrone.repo.web.sitemap.servlet.SitemapServlet"/>
    <property name="alias" type="String" value="/sitemap.xml"/>
    <service>
       <provide interface="javax.servlet.Servlet"/>

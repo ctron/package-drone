@@ -13,6 +13,7 @@ package org.eclipse.packagedrone.repo.channel.web.channel;
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
 
 import java.io.IOException;
@@ -69,12 +70,12 @@ import org.eclipse.packagedrone.repo.channel.web.Tags;
 import org.eclipse.packagedrone.repo.channel.web.breadcrumbs.Breadcrumbs;
 import org.eclipse.packagedrone.repo.channel.web.breadcrumbs.Breadcrumbs.Entry;
 import org.eclipse.packagedrone.repo.channel.web.internal.Activator;
-import org.eclipse.packagedrone.repo.channel.web.utils.Channels;
 import org.eclipse.packagedrone.repo.generator.GeneratorProcessor;
 import org.eclipse.packagedrone.repo.manage.system.SitePrefixService;
 import org.eclipse.packagedrone.repo.web.sitemap.ChangeFrequency;
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapContext;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapExtender;
+import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
+import org.eclipse.packagedrone.repo.web.utils.Channels;
 import org.eclipse.packagedrone.sec.web.controller.HttpContraintControllerInterceptor;
 import org.eclipse.packagedrone.sec.web.controller.Secured;
 import org.eclipse.packagedrone.sec.web.controller.SecuredControllerInterceptor;
@@ -1083,20 +1084,27 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
     }
 
     @Override
-    public void extend ( final SitemapContext context )
+    public void extend ( final UrlSetContext context )
     {
-        context.addLocation ( "/channel", empty (), of ( ChangeFrequency.DAILY ), empty () );
+        // add location of channels page
+
+        context.addLocation ( "/channel", ofNullable ( calcLastMod () ), of ( ChangeFrequency.DAILY ), empty () );
+    }
+
+    private Instant calcLastMod ()
+    {
+        Instant globalLastMod = null;
 
         for ( final ChannelInformation ci : this.channelService.list () )
         {
-            final String id = urlPathSegmentEscaper ().escape ( ci.getId () );
-            final Optional<Instant> lastMod = Optional.ofNullable ( ci.getState ().getModificationTimestamp () );
+            final Optional<Instant> lastMod = ofNullable ( ci.getState ().getModificationTimestamp () );
 
-            context.addLocation ( String.format ( "/channel/%s/view", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/viewPlain", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/details", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-            context.addLocation ( String.format ( "/channel/%s/validation", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+            if ( globalLastMod == null || lastMod.get ().isAfter ( globalLastMod ) )
+            {
+                globalLastMod = lastMod.get ();
+            }
         }
+        return globalLastMod;
     }
 
 }

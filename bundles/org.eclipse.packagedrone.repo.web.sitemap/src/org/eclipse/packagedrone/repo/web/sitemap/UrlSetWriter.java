@@ -23,7 +23,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-public class UrlSetWriter implements AutoCloseable, SitemapContext
+public class UrlSetWriter implements AutoCloseable, UrlSetContext
 {
 
     private static final String NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
@@ -124,7 +124,7 @@ public class UrlSetWriter implements AutoCloseable, SitemapContext
             this.out.writeCharacters ( IN );
             this.out.writeEndElement ();
         }
-        catch ( final XMLStreamException e )
+        catch ( final Exception e )
         {
             throw new RuntimeException ( e );
         }

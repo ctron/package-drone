@@ -31,5 +31,5 @@ Import-Package: com.google.common.hash;version="18.0.0",
  org.slf4j;version="1.7.2"
 Service-Component: OSGI-INF/aspect.xml, OSGI-INF/aspectApt.xml,OSGI-INF/groupDebian.xml,
  OSGI-INF/servlet.xml
-Export-Package: org.eclipse.packagedrone.repo.adapter.deb;version="1.0.0";uses:="de.dentrassi.pm.storage.service,javax.servlet.http,de.dentrassi.pm.common",
- org.eclipse.packagedrone.repo.adapter.deb.aspect;version="1.0.0";uses:="de.dentrassi.pm.aspect"
+Export-Package: org.eclipse.packagedrone.repo.adapter.deb;version="1.0.0";uses:="org.eclipse.packagedrone.repo",
+ org.eclipse.packagedrone.repo.adapter.deb.aspect;version="1.0.0";uses:="org.eclipse.packagedrone.repo.aspect,org.eclipse.packagedrone.repo"

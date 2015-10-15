@@ -12,7 +12,7 @@ package org.eclipse.packagedrone.repo.web.sitemap;
 
 public interface SitemapGenerator
 {
-    public void gather ( SitemapIndexContext context );
+    public void gatherRoots ( SitemapIndexContext context );
 
-    public boolean render ( String path, SitemapContext context );
+    public void render ( String path, SitemapContextCreator contextCreator );
 }

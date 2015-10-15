@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.web.sitemap.internal;
+package org.eclipse.packagedrone.repo.web.sitemap.servlet;
 
 import java.io.IOException;
 
