@@ -114,6 +114,7 @@ public class SitemapIndexWriter implements SitemapIndexContext, AutoCloseable
 
             this.out.writeCharacters ( IN );
             this.out.writeEndElement ();
+            this.out.writeCharacters ( NL );
         }
         catch ( final XMLStreamException e )
         {
