@@ -18,9 +18,8 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapContextCreator;
+import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContextCreator;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapGenerator;
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapIndexContext;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapIndexWriter;
 import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
 import org.eclipse.packagedrone.repo.web.sitemap.UrlSetWriter;
@@ -81,7 +80,7 @@ public class SitemapProcessor
         }
     }
 
-    private class ContextCreator implements SitemapContextCreator
+    private class ContextCreator implements UrlSetContextCreator
     {
         private final HttpServletResponse response;
 
@@ -97,35 +96,6 @@ public class SitemapProcessor
         public boolean isUsed ()
         {
             return this.used;
-        }
-
-        @Override
-        public SitemapIndexContext createSitemapIndex ()
-        {
-            if ( this.used )
-            {
-                throw new IllegalStateException ( "Context creator may only be used once" );
-            }
-
-            this.used = true;
-
-            this.response.setContentType ( "text/xml" );
-
-            try
-            {
-                final String prefix = ofNullable ( SitemapProcessor.this.prefixSupplier.get () ).orElse ( "http://localhost" ) + SitemapProcessor.this.sitemapUrl;
-                this.response.setContentType ( "text/xml" );
-
-                final SitemapIndexWriter result = new SitemapIndexWriter ( this.response.getWriter (), prefix, SitemapProcessor.this.outputFactory );
-
-                this.finish = result::finish;
-
-                return result;
-            }
-            catch ( final IOException e )
-            {
-                throw new RuntimeException ( e );
-            }
         }
 
         @Override

@@ -14,11 +14,11 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.eclipse.packagedrone.repo.web.sitemap.ChangeFrequency;
-import org.eclipse.packagedrone.repo.web.sitemap.SitemapContextCreator;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapExtender;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapGenerator;
 import org.eclipse.packagedrone.repo.web.sitemap.SitemapIndexContext;
 import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
+import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContextCreator;
 import org.eclipse.scada.utils.lang.Holder;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -45,7 +45,7 @@ public class MainSitemapGenerator implements SitemapGenerator
     }
 
     @Override
-    public void render ( final String path, final SitemapContextCreator contextCreator )
+    public void render ( final String path, final UrlSetContextCreator contextCreator )
     {
         if ( !path.equals ( "main" ) )
         {

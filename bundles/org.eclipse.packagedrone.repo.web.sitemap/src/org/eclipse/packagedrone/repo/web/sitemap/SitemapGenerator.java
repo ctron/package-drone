@@ -14,5 +14,5 @@ public interface SitemapGenerator
 {
     public void gatherRoots ( SitemapIndexContext context );
 
-    public void render ( String path, SitemapContextCreator contextCreator );
+    public void render ( String path, UrlSetContextCreator context );
 }

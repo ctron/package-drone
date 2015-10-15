@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.channel.web.channel;
+package org.eclipse.packagedrone.repo.osgi.web;
 
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
 import static java.util.Optional.empty;
@@ -26,7 +26,7 @@ import org.eclipse.packagedrone.repo.web.sitemap.SitemapIndexContext;
 import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContext;
 import org.eclipse.packagedrone.repo.web.sitemap.UrlSetContextCreator;
 
-public class ChannelSitemapGenerator implements SitemapGenerator
+public class OsgiSitemapGenerator implements SitemapGenerator
 {
     private ChannelService channelService;
 
@@ -38,7 +38,7 @@ public class ChannelSitemapGenerator implements SitemapGenerator
     @Override
     public void gatherRoots ( final SitemapIndexContext context )
     {
-        context.addLocation ( "channels", calcLastMod () );
+        context.addLocation ( "channels_osgi", calcLastMod () );
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ChannelSitemapGenerator implements SitemapGenerator
     {
         final String[] toks = path.split ( "/" );
 
-        if ( toks.length == 1 && "channels".equals ( toks[0] ) )
+        if ( toks.length == 1 && "channels_osgi".equals ( toks[0] ) )
         {
             // write out url set of all channels
 
@@ -54,13 +54,16 @@ public class ChannelSitemapGenerator implements SitemapGenerator
 
             for ( final ChannelInformation ci : this.channelService.list () )
             {
+                if ( !ci.hasAspect ( "osgi" ) )
+                {
+                    continue;
+                }
+
                 final Optional<Instant> lastMod = ofNullable ( ci.getState ().getModificationTimestamp () );
                 final String id = urlPathSegmentEscaper ().escape ( ci.getId () );
 
-                context.addLocation ( String.format ( "/channel/%s/view", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-                context.addLocation ( String.format ( "/channel/%s/viewPlain", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-                context.addLocation ( String.format ( "/channel/%s/details", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
-                context.addLocation ( String.format ( "/channel/%s/validation", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+                context.addLocation ( String.format ( "/osgi.info/channel/%s/infoBundles", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
+                context.addLocation ( String.format ( "/osgi.info/channel/%s/infoFeatures", id ), lastMod, of ( ChangeFrequency.DAILY ), empty () );
             }
         }
     }

@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.web.sitemap;
 
-public interface SitemapContextCreator
+public interface UrlSetContextCreator
 {
-    public SitemapIndexContext createSitemapIndex ();
-
     public UrlSetContext createUrlSet ();
 }
