@@ -48,6 +48,7 @@ import org.eclipse.packagedrone.repo.channel.apm.internal.Activator;
 import org.eclipse.packagedrone.repo.event.AddedEvent;
 import org.eclipse.packagedrone.repo.event.RemovedEvent;
 import org.eclipse.packagedrone.repo.utils.Holder;
+import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.utils.Exceptions;
 import org.eclipse.packagedrone.utils.profiler.Profile;
 import org.eclipse.packagedrone.utils.profiler.Profile.Handle;
@@ -63,7 +64,7 @@ public class AspectContextImpl
     @FunctionalInterface
     public interface ArtifactCreator
     {
-        public ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, String virtualizerAspectId ) throws IOException;
+        public ArtifactInformation internalCreateArtifact ( final String parentId, final IOConsumer<OutputStream> stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, String virtualizerAspectId ) throws IOException;
     }
 
     private final AspectableContext context;
@@ -445,7 +446,7 @@ public class AspectContextImpl
         } );
     }
 
-    private ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, final String virtualizerAspectId ) throws IOException
+    private ArtifactInformation internalCreateArtifact ( final String parentId, final IOConsumer<OutputStream> producer, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, final String virtualizerAspectId ) throws IOException
     {
         final Path tmp = Files.createTempFile ( "upload-", null );
 
@@ -459,7 +460,7 @@ public class AspectContextImpl
 
                     try ( OutputStream out = new BufferedOutputStream ( Files.newOutputStream ( tmp ) ) )
                     {
-                        ByteStreams.copy ( stream, out );
+                        producer.accept ( out );
                     }
 
                     // check veto
@@ -505,6 +506,11 @@ public class AspectContextImpl
             // -> aggregators run after with guard
 
         } );
+    }
+
+    private ArtifactInformation internalCreateArtifact ( final String parentId, final InputStream stream, final String name, final Map<MetaKey, String> providedMetaData, final ArtifactType type, final String virtualizerAspectId ) throws IOException
+    {
+        return internalCreateArtifact ( parentId, out -> ByteStreams.copy ( stream, out ), name, providedMetaData, type, virtualizerAspectId );
     }
 
     private void fireArtifactCreated ( final ArtifactInformation artifact )
