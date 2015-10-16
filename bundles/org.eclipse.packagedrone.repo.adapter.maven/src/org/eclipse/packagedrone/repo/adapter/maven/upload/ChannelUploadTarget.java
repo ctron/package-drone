@@ -32,7 +32,7 @@ public class ChannelUploadTarget implements UploadTarget
 
     private static final MetaKey KEY_CLASSIFIER = new MetaKey ( "mvn", "classifier" );
 
-    private static final MetaKey KEY_QUALIFIED_VERSION = new MetaKey ( "mvn", "qualifiedVersion" );
+    private static final MetaKey KEY_SNAPSHOT_VERSION = new MetaKey ( "mvn", "snapshotVersion" );
 
     private static final MetaKey KEY_VERSION = new MetaKey ( "mvn", "version" );
 
@@ -183,7 +183,7 @@ public class ChannelUploadTarget implements UploadTarget
         metaData.put ( KEY_GROUP_ID, c.getGroupId () );
         metaData.put ( KEY_ARTIFACT_ID, c.getArtifactId () );
         metaData.put ( KEY_VERSION, c.getVersion () );
-        metaData.put ( KEY_QUALIFIED_VERSION, c.getQualifiedVersion () );
+        metaData.put ( KEY_SNAPSHOT_VERSION, c.getQualifiedVersion () );
 
         metaData.put ( KEY_CLASSIFIER, c.getClassifier () );
 
