@@ -116,6 +116,10 @@ import com.google.gson.GsonBuilder;
 public class ChannelController implements InterfaceExtender, SitemapExtender
 {
 
+    private static final int DEFAULT_MAX_WEB_SIZE = 10_000;
+
+    public static final String DRONE_WEB_MAX_LIST_SIZE = "drone.web.maxListSize";
+
     private static final String DEFAULT_EXAMPLE_KEY = "xxxxx";
 
     private final static Logger logger = LoggerFactory.getLogger ( ChannelController.class );
@@ -311,26 +315,44 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView viewPlain ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final ModelAndView result = new ModelAndView ( "channel/view" );
-
         try
         {
-            this.channelService.accessRun ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+            return this.channelService.accessCall ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
 
-                final List<ArtifactInformation> sortedArtifacts = new ArrayList<> ( channel.getContext ().getArtifacts ().values () );
+                final Map<String, Object> model = new HashMap<> ();
+
+                model.put ( "channel", channel.getInformation () );
+
+                final Collection<ArtifactInformation> artifacts = channel.getContext ().getArtifacts ().values ();
+
+                if ( artifacts.size () > maxWebListSize () )
+                {
+                    return viewTooMany ( channel );
+                }
+
+                // sort artifacts
+
+                final List<ArtifactInformation> sortedArtifacts = new ArrayList<> ( artifacts );
                 sortedArtifacts.sort ( Comparator.comparing ( ArtifactInformation::getName ) );
+                model.put ( "sortedArtifacts", sortedArtifacts );
 
-                result.put ( "channel", channel.getInformation () );
-                result.put ( "sortedArtifacts", sortedArtifacts );
-
+                return new ModelAndView ( "channel/view" );
             } );
         }
         catch ( final ChannelNotFoundException e )
         {
             return CommonController.createNotFound ( "channel", channelId );
         }
+    }
 
-        return result;
+    private ModelAndView viewTooMany ( final ReadableChannel channel )
+    {
+        final Map<String, Object> model = new HashMap<> ();
+        model.put ( "channel", channel.getInformation () );
+        model.put ( "numberOfArtifacts", channel.getArtifacts ().size () );
+        model.put ( "maxNumberOfArtifacts", maxWebListSize () );
+        model.put ( "propertyName", DRONE_WEB_MAX_LIST_SIZE );
+        return new ModelAndView ( "channel/viewTooMany", model );
     }
 
     @Secured ( false )
@@ -338,11 +360,16 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
     @HttpConstraint ( PERMIT )
     public ModelAndView tree ( @PathVariable ( "channelId" ) final String channelId)
     {
-        final ModelAndView result = new ModelAndView ( "channel/tree" );
-
         try
         {
-            this.channelService.accessRun ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+            return this.channelService.accessCall ( By.id ( channelId ), ReadableChannel.class, ( channel ) -> {
+
+                if ( channel.getContext ().getArtifacts ().size () > maxWebListSize () )
+                {
+                    return viewTooMany ( channel );
+                }
+
+                final ModelAndView result = new ModelAndView ( "channel/tree" );
 
                 final Map<String, List<ArtifactInformation>> tree = new HashMap<> ();
 
@@ -361,14 +388,18 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
                 result.put ( "treeArtifacts", tree );
                 result.put ( "treeSeverityTester", new TreeTesterImpl ( tree ) );
 
+                return result;
             } );
         }
         catch ( final ChannelNotFoundException e )
         {
             return CommonController.createNotFound ( "channel", channelId );
         }
+    }
 
-        return result;
+    private Integer maxWebListSize ()
+    {
+        return Integer.getInteger ( DRONE_WEB_MAX_LIST_SIZE, DEFAULT_MAX_WEB_SIZE );
     }
 
     @Secured ( false )
