@@ -336,7 +336,7 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
                 sortedArtifacts.sort ( Comparator.comparing ( ArtifactInformation::getName ) );
                 model.put ( "sortedArtifacts", sortedArtifacts );
 
-                return new ModelAndView ( "channel/view" );
+                return new ModelAndView ( "channel/view", model );
             } );
         }
         catch ( final ChannelNotFoundException e )
