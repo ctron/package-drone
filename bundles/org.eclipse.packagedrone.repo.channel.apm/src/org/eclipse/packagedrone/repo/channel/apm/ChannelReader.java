@@ -54,6 +54,8 @@ public class ChannelReader implements AutoCloseable
 
     private final DateFormat dateFormat;
 
+    private long numberOfBytes;
+
     public ChannelReader ( final InputStream stream, final String channelId, final EventAdmin eventAdmin, final BlobStore store, final CacheStore cacheStore )
     {
         this.stream = stream;
@@ -68,6 +70,8 @@ public class ChannelReader implements AutoCloseable
     @SuppressWarnings ( "resource" )
     public ModifyContextImpl read () throws IOException
     {
+        this.numberOfBytes = 0;
+
         final Reader reader = new InputStreamReader ( this.stream, StandardCharsets.UTF_8 );
 
         final ChannelState.Builder state = new ChannelState.Builder ();
@@ -129,6 +133,13 @@ public class ChannelReader implements AutoCloseable
         {
             throw new IOException ( "Missing values for channel" );
         }
+
+        // transient information
+
+        state.setNumberOfArtifacts ( artifacts.size () );
+        state.setNumberOfBytes ( this.numberOfBytes );
+
+        // create result
 
         return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, state.build (), aspects, artifacts, cacheEntries, extractedMetaData, providedMetaData );
     }
@@ -235,6 +246,8 @@ public class ChannelReader implements AutoCloseable
             {
                 throw new IOException ( "Missing values for artifact" );
             }
+
+            this.numberOfBytes += size;
 
             result.put ( id, new ArtifactInformation ( id, parentId, childIds, name, size, creationTimestamp, facets, validationMessages, providedMetaData, extractedMetaData, virtualizerAspectId ) );
         }

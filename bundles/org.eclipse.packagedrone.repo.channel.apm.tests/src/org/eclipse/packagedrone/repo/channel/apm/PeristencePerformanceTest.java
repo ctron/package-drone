@@ -257,6 +257,8 @@ public class PeristencePerformanceTest
         state.setModificationTimestamp ( Instant.now () );
         state.setLocked ( false );
         state.setDescription ( "Foo Bar" );
+        state.setNumberOfArtifacts ( numberOfArts );
+        state.setNumberOfBytes ( numberOfArts * 123456L );
 
         // aspect states
 
