@@ -59,10 +59,14 @@ public class ChannelModel
 
     public ChannelModel ( final ChannelModel other )
     {
+        this.creationTimestamp = other.creationTimestamp;
+        this.modificationTimestamp = other.modificationTimestamp;
+
         this.description = other.description;
 
         this.locked = other.locked;
 
+        this.extractedMetaData = new HashMap<> ( other.extractedMetaData );
         this.providedMetaData = new HashMap<> ( other.providedMetaData );
 
         // copy by ctor

@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.channel.apm;
 
-import java.io.Reader;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -28,7 +28,7 @@ import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.provider.AccessContext;
 import org.eclipse.packagedrone.storage.apm.AbstractSimpleStorageModelProvider;
 import org.eclipse.packagedrone.storage.apm.StorageContext;
-import org.eclipse.packagedrone.storage.apm.util.ReplaceOnCloseWriter;
+import org.eclipse.packagedrone.storage.apm.util.ReplaceOnCloseOutputStream;
 import org.eclipse.packagedrone.utils.profiler.Profile;
 import org.eclipse.packagedrone.utils.profiler.Profile.Handle;
 import org.osgi.service.event.EventAdmin;
@@ -102,13 +102,15 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
         return makeBasePath ( context, channelId ).resolve ( "state.json" );
     }
 
-    private Gson createGson ()
+    static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    static Gson createGson ()
     {
         final GsonBuilder builder = new GsonBuilder ();
 
         builder.setPrettyPrinting ();
         builder.setLongSerializationPolicy ( LongSerializationPolicy.STRING );
-        builder.setDateFormat ( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
+        builder.setDateFormat ( DATE_FORMAT );
         builder.registerTypeAdapter ( MetaKey.class, new JsonDeserializer<MetaKey> () {
 
             @Override
@@ -164,12 +166,11 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
 
                 try ( Handle h2 = Profile.start ( this, "persistWriteModel#write" ) )
                 {
-                    try ( final ReplaceOnCloseWriter writer = new ReplaceOnCloseWriter ( path, StandardCharsets.UTF_8 ) )
+                    try ( ReplaceOnCloseOutputStream stream = new ReplaceOnCloseOutputStream ( path );
+                          ChannelWriter writer = new ChannelWriter ( stream ); )
                     {
-                        final Gson gson = createGson ();
-                        gson.toJson ( writeModel.getModel (), writer );
-
-                        writer.commit ();
+                        writer.write ( writeModel );
+                        stream.commit ();
                     }
                 }
 
@@ -201,16 +202,16 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
     {
         final Path path = makeStatePath ( context, this.channelId );
 
-        try ( Reader reader = Files.newBufferedReader ( path, StandardCharsets.UTF_8 ) )
+        try ( InputStream stream = new BufferedInputStream ( Files.newInputStream ( path ) );
+              ChannelReader reader = new ChannelReader ( stream, this.channelId, this.eventAdmin, this.store, this.cacheStore ); )
         {
-            final Gson gson = createGson ();
-            final ChannelModel model = gson.fromJson ( reader, ChannelModel.class );
+            final ModifyContextImpl model = reader.read ();
             if ( model == null )
             {
                 // FIXME: handle broken channel state
                 throw new IllegalStateException ( "Unable to load channel model" );
             }
-            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, model );
+            return model;
         }
         catch ( final NoSuchFileException e )
         {
@@ -220,7 +221,7 @@ public class ChannelModelProvider extends AbstractSimpleStorageModelProvider<Acc
 
             model.setCreationTimestamp ( new Date () );
 
-            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore, model );
+            return new ModifyContextImpl ( this.channelId, this.eventAdmin, this.store, this.cacheStore );
         }
     }
 

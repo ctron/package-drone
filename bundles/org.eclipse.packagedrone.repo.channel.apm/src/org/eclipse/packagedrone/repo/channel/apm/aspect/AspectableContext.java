@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.eclipse.packagedrone.repo.MetaKey;
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
@@ -26,7 +27,7 @@ import org.eclipse.packagedrone.repo.utils.IOConsumer;
 
 public interface AspectableContext
 {
-    public AspectMapModel getAspectModel ();
+    public SortedMap<String, String> getModifiableAspectStates ();
 
     public ArtifactInformation createPlainArtifact ( String parentArtifactId, InputStream source, String name, Map<MetaKey, String> providedMetaData, Set<String> facets, String virtualizerAspectId );
 

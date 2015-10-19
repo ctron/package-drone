@@ -71,7 +71,7 @@ public class AspectContextImpl
 
     private final ChannelAspectProcessor processor;
 
-    private final AspectMapModel model;
+    private final SortedMap<String, String> aspectStates;
 
     private final Guard aggregation;
 
@@ -83,7 +83,7 @@ public class AspectContextImpl
     {
         this.context = context;
         this.processor = processor;
-        this.model = context.getAspectModel ();
+        this.aspectStates = context.getModifiableAspectStates ();
 
         this.aggregation = new Guard ( this::runAggregators );
         this.postAdd = new Guard ( this::runPostAdd );
@@ -92,7 +92,7 @@ public class AspectContextImpl
 
     public SortedMap<String, String> getAspectStates ()
     {
-        return this.model.getAspects ();
+        return this.aspectStates;
     }
 
     protected void runPostAdd ()
@@ -100,7 +100,7 @@ public class AspectContextImpl
         logger.debug ( "Running post add" );
         Profile.run ( this, "runPostAdd", () -> {
 
-            this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelListener, ( aspect, listener ) -> {
+            this.processor.process ( this.aspectStates.keySet (), ChannelAspect::getChannelListener, ( aspect, listener ) -> {
 
                 logger.trace ( "\tRunning listener: {}", aspect.getId () );
 
@@ -148,7 +148,7 @@ public class AspectContextImpl
             final Map<MetaKey, String> metaData = new HashMap<> ();
             final List<ValidationMessage> messages = new CopyOnWriteArrayList<> ();
 
-            this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
+            this.processor.process ( this.aspectStates.keySet (), ChannelAspect::getChannelAggregator, ( aspect, aggregator ) -> {
 
                 logger.trace ( "\tRunning aggregator: {}", aspect.getId () );
 
@@ -196,9 +196,9 @@ public class AspectContextImpl
                 {
                     final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
 
-                    if ( !this.model.getAspectIds ().contains ( aspect.getFactoryId () ) )
+                    if ( !this.aspectStates.containsKey ( aspect.getFactoryId () ) )
                     {
-                        this.model.put ( aspect.getFactoryId (), versionString );
+                        this.aspectStates.put ( aspect.getFactoryId (), versionString );
                         addedAspects.add ( aspect.getFactoryId () );
                     }
                 }
@@ -214,7 +214,7 @@ public class AspectContextImpl
                         final ArtifactInformation updatedArt = extractFor ( aspectIds, art, path );
 
                         // re-create all virtual
-                        virtualize ( updatedArt, path, this.model.getAspectIds () );
+                        virtualize ( updatedArt, path, this.aspectStates.keySet () );
                     } );
                 }
 
@@ -243,7 +243,7 @@ public class AspectContextImpl
 
                     for ( final String aspectId : aspectIds )
                     {
-                        this.model.remove ( aspectId );
+                        this.aspectStates.remove ( aspectId );
                     }
 
                     // remove selected extracted meta data
@@ -252,7 +252,7 @@ public class AspectContextImpl
 
                     // re-create all virtual
 
-                    virtualizeFor ( this.model.getAspectIds () );
+                    virtualizeFor ( this.aspectStates.keySet () );
 
                     // channel validation well updated when be re-generated
 
@@ -294,7 +294,7 @@ public class AspectContextImpl
         final Set<String> effectiveAspectIds;
         if ( aspectIds == null || aspectIds.isEmpty () )
         {
-            effectiveAspectIds = new HashSet<> ( this.model.getAspectIds () );
+            effectiveAspectIds = new HashSet<> ( this.aspectStates.keySet () );
         }
         else
         {
@@ -314,7 +314,7 @@ public class AspectContextImpl
                 for ( final ChannelAspectInformation aspect : this.processor.resolve ( effectiveAspectIds ) )
                 {
                     final String versionString = aspect.getVersion () != null ? aspect.getVersion ().toString () : null;
-                    this.model.put ( aspect.getFactoryId (), versionString );
+                    this.aspectStates.put ( aspect.getFactoryId (), versionString );
                 }
 
                 // run extractors and virtualizers at the same time
@@ -323,13 +323,13 @@ public class AspectContextImpl
                 {
                     doStreamedRun ( art.getId (), path -> {
 
-                        // run extractors
+                        // run selected extractors
 
                         final ArtifactInformation updatedArt = extractFor ( aspectIds, art, path );
 
-                        // re-create all virtual
+                        // re-create _all_ virtual
 
-                        virtualize ( updatedArt, path, this.model.getAspectIds () );
+                        virtualize ( updatedArt, path, this.aspectStates.keySet () );
 
                     } );
                 }
@@ -480,7 +480,7 @@ public class AspectContextImpl
 
                     // extract meta data
 
-                    final ExtractionResult extraction = extractMetaData ( result, tmp, this.model.getAspectIds () );
+                    final ExtractionResult extraction = extractMetaData ( result, tmp, this.aspectStates.keySet () );
                     result = this.context.setExtractedMetaData ( result.getId (), extraction.metadata );
                     result = this.context.setValidationMessages ( result.getId (), extraction.messages );
 
@@ -488,7 +488,7 @@ public class AspectContextImpl
 
                     // run virtualizers for artifact
 
-                    virtualize ( result, tmp, this.model.getAspectIds () );
+                    virtualize ( result, tmp, this.aspectStates.keySet () );
 
                     // return result
 
@@ -607,7 +607,7 @@ public class AspectContextImpl
     {
         final PreAddContextImpl ctx = new PreAddContextImpl ( name, file, external );
 
-        this.processor.process ( this.model.getAspectIds (), ChannelAspect::getChannelListener, listener -> {
+        this.processor.process ( this.aspectStates.keySet (), ChannelAspect::getChannelListener, listener -> {
 
             Exceptions.wrapException ( () -> listener.artifactPreAdd ( ctx ) );
 
