@@ -67,7 +67,6 @@ public class ChannelReader implements AutoCloseable
         this.dateFormat = new SimpleDateFormat ( ChannelModelProvider.DATE_FORMAT );
     }
 
-    @SuppressWarnings ( "resource" )
     public ModifyContextImpl read () throws IOException
     {
         this.numberOfBytes = 0;
@@ -266,8 +265,15 @@ public class ChannelReader implements AutoCloseable
         while ( jr.hasNext () )
         {
             final String name = jr.nextName ();
-            final String value = jr.nextString ();
-            result.put ( MetaKey.fromString ( name ), value );
+            if ( jr.peek () == JsonToken.NULL )
+            {
+                jr.skipValue ();
+            }
+            else
+            {
+                final String value = jr.nextString ();
+                result.put ( MetaKey.fromString ( name ), value );
+            }
         }
 
         jr.endObject ();

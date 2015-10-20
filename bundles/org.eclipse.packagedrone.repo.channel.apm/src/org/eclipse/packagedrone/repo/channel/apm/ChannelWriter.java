@@ -45,7 +45,6 @@ public class ChannelWriter implements AutoCloseable
     {
         final OutputStreamWriter writer = new OutputStreamWriter ( this.stream, StandardCharsets.UTF_8 );
 
-        @SuppressWarnings ( "resource" )
         final JsonWriter jw = new JsonWriter ( writer );
 
         jw.setSerializeNulls ( true );
@@ -218,6 +217,10 @@ public class ChannelWriter implements AutoCloseable
         jw.name ( name ).beginObject ();
         for ( final Map.Entry<MetaKey, String> entry : metadata.entrySet () )
         {
+            if ( entry.getValue () == null )
+            {
+                continue;
+            }
             jw.name ( entry.getKey ().toString () ).value ( entry.getValue () );
         }
         jw.endObject ();
