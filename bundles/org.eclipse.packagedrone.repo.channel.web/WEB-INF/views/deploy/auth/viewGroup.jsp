@@ -85,7 +85,7 @@ request.setAttribute ( "keys", keys );
                     <td colspan="3" style="padding-left: 3em;">
                         <pre>
 &lt;server&gt;
-    &lt;id&gt;server.id&lt;/id&gt;&lt;-- id of your repository element --&gt;
+    &lt;id&gt;server.id&lt;/id&gt;&lt;!-- id of your repository element --&gt;
     &lt;username&gt;deploy&lt;/username&gt;
     &lt;password&gt;${fn:escapeXml(key.key) }&lt;/password&gt;
 &lt;/server&gt;
