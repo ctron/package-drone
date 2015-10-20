@@ -714,7 +714,7 @@ public class ModifyContextImpl implements ModifyContext, AspectableContext
 
         // clear extracted channel meta data
 
-        this.extractedMetadata.clear ();
+        this.modExtractedMetadata.clear ();
 
         // clear meta data cache
 
