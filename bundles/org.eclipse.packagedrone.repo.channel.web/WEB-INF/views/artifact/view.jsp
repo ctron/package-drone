@@ -53,7 +53,7 @@
 <%-- META DATA --%>
 
 <div role="tabpanel" class="tab-pane" id="md">
-<h:metaDataTable metaData="${artifact.metaData }"/>
+<h:metaDataTable metaData="${sortedMetaData }"/>
 </div>
 
 <%-- VALIDATION --%>

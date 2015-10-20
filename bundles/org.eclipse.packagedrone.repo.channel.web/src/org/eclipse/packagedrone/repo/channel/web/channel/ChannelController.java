@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 import javax.servlet.ServletException;
@@ -497,6 +498,7 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
 
             final Map<String, Object> model = new HashMap<String, Object> ( 1 );
             model.put ( "artifact", artifact.get () );
+            model.put ( "sortedMetaData", new TreeMap<> ( artifact.get ().getMetaData () ) );
 
             model.put ( "aspects", Activator.getAspects ().getAspectInformations () );
 
