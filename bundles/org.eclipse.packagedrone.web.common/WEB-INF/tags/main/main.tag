@@ -13,8 +13,8 @@
 <%@ attribute name="title" required="true" %>
 <%@ attribute name="subtitle" %>
 
-<%@attribute name="head" fragment="true"%>
-<%@attribute name="body" fragment="true"%>
+<%@ attribute name="head" fragment="true" %>
+<%@ attribute name="body" fragment="true" %>
 
 <%
 Principal p = request.getUserPrincipal ();
