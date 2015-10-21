@@ -27,4 +27,4 @@ RUN apt-get update ; apt-get -y install package-drone-server
 
 EXPOSE 8080
 
-CMD ["/usr/lib/package-drone/instance/server"]
+CMD ["/usr/lib/package-drone-server/instance/server"]
