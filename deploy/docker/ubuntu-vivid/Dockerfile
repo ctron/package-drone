@@ -12,7 +12,7 @@ RUN apt-get update ; apt-get -y install software-properties-common dpkg
 
 # Enable universe and multiverse
 
-RUN add-apt-repository "deb http://de.archive.ubuntu.com/ubuntu/ utopic universe multiverse" ; add-apt-repository "deb http://de.archive.ubuntu.com/ubuntu/ utopic-updates universe multiverse"
+RUN add-apt-repository "deb http://de.archive.ubuntu.com/ubuntu/ vivid universe multiverse" ; add-apt-repository "deb http://de.archive.ubuntu.com/ubuntu/ vivid-updates universe multiverse"
 
 # Install OpenJDK 8
 
