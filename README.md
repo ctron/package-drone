@@ -9,8 +9,6 @@ The idea is to have a workflow of Tycho Compile -> publish to a repo using plain
 
 Also if you start a thing like this, it should somehow be extensible, since the next thing I would like to see it creating APT and YUM repositories.
 
-Warning: This project is as its early stages. Try it out, find it useful or wait until it is stable enough to work for you.
-
 Also see the wiki for more information: https://github.com/ctron/package-drone/wiki
 
 Intended use cases
