@@ -25,6 +25,8 @@
 		<drone.user>pdrone</drone.user>
 		<drone.group>pdrone</drone.group>
 		<drone.app.name>package-drone-server</drone.app.name>
+		
+		<drone.user.description>Package Drone daemon user</drone.user.description>
 	</properties>
 
 	<build>
@@ -250,6 +252,9 @@
 				</configuration>
 
 				<executions>
+				
+				    <!-- centos 7 -->
+				
 					<execution>
 						<id>attach-rpm-centos7</id>
 						<phase>package</phase>
@@ -372,7 +377,7 @@
 								<script><![CDATA[
 if ! getent passwd "${drone.user}" >/dev/null; then
     # create new user
-    useradd --system --user-group --home /var/lib/pdrone --comment "Package Drone Daemon User" "${drone.user}"
+    useradd --system --user-group --home /var/lib/pdrone --comment "${drone.user.description}" "${drone.user}"
 fi
 mkdir -p "/var/lib/${drone.app.name}"
 chown -R "${drone.user}:${drone.group}" "/var/lib/${drone.app.name}"
@@ -421,6 +426,173 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 
 						</configuration>
 					</execution>
+					
+					<!-- opensuse 13 -->
+					
+                    <execution>
+                        <id>attach-rpm-opensuse13</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached-rpm</goal>
+                        </goals>
+                        <configuration>
+
+                            <defineStatements>
+                                <defineStatement>dist os13</defineStatement>
+                            </defineStatements>
+
+                            <workarea>${project.build.directory}/rpm.os13</workarea>
+
+                            <conflicts>
+                                <conflict>package-drone-server</conflict>
+                            </conflicts>
+
+                            <prereqs>
+                                <!-- for the command "getent" -->
+                                <require>glibc</require>
+
+                                <!-- for the "adduser" scripts -->
+                                <prereq>pwdutils</prereq>
+                            </prereqs>
+
+                            <requires>
+                                <require>systemd</require>
+
+                                <require>jre-headless &gt;= 1.8.0</require>
+                            </requires>
+
+                            <distribution>os13</distribution>
+
+                            <mappings>
+
+                                <mapping>
+                                    <directory>/usr/lib/${drone.app.name}</directory>
+                                    <username>${drone.user}</username>
+                                    <groupname>${drone.group}</groupname>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/usr/lib/${drone.app.name}/instance</directory>
+                                    <username>${drone.user}</username>
+                                    <groupname>${drone.group}</groupname>
+                                    <sources>
+                                        <source>
+                                            <location>target/products/${productName}/all/all/all</location>
+                                            <excludes>
+                                                <exclude>eclipse.ini</exclude><!-- not needed -->
+                                            </excludes>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/etc/default</directory>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <configuration>true</configuration>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/${drone.app.name}</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/usr/lib/${drone.app.name}</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <configuration>false</configuration>
+                                    <sources>
+                                        <source>
+                                            <location>src/default/profile</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/usr/lib/systemd/system</directory>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>src/systemd</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/etc/sysconfig/SuSEfirewall2.d/services</directory>
+                                    <configuration>true</configuration>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <filemode>0640</filemode>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>src/susefw/${drone.app.name}</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+
+                                <mapping>
+                                    <directory>/var/lib/${drone.app.name}</directory>
+                                    <username>${drone.user}</username>
+                                    <groupname>${drone.group}</groupname>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <filemode>0750</filemode>
+                                </mapping>
+
+                            </mappings>
+
+                            <preinstallScriptlet>
+                                <script><![CDATA[
+if ! getent passwd "${drone.user}" >/dev/null; then
+    # create new user
+    useradd --system --user-group --home /var/lib/pdrone --comment "${drone.user.description}" "${drone.user}"
+fi
+mkdir -p "/var/lib/${drone.app.name}"
+chown -R "${drone.user}:${drone.group}" "/var/lib/${drone.app.name}"
+]]></script>
+                            </preinstallScriptlet>
+
+                            <postinstallScriptlet>
+                                <script><![CDATA[
+if [ $1 -eq 1 ] ; then
+    systemctl preset "${drone.app.name}.service" >/dev/null 2>&1 || :
+else
+    systemctl try-restart "${drone.app.name}" >/dev/null || :
+fi
+]]></script>
+                            </postinstallScriptlet>
+
+                            <preremoveScriptlet>
+                                <script><![CDATA[
+if [ $1 -eq 0 ] ; then
+    systemctl --no-reload --user --global disable "${drone.app.name}.service" > /dev/null 2>&1 || :
+fi
+]]>
+                                </script>
+                            </preremoveScriptlet>
+
+                            <postremoveScriptlet>
+                                <script><![CDATA[
+if [ "$1" -eq 0 ]; then
+    # this is the final uninstall
+    if which userdel >/dev/null 2>&1; then
+        userdel "${drone.user}" > /dev/null || :
+    fi
+    # delete group if it still exists
+    getent group "${drone.group}">/dev/null && groupdel "${drone.group}" > /dev/null || :
+fi
+
+systemctl daemon-reload >/dev/null 2>&1 || :
+]]></script>
+                            </postremoveScriptlet>
+
+                        </configuration>
+                    </execution>
 
 					<!-- centos 6 -->
 
@@ -538,7 +710,7 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 								<script><![CDATA[
 if ! getent passwd "${drone.user}" >/dev/null; then
     # create new user
-    useradd --system --user-group --shell /sbin/nologin --home "/var/lib/${drone.app.name}" --comment "Package Drone Daemon User" "${drone.user}"
+    useradd --system --user-group --shell /sbin/nologin --home "/var/lib/${drone.app.name}" --comment "${drone.user.description}" "${drone.user}"
 fi
 mkdir -p "/var/lib/${drone.app.name}"
 chown -R "${drone.user}:${drone.group}" "/var/lib/${drone.app.name}"
@@ -637,6 +809,20 @@ fi
 									</arguments>
 								</configuration>
 							</execution>
+                            <execution>
+                                <id>sign-os13</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument><![CDATA[echo "" | rpmsign --addsign "${project.build.directory}/rpm.os13/${project.artifactId}/RPMS/noarch/${project.artifactId}-${rpm.baseVersion}-${rpm.baseRelease}.os13.noarch.rpm" && cp "${project.build.directory}/rpm.os13/${project.artifactId}/RPMS/noarch/${project.artifactId}-${rpm.baseVersion}-${rpm.baseRelease}.os13.noarch.rpm" ${project.build.directory}/ ]]></argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
 						</executions>
 
 					</plugin>
