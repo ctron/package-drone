@@ -175,6 +175,7 @@
 
 		<module>bundles/org.eclipse.packagedrone.web</module>
 		<module>bundles/org.eclipse.packagedrone.web.common</module>
+		<module>bundles/org.eclipse.packagedrone.web.common.tests</module>
 		<module>bundles/org.eclipse.packagedrone.web.common.ckeditor</module>
 		<module>bundles/org.eclipse.packagedrone.web.dispatcher</module>
 		<module>bundles/org.eclipse.packagedrone.web.forms</module>

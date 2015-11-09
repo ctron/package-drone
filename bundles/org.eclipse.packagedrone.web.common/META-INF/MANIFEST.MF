@@ -29,6 +29,7 @@ Export-Package: org.eclipse.packagedrone.web.common;version="1.0.0";
    org.eclipse.packagedrone.web.controller,
    org.eclipse.packagedrone.web",
  org.eclipse.packagedrone.web.common.menu;version="1.0.0";uses:="javax.servlet.http,org.eclipse.packagedrone.web,org.eclipse.packagedrone.web.common",
+ org.eclipse.packagedrone.web.common.page;version="1.0.0",
  org.eclipse.packagedrone.web.common.tags;version="1.0.0";uses:="org.eclipse.packagedrone.web.common"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/menuInterceptor.xml
