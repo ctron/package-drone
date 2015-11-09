@@ -90,6 +90,7 @@ import org.eclipse.packagedrone.web.common.CommonController;
 import org.eclipse.packagedrone.web.common.InterfaceExtender;
 import org.eclipse.packagedrone.web.common.Modifier;
 import org.eclipse.packagedrone.web.common.menu.MenuEntry;
+import org.eclipse.packagedrone.web.common.page.Pagination;
 import org.eclipse.packagedrone.web.controller.ControllerInterceptor;
 import org.eclipse.packagedrone.web.controller.ProfilerControllerInterceptor;
 import org.eclipse.packagedrone.web.controller.binding.BindingResult;
@@ -169,13 +170,14 @@ public class ChannelController implements InterfaceExtender, SitemapExtender
     @Secured ( false )
     @RequestMapping ( value = "/channel", method = RequestMethod.GET )
     @HttpConstraint ( PERMIT )
-    public ModelAndView list ()
+    public ModelAndView list ( @RequestParameter ( value = "start", required = false ) final Integer startPage)
     {
         final ModelAndView result = new ModelAndView ( "channel/list" );
 
         final List<ChannelInformation> channels = new ArrayList<> ( this.channelService.list () );
         channels.sort ( ChannelId.NAME_COMPARATOR );
-        result.put ( "channels", channels );
+
+        result.put ( "channels", Pagination.paginate ( startPage, 10, channels ) );
 
         return result;
     }
