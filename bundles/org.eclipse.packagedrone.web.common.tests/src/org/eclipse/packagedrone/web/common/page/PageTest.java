@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PageTest1
+public class PageTest
 {
     private List<Integer> dataSet1;
 
