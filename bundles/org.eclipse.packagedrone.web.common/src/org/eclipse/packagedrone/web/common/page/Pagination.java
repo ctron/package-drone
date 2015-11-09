@@ -19,6 +19,7 @@ public final class Pagination
     {
     }
 
+    @FunctionalInterface
     public interface Provider<T>
     {
         public List<T> list ( int startIndex, int length );
