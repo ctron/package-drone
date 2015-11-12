@@ -105,6 +105,8 @@ public class ConfigurationController
         final ImportConfiguration imp = new ImportConfiguration ();
         imp.setRepositoryUrl ( data.getUrl () );
 
+        final Map<String, String> properties = new HashMap<> ( 1 );
+
         final MavenCoordinates main = MavenCoordinates.fromString ( data.getCoordinates () );
 
         imp.getCoordinates ().add ( main );
@@ -115,9 +117,9 @@ public class ConfigurationController
             imp.getCoordinates ().add ( sources );
         }
 
-        final Map<String, String> properties = new HashMap<> ( 1 );
-        properties.put ( "originalConfig", this.gson.create ().toJson ( data ) );
-        final JobRequest jr = new JobRequest ( AetherTester.ID, this.gson.create ().toJson ( imp ), properties );
+        properties.put ( "simpleConfig", this.gson.create ().toJson ( data ) );
+
+        final JobRequest jr = new JobRequest ( data.isResolveDependencies () ? AetherResolver.ID : AetherTester.ID, this.gson.create ().toJson ( imp ), properties );
         final JobHandle job = this.jobManager.startJob ( jr );
 
         model.put ( "job", job );
@@ -135,13 +137,12 @@ public class ConfigurationController
         model.put ( "job", job );
 
         final String data = job.getRequest ().getData ();
-        final ImportConfiguration cfg = this.gson.create ().fromJson ( data, ImportConfiguration.class );
 
+        final ImportConfiguration cfg = this.gson.create ().fromJson ( data, ImportConfiguration.class );
         model.put ( "configuration", cfg );
 
-        model.put ( "request", ImportRequest.toJson ( AetherImporter.ID, data ) );
-        model.put ( "cfgJson", job.getProperties ().get ( "originalConfig" ) );
-        model.put ( "token", token );
+        model.put ( "cfgJson", job.getProperties ().get ( "simpleConfig" ) ); // the original config for editing
+        model.put ( "token", token ); // the import web flow token
 
         if ( job != null && job.isFailed () )
         {
@@ -150,7 +151,21 @@ public class ConfigurationController
         }
         else
         {
-            model.put ( "result", AetherResult.fromJson ( job.getResult () ) );
+            final AetherResult result = AetherResult.fromJson ( job.getResult () );
+            final ImportConfiguration actualCfg = new ImportConfiguration ();
+
+            actualCfg.setRepositoryUrl ( cfg.getRepositoryUrl () );
+
+            for ( final AetherResult.Entry entry : result.getArtifacts () )
+            {
+                if ( entry.isResolved () )
+                {
+                    actualCfg.getCoordinates ().add ( entry.getCoordinates () );
+                }
+            }
+
+            model.put ( "request", ImportRequest.toJson ( AetherImporter.ID, this.gson.create ().toJson ( actualCfg ) ) ); // the created import request
+            model.put ( "result", result );
             return new ModelAndView ( "testResult", model );
         }
     }

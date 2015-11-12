@@ -39,6 +39,10 @@ function doAction(action) {
             <h:formCheckbox label="Include sources" path="includeSources" command="command">
                 <span class="help-block">Whether the source attachment should be imported as well.</span>
             </h:formCheckbox>
+            
+            <h:formCheckbox label="Resolve dependencies" path="resolveDependencies" command="command">
+                <span class="help-block">Whether dependencies should be resolved first and added to the list.</span>
+            </h:formCheckbox>
 		    
 		    <div class="form-group">
 		        <div class="col-sm-offset-2 col-sm-10">

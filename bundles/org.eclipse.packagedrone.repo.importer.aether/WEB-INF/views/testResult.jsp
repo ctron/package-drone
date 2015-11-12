@@ -98,11 +98,14 @@ function doAction(action) {
 <div class="row">
     <div class="col-md-11 col-md-offset-1">
         <form class="form-inline" method="GET" action="" id="command">
-            <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
             <input type="hidden" name=request value="${fn:escapeXml(request) }"/>
             <input type="hidden" name="token" value="${fn:escapeXml(token) }"/>
             <button class="btn btn-primary" type="button" onclick="doAction('/import/perform');">Import</button>
-            <button class="btn btn-default" type="button" onclick="doAction('start');">Edit</button>
+            
+            <c:if test="${not empty cfgJson }">
+                <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
+                <button class="btn btn-default" type="button" onclick="doAction('start');">Edit</button>
+            </c:if>
         </form>
     </div>
 </div>

@@ -21,6 +21,8 @@ public class SimpleArtifactConfiguration
 
     private boolean includeSources;
 
+    private boolean resolveDependencies;
+
     public void setUrl ( final String url )
     {
         this.url = url;
@@ -51,4 +53,13 @@ public class SimpleArtifactConfiguration
         return this.includeSources;
     }
 
+    public void setResolveDependencies ( final boolean resolveDependencies )
+    {
+        this.resolveDependencies = resolveDependencies;
+    }
+
+    public boolean isResolveDependencies ()
+    {
+        return this.resolveDependencies;
+    }
 }

@@ -24,9 +24,9 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -34,6 +34,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.packagedrone.repo.MetaKey;
 import org.eclipse.packagedrone.repo.importer.ImportContext;
 import org.eclipse.packagedrone.repo.importer.ImportSubContext;
@@ -91,25 +92,50 @@ public class AetherImporter implements Importer
 
         final Collection<ArtifactResult> results = process ( tmpDir, cfg );
 
-        ImportSubContext main = null;
+        final List<ArtifactResult> later = new LinkedList<> ();
+        final Map<String, ImportSubContext> roots = new HashMap<> ();
 
         for ( final ArtifactResult result : results )
         {
-            if ( result.isResolved () )
+            if ( !result.isResolved () )
             {
-                final Artifact artifact = result.getArtifact ();
-
-                final Map<MetaKey, String> metadata = makeMetaData ( artifact );
-
-                if ( main == null )
-                {
-                    main = context.scheduleImport ( artifact.getFile ().toPath (), false, artifact.getFile ().getName (), metadata );
-                }
-                else
-                {
-                    main.scheduleImport ( artifact.getFile ().toPath (), false, artifact.getFile ().getName (), metadata );
-                }
+                continue;
             }
+
+            importArtifact ( context, result, roots, later );
+        }
+
+        // try sub artifact again
+
+        for ( final ArtifactResult result : later )
+        {
+            importArtifact ( context, result, roots, null );
+        }
+    }
+
+    private void importArtifact ( final ImportContext context, final ArtifactResult result, final Map<String, ImportSubContext> roots, final List<ArtifactResult> later )
+    {
+        final Artifact artifact = result.getArtifact ();
+        final String key = String.format ( "%s:%s:%s", artifact.getGroupId (), artifact.getArtifactId (), artifact.getBaseVersion () );
+
+        final Map<MetaKey, String> metadata = makeMetaData ( artifact );
+
+        if ( later != null && artifact.getClassifier () != null && !artifact.getClassifier ().isEmpty () )
+        {
+            final ImportSubContext sub = roots.get ( key );
+            if ( sub == null )
+            {
+                later.add ( result );
+            }
+            else
+            {
+                sub.scheduleImport ( artifact.getFile ().toPath (), false, artifact.getFile ().getName (), metadata );
+            }
+        }
+        else
+        {
+            final ImportSubContext sub = context.scheduleImport ( artifact.getFile ().toPath (), false, artifact.getFile ().getName (), metadata );
+            roots.put ( key, sub );
         }
     }
 
@@ -129,31 +155,35 @@ public class AetherImporter implements Importer
         return md;
     }
 
-    public static Collection<ArtifactResult> processDependencies ( final Path tmpDir, final SimpleArtifactConfiguration cfg ) throws DependencyCollectionException, DependencyResolutionException
+    public static Collection<ArtifactResult> processDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws DependencyCollectionException, DependencyResolutionException
     {
         final RepositorySystem system = Helper.newRepositorySystem ();
         final RepositorySystemSession session = Helper.newRepositorySystemSession ( tmpDir, system );
 
         final List<RemoteRepository> repositories;
-        if ( cfg.getUrl () == null || cfg.getUrl ().isEmpty () )
+        if ( cfg.getRepositoryUrl () == null || cfg.getRepositoryUrl ().isEmpty () )
         {
             repositories = Arrays.asList ( Helper.newCentralRepository () );
         }
         else
         {
-            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getUrl () ) );
+            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getRepositoryUrl () ) );
         }
 
-        final Dependency dep = new Dependency ( new DefaultArtifact ( cfg.getCoordinates () ), "compile" );
+        // add all coordinates
 
         final CollectRequest cr = new CollectRequest ();
-        cr.addDependency ( dep );
         cr.addRepository ( repositories.get ( 0 ) );
+        for ( final MavenCoordinates coords : cfg.getCoordinates () )
+        {
+            final Dependency dep = new Dependency ( new DefaultArtifact ( coords.toString () ), "compile" );
+            cr.addDependency ( dep );
+        }
 
-        final CollectResult result = system.collectDependencies ( session, cr );
+        final DependencyFilter filter = DependencyFilterUtils.classpathFilter ( "compile" );
+        final DependencyRequest deps = new DependencyRequest ( cr, filter );
 
-        final DependencyRequest deps = new DependencyRequest ();
-        deps.setRoot ( result.getRoot () );
+        // resolve
 
         final DependencyResult dr = system.resolveDependencies ( session, deps );
         return dr.getArtifactResults ();
@@ -188,19 +218,6 @@ public class AetherImporter implements Importer
                 requests.add ( artifactRequest );
             }
         }
-
-        /*
-        if ( cfg.isIncludeSources () )
-        {
-            // add source artifact
-        
-            final DefaultArtifact sourcesArtifacts = new DefaultArtifact ( artifact.getGroupId (), artifact.getArtifactId (), "sources", artifact.getExtension (), artifact.getVersion () );
-            final ArtifactRequest artifactRequest = new ArtifactRequest ();
-            artifactRequest.setArtifact ( sourcesArtifacts );
-            artifactRequest.setRepositories ( repositories );
-            requests.add ( artifactRequest );
-        }
-        */
 
         // process
 
