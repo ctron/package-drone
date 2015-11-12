@@ -29,10 +29,10 @@ function doAction(action) {
 		        <form:input path="url" cssClass="form-control" placeholder="Leave empty for Maven Central"/>
 		    </h:formEntry>
 		    
-            <h:formEntry label="Coordinates" path="coordinates" command="command">
-                <form:input path="coordinates" cssClass="form-control"/>
+            <h:formEntry label="Dependencies" path="dependencies" command="command">
+                <form:textarea path="dependencies" cssClass="form-control" rows="10"/>
                 <span class="help-block">
-                The Maven coordinates of the artifact in the form: <code>groupId:artifactId[:classifier]:version</code>
+                The Maven dependencies. Either in the form of coordinates (one per line): <code>groupId:artifactId[:classifier]:version</code>
                 </span>
             </h:formEntry>
             

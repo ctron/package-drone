@@ -22,6 +22,8 @@ public class ImportConfiguration
 
     private List<MavenCoordinates> coordinates = new LinkedList<> ();
 
+    private boolean includeSources;
+
     public void setRepositoryUrl ( final String repositoryUrl )
     {
         this.repositoryUrl = repositoryUrl;
@@ -40,5 +42,15 @@ public class ImportConfiguration
     public List<MavenCoordinates> getCoordinates ()
     {
         return this.coordinates;
+    }
+
+    public void setIncludeSources ( final boolean includeSources )
+    {
+        this.includeSources = includeSources;
+    }
+
+    public boolean isIncludeSources ()
+    {
+        return this.includeSources;
     }
 }

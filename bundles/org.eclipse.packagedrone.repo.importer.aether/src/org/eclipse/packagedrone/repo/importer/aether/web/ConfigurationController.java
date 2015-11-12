@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.importer.aether.web;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +18,6 @@ import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.packagedrone.job.JobHandle;
 import org.eclipse.packagedrone.job.JobManager;
 import org.eclipse.packagedrone.job.JobRequest;
@@ -29,6 +29,7 @@ import org.eclipse.packagedrone.repo.importer.web.ImportRequest;
 import org.eclipse.packagedrone.sec.web.controller.HttpContraintControllerInterceptor;
 import org.eclipse.packagedrone.sec.web.controller.Secured;
 import org.eclipse.packagedrone.sec.web.controller.SecuredControllerInterceptor;
+import org.eclipse.packagedrone.utils.xml.XmlToolsFactory;
 import org.eclipse.packagedrone.web.Controller;
 import org.eclipse.packagedrone.web.ModelAndView;
 import org.eclipse.packagedrone.web.RequestMapping;
@@ -36,7 +37,6 @@ import org.eclipse.packagedrone.web.RequestMethod;
 import org.eclipse.packagedrone.web.ViewResolver;
 import org.eclipse.packagedrone.web.controller.ControllerInterceptor;
 import org.eclipse.packagedrone.web.controller.binding.BindingResult;
-import org.eclipse.packagedrone.web.controller.binding.ExceptionError;
 import org.eclipse.packagedrone.web.controller.binding.PathVariable;
 import org.eclipse.packagedrone.web.controller.binding.RequestParameter;
 import org.eclipse.packagedrone.web.controller.form.FormData;
@@ -57,9 +57,16 @@ public class ConfigurationController
 
     private JobManager jobManager;
 
+    private XmlToolsFactory xmlToolsFactory;
+
     public void setJobManager ( final JobManager jobManager )
     {
         this.jobManager = jobManager;
+    }
+
+    public void setXmlToolsFactory ( final XmlToolsFactory xmlToolsFactory )
+    {
+        this.xmlToolsFactory = xmlToolsFactory;
     }
 
     @RequestMapping ( value = "/import/{token}/aether/start", method = RequestMethod.GET )
@@ -104,18 +111,11 @@ public class ConfigurationController
 
         final ImportConfiguration imp = new ImportConfiguration ();
         imp.setRepositoryUrl ( data.getUrl () );
+        imp.setIncludeSources ( data.isIncludeSources () );
 
         final Map<String, String> properties = new HashMap<> ( 1 );
 
-        final MavenCoordinates main = MavenCoordinates.fromString ( data.getCoordinates () );
-
-        imp.getCoordinates ().add ( main );
-        if ( data.isIncludeSources () )
-        {
-            final MavenCoordinates sources = new MavenCoordinates ( main );
-            sources.setClassifier ( "sources" );
-            imp.getCoordinates ().add ( sources );
-        }
+        imp.getCoordinates ().addAll ( Helper.parse ( data.getDependencies (), this.xmlToolsFactory ) );
 
         properties.put ( "simpleConfig", this.gson.create ().toJson ( data ) );
 
@@ -155,6 +155,7 @@ public class ConfigurationController
             final ImportConfiguration actualCfg = new ImportConfiguration ();
 
             actualCfg.setRepositoryUrl ( cfg.getRepositoryUrl () );
+            actualCfg.setIncludeSources ( cfg.isIncludeSources () );
 
             for ( final AetherResult.Entry entry : result.getArtifacts () )
             {
@@ -173,17 +174,14 @@ public class ConfigurationController
     @ControllerValidator ( formDataClass = SimpleArtifactConfiguration.class )
     public void validateImportConfiguration ( final SimpleArtifactConfiguration cfg, final ValidationContext ctx )
     {
-        try
+        final String deps = cfg.getDependencies ();
+        if ( deps != null && !deps.isEmpty () )
         {
-            final String coords = cfg.getCoordinates ();
-            if ( coords != null && !coords.isEmpty () )
+            final Collection<MavenCoordinates> result = Helper.parse ( deps, this.xmlToolsFactory );
+            if ( result == null )
             {
-                new DefaultArtifact ( coords );
+                ctx.error ( "dependencies", "Invalid dependency format" );
             }
-        }
-        catch ( final Exception e )
-        {
-            ctx.error ( "coordinates", new ExceptionError ( e ) );
         }
     }
 }

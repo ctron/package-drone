@@ -17,7 +17,7 @@ public class SimpleArtifactConfiguration
 {
     private String url;
 
-    private String coordinates;
+    private String dependencies;
 
     private boolean includeSources;
 
@@ -33,14 +33,14 @@ public class SimpleArtifactConfiguration
         return this.url;
     }
 
-    public void setCoordinates ( final String coordinates )
+    public void setDependencies ( final String dependencies )
     {
-        this.coordinates = coordinates;
+        this.dependencies = dependencies;
     }
 
-    public String getCoordinates ()
+    public String getDependencies ()
     {
-        return this.coordinates;
+        return this.dependencies;
     }
 
     public void setIncludeSources ( final boolean includeSources )
