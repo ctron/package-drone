@@ -20,8 +20,8 @@
             <dt>Repository</dt>
             <dd>
                 <c:choose>
-                    <c:when test="${empty configuration.url }"><em>Maven Central</em></c:when>
-                    <c:otherwise>${fn:escapeXml(configuration.url) }</c:otherwise>
+                    <c:when test="${empty configuration.repositoryUrl }"><em>Maven Central</em></c:when>
+                    <c:otherwise>${fn:escapeXml(configuration.repositoryUrl) }</c:otherwise>
                 </c:choose>
             </dd>
             

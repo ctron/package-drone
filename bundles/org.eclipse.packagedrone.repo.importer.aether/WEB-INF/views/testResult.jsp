@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+    pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
     
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -29,8 +29,8 @@ function doAction(action) {
             <dt>Repository</dt>
             <dd>
                 <c:choose>
-                    <c:when test="${empty configuration.url }"><em>Maven Central</em></c:when>
-                    <c:otherwise>${fn:escapeXml(configuration.url) }</c:otherwise>
+                    <c:when test="${empty configuration.repositoryUrl }"><em>Maven Central</em></c:when>
+                    <c:otherwise>${fn:escapeXml(configuration.repositoryUrl) }</c:otherwise>
                 </c:choose>
             </dd>
             
@@ -38,6 +38,7 @@ function doAction(action) {
             <dd>${fn:escapeXml(configuration.coordinates) }</dd>
         </dl>
     </div>
+    <%--
     <div class="col-md-6">
         <h3 class="details-heading">Response</h3>
         <dl class="dl-horizontal details">
@@ -63,7 +64,36 @@ function doAction(action) {
             <dd>${fn:escapeXml(result.url) }</dd>
         </dl>
     </div>
+     --%>
 </div>
+</div>
+
+<div class="table-responsive">
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th>Group ID</th>
+            <th>Artifact ID</th>
+            <th>Version</th>
+            <th>Classifier</th>
+            <th>Extension</th>
+        </tr>
+    </thead>
+    <tbody>
+	    <c:forEach var="entry" items="${result.artifacts }">
+	        <tr class="${ (not entry.resolved ) ? 'danger' : '' }">
+	            <td>${fn:escapeXml(entry.coordinates.groupId) }</td>
+	            <td>${fn:escapeXml(entry.coordinates.artifactId) }</td>
+	            <td>${fn:escapeXml(entry.coordinates.version) }</td>
+	            <td>${fn:escapeXml(entry.coordinates.classifier) }</td>
+	            <td>${fn:escapeXml(entry.coordinates.extension) }</td>
+	        </tr>
+	    </c:forEach>
+    </tbody>
+</table>
+</div>
+
+<div class="container-fluid">
 
 <div class="row">
     <div class="col-md-11 col-md-offset-1">

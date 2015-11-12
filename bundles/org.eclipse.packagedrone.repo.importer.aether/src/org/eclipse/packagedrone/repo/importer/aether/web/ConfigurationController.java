@@ -20,8 +20,11 @@ import javax.validation.Valid;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.packagedrone.job.JobHandle;
 import org.eclipse.packagedrone.job.JobManager;
+import org.eclipse.packagedrone.job.JobRequest;
 import org.eclipse.packagedrone.repo.importer.aether.AetherImporter;
-import org.eclipse.packagedrone.repo.importer.aether.Configuration;
+import org.eclipse.packagedrone.repo.importer.aether.ImportConfiguration;
+import org.eclipse.packagedrone.repo.importer.aether.MavenCoordinates;
+import org.eclipse.packagedrone.repo.importer.aether.SimpleArtifactConfiguration;
 import org.eclipse.packagedrone.repo.importer.web.ImportRequest;
 import org.eclipse.packagedrone.sec.web.controller.HttpContraintControllerInterceptor;
 import org.eclipse.packagedrone.sec.web.controller.Secured;
@@ -40,7 +43,6 @@ import org.eclipse.packagedrone.web.controller.form.FormData;
 import org.eclipse.packagedrone.web.controller.validator.ControllerValidator;
 import org.eclipse.packagedrone.web.controller.validator.ValidationContext;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @Secured
@@ -51,8 +53,7 @@ import com.google.gson.GsonBuilder;
 @ControllerInterceptor ( HttpContraintControllerInterceptor.class )
 public class ConfigurationController
 {
-
-    private final Gson gson = new GsonBuilder ().create ();
+    private final GsonBuilder gson = new GsonBuilder ();
 
     private JobManager jobManager;
 
@@ -62,7 +63,8 @@ public class ConfigurationController
     }
 
     @RequestMapping ( value = "/import/{token}/aether/start", method = RequestMethod.GET )
-    public ModelAndView configure ( @RequestParameter ( value = "configuration", required = false ) final Configuration cfg )
+    public ModelAndView configure ( @RequestParameter ( value = "configuration",
+            required = false ) final SimpleArtifactConfiguration cfg)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -72,14 +74,14 @@ public class ConfigurationController
         }
         else
         {
-            model.put ( "command", new Configuration () );
+            model.put ( "command", new SimpleArtifactConfiguration () );
         }
 
         return new ModelAndView ( "configure", model );
     }
 
     @RequestMapping ( value = "/import/{token}/aether/start", method = RequestMethod.POST )
-    public ModelAndView configurePost ( @Valid @FormData ( "command" ) final Configuration data, final BindingResult result )
+    public ModelAndView configurePost ( @Valid @FormData ( "command" ) final SimpleArtifactConfiguration data, final BindingResult result)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -89,13 +91,34 @@ public class ConfigurationController
     }
 
     @RequestMapping ( value = "/import/{token}/aether/test", method = RequestMethod.POST )
-    public ModelAndView testImport ( @Valid @FormData ( "command" ) final Configuration data, final BindingResult result, final HttpServletRequest request )
+    public ModelAndView testImport ( @Valid @FormData ( "command" ) final SimpleArtifactConfiguration data, final BindingResult result, final HttpServletRequest request)
     {
+        if ( result.hasErrors () )
+        {
+            return configurePost ( data, result );
+        }
+
         final Map<String, Object> model = new HashMap<> ();
 
         model.put ( "command", data );
 
-        final JobHandle job = this.jobManager.startJob ( AetherTester.ID, data );
+        final ImportConfiguration imp = new ImportConfiguration ();
+        imp.setRepositoryUrl ( data.getUrl () );
+
+        final MavenCoordinates main = MavenCoordinates.fromString ( data.getCoordinates () );
+
+        imp.getCoordinates ().add ( main );
+        if ( data.isIncludeSources () )
+        {
+            final MavenCoordinates sources = new MavenCoordinates ( main );
+            sources.setClassifier ( "sources" );
+            imp.getCoordinates ().add ( sources );
+        }
+
+        final Map<String, String> properties = new HashMap<> ( 1 );
+        properties.put ( "originalConfig", this.gson.create ().toJson ( data ) );
+        final JobRequest jr = new JobRequest ( AetherTester.ID, this.gson.create ().toJson ( imp ), properties );
+        final JobHandle job = this.jobManager.startJob ( jr );
 
         model.put ( "job", job );
 
@@ -103,7 +126,7 @@ public class ConfigurationController
     }
 
     @RequestMapping ( value = "/import/{token}/aether/testComplete", method = RequestMethod.POST )
-    public ModelAndView completeTest ( @RequestParameter ( "jobId" ) final String jobId, @PathVariable ( "token" ) final String token )
+    public ModelAndView completeTest ( @RequestParameter ( "jobId" ) final String jobId, @PathVariable ( "token" ) final String token)
     {
         final Map<String, Object> model = new HashMap<> ();
 
@@ -112,12 +135,12 @@ public class ConfigurationController
         model.put ( "job", job );
 
         final String data = job.getRequest ().getData ();
-        final Configuration cfg = this.gson.fromJson ( data, Configuration.class );
+        final ImportConfiguration cfg = this.gson.create ().fromJson ( data, ImportConfiguration.class );
 
         model.put ( "configuration", cfg );
 
         model.put ( "request", ImportRequest.toJson ( AetherImporter.ID, data ) );
-        model.put ( "cfgJson", job.getRequest ().getData () );
+        model.put ( "cfgJson", job.getProperties ().get ( "originalConfig" ) );
         model.put ( "token", token );
 
         if ( job != null && job.isFailed () )
@@ -132,8 +155,8 @@ public class ConfigurationController
         }
     }
 
-    @ControllerValidator ( formDataClass = Configuration.class )
-    public void validateImportConfiguration ( final Configuration cfg, final ValidationContext ctx )
+    @ControllerValidator ( formDataClass = SimpleArtifactConfiguration.class )
+    public void validateImportConfiguration ( final SimpleArtifactConfiguration cfg, final ValidationContext ctx )
     {
         try
         {

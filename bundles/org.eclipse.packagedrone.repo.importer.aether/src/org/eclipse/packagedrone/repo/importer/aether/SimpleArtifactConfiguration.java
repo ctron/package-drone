@@ -13,7 +13,7 @@ package org.eclipse.packagedrone.repo.importer.aether;
 import org.eclipse.packagedrone.utils.converter.JSON;
 
 @JSON
-public class Configuration
+public class SimpleArtifactConfiguration
 {
     private String url;
 
