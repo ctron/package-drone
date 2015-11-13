@@ -12,6 +12,8 @@ package org.eclipse.packagedrone.repo.importer.aether.web;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.packagedrone.repo.importer.aether.MavenCoordinates;
 import org.eclipse.packagedrone.utils.converter.JSON;
@@ -32,6 +34,8 @@ public class AetherResult
         private boolean requested;
 
         private boolean optional;
+
+        private Set<String> existingVersions = new TreeSet<> ();
 
         public void setCoordinates ( final MavenCoordinates coordinates )
         {
@@ -81,6 +85,16 @@ public class AetherResult
         public boolean isOptional ()
         {
             return this.optional;
+        }
+
+        public void setExistingVersions ( final Set<String> existingVersions )
+        {
+            this.existingVersions = existingVersions;
+        }
+
+        public Set<String> getExistingVersions ()
+        {
+            return this.existingVersions;
         }
     }
 

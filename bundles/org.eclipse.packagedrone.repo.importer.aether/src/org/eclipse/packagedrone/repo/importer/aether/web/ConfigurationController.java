@@ -29,6 +29,7 @@ import org.eclipse.packagedrone.repo.importer.aether.AetherImporter;
 import org.eclipse.packagedrone.repo.importer.aether.ImportConfiguration;
 import org.eclipse.packagedrone.repo.importer.aether.MavenCoordinates;
 import org.eclipse.packagedrone.repo.importer.aether.SimpleArtifactConfiguration;
+import org.eclipse.packagedrone.repo.importer.web.ImportDescriptor;
 import org.eclipse.packagedrone.repo.importer.web.ImportRequest;
 import org.eclipse.packagedrone.sec.web.controller.HttpContraintControllerInterceptor;
 import org.eclipse.packagedrone.sec.web.controller.Secured;
@@ -103,7 +104,7 @@ public class ConfigurationController
     }
 
     @RequestMapping ( value = "/import/{token}/aether/test", method = RequestMethod.POST )
-    public ModelAndView testImport ( @Valid @FormData ( "command" ) final SimpleArtifactConfiguration data, final BindingResult result, final HttpServletRequest request)
+    public ModelAndView testImport ( @Valid @FormData ( "command" ) final SimpleArtifactConfiguration data, @PathVariable ( "token" ) final String token, final BindingResult result, final HttpServletRequest request)
     {
         if ( result.hasErrors () )
         {
@@ -118,6 +119,13 @@ public class ConfigurationController
         imp.setRepositoryUrl ( data.getUrl () );
         imp.setIncludeSources ( data.isIncludeSources () );
         imp.setAllOptional ( data.isAllOptional () );
+
+        final ImportDescriptor desc = ImportDescriptor.fromBase64 ( token );
+        if ( desc != null && desc.getChannelId () != null && !desc.getChannelId ().isEmpty () )
+        {
+            // set the ID for validating against existing maven artifacts
+            imp.setValidationChannelId ( desc.getChannelId () );
+        }
 
         final Map<String, String> properties = new HashMap<> ( 1 );
 

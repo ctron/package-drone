@@ -68,10 +68,12 @@ function doAction(action) {
 	        <c:set var="rowClass">
 	            <c:choose>
 	                <c:when test="${not entry.resolved }">danger</c:when>
-	                <c:when test="${entry.requested }">requested</c:when>
-	                <c:when test="${entry.optional }">optional</c:when>
+	                <c:when test="${not empty entry.existingVersions }">success</c:when>
+	                <c:when test="${entry.requested }">active requested</c:when>
 	                <c:otherwise></c:otherwise>
 	            </c:choose>
+	            <c:if test="${entry.requested }">${' ' }active requested</c:if>
+	            <c:if test="${entry.optional }">${' ' }optional</c:if>
 	        </c:set>
             
 	        <tr class="${rowClass }">
@@ -79,6 +81,9 @@ function doAction(action) {
                     <c:choose>
                         <c:when test="${ not entry.resolved }">
                             <input type="checkbox" name="${fn:escapeXml(entry.coordinates) }" readonly="readonly" disabled="disabled"/>
+                        </c:when>
+                        <c:when test="${ entry.optional or (not empty entry.existingVersions) }">
+                            <input type="checkbox" name="${fn:escapeXml(entry.coordinates) }"/>
                         </c:when>
                         <c:otherwise>
                             <input type="checkbox" name="${fn:escapeXml(entry.coordinates) }" checked="checked" />
@@ -93,6 +98,9 @@ function doAction(action) {
 	            <td>
 	               <c:if test="${not empty entry.error }">
 	                   <span data-toggle="tooltip" data-placement="left" title="${fn:escapeXml(entry.error) }" class="glyphicon glyphicon-alert"></span>
+	               </c:if>
+	               <c:if test="${not empty entry.existingVersions }">
+	                   <span data-toggle="tooltip" data-placement="left" title="Already imported" class="glyphicon glyphicon-ok-sign"></span>
 	               </c:if>
 	            </td>
 	        </tr>
@@ -112,13 +120,13 @@ $(function () {
 
 	<div class="row">
 	    <div class="col-md-11 col-md-offset-1">
-	            <input type="hidden" name=importConfig value="${fn:escapeXml(importConfig) }"/>
-	            <button class="btn btn-primary" type="button" onclick="doAction('perform');">Import</button>
-	            
-	            <c:if test="${not empty cfgJson }">
-	                <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
-	                <button class="btn btn-default" type="button" onclick="doAction('start');">Edit</button>
-	            </c:if>
+            <input type="hidden" name=importConfig value="${fn:escapeXml(importConfig) }"/>
+            <button class="btn btn-primary" type="button" onclick="doAction('perform');">Import</button>
+            
+            <c:if test="${not empty cfgJson }">
+                <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
+                <button class="btn btn-default" type="button" onclick="doAction('start');">Edit</button>
+            </c:if>
 	    </div>
 	</div>
 

@@ -26,6 +26,8 @@ public class ImportConfiguration
 
     private boolean allOptional;
 
+    private String validationChannelId;
+
     public void setRepositoryUrl ( final String repositoryUrl )
     {
         this.repositoryUrl = repositoryUrl;
@@ -64,5 +66,15 @@ public class ImportConfiguration
     public boolean isAllOptional ()
     {
         return this.allOptional;
+    }
+
+    public void setValidationChannelId ( final String validationChannelId )
+    {
+        this.validationChannelId = validationChannelId;
+    }
+
+    public String getValidationChannelId ()
+    {
+        return this.validationChannelId;
     }
 }
