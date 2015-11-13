@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.importer.aether.web;
 
-import static org.eclipse.packagedrone.repo.importer.aether.AetherImporter.asResult;
 import static org.eclipse.packagedrone.repo.importer.aether.AetherImporter.prepareDependencies;
 
 import java.nio.file.Files;
@@ -75,7 +74,7 @@ public class AetherResolver extends AbstractJsonJobFactory<ImportConfiguration, 
 
         try
         {
-            return asResult ( prepareDependencies ( tmpDir, cfg ) );
+            return prepareDependencies ( tmpDir, cfg );
         }
         catch ( final Exception e )
         {

@@ -117,6 +117,7 @@ public class ConfigurationController
         final ImportConfiguration imp = new ImportConfiguration ();
         imp.setRepositoryUrl ( data.getUrl () );
         imp.setIncludeSources ( data.isIncludeSources () );
+        imp.setAllOptional ( data.isAllOptional () );
 
         final Map<String, String> properties = new HashMap<> ( 1 );
 

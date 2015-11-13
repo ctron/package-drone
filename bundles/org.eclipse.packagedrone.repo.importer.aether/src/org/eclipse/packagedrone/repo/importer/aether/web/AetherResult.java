@@ -29,6 +29,10 @@ public class AetherResult
 
         private String error;
 
+        private boolean requested;
+
+        private boolean optional;
+
         public void setCoordinates ( final MavenCoordinates coordinates )
         {
             this.coordinates = coordinates;
@@ -57,6 +61,26 @@ public class AetherResult
         public String getError ()
         {
             return this.error;
+        }
+
+        public void setRequested ( final boolean requested )
+        {
+            this.requested = requested;
+        }
+
+        public boolean isRequested ()
+        {
+            return this.requested;
+        }
+
+        public void setOptional ( final boolean optional )
+        {
+            this.optional = optional;
+        }
+
+        public boolean isOptional ()
+        {
+            return this.optional;
         }
     }
 

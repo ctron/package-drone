@@ -23,6 +23,8 @@ public class SimpleArtifactConfiguration
 
     private boolean resolveDependencies;
 
+    private boolean allOptional;
+
     public void setUrl ( final String url )
     {
         this.url = url;
@@ -61,5 +63,15 @@ public class SimpleArtifactConfiguration
     public boolean isResolveDependencies ()
     {
         return this.resolveDependencies;
+    }
+
+    public void setAllOptional ( final boolean allOptional )
+    {
+        this.allOptional = allOptional;
+    }
+
+    public boolean isAllOptional ()
+    {
+        return this.allOptional;
     }
 }

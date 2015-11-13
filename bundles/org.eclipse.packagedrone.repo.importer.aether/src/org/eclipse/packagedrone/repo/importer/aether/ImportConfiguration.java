@@ -24,6 +24,8 @@ public class ImportConfiguration
 
     private boolean includeSources;
 
+    private boolean allOptional;
+
     public void setRepositoryUrl ( final String repositoryUrl )
     {
         this.repositoryUrl = repositoryUrl;
@@ -52,5 +54,15 @@ public class ImportConfiguration
     public boolean isIncludeSources ()
     {
         return this.includeSources;
+    }
+
+    public void setAllOptional ( final boolean allOptional )
+    {
+        this.allOptional = allOptional;
+    }
+
+    public boolean isAllOptional ()
+    {
+        return this.allOptional;
     }
 }

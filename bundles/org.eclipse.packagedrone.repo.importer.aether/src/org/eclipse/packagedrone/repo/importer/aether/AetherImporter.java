@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.importer.aether;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.eclipse.aether.util.artifact.JavaScopes.COMPILE;
 
 import java.nio.file.Files;
@@ -19,20 +21,26 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencySelector;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
-import org.eclipse.aether.repository.ArtifactRepository;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.graph.DependencyVisitor;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -40,6 +48,10 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
+import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.eclipse.packagedrone.repo.MetaKey;
 import org.eclipse.packagedrone.repo.importer.ImportContext;
 import org.eclipse.packagedrone.repo.importer.ImportSubContext;
@@ -70,14 +82,32 @@ public class AetherImporter implements Importer
     {
         private final RepositorySystem system;
 
-        private final RepositorySystemSession session;
+        private final DefaultRepositorySystemSession session;
 
         private final List<RemoteRepository> repositories;
 
         public RepositoryContext ( final Path tmpDir, final String repositoryUrl )
         {
+            this ( tmpDir, repositoryUrl, null );
+        }
+
+        public RepositoryContext ( final Path tmpDir, final String repositoryUrl, final Boolean allOptional )
+        {
             this.system = Helper.newRepositorySystem ();
             this.session = Helper.newRepositorySystemSession ( tmpDir, this.system );
+
+            if ( allOptional != null )
+            {
+                final List<DependencySelector> selectors = new LinkedList<> ();
+
+                selectors.add ( new ScopeDependencySelector ( "test", "provided" ) );
+                if ( !allOptional )
+                {
+                    selectors.add ( new OptionalDependencySelector () );
+                }
+                selectors.add ( new ExclusionDependencySelector () );
+                this.session.setDependencySelector ( new AndDependencySelector ( selectors ) );
+            }
 
             if ( repositoryUrl == null || repositoryUrl.isEmpty () )
             {
@@ -206,12 +236,12 @@ public class AetherImporter implements Importer
      * sources if requested
      * </p>
      */
-    public static Collection<ArtifactResult> prepareDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws RepositoryException
+    public static AetherResult prepareDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws RepositoryException
     {
         Objects.requireNonNull ( tmpDir );
         Objects.requireNonNull ( cfg );
 
-        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
+        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl (), cfg.isAllOptional () );
 
         // add all coordinates
 
@@ -234,7 +264,7 @@ public class AetherImporter implements Importer
         if ( !cfg.isIncludeSources () )
         {
             // we are already done here
-            return arts;
+            return asResult ( arts, cfg, of ( dr ) );
         }
 
         // resolve sources
@@ -251,7 +281,7 @@ public class AetherImporter implements Importer
             }
         }
 
-        return resolve ( ctx, requests );
+        return asResult ( resolve ( ctx, requests ), cfg, of ( dr ) );
     }
 
     /**
@@ -260,12 +290,12 @@ public class AetherImporter implements Importer
      * Prepare a simple import request with a specific list of coordinates
      * </p>
      */
-    public static Collection<ArtifactResult> preparePlain ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
+    public static AetherResult preparePlain ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
     {
         Objects.requireNonNull ( tmpDir );
         Objects.requireNonNull ( cfg );
 
-        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
+        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl (), cfg.isAllOptional () );
 
         final List<ArtifactRequest> requests = new ArrayList<> ( cfg.getCoordinates ().size () * ( cfg.isIncludeSources () ? 2 : 1 ) );
 
@@ -288,7 +318,7 @@ public class AetherImporter implements Importer
 
         // process
 
-        return resolve ( ctx, requests );
+        return asResult ( resolve ( ctx, requests ), cfg, empty () );
     }
 
     protected static List<ArtifactResult> resolve ( final RepositoryContext ctx, final List<ArtifactRequest> requests )
@@ -337,17 +367,44 @@ public class AetherImporter implements Importer
      *
      * @param results
      *            the result collection
+     * @param cfg
+     *            the import configuration
+     * @param dependencyResult
+     *            The result of the dependency resolution
      * @return the AetherResult object
      */
-    public static AetherResult asResult ( final Collection<ArtifactResult> results )
+    public static AetherResult asResult ( final Collection<ArtifactResult> results, final ImportConfiguration cfg, final Optional<DependencyResult> dependencyResult )
     {
         final AetherResult result = new AetherResult ();
+
+        // create set of requested coordinates
+
+        final Set<String> requested = new HashSet<> ( cfg.getCoordinates ().size () );
+        for ( final MavenCoordinates mc : cfg.getCoordinates () )
+        {
+            requested.add ( mc.toString () );
+        }
+
+        // generate dependency map
+
+        final Map<String, Boolean> optionalDeps = new HashMap<> ();
+        fillOptionalDependenciesMap ( dependencyResult, optionalDeps );
+
+        // convert artifacts
 
         for ( final ArtifactResult ar : results )
         {
             final AetherResult.Entry entry = new AetherResult.Entry ();
-            entry.setCoordinates ( MavenCoordinates.fromResult ( ar ) );
+
+            final MavenCoordinates coordinates = MavenCoordinates.fromResult ( ar );
+            final String key = coordinates.toBase ().toString ();
+
+            entry.setCoordinates ( coordinates );
             entry.setResolved ( ar.isResolved () );
+            entry.setRequested ( requested.contains ( key ) );
+            entry.setOptional ( optionalDeps.getOrDefault ( key, Boolean.FALSE ) );
+
+            // convert error
 
             if ( ar.getExceptions () != null && !ar.getExceptions ().isEmpty () )
             {
@@ -359,21 +416,62 @@ public class AetherImporter implements Importer
                 entry.setError ( sb.toString () );
             }
 
+            // add to list
+
             result.getArtifacts ().add ( entry );
         }
 
+        // sort by coordinates
+
         Collections.sort ( result.getArtifacts (), Comparator.comparing ( AetherResult.Entry::getCoordinates ) );
 
-        if ( !results.isEmpty () )
-        {
-            final ArtifactRepository repo = results.iterator ().next ().getRepository ();
-            if ( repo instanceof RemoteRepository )
-            {
-                final RemoteRepository remRepo = (RemoteRepository)repo;
-                result.setRepositoryUrl ( remRepo.getUrl () );
-            }
-        }
+        // set repo url
+
+        result.setRepositoryUrl ( cfg.getRepositoryUrl () );
+
         return result;
+    }
+
+    private static void fillOptionalDependenciesMap ( final Optional<DependencyResult> dependencyResult, final Map<String, Boolean> optionalDeps )
+    {
+        if ( !dependencyResult.isPresent () )
+        {
+            return;
+        }
+
+        dependencyResult.get ().getRoot ().accept ( new DependencyVisitor () {
+
+            @Override
+            public boolean visitLeave ( final DependencyNode node )
+            {
+                return true;
+            }
+
+            @Override
+            public boolean visitEnter ( final DependencyNode node )
+            {
+                final Dependency d = node.getDependency ();
+                if ( d == null )
+                {
+                    return true;
+                }
+
+                final String key = MavenCoordinates.fromArtifact ( d.getArtifact () ).toBase ().toString ();
+
+                if ( d.isOptional () )
+                {
+                    if ( !optionalDeps.containsKey ( key ) )
+                    {
+                        optionalDeps.put ( key, Boolean.TRUE );
+                    }
+                }
+                else
+                {
+                    optionalDeps.put ( key, Boolean.FALSE );
+                }
+                return true;
+            }
+        } );
     }
 
     private static DefaultArtifact makeSources ( final Artifact main )

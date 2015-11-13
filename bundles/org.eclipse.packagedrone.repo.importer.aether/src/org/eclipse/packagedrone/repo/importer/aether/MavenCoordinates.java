@@ -98,6 +98,19 @@ public class MavenCoordinates implements Comparable<MavenCoordinates>
         this.extension = extension;
     }
 
+    /**
+     * Create a new instance without classifier and extension
+     */
+    public MavenCoordinates toBase ()
+    {
+        if ( this.classifier == null && this.extension == null )
+        {
+            return this;
+        }
+
+        return new MavenCoordinates ( this.groupId, this.artifactId, this.version );
+    }
+
     public static MavenCoordinates fromString ( final String coords )
     {
         return fromArtifact ( new DefaultArtifact ( coords ) );

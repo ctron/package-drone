@@ -49,6 +49,10 @@ function doAction(action) {
             <h:formCheckbox label="Resolve dependencies" path="resolveDependencies" command="command">
                 <span class="help-block">Whether dependencies should be resolved first and added to the list.</span>
             </h:formCheckbox>
+            
+            <h:formCheckbox label="Include all optional" path="allOptional" command="command">
+                <span class="help-block">Whether all optional dependencies should be considered.</span>
+            </h:formCheckbox>
 		    
 		    <div class="form-group">
 		        <div class="col-sm-offset-2 col-sm-10">

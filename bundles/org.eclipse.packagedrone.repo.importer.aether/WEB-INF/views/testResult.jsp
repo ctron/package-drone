@@ -10,6 +10,15 @@
 
 <h:main title="Import Test" subtitle="Result">
 
+<style>
+tr.optional {
+    font-style: italic;
+}
+tr.requested {
+    font-weight: bold;
+}
+</style>
+
 <script type="text/javascript">
 function doAction(action) {
     var form = $('#command');
@@ -21,10 +30,9 @@ function doAction(action) {
 
 <form class="form-inline" method="GET" action="" id="command">
 
-<div class="container-fluid form-padding">
+<div class="container-fluid">
 	<div class="row">
-	    <div class="col-md-6">
-	        <h3 class="details-heading">Request</h3>
+	    <div class="col-xs-12">
 	        <dl class="dl-horizontal details">
 	            <dt>Repository</dt>
 	            <dd>
@@ -42,7 +50,7 @@ function doAction(action) {
 </div>
 
 <div class="table-responsive">
-<table class="table table-hover table-condensed">
+<table class="table table-condensed">
     <thead>
         <tr>
             <th></th>
@@ -56,19 +64,49 @@ function doAction(action) {
     </thead>
     <tbody>
 	    <c:forEach var="entry" items="${result.artifacts }">
-	        <tr class="${ (not entry.resolved ) ? 'danger' : '' }">
-                <td><input type="checkbox" name="${fn:escapeXml(entry.coordinates) }" checked="checked" /></td>
+	    
+	        <c:set var="rowClass">
+	            <c:choose>
+	                <c:when test="${not entry.resolved }">danger</c:when>
+	                <c:when test="${entry.requested }">requested</c:when>
+	                <c:when test="${entry.optional }">optional</c:when>
+	                <c:otherwise></c:otherwise>
+	            </c:choose>
+	        </c:set>
+            
+	        <tr class="${rowClass }">
+                <td>
+                    <c:choose>
+                        <c:when test="${ not entry.resolved }">
+                            <input type="checkbox" name="${fn:escapeXml(entry.coordinates) }" readonly="readonly" disabled="disabled"/>
+                        </c:when>
+                        <c:otherwise>
+                            <input type="checkbox" name="${fn:escapeXml(entry.coordinates) }" checked="checked" />
+                        </c:otherwise>
+                    </c:choose>
+                </td>
 	            <td>${fn:escapeXml(entry.coordinates.groupId) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.artifactId) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.version) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.classifier) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.extension) }</td>
-	            <td>${fn:escapeXml(entry.error) }</td>
+	            <td>
+	               <c:if test="${not empty entry.error }">
+	                   <span data-toggle="tooltip" data-placement="left" title="${fn:escapeXml(entry.error) }" class="glyphicon glyphicon-alert"></span>
+	               </c:if>
+	            </td>
 	        </tr>
 	    </c:forEach>
     </tbody>
 </table>
 </div>
+
+<%-- initialize tooltips --%>
+<script type="text/javascript">
+$(function () {
+	  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
 
 <div class="container-fluid">
 
