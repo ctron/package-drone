@@ -8,7 +8,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 
-<%@ taglib uri="http://eclipse.org/package-drone/web" prefix="web" %>
+<%@ taglib uri="http://eclipse.org/packagedrone/web" prefix="web" %>
 
 <%@ attribute name="title" required="true" %>
 <%@ attribute name="subtitle" %>
