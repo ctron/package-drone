@@ -3,9 +3,10 @@
 <%@ taglib tagdir="/WEB-INF/tags/main" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
 <%@ taglib uri="http://dentrassi.de/osgi/web/form" prefix="form" %>
-<%@ taglib uri="http://eclipse.org/packagedrone/repo/channel" prefix="pm" %>
 <%@ taglib uri="http://dentrassi.de/osgi/job" prefix="job"%>
+<%@ taglib uri="http://eclipse.org/packagedrone/repo/channel" prefix="pm" %>
 <%@ taglib uri="http://eclipse.org/package-drone/web" prefix="web"%>
 
 <web:define name="entry">
@@ -37,7 +38,7 @@
 	            <dd>${result.entries.size() }</dd>
 	            
 	            <dt>Bytes imported</dt>
-	            <dd>${result.totalBytes }</dd>
+	            <dd><web:bytes amount="${result.totalBytes }"/></dd>
 	            
 	            <c:if test="${not empty channel }">
 	            <dt>Channel</dt>
