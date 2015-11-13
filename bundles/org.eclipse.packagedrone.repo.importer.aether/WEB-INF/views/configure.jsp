@@ -52,7 +52,7 @@ function doAction(action) {
 		        <div class="col-sm-offset-2 col-sm-10">
 		            <button type="submit" class="btn btn-${ok ?  'default' : 'primary' }">Validate</button>
 		            <c:if test="${ok }">
-                        <button type="button" id="test" class="btn btn-primary" onclick="doAction('<c:url value="test"/>');">Test</button>
+                        <button type="button" id="test" class="btn btn-primary" onclick="doAction('<c:url value="test"/>');">Resolve</button>
 		            </c:if>
 		            <button type="reset" class="btn btn-default">Reset</button>
 		        </div>

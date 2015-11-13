@@ -110,7 +110,7 @@ public class MavenCoordinates implements Comparable<MavenCoordinates>
             return null;
         }
 
-        return fromArtifact ( result.getArtifact () );
+        return fromArtifact ( result.getRequest ().getArtifact () );
     }
 
     public static MavenCoordinates fromArtifact ( final Artifact art )

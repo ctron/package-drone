@@ -77,6 +77,7 @@ function doAction(action) {
             <th>Version</th>
             <th>Classifier</th>
             <th>Extension</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -87,6 +88,7 @@ function doAction(action) {
 	            <td>${fn:escapeXml(entry.coordinates.version) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.classifier) }</td>
 	            <td>${fn:escapeXml(entry.coordinates.extension) }</td>
+	            <td>${fn:escapeXml(entry.error) }</td>
 	        </tr>
 	    </c:forEach>
     </tbody>

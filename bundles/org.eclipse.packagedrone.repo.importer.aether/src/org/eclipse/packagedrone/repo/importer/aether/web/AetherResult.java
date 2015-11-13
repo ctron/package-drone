@@ -27,6 +27,8 @@ public class AetherResult
 
         private boolean resolved;
 
+        private String error;
+
         public void setCoordinates ( final MavenCoordinates coordinates )
         {
             this.coordinates = coordinates;
@@ -45,6 +47,16 @@ public class AetherResult
         public boolean isResolved ()
         {
             return this.resolved;
+        }
+
+        public void setError ( final String error )
+        {
+            this.error = error;
+        }
+
+        public String getError ()
+        {
+            return this.error;
         }
     }
 

@@ -17,10 +17,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
@@ -30,6 +32,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.repository.ArtifactRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -43,6 +46,7 @@ import org.eclipse.packagedrone.repo.importer.ImportSubContext;
 import org.eclipse.packagedrone.repo.importer.Importer;
 import org.eclipse.packagedrone.repo.importer.ImporterDescription;
 import org.eclipse.packagedrone.repo.importer.SimpleImporterDescription;
+import org.eclipse.packagedrone.repo.importer.aether.web.AetherResult;
 import org.eclipse.packagedrone.web.LinkTarget;
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
 
@@ -204,6 +208,9 @@ public class AetherImporter implements Importer
      */
     public static Collection<ArtifactResult> prepareDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws RepositoryException
     {
+        Objects.requireNonNull ( tmpDir );
+        Objects.requireNonNull ( cfg );
+
         final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
         // add all coordinates
@@ -232,19 +239,19 @@ public class AetherImporter implements Importer
 
         // resolve sources
 
-        final List<ArtifactRequest> reqs = new ArrayList<> ( arts.size () * 2 );
+        final List<ArtifactRequest> requests = new ArrayList<> ( arts.size () * 2 );
         for ( final ArtifactResult ar : arts )
         {
-            reqs.add ( ar.getRequest () );
+            requests.add ( ar.getRequest () );
 
             final DefaultArtifact sources = makeSources ( ar.getArtifact () );
             if ( sources != null )
             {
-                reqs.add ( makeRequest ( ctx.getRepositories (), sources ) );
+                requests.add ( makeRequest ( ctx.getRepositories (), sources ) );
             }
         }
 
-        return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), reqs );
+        return resolve ( ctx, requests );
     }
 
     /**
@@ -255,9 +262,12 @@ public class AetherImporter implements Importer
      */
     public static Collection<ArtifactResult> preparePlain ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
     {
+        Objects.requireNonNull ( tmpDir );
+        Objects.requireNonNull ( cfg );
+
         final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
-        final Collection<ArtifactRequest> requests = new ArrayList<> ( cfg.getCoordinates ().size () * ( cfg.isIncludeSources () ? 2 : 1 ) );
+        final List<ArtifactRequest> requests = new ArrayList<> ( cfg.getCoordinates ().size () * ( cfg.isIncludeSources () ? 2 : 1 ) );
 
         for ( final MavenCoordinates coords : cfg.getCoordinates () )
         {
@@ -278,7 +288,19 @@ public class AetherImporter implements Importer
 
         // process
 
-        return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), requests );
+        return resolve ( ctx, requests );
+    }
+
+    protected static List<ArtifactResult> resolve ( final RepositoryContext ctx, final List<ArtifactRequest> requests )
+    {
+        try
+        {
+            return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), requests );
+        }
+        catch ( final ArtifactResolutionException e )
+        {
+            return e.getResults ();
+        }
     }
 
     /**
@@ -290,6 +312,9 @@ public class AetherImporter implements Importer
      */
     public static Collection<ArtifactResult> processImport ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
     {
+        Objects.requireNonNull ( tmpDir );
+        Objects.requireNonNull ( cfg );
+
         final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
         final Collection<ArtifactRequest> requests = new LinkedList<> ();
@@ -305,6 +330,50 @@ public class AetherImporter implements Importer
         // process
 
         return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), requests );
+    }
+
+    /**
+     * Convert aether result list to AetherResult object
+     *
+     * @param results
+     *            the result collection
+     * @return the AetherResult object
+     */
+    public static AetherResult asResult ( final Collection<ArtifactResult> results )
+    {
+        final AetherResult result = new AetherResult ();
+
+        for ( final ArtifactResult ar : results )
+        {
+            final AetherResult.Entry entry = new AetherResult.Entry ();
+            entry.setCoordinates ( MavenCoordinates.fromResult ( ar ) );
+            entry.setResolved ( ar.isResolved () );
+
+            if ( ar.getExceptions () != null && !ar.getExceptions ().isEmpty () )
+            {
+                final StringBuilder sb = new StringBuilder ( ar.getExceptions ().get ( 0 ).getMessage () );
+                if ( ar.getExceptions ().size () > 1 )
+                {
+                    sb.append ( " ..." );
+                }
+                entry.setError ( sb.toString () );
+            }
+
+            result.getArtifacts ().add ( entry );
+        }
+
+        Collections.sort ( result.getArtifacts (), Comparator.comparing ( AetherResult.Entry::getCoordinates ) );
+
+        if ( !results.isEmpty () )
+        {
+            final ArtifactRepository repo = results.iterator ().next ().getRepository ();
+            if ( repo instanceof RemoteRepository )
+            {
+                final RemoteRepository remRepo = (RemoteRepository)repo;
+                result.setRepositoryUrl ( remRepo.getUrl () );
+            }
+        }
+        return result;
     }
 
     private static DefaultArtifact makeSources ( final Artifact main )
