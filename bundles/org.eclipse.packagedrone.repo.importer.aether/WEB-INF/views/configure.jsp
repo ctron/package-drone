@@ -32,7 +32,7 @@ function doAction(action) {
 		    </h:formEntry>
 		    
             <h:formEntry label="Dependencies" path="dependencies" command="command">
-                <form:textarea path="dependencies" cssClass="form-control" rows="10" />
+                <form:textarea path="dependencies" cssClass="form-control" rows="10" spellcheck="false" />
                 <span class="help-block">
                 
                 <span class="pull-right"><a href="#" data-toggle="modal" data-target="#coordinatesHelp"><span class="glyphicon glyphicon-question-sign"></span></a></span>
