@@ -93,13 +93,19 @@ public class ConfigurationController
         return new ModelAndView ( "configure", model );
     }
 
+    @RequestMapping ( value = "/import/{token}/aether/edit", method = RequestMethod.POST )
+    public ModelAndView configurePost ( @RequestParameter ( "configuration" ) final SimpleArtifactConfiguration cfg)
+    {
+        final Map<String, Object> model = new HashMap<> ();
+        model.put ( "command", cfg );
+        return new ModelAndView ( "configure", model );
+    }
+
     @RequestMapping ( value = "/import/{token}/aether/start", method = RequestMethod.POST )
     public ModelAndView configurePost ( @Valid @FormData ( "command" ) final SimpleArtifactConfiguration data, final BindingResult result)
     {
         final Map<String, Object> model = new HashMap<> ();
-
         model.put ( "ok", !result.hasErrors () );
-
         return new ModelAndView ( "configure", model );
     }
 
@@ -118,6 +124,8 @@ public class ConfigurationController
         final ImportConfiguration imp = new ImportConfiguration ();
         imp.setRepositoryUrl ( data.getUrl () );
         imp.setIncludeSources ( data.isIncludeSources () );
+        imp.setIncludePoms ( data.isIncludePoms () );
+        imp.setIncludeJavadoc ( data.isIncludeJavadoc () );
         imp.setAllOptional ( data.isAllOptional () );
 
         final ImportDescriptor desc = ImportDescriptor.fromBase64 ( token );
@@ -184,7 +192,7 @@ public class ConfigurationController
         }
     }
 
-    @RequestMapping ( value = "/import/{token}/aether/perform", method = RequestMethod.GET )
+    @RequestMapping ( value = "/import/{token}/aether/perform", method = RequestMethod.POST )
     public void performImport ( @PathVariable ( "token" ) final String token, final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
     {
         final Map<String, String[]> params = new HashMap<> ( request.getParameterMap () );

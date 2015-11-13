@@ -42,18 +42,22 @@ function doAction(action) {
                 </span>
             </h:formEntry>
             
-            <h:formCheckbox label="Include sources" path="includeSources" command="command" >
-                <span class="help-block">Whether the source attachment should be imported as well.</span>
-            </h:formCheckbox>
-            
             <h:formCheckbox label="Resolve dependencies" path="resolveDependencies" command="command">
-                <span class="help-block">Whether dependencies should be resolved first and added to the list.</span>
             </h:formCheckbox>
             
             <h:formCheckbox label="Include all optional" path="allOptional" command="command">
                 <span class="help-block">Whether all optional dependencies should be considered.</span>
             </h:formCheckbox>
-		    
+            
+            <h:formCheckbox label="Include sources" path="includeSources" command="command" >
+            </h:formCheckbox>
+
+            <h:formCheckbox label="Include POM" path="includePoms" command="command" >
+            </h:formCheckbox>
+
+            <h:formCheckbox label="Include Javadoc" path="includeJavadoc" command="command" >
+            </h:formCheckbox>
+            
 		    <div class="form-group">
 		        <div class="col-sm-offset-2 col-sm-10">
 		            <button type="submit" class="btn btn-${ok ?  'default' : 'primary' }">Validate</button>

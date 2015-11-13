@@ -40,7 +40,7 @@
 
 <div class="row">
     <div class="col-md-11 col-md-offset-1">
-        <form class="form-inline" method="GET" action="start" id="command">
+        <form class="form-inline" method="POST" action="edit" id="command">
             <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
             <input type="hidden" name=request value="${fn:escapeXml(request) }"/>
             <input type="hidden" name="token" value="${fn:escapeXml(token) }"/>

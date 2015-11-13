@@ -21,6 +21,10 @@ public class SimpleArtifactConfiguration
 
     private boolean includeSources;
 
+    private boolean includePoms;
+
+    private boolean includeJavadoc;
+
     private boolean resolveDependencies;
 
     private boolean allOptional;
@@ -53,6 +57,26 @@ public class SimpleArtifactConfiguration
     public boolean isIncludeSources ()
     {
         return this.includeSources;
+    }
+
+    public void setIncludePoms ( final boolean includePoms )
+    {
+        this.includePoms = includePoms;
+    }
+
+    public boolean isIncludePoms ()
+    {
+        return this.includePoms;
+    }
+
+    public void setIncludeJavadoc ( final boolean includeJavadoc )
+    {
+        this.includeJavadoc = includeJavadoc;
+    }
+
+    public boolean isIncludeJavadoc ()
+    {
+        return this.includeJavadoc;
     }
 
     public void setResolveDependencies ( final boolean resolveDependencies )

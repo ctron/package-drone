@@ -16,27 +16,24 @@ import static org.eclipse.aether.util.artifact.JavaScopes.COMPILE;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryException;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.collection.DependencySelector;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
@@ -48,10 +45,6 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
-import org.eclipse.aether.util.graph.selector.AndDependencySelector;
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
-import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.eclipse.packagedrone.repo.MetaKey;
 import org.eclipse.packagedrone.repo.importer.ImportContext;
 import org.eclipse.packagedrone.repo.importer.ImportSubContext;
@@ -76,63 +69,6 @@ public class AetherImporter implements Importer
         DESCRIPTION.setLabel ( "Maven 2 Importer" );
         DESCRIPTION.setDescription ( "Import artifacts from Maven Repositories using Eclipse Aether" );
         DESCRIPTION.setStartTarget ( new LinkTarget ( "/import/{token}/aether/start" ) );
-    }
-
-    private static class RepositoryContext
-    {
-        private final RepositorySystem system;
-
-        private final DefaultRepositorySystemSession session;
-
-        private final List<RemoteRepository> repositories;
-
-        public RepositoryContext ( final Path tmpDir, final String repositoryUrl )
-        {
-            this ( tmpDir, repositoryUrl, null );
-        }
-
-        public RepositoryContext ( final Path tmpDir, final String repositoryUrl, final Boolean allOptional )
-        {
-            this.system = Helper.newRepositorySystem ();
-            this.session = Helper.newRepositorySystemSession ( tmpDir, this.system );
-
-            if ( allOptional != null )
-            {
-                final List<DependencySelector> selectors = new LinkedList<> ();
-
-                selectors.add ( new ScopeDependencySelector ( "test", "provided" ) );
-                if ( !allOptional )
-                {
-                    selectors.add ( new OptionalDependencySelector () );
-                }
-                selectors.add ( new ExclusionDependencySelector () );
-                this.session.setDependencySelector ( new AndDependencySelector ( selectors ) );
-            }
-
-            if ( repositoryUrl == null || repositoryUrl.isEmpty () )
-            {
-                this.repositories = Collections.singletonList ( Helper.newCentralRepository () );
-            }
-            else
-            {
-                this.repositories = Collections.singletonList ( Helper.newRemoteRepository ( "drone.aether.import", repositoryUrl ) );
-            }
-        }
-
-        public List<RemoteRepository> getRepositories ()
-        {
-            return this.repositories;
-        }
-
-        public RepositorySystemSession getSession ()
-        {
-            return this.session;
-        }
-
-        public RepositorySystem getSystem ()
-        {
-            return this.system;
-        }
     }
 
     private final GsonBuilder gsonBuilder;
@@ -190,11 +126,12 @@ public class AetherImporter implements Importer
     private void importArtifact ( final ImportContext context, final ArtifactResult result, final Map<String, ImportSubContext> roots, final List<ArtifactResult> later )
     {
         final Artifact artifact = result.getArtifact ();
-        final String key = String.format ( "%s:%s:%s", artifact.getGroupId (), artifact.getArtifactId (), artifact.getBaseVersion () );
 
         final Map<MetaKey, String> metadata = makeMetaData ( artifact );
 
-        if ( later != null && artifact.getClassifier () != null && !artifact.getClassifier ().isEmpty () )
+        final String key = makeRootKey ( artifact );
+
+        if ( later != null && key != null && artifact.getClassifier () != null && !artifact.getClassifier ().isEmpty () )
         {
             final ImportSubContext sub = roots.get ( key );
             if ( sub == null )
@@ -209,8 +146,20 @@ public class AetherImporter implements Importer
         else
         {
             final ImportSubContext sub = context.scheduleImport ( artifact.getFile ().toPath (), false, artifact.getFile ().getName (), metadata );
-            roots.put ( key, sub );
+            if ( key != null )
+            {
+                roots.put ( key, sub );
+            }
         }
+    }
+
+    private String makeRootKey ( final Artifact artifact )
+    {
+        if ( !"jar".equals ( artifact.getExtension () ) )
+        {
+            return null;
+        }
+        return String.format ( "%s:%s:%s", artifact.getGroupId (), artifact.getArtifactId (), artifact.getBaseVersion () );
     }
 
     private static Map<MetaKey, String> makeMetaData ( final Artifact artifact )
@@ -269,17 +218,7 @@ public class AetherImporter implements Importer
 
         // resolve sources
 
-        final List<ArtifactRequest> requests = new ArrayList<> ( arts.size () * 2 );
-        for ( final ArtifactResult ar : arts )
-        {
-            requests.add ( ar.getRequest () );
-
-            final DefaultArtifact sources = makeSources ( ar.getArtifact () );
-            if ( sources != null )
-            {
-                requests.add ( makeRequest ( ctx.getRepositories (), sources ) );
-            }
-        }
+        final List<ArtifactRequest> requests = extendRequests ( arts.stream ().map ( ArtifactResult::getRequest ), ctx, cfg );
 
         return asResult ( resolve ( ctx, requests ), cfg, of ( dr ) );
     }
@@ -297,28 +236,58 @@ public class AetherImporter implements Importer
 
         final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl (), cfg.isAllOptional () );
 
-        final List<ArtifactRequest> requests = new ArrayList<> ( cfg.getCoordinates ().size () * ( cfg.isIncludeSources () ? 2 : 1 ) );
+        // extend
 
-        for ( final MavenCoordinates coords : cfg.getCoordinates () )
-        {
-            // main artifact
-
-            final DefaultArtifact main = new DefaultArtifact ( coords.toString () );
-            requests.add ( makeRequest ( ctx.getRepositories (), main ) );
-
-            if ( cfg.isIncludeSources () )
-            {
-                final DefaultArtifact sources = makeSources ( main );
-                if ( sources != null )
-                {
-                    requests.add ( makeRequest ( ctx.getRepositories (), sources ) );
-                }
-            }
-        }
+        final List<ArtifactRequest> requests = extendRequests ( cfg.getCoordinates ().stream ().map ( c -> {
+            final DefaultArtifact artifact = new DefaultArtifact ( c.toString () );
+            return makeRequest ( ctx.getRepositories (), artifact );
+        } ), ctx, cfg );
 
         // process
 
         return asResult ( resolve ( ctx, requests ), cfg, empty () );
+    }
+
+    private static List<ArtifactRequest> extendRequests ( final Stream<ArtifactRequest> requests, final RepositoryContext ctx, final ImportConfiguration cfg )
+    {
+        final List<ArtifactRequest> result = new LinkedList<> ();
+
+        final Iterator<ArtifactRequest> i = requests.iterator ();
+        while ( i.hasNext () )
+        {
+            final ArtifactRequest ar = i.next ();
+
+            result.add ( ar );
+
+            if ( cfg.isIncludeSources () )
+            {
+                final DefaultArtifact sources = makeOtherClassifier ( ar.getArtifact (), "sources" );
+                if ( sources != null )
+                {
+                    result.add ( makeRequest ( ctx.getRepositories (), sources ) );
+                }
+            }
+
+            if ( cfg.isIncludeJavadoc () )
+            {
+                final DefaultArtifact javadoc = makeOtherClassifier ( ar.getArtifact (), "javadoc" );
+                if ( javadoc != null )
+                {
+                    result.add ( makeRequest ( ctx.getRepositories (), javadoc ) );
+                }
+            }
+
+            if ( cfg.isIncludePoms () )
+            {
+                final DefaultArtifact pom = makeOtherExtension ( ar.getArtifact (), "pom" );
+                if ( pom != null )
+                {
+                    result.add ( makeRequest ( ctx.getRepositories (), pom ) );
+                }
+            }
+        }
+
+        return result;
     }
 
     protected static List<ArtifactResult> resolve ( final RepositoryContext ctx, final List<ArtifactRequest> requests )
@@ -474,14 +443,26 @@ public class AetherImporter implements Importer
         } );
     }
 
-    private static DefaultArtifact makeSources ( final Artifact main )
+    private static DefaultArtifact makeOtherClassifier ( final Artifact main, final String classifier )
     {
         if ( main.getClassifier () != null && !main.getClassifier ().isEmpty () )
         {
+            // we only change main artifacts
             return null;
         }
 
-        return new DefaultArtifact ( main.getGroupId (), main.getArtifactId (), "sources", main.getExtension (), main.getVersion () );
+        return new DefaultArtifact ( main.getGroupId (), main.getArtifactId (), classifier, main.getExtension (), main.getVersion () );
+    }
+
+    private static DefaultArtifact makeOtherExtension ( final Artifact main, final String extension )
+    {
+        if ( main.getClassifier () != null && !main.getClassifier ().isEmpty () )
+        {
+            // we only change main artifacts
+            return null;
+        }
+
+        return new DefaultArtifact ( main.getGroupId (), main.getArtifactId (), null, extension, main.getVersion () );
     }
 
     private static ArtifactRequest makeRequest ( final List<RemoteRepository> repositories, final Artifact artifact )

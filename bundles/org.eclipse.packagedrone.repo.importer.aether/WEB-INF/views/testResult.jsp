@@ -28,7 +28,7 @@ function doAction(action) {
 } 
 </script>
 
-<form class="form-inline" method="GET" action="" id="command">
+<form class="form-inline" method="POST" action="" id="command">
 
 <div class="container-fluid">
 	<div class="row">
@@ -125,7 +125,7 @@ $(function () {
             
             <c:if test="${not empty cfgJson }">
                 <input type="hidden" name=configuration value="${fn:escapeXml(cfgJson) }"/>
-                <button class="btn btn-default" type="button" onclick="doAction('start');">Edit</button>
+                <button class="btn btn-default" type="button" onclick="doAction('edit');">Edit</button>
             </c:if>
 	    </div>
 	</div>

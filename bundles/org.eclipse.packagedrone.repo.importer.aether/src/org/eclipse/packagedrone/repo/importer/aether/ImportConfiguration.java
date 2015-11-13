@@ -24,6 +24,10 @@ public class ImportConfiguration
 
     private boolean includeSources;
 
+    private boolean includePoms;
+
+    private boolean includeJavadoc;
+
     private boolean allOptional;
 
     private String validationChannelId;
@@ -56,6 +60,26 @@ public class ImportConfiguration
     public boolean isIncludeSources ()
     {
         return this.includeSources;
+    }
+
+    public void setIncludePoms ( final boolean includePoms )
+    {
+        this.includePoms = includePoms;
+    }
+
+    public boolean isIncludePoms ()
+    {
+        return this.includePoms;
+    }
+
+    public void setIncludeJavadoc ( final boolean includeJavadoc )
+    {
+        this.includeJavadoc = includeJavadoc;
+    }
+
+    public boolean isIncludeJavadoc ()
+    {
+        return this.includeJavadoc;
     }
 
     public void setAllOptional ( final boolean allOptional )
