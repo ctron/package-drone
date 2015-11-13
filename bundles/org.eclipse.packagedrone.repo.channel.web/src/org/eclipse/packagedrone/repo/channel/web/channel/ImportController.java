@@ -176,7 +176,7 @@ public class ImportController implements InterfaceExtender
         } );
     }
 
-    @RequestMapping ( value = "/import/perform", method = RequestMethod.GET )
+    @RequestMapping ( value = "/import/perform", method = { RequestMethod.POST, RequestMethod.GET } )
     public ModelAndView perform ( @RequestParameter ( "token" ) final String token, @RequestParameter ( "request" ) final ImportRequest request)
     {
         final Map<String, Object> model = new HashMap<> ();
