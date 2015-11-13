@@ -83,7 +83,7 @@ public class AetherTester extends AbstractJsonJobFactory<ImportConfiguration, Ae
 
         try
         {
-            final Collection<ArtifactResult> results = AetherImporter.process ( tmpDir, cfg );
+            final Collection<ArtifactResult> results = AetherImporter.preparePlain ( tmpDir, cfg );
 
             for ( final ArtifactResult ar : results )
             {

@@ -82,7 +82,7 @@ public class AetherResolver extends AbstractJsonJobFactory<ImportConfiguration, 
 
         try
         {
-            final Collection<ArtifactResult> results = AetherImporter.processDependencies ( tmpDir, cfg );
+            final Collection<ArtifactResult> results = AetherImporter.prepareDependencies ( tmpDir, cfg );
 
             for ( final ArtifactResult ar : results )
             {

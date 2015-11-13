@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.importer.aether;
 
+import static org.eclipse.aether.util.artifact.JavaScopes.COMPILE;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +50,6 @@ import com.google.gson.GsonBuilder;
 
 public class AetherImporter implements Importer
 {
-
     public static final String ID = "aether";
 
     private static final SimpleImporterDescription DESCRIPTION = new SimpleImporterDescription ();
@@ -59,6 +60,45 @@ public class AetherImporter implements Importer
         DESCRIPTION.setLabel ( "Maven 2 Importer" );
         DESCRIPTION.setDescription ( "Import artifacts from Maven Repositories using Eclipse Aether" );
         DESCRIPTION.setStartTarget ( new LinkTarget ( "/import/{token}/aether/start" ) );
+    }
+
+    private static class RepositoryContext
+    {
+        private final RepositorySystem system;
+
+        private final RepositorySystemSession session;
+
+        private final List<RemoteRepository> repositories;
+
+        public RepositoryContext ( final Path tmpDir, final String repositoryUrl )
+        {
+            this.system = Helper.newRepositorySystem ();
+            this.session = Helper.newRepositorySystemSession ( tmpDir, this.system );
+
+            if ( repositoryUrl == null || repositoryUrl.isEmpty () )
+            {
+                this.repositories = Collections.singletonList ( Helper.newCentralRepository () );
+            }
+            else
+            {
+                this.repositories = Collections.singletonList ( Helper.newRemoteRepository ( "drone.aether.import", repositoryUrl ) );
+            }
+        }
+
+        public List<RemoteRepository> getRepositories ()
+        {
+            return this.repositories;
+        }
+
+        public RepositorySystemSession getSession ()
+        {
+            return this.session;
+        }
+
+        public RepositorySystem getSystem ()
+        {
+            return this.system;
+        }
     }
 
     private final GsonBuilder gsonBuilder;
@@ -90,7 +130,7 @@ public class AetherImporter implements Importer
             Files.deleteIfExists ( tmpDir );
         } );
 
-        final Collection<ArtifactResult> results = process ( tmpDir, cfg );
+        final Collection<ArtifactResult> results = processImport ( tmpDir, cfg );
 
         final List<ArtifactResult> later = new LinkedList<> ();
         final Map<String, ImportSubContext> roots = new HashMap<> ();
@@ -105,7 +145,7 @@ public class AetherImporter implements Importer
             importArtifact ( context, result, roots, later );
         }
 
-        // try sub artifact again
+        // try sub artifacts again
 
         for ( final ArtifactResult result : later )
         {
@@ -155,43 +195,42 @@ public class AetherImporter implements Importer
         return md;
     }
 
-    public static Collection<ArtifactResult> processDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws RepositoryException
+    /**
+     * Prepare an import with dependencies
+     * <p>
+     * This method does resolve even transient dependencies and also adds the
+     * sources if requested
+     * </p>
+     */
+    public static Collection<ArtifactResult> prepareDependencies ( final Path tmpDir, final ImportConfiguration cfg ) throws RepositoryException
     {
-        final RepositorySystem system = Helper.newRepositorySystem ();
-        final RepositorySystemSession session = Helper.newRepositorySystemSession ( tmpDir, system );
-
-        final List<RemoteRepository> repositories;
-        if ( cfg.getRepositoryUrl () == null || cfg.getRepositoryUrl ().isEmpty () )
-        {
-            repositories = Arrays.asList ( Helper.newCentralRepository () );
-        }
-        else
-        {
-            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getRepositoryUrl () ) );
-        }
+        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
         // add all coordinates
 
         final CollectRequest cr = new CollectRequest ();
-        cr.addRepository ( repositories.get ( 0 ) );
+        cr.setRepositories ( ctx.getRepositories () );
         for ( final MavenCoordinates coords : cfg.getCoordinates () )
         {
-            final Dependency dep = new Dependency ( new DefaultArtifact ( coords.toString () ), "compile" );
+            final Dependency dep = new Dependency ( new DefaultArtifact ( coords.toString () ), COMPILE );
             cr.addDependency ( dep );
         }
 
-        final DependencyFilter filter = DependencyFilterUtils.classpathFilter ( "compile" );
+        final DependencyFilter filter = DependencyFilterUtils.classpathFilter ( COMPILE );
         final DependencyRequest deps = new DependencyRequest ( cr, filter );
 
         // resolve
 
-        final DependencyResult dr = system.resolveDependencies ( session, deps );
+        final DependencyResult dr = ctx.getSystem ().resolveDependencies ( ctx.getSession (), deps );
         final List<ArtifactResult> arts = dr.getArtifactResults ();
 
         if ( !cfg.isIncludeSources () )
         {
+            // we are already done here
             return arts;
         }
+
+        // resolve sources
 
         final List<ArtifactRequest> reqs = new ArrayList<> ( arts.size () * 2 );
         for ( final ArtifactResult ar : arts )
@@ -201,27 +240,57 @@ public class AetherImporter implements Importer
             final DefaultArtifact sources = makeSources ( ar.getArtifact () );
             if ( sources != null )
             {
-                reqs.add ( makeRequest ( repositories, sources ) );
+                reqs.add ( makeRequest ( ctx.getRepositories (), sources ) );
             }
         }
 
-        return system.resolveArtifacts ( session, reqs );
+        return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), reqs );
     }
 
-    public static Collection<ArtifactResult> process ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
+    /**
+     * Prepare a plain import process
+     * <p>
+     * Prepare a simple import request with a specific list of coordinates
+     * </p>
+     */
+    public static Collection<ArtifactResult> preparePlain ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
     {
-        final RepositorySystem system = Helper.newRepositorySystem ();
-        final RepositorySystemSession session = Helper.newRepositorySystemSession ( tmpDir, system );
+        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
-        final List<RemoteRepository> repositories;
-        if ( cfg.getRepositoryUrl () == null || cfg.getRepositoryUrl ().isEmpty () )
+        final Collection<ArtifactRequest> requests = new ArrayList<> ( cfg.getCoordinates ().size () * ( cfg.isIncludeSources () ? 2 : 1 ) );
+
+        for ( final MavenCoordinates coords : cfg.getCoordinates () )
         {
-            repositories = Arrays.asList ( Helper.newCentralRepository () );
+            // main artifact
+
+            final DefaultArtifact main = new DefaultArtifact ( coords.toString () );
+            requests.add ( makeRequest ( ctx.getRepositories (), main ) );
+
+            if ( cfg.isIncludeSources () )
+            {
+                final DefaultArtifact sources = makeSources ( main );
+                if ( sources != null )
+                {
+                    requests.add ( makeRequest ( ctx.getRepositories (), sources ) );
+                }
+            }
         }
-        else
-        {
-            repositories = Arrays.asList ( Helper.newRemoteRepository ( "drone.aether.import", cfg.getRepositoryUrl () ) );
-        }
+
+        // process
+
+        return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), requests );
+    }
+
+    /**
+     * Process the actual import request
+     * <p>
+     * This method takes the import configuration as is and simply tries to
+     * import it. Not manipulating the list of coordinates any more
+     * </p>
+     */
+    public static Collection<ArtifactResult> processImport ( final Path tmpDir, final ImportConfiguration cfg ) throws ArtifactResolutionException
+    {
+        final RepositoryContext ctx = new RepositoryContext ( tmpDir, cfg.getRepositoryUrl () );
 
         final Collection<ArtifactRequest> requests = new LinkedList<> ();
 
@@ -230,18 +299,12 @@ public class AetherImporter implements Importer
             // main artifact
 
             final DefaultArtifact main = new DefaultArtifact ( coords.toString () );
-            requests.add ( makeRequest ( repositories, main ) );
-
-            final DefaultArtifact sources = makeSources ( main );
-            if ( sources != null )
-            {
-                requests.add ( makeRequest ( repositories, sources ) );
-            }
+            requests.add ( makeRequest ( ctx.getRepositories (), main ) );
         }
 
         // process
 
-        return system.resolveArtifacts ( session, requests );
+        return ctx.getSystem ().resolveArtifacts ( ctx.getSession (), requests );
     }
 
     private static DefaultArtifact makeSources ( final Artifact main )
