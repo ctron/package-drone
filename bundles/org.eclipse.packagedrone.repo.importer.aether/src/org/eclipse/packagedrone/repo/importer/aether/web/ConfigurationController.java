@@ -10,12 +10,16 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.importer.aether.web;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.eclipse.packagedrone.job.JobHandle;
@@ -42,6 +46,7 @@ import org.eclipse.packagedrone.web.controller.binding.RequestParameter;
 import org.eclipse.packagedrone.web.controller.form.FormData;
 import org.eclipse.packagedrone.web.controller.validator.ControllerValidator;
 import org.eclipse.packagedrone.web.controller.validator.ValidationContext;
+import org.eclipse.packagedrone.web.util.ParameterOverridingRequestWrapper;
 
 import com.google.gson.GsonBuilder;
 
@@ -142,7 +147,6 @@ public class ConfigurationController
         model.put ( "configuration", cfg );
 
         model.put ( "cfgJson", job.getProperties ().get ( "simpleConfig" ) ); // the original config for editing
-        model.put ( "token", token ); // the import web flow token
 
         if ( job != null && job.isFailed () )
         {
@@ -165,10 +169,34 @@ public class ConfigurationController
                 }
             }
 
-            model.put ( "request", ImportRequest.toJson ( AetherImporter.ID, this.gson.create ().toJson ( actualCfg ) ) ); // the created import request
+            model.put ( "importConfig", this.gson.create ().toJson ( actualCfg ) );
             model.put ( "result", result );
             return new ModelAndView ( "testResult", model );
         }
+    }
+
+    @RequestMapping ( value = "/import/{token}/aether/perform", method = RequestMethod.GET )
+    public void performImport ( @PathVariable ( "token" ) final String token, final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
+    {
+        final Map<String, String[]> params = new HashMap<> ( request.getParameterMap () );
+
+        final ImportConfiguration cfg = this.gson.create ().fromJson ( request.getParameter ( "importConfig" ), ImportConfiguration.class );
+
+        final Iterator<MavenCoordinates> i = cfg.getCoordinates ().iterator ();
+        while ( i.hasNext () )
+        {
+            final MavenCoordinates coord = i.next ();
+            final String checkValue = request.getParameter ( coord.toString () );
+            if ( checkValue == null )
+            {
+                i.remove ();
+            }
+        }
+
+        params.put ( "request", new String[] { ImportRequest.toJson ( AetherImporter.ID, this.gson.create ().toJson ( cfg ) ) } );
+        params.put ( "token", new String[] { token } );
+
+        request.getRequestDispatcher ( "/import/perform" ).forward ( new ParameterOverridingRequestWrapper ( request, params ), response );
     }
 
     @ControllerValidator ( formDataClass = SimpleArtifactConfiguration.class )
