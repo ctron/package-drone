@@ -135,12 +135,17 @@ public final class Helper
         final String groupId = getText ( ele, "groupId" );
         final String artifactId = getText ( ele, "artifactId" );
         final String version = getText ( ele, "version" );
+        final String classifier = getText ( ele, "classifier " );
+        final String extension = getText ( ele, "extension" );
 
         if ( groupId == null || artifactId == null || version == null )
         {
             throw new IllegalArgumentException ();
         }
 
-        return new MavenCoordinates ( groupId, artifactId, version );
+        final MavenCoordinates coords = new MavenCoordinates ( groupId, artifactId, version );
+        coords.setExtension ( extension );
+        coords.setClassifier ( classifier );
+        return coords;
     }
 }
