@@ -130,6 +130,7 @@
         	<!-- aether -->
         	
         	<get src="http://eclipse.org/downloads/download.php?file=/aether/aether-core/1.0.1/dist/aether-1.0.1-bin.zip&amp;r=1" dest="download/aether-bin.zip" usetimestamp="true"/>
+        	<get src="http://eclipse.org/downloads/download.php?file=/aether/aether-core/1.0.1/dist/aether-1.0.1-src.zip&amp;r=1" dest="download/aether-src.zip" usetimestamp="true"/>
         	
         	<orbitGet bundle="org.apache.httpcomponents.httpcore" version="4.3.3" qualifier="v201411290715" />
         	<orbitGet bundle="org.apache.httpcomponents.httpclient" version="4.3.6" qualifier="v201411290715" />
@@ -184,7 +185,8 @@
         </untar>
         
     	<unzip src="download/equinox-SDK.zip" dest="unpack/equinox" />
-    	<unzip src="download/aether-bin.zip" dest="unpack/aether" />
+    	<unzip src="download/aether-bin.zip" dest="unpack/aether/bin" />
+    	<unzip src="download/aether-src.zip" dest="unpack/aether/src" />
     </target>
 
     <!-- ================================= 
@@ -255,7 +257,7 @@
             	
             </fileset>
 
-        	<fileset dir="unpack/aether">
+        	<fileset dir="unpack/aether/bin">
         	    <exclude name="**/*-wagon-*.jar"/>
         	    <include name="*/*.jar"/>
         	</fileset>
