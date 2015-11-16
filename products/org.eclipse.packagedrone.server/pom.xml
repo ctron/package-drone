@@ -377,7 +377,7 @@
 								<script><![CDATA[
 if ! getent passwd "${drone.user}" >/dev/null; then
     # create new user
-    useradd --system --user-group --home /var/lib/pdrone --comment "${drone.user.description}" "${drone.user}"
+    useradd --system --user-group --home "/var/lib/${drone.app.name}" --comment "${drone.user.description}" "${drone.user}"
 fi
 mkdir -p "/var/lib/${drone.app.name}"
 chown -R "${drone.user}:${drone.group}" "/var/lib/${drone.app.name}"
@@ -551,7 +551,7 @@ systemctl daemon-reload >/dev/null 2>&1 || :
                                 <script><![CDATA[
 if ! getent passwd "${drone.user}" >/dev/null; then
     # create new user
-    useradd --system --user-group --home /var/lib/pdrone --comment "${drone.user.description}" "${drone.user}"
+    useradd --system --user-group --home "/var/lib/${drone.app.name}" --comment "${drone.user.description}" "${drone.user}"
 fi
 mkdir -p "/var/lib/${drone.app.name}"
 chown -R "${drone.user}:${drone.group}" "/var/lib/${drone.app.name}"
