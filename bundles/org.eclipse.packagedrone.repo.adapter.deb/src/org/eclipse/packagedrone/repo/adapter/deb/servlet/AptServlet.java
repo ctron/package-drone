@@ -31,15 +31,15 @@ import org.eclipse.packagedrone.repo.adapter.deb.servlet.handler.PoolHandler;
 import org.eclipse.packagedrone.repo.adapter.deb.servlet.handler.RedirectHandler;
 import org.eclipse.packagedrone.repo.channel.ChannelId;
 import org.eclipse.packagedrone.repo.channel.ChannelService;
-import org.eclipse.packagedrone.repo.channel.ReadableChannel;
 import org.eclipse.packagedrone.repo.channel.ChannelService.By;
+import org.eclipse.packagedrone.repo.channel.ReadableChannel;
 import org.eclipse.packagedrone.repo.channel.servlet.AbstractChannelServiceServlet;
 
 public class AptServlet extends AbstractChannelServiceServlet
 {
     private static final long serialVersionUID = 1L;
 
-    private static final Pattern POOL_PATTERN = Pattern.compile ( "pool/(?<cid>[^/]+)/(?<aid>[^/]+)/(?<name>.*)" );
+    private static final Pattern POOL_PATTERN = Pattern.compile ( "pool/(?<aid>[^/]+)/(?<name>.*)" );
 
     @Override
     protected void doGet ( final HttpServletRequest request, final HttpServletResponse response ) throws ServletException, IOException
@@ -112,14 +112,14 @@ public class AptServlet extends AbstractChannelServiceServlet
 
             if ( channelPath.equals ( "pool" ) )
             {
-                new PoolHandler ( service, "", "", "" ).process ( response );
+                new PoolHandler ( channel, "", "" ).process ( response );
                 return;
             }
 
             final Matcher m = POOL_PATTERN.matcher ( channelPath );
             if ( m.matches () )
             {
-                new PoolHandler ( service, m.group ( "cid" ), m.group ( "aid" ), m.group ( "name" ) ).process ( response );
+                new PoolHandler ( channel, m.group ( "aid" ), m.group ( "name" ) ).process ( response );
                 return;
             }
 
