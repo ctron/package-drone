@@ -57,6 +57,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 
+/**
+ * Aspect capable channel context implementation
+ * <p>
+ * This class helps in implementing a modifiable channel which supports aspects.
+ * </p>
+ */
 public class AspectContextImpl
 {
     private final static Logger logger = LoggerFactory.getLogger ( AspectContextImpl.class );
