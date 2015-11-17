@@ -91,6 +91,7 @@
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.0_all.deb" />
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.1_all.deb" />
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.2_all.deb" />
+		<adddeb src="download/org.eclipse.packagedrone.server_0.11.3_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
