@@ -820,6 +820,7 @@ public class InstallableUnit
             }
         }
 
+        if ( !this.artifacts.isEmpty () )
         {
             xsw.writeStartElement ( "artifacts" );
             xsw.writeAttribute ( "size", "" + this.artifacts.size () );
@@ -840,7 +841,7 @@ public class InstallableUnit
             {
                 xsw.writeEmptyElement ( "touchpoint" );
                 xsw.writeAttribute ( "id", "null" );
-                xsw.writeAttribute ( "version", "1.0.0" );
+                xsw.writeAttribute ( "version", "0.0.0" );
             }
             else
             {
