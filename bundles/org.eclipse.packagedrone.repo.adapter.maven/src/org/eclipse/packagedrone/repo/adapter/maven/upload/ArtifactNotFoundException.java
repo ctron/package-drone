@@ -10,31 +10,20 @@
  *******************************************************************************/
 package org.eclipse.packagedrone.repo.adapter.maven.upload;
 
-/**
- * Thrown when a checksum validation error is detected
- */
-public abstract class ChecksumValidationException extends Exception
+public class ArtifactNotFoundException extends ChecksumValidationException
 {
     private static final long serialVersionUID = 1L;
 
-    public ChecksumValidationException ()
+    private final Coordinates coordinates;
+
+    public ArtifactNotFoundException ( final Coordinates coordinates )
     {
-        super ();
+        super ( String.format ( "Unable to find artifact: %s", coordinates ) );
+        this.coordinates = coordinates;
     }
 
-    public ChecksumValidationException ( final String message, final Throwable cause )
+    public Coordinates getCoordinates ()
     {
-        super ( message, cause );
+        return this.coordinates;
     }
-
-    public ChecksumValidationException ( final String message )
-    {
-        super ( message );
-    }
-
-    public ChecksumValidationException ( final Throwable cause )
-    {
-        super ( cause );
-    }
-
 }
