@@ -20,8 +20,8 @@ import org.eclipse.packagedrone.repo.aspect.virtual.Virtualizer;
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
 import org.eclipse.packagedrone.repo.channel.apm.aspect.AspectContextImpl.ArtifactCreator;
 import org.eclipse.packagedrone.repo.generator.GenerationContext;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.utils.Exceptions;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 
 public class VirtualizerContextImpl implements Virtualizer.Context, GenerationContext
 {

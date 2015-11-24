@@ -46,9 +46,9 @@ import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore;
 import org.eclipse.packagedrone.repo.channel.apm.store.BlobStore.Transaction;
 import org.eclipse.packagedrone.repo.channel.apm.store.CacheStore;
 import org.eclipse.packagedrone.repo.channel.provider.ModifyContext;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.storage.apm.StorageManager;
 import org.eclipse.packagedrone.utils.Exceptions;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 

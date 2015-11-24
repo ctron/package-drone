@@ -43,7 +43,7 @@ import org.eclipse.packagedrone.repo.channel.ChannelService.By;
 import org.eclipse.packagedrone.repo.channel.ReadableChannel;
 import org.eclipse.packagedrone.repo.channel.servlet.AbstractChannelServiceServlet;
 import org.eclipse.packagedrone.repo.channel.util.DownloadHelper;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 import org.eclipse.scada.utils.str.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

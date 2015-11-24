@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.eclipse.packagedrone.repo.MetaKey;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 
 public interface ArtifactContext
 {

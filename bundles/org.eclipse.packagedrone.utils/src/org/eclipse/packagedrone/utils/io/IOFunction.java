@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.utils;
+package org.eclipse.packagedrone.utils.io;
 
 import java.io.IOException;
 

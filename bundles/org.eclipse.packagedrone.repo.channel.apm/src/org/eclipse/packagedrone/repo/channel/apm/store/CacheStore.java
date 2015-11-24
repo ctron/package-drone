@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.eclipse.packagedrone.repo.MetaKey;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 import org.eclipse.scada.utils.io.RecursiveDeleteVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -23,10 +23,10 @@ import org.eclipse.packagedrone.repo.aspect.common.osgi.OsgiAspectFactory;
 import org.eclipse.packagedrone.repo.aspect.common.p2.P2MetaDataInformation;
 import org.eclipse.packagedrone.repo.aspect.virtual.Virtualizer;
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.repo.utils.osgi.bundle.BundleInformation;
 import org.eclipse.packagedrone.repo.utils.osgi.feature.FeatureInformation;
 import org.eclipse.packagedrone.utils.Exceptions;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

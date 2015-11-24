@@ -22,9 +22,9 @@ import javax.xml.stream.XMLStreamWriter;
 import org.eclipse.packagedrone.repo.aspect.common.p2.InstallableUnit;
 import org.eclipse.packagedrone.repo.aspect.common.p2.P2MetaDataInformation;
 import org.eclipse.packagedrone.repo.channel.ArtifactInformation;
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
 import org.eclipse.packagedrone.repo.utils.osgi.bundle.BundleInformation;
 import org.eclipse.packagedrone.repo.utils.osgi.feature.FeatureInformation;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 import org.osgi.framework.Version;
 
 public class Creator

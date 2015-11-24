@@ -16,7 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.eclipse.packagedrone.repo.utils.IOConsumer;
+import org.eclipse.packagedrone.utils.io.IOConsumer;
 
 public class FileSpoolOutHandler implements SpoolOutHandler
 {

@@ -8,40 +8,12 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.utils;
+package org.eclipse.packagedrone.utils.io;
 
-/**
- * Hold a value
- *
- * @param <T>
- *            the actual type
- */
-public class Holder<T>
+import java.io.IOException;
+
+@FunctionalInterface
+public interface IOConsumer<T>
 {
-    /**
-     * Holds the actual value
-     * <p>
-     * This field is explicitly public
-     * </p>
-     */
-    public T value;
-
-    public Holder ()
-    {
-    }
-
-    public Holder ( final T value )
-    {
-        this.value = value;
-    }
-
-    public T getValue ()
-    {
-        return this.value;
-    }
-
-    public void setValue ( final T value )
-    {
-        this.value = value;
-    }
+    public void accept ( T data ) throws IOException;
 }
