@@ -384,7 +384,7 @@ public class ChannelReader implements AutoCloseable
                 }
             }
 
-            if ( name == null || size == null | mimeType == null || timestamp == null )
+            if ( name == null || size == null || mimeType == null || timestamp == null )
             {
                 throw new IOException ( "Invalid format" );
             }
@@ -392,6 +392,7 @@ public class ChannelReader implements AutoCloseable
             jr.endObject ();
 
             final MetaKey key = MetaKey.fromString ( entryName );
+
             result.put ( key, new CacheEntryInformation ( key, name, size, mimeType, timestamp ) );
         }
         jr.endObject ();
