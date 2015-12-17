@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 IBH SYSTEMS GmbH.
+ * Copyright (c) 2015 IBH SYSTEMS GmbH and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     IBH SYSTEMS GmbH - initial API and implementation
  *******************************************************************************/
-package org.eclipse.packagedrone.repo.adapter.maven.internal;
+package org.eclipse.packagedrone.repo.api.upload;
 
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
@@ -20,7 +20,7 @@ public class ServletInitializer
 {
     private WebContainer webContainer;
 
-    private MavenServlet servlet;
+    private UploadServlet servlet;
 
     public void setWebContainer ( final WebContainer webContainer )
     {
@@ -29,10 +29,10 @@ public class ServletInitializer
 
     public void start () throws ServletException
     {
-        this.servlet = new MavenServlet ();
+        this.servlet = new UploadServlet ();
+        final MultipartConfigElement mp = Servlets.createMultiPartConfiguration ( "drone.upload.servlet" );
+        this.webContainer.registerServlet ( this.servlet, "upload", new String[] { "/api/v2/upload/*" }, null, 1, false, mp, null );
 
-        final MultipartConfigElement mp = Servlets.createMultiPartConfiguration ( "drone.maven.servlet" );
-        this.webContainer.registerServlet ( this.servlet, "maven", new String[] { "/maven/*" }, null, 1, false, mp, null );
     }
 
     public void stop ()
