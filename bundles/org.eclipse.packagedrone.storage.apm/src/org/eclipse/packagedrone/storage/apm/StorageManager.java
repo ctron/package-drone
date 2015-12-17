@@ -460,27 +460,40 @@ public class StorageManager
         }
         current.setWriteModel ( writeModel );
 
-        // call user code
-        final T result = function.apply ( writeModel );
-
-        if ( same == null )
+        try
         {
-            // we are the one that cloned the model
-            try
+            // call user code
+
+            final T result = function.apply ( writeModel );
+
+            if ( same == null )
             {
-                // we received the same model type from cloneWriteModel ()
-                sp.persistWriteModel ( writeModel );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException ( String.format ( "Failed to persist model of %s", entry.key ), e );
+                // we are the one that cloned the model
+                try
+                {
+                    // we received the same model type from cloneWriteModel ()
+                    sp.persistWriteModel ( writeModel );
+                }
+                catch ( final Exception e )
+                {
+                    throw new RuntimeException ( String.format ( "Failed to persist model of %s", entry.key ), e );
+                }
+
+                current.runAfterTasks ();
             }
 
-            current.runAfterTasks ();
+            // otherwise: -> save later
+
+            return result;
         }
-        // otherwise: -> save later
-
-        return result;
+        finally
+        {
+            if ( same == null )
+            {
+                // close write model
+                sp.closeWriteModel ( writeModel );
+            }
+        }
     }
 
     private static <T> T cast ( final Entry entry, final Class<T> clazz, final Object o )
