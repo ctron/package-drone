@@ -31,6 +31,7 @@
 			<get-release-2 version="0.10.4"/>
 			<get-release version="0.11.3"/>
 			<get-release version="0.11.4"/>
+			<get-release version="0.11.5"/>
 		</parallel>
 	</target>
 	
@@ -94,6 +95,7 @@
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.3_all.deb" />
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.4_all.deb" />
 		<adddeb src="download/org.eclipse.packagedrone.server_0.11.5_all.deb" />
+		<adddeb src="download/org.eclipse.packagedrone.server_0.11.6_all.deb" />
 	</target>
 
 	<macrodef name="adddeb">
