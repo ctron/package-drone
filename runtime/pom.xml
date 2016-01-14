@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.eclipse.packagedrone</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.11.5-SNAPSHOT</version>
+		<version>0.11.6-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 
